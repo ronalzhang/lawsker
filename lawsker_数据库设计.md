@@ -1,7 +1,7 @@
-# WorkBridge - 数据库表结构设计 v1.0
+# Lawsker (律思客) - 数据库表结构设计 v1.1 (Powered by WorkBridge)
 
 ## 核心设计原则
-- **多租户隔离**：所有核心业务表都包含 `tenant_id` 字段，用于SaaS数据隔离。
+- **多租户隔离**：所有核心业务表都包含 `tenant_id` 字段，用于WorkBridge后端对不同机构的数据隔离。
 - **配置化**：关键业务规则（如分成比例）存储在配置表中，而非硬编码。
 - **可扩展性**：用户和角色系统设计灵活，方便未来扩展到更多业务场景。
 - **审计与日志**：关键操作（如资金变动、权限修改）都有对应的日志记录。
@@ -39,8 +39,8 @@
 |---|---|---|---|
 | `id` | `SERIAL` | **PK** | 角色ID |
 | `tenant_id` | `UUID` | `FK > tenants.id` | 所属租户ID（NULL表示平台全局角色） |
-| `name` | `VARCHAR(50)` | `NOT NULL` | 角色名称（如：律师、销售、机构管理员） |
-| `description` | `TEXT` | | 角色描述 |
+| `name` | `VARCHAR(50)` | `NOT NULL` | 角色名称（如：Lawyer, Sales, InstitutionAdmin） |
+| `description` | `TEXT` | | 角色描述，对应律思客平台中的不同用户身份 |
 
 ### `user_roles` - 用户角色关联表
 | 字段名 | 类型 | 约束 | 描述 |
@@ -48,6 +48,12 @@
 | `user_id` | `UUID` | `FK > users.id` | 用户ID |
 | `role_id` | `INTEGER` | `FK > roles.id` | 角色ID |
 | **PK** | `(user_id, role_id)` | | 联合主键 |
+| `assigned_to_user_id`| `UUID` | `FK > users.id` | 分配给的律师/执行者ID |
+| `sales_user_id` | `UUID` | `FK > users.id` | 上传该案件的销售ID |
+| `ai_risk_score` | `INTEGER` | | **Lawsker AI**评估的案件风险分 (0-100) |
+| `data_quality_score`| `INTEGER` | | 导入时的数据质量分 (0-100) |
+| `created_at` | `TIMESTAMPZ` | `NOT NULL` | 创建时间 |
+| `updated_at` | `TIMESTAMPZ` | `NOT NULL` | 更新时间 |
 
 ### `profiles` - 用户资料表
 | 字段名 | 类型 | 约束 | 描述 |
@@ -78,6 +84,10 @@
 | `data_quality_score`| `INTEGER` | | 导入时的数据质量分 (0-100) |
 | `created_at` | `TIMESTAMPZ` | `NOT NULL` | 创建时间 |
 | `updated_at` | `TIMESTAMPZ` | `NOT NULL` | 更新时间 |
+| `debt_creation_date` | `DATE` | `NOT NULL` | 债权形成日期（时效计算起点） |
+| `last_follow_up_date` | `DATE` | | 最近有效跟进/承诺日期（时效中断点） |
+| `legal_status` | `VARCHAR(50)` | `NOT NULL` | 法律时效状态 (valid, expiring_soon, expired) |
+| `data_freshness_score` | `INTEGER` | | 数据新鲜度评分 (0-100) |
 
 ### `clients` - 客户表
 | 字段名 | 类型 | 约束 | 描述 |
@@ -131,7 +141,7 @@
 | `id` | `UUID` | **PK** | 分账记录ID |
 | `transaction_id` | `UUID` | `FK > transactions.id` | 关联的原始回款交易ID |
 | `user_id` | `UUID` | `FK > users.id` | 收款用户ID |
-| `role_at_split` | `VARCHAR(50)` | `NOT NULL` | 分账时的角色（律师、销售、平台） |
+| `role_at_split` | `VARCHAR(50)` | `NOT NULL` | 分账时的角色（Lawyer, Sales, Platform） |
 | `amount` | `DECIMAL(18, 2)` | `NOT NULL` | 分账金额 |
 | `status` | `ENUM('PENDING', 'PAID', 'FAILED')` | `NOT NULL` | 支付状态 |
 | `created_at` | `TIMESTAMPZ` | `NOT NULL` | 创建时间 |
@@ -189,7 +199,7 @@
 | `id` | `SERIAL` | **PK** | 配置ID |
 | `tenant_id` | `UUID` | `FK > tenants.id` | 所属租户ID（NULL表示平台全局配置） |
 | `key` | `VARCHAR(255)` | `NOT NULL` | 配置项键（如：`commission_rate.lawyer`） |
-| `value` | `JSONB` | `NOT NULL` | 配置项值 |
+| `value` | `JSONB` | `NOT NULL` | 配置项值，如 `{"rate": 0.2}` |
 | `description` | `TEXT` | | 配置描述 |
 | `is_active` | `BOOLEAN` | `DEFAULT TRUE` | 是否启用 |
 

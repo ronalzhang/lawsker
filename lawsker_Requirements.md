@@ -110,11 +110,11 @@
 
 ---
 
-## 🌐 **Web3生态系统定位**
+## 🌐 **3. Lawsker生态系统定位**
 
-### 目标市场规模分析
+### **目标市场规模分析**
 
-#### **国内灵活用工市场**（核心市场）
+#### **法律服务及灵活用工市场**（核心市场）
 - **市场规模**：2024年约8000亿人民币，年增长15%
 - **目标企业数**：中小企业3000万+，其中20%有外包需求
 - **预估客户**：初期目标获取1000家企业客户
@@ -123,24 +123,18 @@
 #### **Web3垂直市场**（增长市场）  
 - **全球Web3项目**：活跃项目约15000个
 - **中国Web3企业**：约2000-3000家
-- **服务需求企业**：60%需要法律/技术/营销外包
+- **服务需求企业**：60%需要法律/技术/营销外包，Lawsker可作为服务入口
 - **预估客户**：初期目标100家Web3客户
 - **客单价**：月均$2000-20000/项目
 
-#### **法律催收垂直市场**（首发场景）
+#### **法律催收垂直市场**（Lawsker首发场景）
 - **银行不良资产**：2024年约3.2万亿存量
 - **助贷机构数量**：持牌约1500家，实际运营5000+
 - **催收市场规模**：年约500亿人民币
 - **目标机构**：初期50家银行/助贷机构
 - **预估回款**：年处理1亿催收金额（平台抽成5%=500万）
 
-#### **其他高潜力场景分析**
-1. **技术外包**：年市场2000亿，目标份额0.1%
-2. **内容创作**：年市场800亿，目标份额0.05%  
-3. **客服外包**：年市场300亿，目标份额0.2%
-4. **财务代理**：年市场1500亿，目标份额0.1%
-
-### Web3特色功能
+### **Web3特色功能 (由WorkBridge后端支持)**
 - **去中心化身份认证**（DID）
 - **智能合约自动结算**
 - **DAO治理投票机制**
@@ -151,9 +145,7 @@
 
 ## 💰 **混合支付系统设计**
 
-### **微信支付优先+企业微信生态集成**
-
-#### **核心设计理念：微信生态深度融合**
+### **核心设计理念：微信生态深度融合**
 ```python
 # 微信支付+企业微信一体化设计
 WECHAT_ECOSYSTEM_INTEGRATION = {
@@ -161,7 +153,7 @@ WECHAT_ECOSYSTEM_INTEGRATION = {
         "primary": "微信支付（企业版）",
         "secondary": "支付宝",
         "tertiary": "银行转账",
-        "crypto": "USDT/USDC（Web3场景）"
+        "crypto": "USDT/USDC（Lawsker Web3场景）"
     },
     "enterprise_wechat_benefits": {
         "real_time_notification": "收款、分账、异常实时推送",
@@ -171,20 +163,20 @@ WECHAT_ECOSYSTEM_INTEGRATION = {
     },
     "instant_settlement": {
         "trigger": "收款确认后30秒内完成分账",
-        "safety_margin": "平台留存15%作为风险缓冲",
+        "safety_margin": "Lawsker平台留存15%作为风险缓冲",
         "notification": "分账完成企业微信立即通知各方"
     }
 }
 ```
 
-#### **实时分账技术实现**
+### **实时分账技术实现 (Powered by WorkBridge)**
 ```python
 # 实时分账系统 - 微信支付优先设计
 class WeChatRealTimeSettlement:
     def __init__(self):
         self.wechat_pay_api = WeChatPayAPI()
         self.enterprise_wechat_api = EnterpriseWeChatAPI()
-        self.safety_margin = 0.15  # 15%安全边际
+        self.safety_margin = 0.15  # Lawsker平台风险缓冲金
     
     def process_instant_settlement(self, payment_record):
         """
@@ -202,117 +194,22 @@ class WeChatRealTimeSettlement:
             splits = self.calculate_safe_splits(payment_record.case_id, total_amount)
             
             # 3. 执行实时分账
-            settlement_results = []
-            
-            # 机构分账（微信企业转账）
-            institution_result = self.wechat_pay_api.transfer_to_enterprise(
-                amount=splits["institution_amount"],
-                account=get_institution_wechat_account(payment_record.case_id),
-                description=f"案件{payment_record.case_id}机构分成"
-            )
-            settlement_results.append(("institution", institution_result))
-            
-            # 律师分账（微信个人转账）
-            lawyer_result = self.wechat_pay_api.transfer_to_personal(
-                amount=splits["lawyer_amount"],
-                account=get_lawyer_wechat_account(payment_record.case_id),
-                description=f"案件{payment_record.case_id}律师佣金"
-            )
-            settlement_results.append(("lawyer", lawyer_result))
-            
-            # 销售分账（微信个人转账）
-            sales_result = self.wechat_pay_api.transfer_to_personal(
-                amount=splits["sales_amount"],
-                account=get_sales_wechat_account(payment_record.case_id),
-                description=f"案件{payment_record.case_id}销售佣金"
-            )
-            settlement_results.append(("sales", sales_result))
+            # ... (具体实现逻辑同v1.0)
             
             # 4. 企业微信实时通知
             self.send_enterprise_wechat_notifications(payment_record, splits, settlement_results)
             
-            # 5. 平台留存（安全边际+净利润）
+            # 5. 平台留存
             platform_retained = splits["platform_amount"] + splits["safety_margin"]
             
-            return {
-                "status": "completed",
-                "settlement_time": "30秒",
-                "total_distributed": sum([s["amount"] for _, s in settlement_results if s["success"]]),
-                "platform_retained": platform_retained,
-                "notification_sent": True
-            }
+            return {"status": "completed"}
             
         except Exception as e:
             # 分账失败，企业微信告警
             self.enterprise_wechat_api.send_alert_message(
-                message=f"⚠️ 分账失败：案件{payment_record.case_id}，错误：{str(e)}",
+                message=f"⚠️ Lawsker平台分账失败：案件{payment_record.case_id}，错误：{str(e)}",
                 users=["admin_user_id"]
             )
-            return {"status": "failed", "error": str(e)}
-    
-    def calculate_safe_splits(self, case_id, total_amount):
-        """
-        计算安全分账 - 采用双层模型并保留风险缓冲
-        """
-        # 基础分账比例（基于服务分成池）
-        base_splits_in_pool = {
-            "lawyer_rate": 0.20,         # 律师占服务池20%
-            "sales_rate": 0.15,          # 销售占服务池15%
-            "platform_rate": 0.65        # 平台占服务池65%
-        }
-        institution_return_rate = 0.50   # 机构固定返还50%
-
-        # 减去安全边际后的可分配总额
-        distributable_amount = total_amount * (1 - self.safety_margin)
-        
-        # 在可分配总额中计算各方实际金额
-        institution_amount = distributable_amount * institution_return_rate
-        service_pool_amount = distributable_amount * (1 - institution_return_rate)
-
-        lawyer_amount = service_pool_amount * base_splits_in_pool["lawyer_rate"]
-        sales_amount = service_pool_amount * base_splits_in_pool["sales_rate"]
-        platform_amount = service_pool_amount * base_splits_in_pool["platform_rate"]
-
-        return {
-            "institution_amount": institution_amount,
-            "platform_amount": platform_amount,
-            "lawyer_amount": lawyer_amount,
-            "sales_amount": sales_amount,
-            "safety_margin": total_amount * self.safety_margin
-        }
-    
-    def send_enterprise_wechat_notifications(self, payment_record, splits, results):
-        """
-        企业微信实时通知推送
-        """
-        # 给机构推送
-        institution_message = f"""
-        💰 收款通知
-        案件编号：{payment_record.case_id}
-        收款金额：¥{payment_record.amount:,.2f}
-        您的分成：¥{splits['institution_amount']:,.2f}
-        到账状态：{'✅ 已到账' if results[0][1]['success'] else '❌ 处理中'}
-        到账时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        """
-        
-        self.enterprise_wechat_api.send_message(
-            user_id=get_institution_contact(payment_record.case_id),
-            message=institution_message
-        )
-        
-        # 给律师推送
-        lawyer_message = f"""
-        💸 佣金到账通知
-        案件编号：{payment_record.case_id}
-        您的佣金：¥{splits['lawyer_amount']:,.2f}
-        到账状态：{'✅ 已到账' if results[1][1]['success'] else '❌ 处理中'}
-        """
-        
-        self.enterprise_wechat_api.send_message(
-            user_id=get_lawyer_contact(payment_record.case_id),
-            message=lawyer_message
-        )
-```
 
 ### **免费部署+业绩抽佣商业模式**
 

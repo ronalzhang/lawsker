@@ -1,7 +1,7 @@
-# WorkBridge - API接口文档 v1.0
+# Lawsker (律思客) - API接口文档 v1.1 (Powered by WorkBridge)
 
 ## 认证机制
-- **认证方式**: 所有需要登录的接口都使用 `JWT (JSON Web Token)` 进行认证。
+- **认证方式**: Lawsker平台所有需要登录的接口都使用 `JWT (JSON Web Token)` 进行认证。
 - **Token传递**: 在请求的 `Header` 中加入 `Authorization: Bearer <your_jwt_token>`。
 - **Token获取**: 通过 `POST /api/auth/login` 接口获取。
 
@@ -124,9 +124,9 @@
 }
 ```
 
-### 使用AI工具
+### 使用Lawsker AI工具
 - **Endpoint**: `POST /api/lawyer/ai/generate-document`
-- **描述**: 请求AI生成法律文书
+- **描述**: 请求 **Lawsker AI** 生成法律文书
 - **请求体**:
 ```json
 {
@@ -140,13 +140,13 @@
 - **成功响应 (200)**:
 ```json
 {
-  "document_url": "https://storage.workbridge.com/docs/generated_doc_xyz.pdf"
+  "document_url": "https://storage.lawsker.com/docs/generated_doc_xyz.pdf"
 }
 ```
 
-### 获取AI风险评估
+### 获取Lawsker AI风险评估
 - **Endpoint**: `GET /api/lawyer/cases/{caseId}/risk-assessment`
-- **描述**: 获取指定案件的AI风险评估结果
+- **描述**: 获取指定案件的 **Lawsker AI** 风险评估结果
 - **成功响应 (200)**:
 ```json
 {
@@ -167,7 +167,9 @@
   {
     "client_id": "uuid-client-789",
     "debtor_info": { "name": "王五", "id_card": "..." },
-    "case_amount": 50000.00
+    "case_amount": 50000.00,
+    "debt_creation_date": "2021-07-01",
+    "last_follow_up_date": "2022-01-15"
   }
 ]
 ```
@@ -200,7 +202,7 @@
 
 ### 获取业务总览
 - **Endpoint**: `GET /api/institution/dashboard`
-- **描述**: 获取机构的业务数据总览
+- **描述**: 获取机构在Lawsker平台的业务数据总览
 - **成功响应 (200)**:
 ```json
 {
@@ -231,7 +233,7 @@
 
 ### 查看分账明细
 - **Endpoint**: `GET /api/institution/settlements`
-- **描述**: 查看机构的资金分账明细
+- **描述**: 查看机构在Lawsker平台的资金分账明细
 - **成功响应 (200)**:
 ```json
 [
@@ -314,5 +316,36 @@
   "message": "Commission rates updated successfully."
 }
 ```
+
+## **业务API (Business APIs)**
+
+### **1. 案件管理 (Cases Management)**
+
+- **Endpoint**: `GET /api/cases`
+- **Description**: 查询案件列表（供律师、销售、机构、管理员使用，根据角色返回不同范围数据）。
+- **Auth**: `JWT Token`
+- **Query Parameters**:
+  - `page` (int): 页码
+  - `limit` (int): 每页数量
+  - `sort_by` (string): 排序字段，例如 `created_at`, `-data_freshness_score` (负号表示降序)
+  - `status` (string): 按生命周期状态筛选, e.g., `active`, `processing`, `expired`
+  - `legal_status` (string): 按法律状态筛选, e.g., `valid`, `expiring_soon`
+- **Success Response (200 OK)**:
+  ```json
+  {
+    "total": 120,
+    "items": [
+      {
+        "id": 1,
+        "debtor_name": "李四",
+        "total_debt_amount": "5500.00",
+        "status": "active",
+        "legal_status": "valid",
+        "data_freshness_score": 95,
+        "created_at": "2023-10-01T10:00:00Z"
+      }
+    ]
+  }
+  ```
 
 --- 
