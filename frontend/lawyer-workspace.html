@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>律师工作台 - Lawsker 律思客</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #10b981;
+            --danger-color: #dc2626;
+            --warning-color: #f59e0b;
+            --success-color: #10b981;
+            --bg-primary: #f8fafc;
+            --bg-card: #ffffff;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--primary-color);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-header {
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-title {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .dashboard-subtitle {
+            color: var(--text-secondary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .stat-trend {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .stat-trend.up {
+            color: var(--success-color);
+        }
+
+        .logout-btn {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #b91c1c;
+        }
+
+        .content-section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .section-description {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            background: var(--bg-primary);
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* AI文书生成功能样式 */
+        .ai-document-section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-top: 2rem;
+        }
+
+        .document-generator {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .generator-form {
+            background: var(--bg-primary);
+            padding: 1.5rem;
+            border-radius: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: var(--bg-card);
+        }
+
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .generate-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .generate-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .generate-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .document-preview {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .document-content {
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        .document-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-card);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .main-container {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .document-generator {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">Lawsker 律思客</div>
+            <div class="nav-links">
+                <a href="#" class="active">工作台</a>
+                <a href="#cases">案件管理</a>
+                <a href="#documents">文书生成</a>
+                <a href="#income">收入统计</a>
+            </div>
+            <div class="user-info">
+                <span id="userName">律师</span>
+                <div class="user-avatar" id="userAvatar">律</div>
+                <button class="logout-btn" onclick="logout()">退出</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">律师工作台</h1>
+            <p class="dashboard-subtitle">管理您的案件、生成催收文书，追踪收入统计</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon" style="background: var(--primary-color);">📋</div>
+                    <div class="stat-trend up">↗ +12%</div>
+                </div>
+                <div class="stat-value" id="totalCases">8</div>
+                <div class="stat-label">处理案件</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon" style="background: var(--success-color);">✅</div>
+                    <div class="stat-trend up">↗ +25%</div>
+                </div>
+                <div class="stat-value" id="completedCases">3</div>
+                <div class="stat-label">完成案件</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon" style="background: var(--warning-color);">💰</div>
+                    <div class="stat-trend up">↗ +18%</div>
+                </div>
+                <div class="stat-value" id="totalEarnings">¥12,350</div>
+                <div class="stat-label">本月收入</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon" style="background: var(--danger-color);">📄</div>
+                    <div class="stat-trend up">↗ +8%</div>
+                </div>
+                <div class="stat-value" id="documentsGenerated">15</div>
+                <div class="stat-label">生成文书</div>
+            </div>
+        </div>
+
+        <div class="content-section">
+            <h2 class="section-title">律师核心功能</h2>
+            <p class="section-description">专业的法律服务工具，助您高效处理案件</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📋</div>
+                    <div class="feature-title">案件管理</div>
+                    <div class="feature-desc">全流程案件跟踪管理，实时更新案件状态</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <div class="feature-title">AI催收文书</div>
+                    <div class="feature-desc">智能生成催收函件，专业格式，法条引用</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <div class="feature-title">收入统计</div>
+                    <div class="feature-desc">透明分账机制，实时查看佣金收入</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📧</div>
+                    <div class="feature-title">律师函服务</div>
+                    <div class="feature-desc">30元快速发送，多渠道到达</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI文书生成功能区域 -->
+        <div class="ai-document-section">
+            <h2 class="section-title">🤖 AI催收文书生成</h2>
+            <p class="section-description">智能生成专业催收文书，支持多种模板和语调</p>
+            
+            <div class="document-generator">
+                <div class="generator-form">
+                    <h3 style="margin-bottom: 1rem;">案件信息</h3>
+                    
+                    <div class="form-group">
+                        <label for="debtorName">债务人姓名</label>
+                        <input type="text" id="debtorName" placeholder="请输入债务人姓名">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="debtAmount">债务金额</label>
+                        <input type="number" id="debtAmount" placeholder="请输入债务金额">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="overdueDays">逾期天数</label>
+                        <input type="number" id="overdueDays" placeholder="请输入逾期天数">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="documentType">文书类型</label>
+                        <select id="documentType">
+                            <option value="collection">催收函</option>
+                            <option value="demand">催款函</option>
+                            <option value="warning">警告函</option>
+                            <option value="legal">法律通知书</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="documentTone">文书语调</label>
+                        <select id="documentTone">
+                            <option value="friendly">友好提醒</option>
+                            <option value="formal">正式通知</option>
+                            <option value="stern">严厉警告</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="additionalInfo">补充信息</label>
+                        <textarea id="additionalInfo" placeholder="请输入补充信息（可选）"></textarea>
+                    </div>
+                    
+                    <button class="generate-btn" onclick="generateDocument()">
+                        生成文书
+                    </button>
+                </div>
+                
+                <div>
+                    <h3 style="margin-bottom: 1rem;">文书预览</h3>
+                    <div class="document-preview" id="documentPreview">
+                        <div class="document-content">
+                            <p style="text-align: center; color: #6b7280;">点击"生成文书"按钮生成催收文书</p>
+                        </div>
+                    </div>
+                    
+                    <div class="document-actions" id="documentActions" style="display: none;">
+                        <button class="action-btn" onclick="copyDocument()">复制文书</button>
+                        <button class="action-btn" onclick="downloadDocument()">下载文书</button>
+                        <button class="action-btn" onclick="sendDocument()">发送文书</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadUserInfo();
+        });
+
+        // 检查登录状态
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const userRole = localStorage.getItem('userRole');
+            
+            if (!token || userRole !== 'lawyer') {
+                window.location.href = 'login.html';
+                return;
+            }
+        }
+
+        // 加载用户信息
+        function loadUserInfo() {
+            const username = localStorage.getItem('username');
+            if (username) {
+                document.getElementById('userName').textContent = username;
+                document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
+            }
+        }
+
+        // 生成文书
+        function generateDocument() {
+            const debtorName = document.getElementById('debtorName').value;
+            const debtAmount = document.getElementById('debtAmount').value;
+            const overdueDays = document.getElementById('overdueDays').value;
+            const documentType = document.getElementById('documentType').value;
+            const documentTone = document.getElementById('documentTone').value;
+            const additionalInfo = document.getElementById('additionalInfo').value;
+            
+            if (!debtorName || !debtAmount || !overdueDays) {
+                alert('请填写必要信息');
+                return;
+            }
+            
+            // 显示生成中状态
+            const generateBtn = document.querySelector('.generate-btn');
+            generateBtn.disabled = true;
+            generateBtn.textContent = '生成中...';
+            
+            // 模拟AI生成过程
+            setTimeout(() => {
+                const documentContent = generateDocumentContent(
+                    debtorName, debtAmount, overdueDays, documentType, documentTone, additionalInfo
+                );
+                
+                document.getElementById('documentPreview').innerHTML = 
+                    `<div class="document-content">${documentContent}</div>`;
+                
+                document.getElementById('documentActions').style.display = 'flex';
+                
+                generateBtn.disabled = false;
+                generateBtn.textContent = '生成文书';
+                
+                // 更新统计
+                const currentCount = parseInt(document.getElementById('documentsGenerated').textContent);
+                document.getElementById('documentsGenerated').textContent = currentCount + 1;
+            }, 2000);
+        }
+
+        // 生成文书内容
+        function generateDocumentContent(debtorName, debtAmount, overdueDays, documentType, documentTone, additionalInfo) {
+            const toneMap = {
+                'friendly': '友好提醒',
+                'formal': '正式通知',
+                'stern': '严厉警告'
+            };
+            
+            const typeMap = {
+                'collection': '催收函',
+                'demand': '催款函',
+                'warning': '警告函',
+                'legal': '法律通知书'
+            };
+            
+            const currentDate = new Date().toLocaleDateString('zh-CN');
+            
+            return `
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <h3>${typeMap[documentType]}</h3>
+                </div>
+                
+                <p><strong>致：${debtorName}</strong></p>
+                
+                <p>您好！</p>
+                
+                <p>根据我们的记录，您欠款金额为人民币 <strong>${debtAmount}</strong> 元，已逾期 <strong>${overdueDays}</strong> 天。</p>
+                
+                <p>根据《中华人民共和国合同法》及相关法律规定，债务人应当按约定履行债务。您的逾期行为已构成违约，请您在收到本函后 <strong>7日内</strong> 履行还款义务。</p>
+                
+                <p>如您在规定期限内仍未履行还款义务，我们将采取进一步的法律行动，包括但不限于：</p>
+                <ul>
+                    <li>向法院申请强制执行</li>
+                    <li>将您的违约信息纳入征信系统</li>
+                    <li>追究您的法律责任</li>
+                </ul>
+                
+                ${additionalInfo ? `<p>补充说明：${additionalInfo}</p>` : ''}
+                
+                <p>请您重视此事，及时履行还款义务，避免因延误而承担更多的法律后果。</p>
+                
+                <p>如有任何疑问，请及时与我们联系。</p>
+                
+                <div style="margin-top: 2rem;">
+                    <p>此致</p>
+                    <p>敬礼！</p>
+                </div>
+                
+                <div style="text-align: right; margin-top: 2rem;">
+                    <p>Lawsker 律思客</p>
+                    <p>${currentDate}</p>
+                </div>
+            `;
+        }
+
+        // 复制文书
+        function copyDocument() {
+            const documentContent = document.querySelector('.document-content').textContent;
+            navigator.clipboard.writeText(documentContent).then(() => {
+                alert('文书已复制到剪贴板');
+            }).catch(() => {
+                alert('复制失败，请手动复制');
+            });
+        }
+
+        // 下载文书
+        function downloadDocument() {
+            const documentContent = document.querySelector('.document-content').innerHTML;
+            const blob = new Blob([documentContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '催收文书.html';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 发送文书
+        function sendDocument() {
+            alert('文书发送功能开发中，敬请期待');
+        }
+
+        // 退出登录
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('username');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

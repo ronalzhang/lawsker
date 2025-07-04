@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>律思客 - 登录</title>
+    <title>登录 - Lawsker 律思客</title>
     <style>
         * {
             margin: 0;
@@ -12,352 +12,882 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Microsoft YaHei', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            color: #333;
         }
 
         .login-container {
             background: white;
             border-radius: 20px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
             width: 100%;
-            max-width: 400px;
-            padding: 40px;
-            animation: slideUp 0.6s ease-out;
+            max-width: 900px;
+            margin: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 500px;
         }
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .logo {
+        .login-left {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             text-align: center;
-            margin-bottom: 30px;
         }
 
-        .logo h1 {
-            color: #333;
-            font-size: 2.5em;
-            font-weight: 700;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .login-left h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
-        .logo p {
+        .login-left p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .role-showcase {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .role-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .role-item .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .role-item .title {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .login-right {
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-form {
+            max-width: 350px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .form-title {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        .form-subtitle {
             color: #666;
-            font-size: 16px;
-            margin-bottom: 20px;
+            margin-bottom: 2rem;
+        }
+
+        .role-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .role-option {
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8fafc;
+        }
+
+        .role-option:hover {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .role-option.active {
+            border-color: #2563eb;
+            background: #2563eb;
+            color: white;
+        }
+
+        .role-option .icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .role-option .title {
+            font-size: 0.8rem;
+            font-weight: 500;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #374151;
+            font-weight: 500;
         }
 
         .form-group input {
             width: 100%;
-            padding: 15px;
-            border: 2px solid #e8e8e8;
-            border-radius: 12px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
         }
 
         .form-group input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .remember-me input {
+            width: auto;
+        }
+
+        .forgot-password {
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
         }
 
         .login-btn {
             width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: #2563eb;
             color: white;
+            padding: 0.75rem;
             border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: transform 0.3s ease;
-            margin-bottom: 20px;
+            transition: all 0.3s;
+            margin-bottom: 1rem;
         }
 
         .login-btn:hover {
+            background: #1d4ed8;
             transform: translateY(-2px);
         }
 
         .login-btn:disabled {
-            opacity: 0.6;
+            background: #9ca3af;
             cursor: not-allowed;
             transform: none;
         }
 
-        .register-link {
-            text-align: center;
-            margin-top: 20px;
+        .demo-login {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            margin-top: 1rem;
         }
 
-        .register-link a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
+        .demo-btn {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
         }
 
-        .register-link a:hover {
-            text-decoration: underline;
+        .demo-btn:hover {
+            background: #e5e7eb;
         }
 
-        .demo-access {
-            text-align: center;
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 12px;
-        }
-
-        .demo-access h3 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .demo-access p {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .demo-access a {
-            color: #28a745;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .demo-access a:hover {
-            text-decoration: underline;
-        }
-
-        .alert {
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
             display: none;
         }
 
-        .alert.error {
-            background: #fee;
-            color: #c33;
-            border: 1px solid #fcc;
+        .back-home {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
         }
 
-        .alert.success {
-            background: #efe;
-            color: #363;
-            border: 1px solid #cfc;
+        .back-home:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
         }
 
-        .loading {
-            display: none;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #ffffff;
-            border-top: 2px solid transparent;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
+        @media (max-width: 768px) {
+            .login-container {
+                grid-template-columns: 1fr;
+                margin: 1rem;
+            }
+            
+            .login-left {
+                padding: 2rem;
+            }
+            
+            .login-left h1 {
+                font-size: 2rem;
+            }
+            
+            .role-showcase {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .role-selector {
+                grid-template-columns: repeat(4, 1fr);
+            }
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .btn-content {
+        /* 注册功能样式 */
+        .auth-tabs {
             display: flex;
-            align-items: center;
-            justify-content: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 1rem;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #6b7280;
+        }
+
+        .auth-tab.active {
+            color: #2563eb;
+            border-bottom: 2px solid #2563eb;
+        }
+
+        .auth-tab:hover {
+            color: #2563eb;
+        }
+
+        .sms-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .sms-input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .sms-input-group input {
+            flex: 1;
+        }
+
+        .sms-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .sms-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .sms-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .form-hint {
+            color: #6b7280;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        .register-role-selector {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .success-message {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            color: #0c4a6e;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            display: none;
         }
     </style>
 </head>
 <body>
+    <a href="index.html" class="back-home">← 返回首页</a>
+    
     <div class="login-container">
-        <div class="logo">
-            <h1>律思客</h1>
-            <p>专业法律服务平台</p>
-        </div>
-
-        <div class="alert" id="alert"></div>
-
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="username">用户名</label>
-                <input type="text" id="username" name="username" required>
-            </div>
-            <div class="form-group">
-                <label for="password">密码</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <button type="submit" class="login-btn" id="loginBtn">
-                <div class="btn-content">
-                    <div class="loading" id="loading"></div>
-                    <span id="btnText">登录</span>
+        <div class="login-left">
+            <h1>Lawsker 律思客</h1>
+            <p>法律智慧，即刻送达<br>专业法律服务O2O平台</p>
+            
+            <div class="role-showcase">
+                <div class="role-item">
+                    <div class="icon">⚖️</div>
+                    <div class="title">执业律师</div>
                 </div>
-            </button>
-        </form>
-
-        <div class="register-link">
-            <p>还没有账户？<a href="#" onclick="showRegisterForm()">立即注册</a></p>
+                <div class="role-item">
+                    <div class="icon">📊</div>
+                    <div class="title">业务销售</div>
+                </div>
+                <div class="role-item">
+                    <div class="icon">🏢</div>
+                    <div class="title">助贷机构</div>
+                </div>
+                <div class="role-item">
+                    <div class="icon">👨‍💻</div>
+                    <div class="title">系统管理</div>
+                </div>
+            </div>
         </div>
+        
+        <div class="login-right">
+            <!-- 登录/注册切换标签 -->
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="loginTab" onclick="switchAuthMode('login')">登录</button>
+                <button class="auth-tab" id="registerTab" onclick="switchAuthMode('register')">注册</button>
+            </div>
 
-        <div class="demo-access">
-            <h3>演示访问</h3>
-            <p>体验系统完整功能</p>
-            <p><a href="#" onclick="demoLogin()">使用演示账户登录</a></p>
+            <!-- 登录表单 -->
+            <form class="login-form" id="loginForm" style="display: block;">
+                <h2 class="form-title">欢迎回来</h2>
+                <p class="form-subtitle">请选择您的角色并登录</p>
+                
+                <div class="role-selector">
+                    <div class="role-option" data-role="lawyer">
+                        <div class="icon">⚖️</div>
+                        <div class="title">律师</div>
+                    </div>
+                    <div class="role-option" data-role="sales">
+                        <div class="icon">📊</div>
+                        <div class="title">销售</div>
+                    </div>
+                    <div class="role-option" data-role="institution">
+                        <div class="icon">🏢</div>
+                        <div class="title">机构</div>
+                    </div>
+                    <div class="role-option" data-role="admin">
+                        <div class="icon">👨‍💻</div>
+                        <div class="title">管理员</div>
+                    </div>
+                </div>
+                
+                <div class="error-message" id="loginErrorMessage"></div>
+                
+                <div class="form-group">
+                    <label for="loginUsername">用户名</label>
+                    <input type="text" id="loginUsername" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword">密码</label>
+                    <input type="password" id="loginPassword" name="password" required>
+                </div>
+                
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" id="rememberMe">
+                        <span>记住我</span>
+                    </label>
+                    <a href="#" class="forgot-password">忘记密码？</a>
+                </div>
+                
+                <button type="submit" class="login-btn" id="loginBtn">
+                    立即登录
+                </button>
+                
+                <div class="demo-login">
+                    <button type="button" class="demo-btn" onclick="demoLogin('lawyer')">
+                        律师演示
+                    </button>
+                    <button type="button" class="demo-btn" onclick="demoLogin('sales')">
+                        销售演示
+                    </button>
+                    <button type="button" class="demo-btn" onclick="demoLogin('institution')">
+                        机构演示
+                    </button>
+                    <button type="button" class="demo-btn" onclick="demoLogin('admin')">
+                        管理员演示
+                    </button>
+                </div>
+            </form>
+
+            <!-- 注册表单 -->
+            <form class="login-form" id="registerForm" style="display: none;">
+                <h2 class="form-title">欢迎注册</h2>
+                <p class="form-subtitle">请选择您的角色并注册</p>
+                
+                <div class="role-selector" id="registerRoleSelector">
+                    <div class="role-option" data-role="lawyer">
+                        <div class="icon">⚖️</div>
+                        <div class="title">律师</div>
+                    </div>
+                    <div class="role-option" data-role="sales">
+                        <div class="icon">📊</div>
+                        <div class="title">销售</div>
+                    </div>
+                    <div class="role-option" data-role="institution">
+                        <div class="icon">🏢</div>
+                        <div class="title">机构</div>
+                    </div>
+                </div>
+                
+                <div class="error-message" id="registerErrorMessage"></div>
+                
+                <div class="form-group">
+                    <label for="registerFullName">真实姓名</label>
+                    <input type="text" id="registerFullName" name="fullName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="registerEmail">邮箱地址</label>
+                    <input type="email" id="registerEmail" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="registerPhone">手机号</label>
+                    <input type="tel" id="registerPhone" name="phone" pattern="^1[3-9]\d{9}$" required>
+                </div>
+                
+                <div class="form-group sms-group">
+                    <label for="registerSmsCode">短信验证码</label>
+                    <div class="sms-input-group">
+                        <input type="text" id="registerSmsCode" name="smsCode" maxlength="6" required placeholder="请输入6位验证码">
+                        <button type="button" class="sms-btn" id="sendSmsBtn" onclick="sendSmsCode()">发送验证码</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="registerPassword">密码</label>
+                    <input type="password" id="registerPassword" name="password" required minlength="8">
+                    <small class="form-hint">密码至少8位，包含大小写字母和数字</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="registerConfirmPassword">确认密码</label>
+                    <input type="password" id="registerConfirmPassword" name="confirmPassword" required>
+                </div>
+                
+                <button type="submit" class="login-btn" id="registerBtn">
+                    立即注册
+                </button>
+            </form>
         </div>
     </div>
 
     <script>
-        // 检查是否已经登录
-        if (localStorage.getItem('token') && localStorage.getItem('user')) {
-            window.location.href = 'dashboard.html';
-        }
-
-        // 显示消息
-        function showMessage(message, type = 'error') {
-            const alert = document.getElementById('alert');
-            alert.textContent = message;
-            alert.className = `alert ${type}`;
-            alert.style.display = 'block';
+        let selectedRole = null;
+        let loginSelectedRole = null;
+        let registerSelectedRole = null;
+        let smsCountdown = 0;
+        let smsTimer = null;
+        
+        // 标签页切换
+        function switchAuthMode(mode) {
+            const loginTab = document.getElementById('loginTab');
+            const registerTab = document.getElementById('registerTab');
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
             
-            setTimeout(() => {
-                alert.style.display = 'none';
-            }, 5000);
+            if (mode === 'login') {
+                loginTab.classList.add('active');
+                registerTab.classList.remove('active');
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+            } else {
+                loginTab.classList.remove('active');
+                registerTab.classList.add('active');
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+            }
         }
-
-        // 登录表单提交
+        
+        // 角色选择逻辑 - 登录表单
+        document.querySelectorAll('#loginForm .role-option').forEach(option => {
+            option.addEventListener('click', function() {
+                // 移除所有活跃状态
+                document.querySelectorAll('#loginForm .role-option').forEach(opt => opt.classList.remove('active'));
+                
+                // 添加活跃状态
+                this.classList.add('active');
+                loginSelectedRole = this.dataset.role;
+                selectedRole = loginSelectedRole;
+            });
+        });
+        
+        // 角色选择逻辑 - 注册表单
+        document.querySelectorAll('#registerForm .role-option').forEach(option => {
+            option.addEventListener('click', function() {
+                // 移除所有活跃状态
+                document.querySelectorAll('#registerForm .role-option').forEach(opt => opt.classList.remove('active'));
+                
+                // 添加活跃状态
+                this.classList.add('active');
+                registerSelectedRole = this.dataset.role;
+            });
+        });
+        
+        // 发送短信验证码
+        async function sendSmsCode() {
+            const phone = document.getElementById('registerPhone').value;
+            
+            if (!phone) {
+                showRegisterError('请输入手机号');
+                return;
+            }
+            
+            if (!/^1[3-9]\d{9}$/.test(phone)) {
+                showRegisterError('请输入正确的手机号');
+                return;
+            }
+            
+            const sendBtn = document.getElementById('sendSmsBtn');
+            sendBtn.disabled = true;
+            sendBtn.textContent = '发送中...';
+            
+            try {
+                const response = await fetch('/api/v1/auth/send-sms-code', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        phone: phone,
+                        code_type: 'register'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // 开始倒计时
+                    startSmsCountdown();
+                    
+                    // 显示验证码（开发环境）
+                    if (data.debug_code) {
+                        showRegisterSuccess(`验证码发送成功！开发环境验证码：${data.debug_code}`);
+                    } else {
+                        showRegisterSuccess('验证码发送成功！');
+                    }
+                } else {
+                    showRegisterError(data.detail || '验证码发送失败');
+                    sendBtn.disabled = false;
+                    sendBtn.textContent = '发送验证码';
+                }
+            } catch (error) {
+                console.error('发送验证码错误:', error);
+                showRegisterError('网络错误，请稍后重试');
+                sendBtn.disabled = false;
+                sendBtn.textContent = '发送验证码';
+            }
+        }
+        
+        // 开始短信倒计时
+        function startSmsCountdown() {
+            smsCountdown = 60;
+            const sendBtn = document.getElementById('sendSmsBtn');
+            
+            smsTimer = setInterval(() => {
+                smsCountdown--;
+                sendBtn.textContent = `重新发送 (${smsCountdown}s)`;
+                
+                if (smsCountdown <= 0) {
+                    clearInterval(smsTimer);
+                    sendBtn.disabled = false;
+                    sendBtn.textContent = '发送验证码';
+                }
+            }, 1000);
+        }
+        
+        // 注册表单提交逻辑
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!registerSelectedRole) {
+                showRegisterError('请选择您的角色');
+                return;
+            }
+            
+            const fullName = document.getElementById('registerFullName').value;
+            const email = document.getElementById('registerEmail').value;
+            const phone = document.getElementById('registerPhone').value;
+            const smsCode = document.getElementById('registerSmsCode').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+            
+            // 表单验证
+            if (!fullName || !email || !phone || !smsCode || !password || !confirmPassword) {
+                showRegisterError('请填写所有必填项');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showRegisterError('两次输入的密码不一致');
+                return;
+            }
+            
+            if (password.length < 8) {
+                showRegisterError('密码至少8位');
+                return;
+            }
+            
+            const registerBtn = document.getElementById('registerBtn');
+            registerBtn.disabled = true;
+            registerBtn.textContent = '注册中...';
+            
+            try {
+                const response = await fetch('/api/v1/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password,
+                        role: registerSelectedRole,
+                        full_name: fullName,
+                        phone,
+                        sms_code: smsCode
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showRegisterSuccess('注册成功！正在跳转到登录页面...');
+                    
+                    // 3秒后切换到登录页面
+                    setTimeout(() => {
+                        switchAuthMode('login');
+                        // 清空注册表单
+                        document.getElementById('registerForm').reset();
+                        document.querySelectorAll('#registerForm .role-option').forEach(opt => opt.classList.remove('active'));
+                    }, 3000);
+                } else {
+                    showRegisterError(data.detail || '注册失败');
+                }
+            } catch (error) {
+                console.error('注册错误:', error);
+                showRegisterError('网络错误，请稍后重试');
+            } finally {
+                registerBtn.disabled = false;
+                registerBtn.textContent = '立即注册';
+            }
+        });
+        
+        // 登录表单提交逻辑
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const loading = document.getElementById('loading');
-            const loginBtn = document.getElementById('loginBtn');
-            const btnText = document.getElementById('btnText');
+            if (!loginSelectedRole) {
+                showLoginError('请选择您的角色');
+                return;
+            }
             
-            loading.style.display = 'block';
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!username || !password) {
+                showLoginError('请输入用户名和密码');
+                return;
+            }
+            
+            const loginBtn = document.getElementById('loginBtn');
             loginBtn.disabled = true;
-            btnText.textContent = '登录中...';
+            loginBtn.textContent = '登录中...';
             
             try {
-                const formData = new FormData(e.target);
-                const loginData = {
-                    username: formData.get('username'),
-                    password: formData.get('password')
-                };
-                
                 const response = await fetch('/api/v1/auth/login', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(loginData)
+                    body: JSON.stringify({
+                        username,
+                        password,
+                        role: loginSelectedRole
+                    })
                 });
+                
+                const data = await response.json();
                 
                 if (response.ok) {
-                    const data = await response.json();
+                    // 登录成功，保存token
                     localStorage.setItem('token', data.access_token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
+                    localStorage.setItem('userRole', loginSelectedRole);
+                    localStorage.setItem('username', username);
                     
-                    showMessage('登录成功！正在跳转...', 'success');
-                    
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 1500);
+                    // 根据角色跳转到对应页面
+                    redirectToWorkspace(loginSelectedRole);
                 } else {
-                    const error = await response.json();
-                    showMessage(error.detail || '登录失败，请检查用户名和密码');
+                    showLoginError(data.detail || '登录失败');
                 }
-                
             } catch (error) {
-                console.error('登录失败:', error);
-                showMessage('网络错误，请稍后重试');
+                console.error('登录错误:', error);
+                showLoginError('网络错误，请稍后重试');
             } finally {
-                loading.style.display = 'none';
                 loginBtn.disabled = false;
-                btnText.textContent = '登录';
+                loginBtn.textContent = '立即登录';
             }
         });
-
+        
         // 演示登录
-        async function demoLogin() {
-            // 尝试注册演示账户
-            try {
-                const registerResponse = await fetch('/api/v1/auth/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        username: 'demo_user',
-                        password: 'demo123456',
-                        email: 'demo@lawsker.com',
-                        role: 'client'
-                    })
-                });
-                
-                // 无论注册成功与否，都尝试登录
-                const loginResponse = await fetch('/api/v1/auth/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        username: 'demo_user',
-                        password: 'demo123456'
-                    })
-                });
-                
-                if (loginResponse.ok) {
-                    const data = await loginResponse.json();
-                    localStorage.setItem('token', data.access_token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    
-                    showMessage('演示账户登录成功！', 'success');
-                    
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 1500);
-                } else {
-                    showMessage('演示账户登录失败，请使用手动登录');
-                }
-                
-            } catch (error) {
-                console.error('演示登录失败:', error);
-                showMessage('演示登录失败，请使用手动登录');
+        function demoLogin(role) {
+            // 选择角色
+            document.querySelectorAll('#loginForm .role-option').forEach(opt => opt.classList.remove('active'));
+            document.querySelector(`#loginForm [data-role="${role}"]`).classList.add('active');
+            loginSelectedRole = role;
+            
+            // 填入演示账号
+            const demoAccounts = {
+                lawyer: { username: 'lawyer_demo', password: 'demo123' },
+                sales: { username: 'sales_demo', password: 'demo123' },
+                institution: { username: 'institution_demo', password: 'demo123' },
+                admin: { username: 'admin', password: 'admin123' }
+            };
+            
+            const account = demoAccounts[role];
+            document.getElementById('loginUsername').value = account.username;
+            document.getElementById('loginPassword').value = account.password;
+            
+            // 自动登录
+            document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+        }
+        
+        // 根据角色跳转到对应工作台
+        function redirectToWorkspace(role) {
+            const workspaceMap = {
+                lawyer: 'lawyer-workspace.html',
+                sales: 'sales-workspace.html',
+                institution: 'institution-workspace.html',
+                admin: 'admin-config-optimized.html'
+            };
+            
+            const workspace = workspaceMap[role];
+            if (workspace) {
+                window.location.href = workspace;
+            } else {
+                window.location.href = 'dashboard.html';
             }
         }
-
-        // 显示注册表单
-        function showRegisterForm() {
-            showMessage('注册功能即将上线，请使用演示账户登录', 'success');
+        
+        // 显示登录错误信息
+        function showLoginError(message) {
+            const errorElement = document.getElementById('loginErrorMessage');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            
+            setTimeout(() => {
+                errorElement.style.display = 'none';
+            }, 5000);
+        }
+        
+        // 显示注册错误信息
+        function showRegisterError(message) {
+            const errorElement = document.getElementById('registerErrorMessage');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            
+            setTimeout(() => {
+                errorElement.style.display = 'none';
+            }, 5000);
+        }
+        
+        // 显示注册成功信息
+        function showRegisterSuccess(message) {
+            let successElement = document.getElementById('registerSuccessMessage');
+            
+            if (!successElement) {
+                successElement = document.createElement('div');
+                successElement.id = 'registerSuccessMessage';
+                successElement.className = 'success-message';
+                document.getElementById('registerErrorMessage').parentNode.insertBefore(successElement, document.getElementById('registerErrorMessage'));
+            }
+            
+            successElement.textContent = message;
+            successElement.style.display = 'block';
+            
+            setTimeout(() => {
+                successElement.style.display = 'none';
+            }, 5000);
+        }
+        
+        // 检查是否已登录
+        if (localStorage.getItem('token')) {
+            const userRole = localStorage.getItem('userRole');
+            if (userRole) {
+                redirectToWorkspace(userRole);
+            }
         }
     </script>
 </body>
