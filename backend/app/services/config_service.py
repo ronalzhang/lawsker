@@ -307,7 +307,7 @@ class SystemConfigService:
             {
                 "key": "openai",
                 "value": {
-                    "api_key": "YOUR_OPENAI_API_KEY",
+                    "api_key": "sk-proj-YOUR_OPENAI_API_KEY_HERE",
                     "base_url": "https://api.openai.com/v1",
                     "model": "gpt-4",
                     "timeout": 60,

@@ -1150,7 +1150,7 @@ POST /api/v1/admin/configs/initialize           # 初始化默认配置
 #### **3. AI服务配置集成完成**
 
 ✅ **OpenAI配置已设置**：
-- API Key: `YOUR_OPENAI_API_KEY`
+- API Key: `sk-proj-YOUR_OPENAI_API_KEY_HERE`
 - 模型：GPT-4
 - 加密存储，安全访问
 
