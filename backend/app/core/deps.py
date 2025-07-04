@@ -1,15 +1,24 @@
 """
 依赖注入模块
-提供数据库会话、认证等依赖项
+包含数据库、认证、服务等依赖
 """
 
-from typing import AsyncGenerator, Dict, Any
+from typing import AsyncGenerator, Dict, Any, Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID
+import jwt
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
+import logging
 
-from app.core.database import AsyncSessionLocal
+from app.core.database import AsyncSessionLocal, get_db
+from app.core.config import settings
 from app.services.auth_service import AuthService
+from app.services.config_service import SystemConfigService
+from app.services.ai_service import AIDocumentService
+
+logger = logging.getLogger(__name__)
 
 # HTTPBearer安全方案
 security = HTTPBearer()
@@ -32,45 +41,82 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 
-async def get_auth_service(db: AsyncSession = Depends(get_db)) -> AuthService:
+async def get_auth_service() -> AuthService:
     """
     获取认证服务实例
-    
-    Args:
-        db: 数据库会话
     
     Returns:
         AuthService: 认证服务实例
     """
-    return AuthService(db)
+    async with AsyncSessionLocal() as session:
+        return AuthService(session)
+
+
+def require_roles(*required_roles: str):
+    """
+    创建角色权限检查依赖
+    
+    Args:
+        *required_roles: 允许的角色列表
+    
+    Returns:
+        依赖函数
+    """
+    def role_checker(current_user: Dict[str, Any] = Depends(get_current_user)) -> Dict[str, Any]:
+        user_roles = current_user.get("roles", [])
+        
+        # 检查是否有任何一个允许的角色
+        if not any(role in user_roles for role in required_roles):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"需要以下角色之一: {', '.join(required_roles)}"
+            )
+        
+        return current_user
+    
+    return role_checker
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    auth_service: AuthService = Depends(get_auth_service)
+    credentials: HTTPAuthorizationCredentials = Depends(security)
 ) -> Dict[str, Any]:
     """
-    获取当前认证用户
-    
-    Args:
-        credentials: HTTP Bearer凭据
-        auth_service: 认证服务
-    
-    Returns:
-        Dict[str, Any]: 当前用户信息
-    
-    Raises:
-        HTTPException: 认证失败时抛出异常
+    获取当前用户
+    从JWT令牌中解析用户信息
     """
     try:
-        token = credentials.credentials
-        user_info = await auth_service.get_current_user_from_token(token)
-        return user_info
-    except Exception as e:
+        # 解析JWT令牌
+        payload = jwt.decode(
+            credentials.credentials,
+            settings.JWT_SECRET_KEY,
+            algorithms=[settings.JWT_ALGORITHM]
+        )
+        
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="无效的令牌"
+            )
+        
+        # 返回用户信息
+        return {
+            "id": user_id,
+            "email": payload.get("email"),
+            "roles": payload.get("roles", []),
+            "tenant_id": payload.get("tenant_id"),
+            "status": payload.get("status", "active")
+        }
+        
+    except ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="认证失败",
-            headers={"WWW-Authenticate": "Bearer"}
+            detail="令牌已过期"
+        )
+    except InvalidTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="无效的令牌"
         )
 
 
@@ -97,56 +143,52 @@ async def get_current_active_user(
     return current_user
 
 
-def require_roles(*allowed_roles: str):
-    """
-    角色权限装饰器
-    
-    Args:
-        *allowed_roles: 允许的角色列表
-    
-    Returns:
-        依赖函数
-    """
-    async def check_user_role(
-        current_user: Dict[str, Any] = Depends(get_current_active_user)
-    ) -> Dict[str, Any]:
-        user_roles = current_user.get("roles", [])
-        
-        # 检查用户是否拥有任一允许的角色
-        if not any(role in user_roles for role in allowed_roles):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="权限不足"
-            )
-        
-        return current_user
-    
-    return check_user_role
-
-
-def require_tenant_access():
-    """
-    租户访问权限检查
-    
-    Returns:
-        依赖函数
-    """
-    async def check_tenant_access(
-        current_user: Dict[str, Any] = Depends(get_current_active_user)
-    ) -> Dict[str, Any]:
-        if not current_user.get("tenant_id"):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="无租户访问权限"
-            )
-        
-        return current_user
-    
-    return check_tenant_access
-
-
-# 常用角色依赖
+# 预定义角色权限依赖
 require_admin = require_roles("admin", "super_admin")
 require_lawyer = require_roles("lawyer", "admin", "super_admin") 
 require_sales = require_roles("sales", "admin", "super_admin")
-require_institution = require_roles("institution_admin", "admin", "super_admin") 
+require_institution = require_roles("institution_admin", "admin", "super_admin")
+
+
+async def get_config_service(db: AsyncSession = Depends(get_db)) -> SystemConfigService:
+    """获取配置管理服务"""
+    return SystemConfigService(db)
+
+
+async def get_ai_service(
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+) -> AIDocumentService:
+    """获取AI文书生成服务"""
+    tenant_id = None
+    if current_user.get("tenant_id"):
+        try:
+            tenant_id = UUID(current_user["tenant_id"])
+        except (ValueError, TypeError):
+            logger.warning(f"无效的tenant_id格式: {current_user.get('tenant_id')}")
+    
+    return AIDocumentService(db, tenant_id)
+
+
+async def require_lawyer_role(
+    current_user: Dict[str, Any] = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """要求律师角色权限"""
+    if "lawyer" not in current_user.get("roles", []):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="需要律师权限"
+        )
+    return current_user
+
+
+async def require_admin_role(
+    current_user: Dict[str, Any] = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """要求管理员角色权限"""
+    if "admin" not in current_user.get("roles", []):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="需要管理员权限"
+        )
+    return current_user 

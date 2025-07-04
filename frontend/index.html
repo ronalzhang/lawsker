@@ -3,13 +3,839 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="律思客">
+    <meta name="theme-color" content="#0f1424">
     <meta name="description" content="Lawsker (律思客) - AI驱动的O2O专业服务平台，法律智慧，即刻送达" />
     <meta name="keywords" content="法律服务,AI,催收,律师,O2O平台" />
-    <title>Lawsker (律思客) - 法律智慧，即刻送达</title>
+    <title>律思客 - 专业法律服务平台</title>
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #84fab0;
+            --warning-color: #ffeaa7;
+            --danger-color: #fd79a8;
+            --info-color: #74b9ff;
+            
+            --text-primary: #f0f4ff;
+            --text-secondary: #a8b2d1;
+            --text-muted: #6c7b8a;
+            
+            --bg-dark: #0f1424;
+            --bg-card: rgba(22, 28, 48, 0.8);
+            --bg-glass: rgba(255, 255, 255, 0.1);
+            
+            --border-radius: 16px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1d35 50%, var(--bg-dark) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 动态背景 */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+            animation: float1 20s ease-in-out infinite;
+            top: 20%;
+            left: 10%;
+        }
+
+        .bg-animation::after {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(118, 75, 162, 0.08) 0%, transparent 70%);
+            animation: float2 15s ease-in-out infinite;
+            bottom: 20%;
+            right: 10%;
+        }
+
+        @keyframes float1 {
+            0%, 100% { transform: translateY(0px) translateX(0px); }
+            33% { transform: translateY(-30px) translateX(20px); }
+            66% { transform: translateY(20px) translateX(-10px); }
+        }
+
+        @keyframes float2 {
+            0%, 100% { transform: translateY(0px) translateX(0px); }
+            50% { transform: translateY(-20px) translateX(15px); }
+        }
+
+        /* 导航栏 */
+        .navbar {
+            backdrop-filter: blur(20px);
+            background: var(--bg-card);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-menu a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+        }
+
+        .nav-menu a:hover, .nav-menu a.active {
+            color: var(--text-primary);
+            background: var(--bg-glass);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* 主要内容区 */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-glass);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 统计卡片 */
+        .stats-card {
+            text-align: center;
+        }
+
+        .stats-number {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* 快捷操作 */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .action-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .action-card:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .action-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 1rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .action-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .action-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .navbar-content {
+                padding: 0 1rem;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .main-container {
+                padding: 1rem;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 通知样式 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 1rem 1.5rem;
+            box-shadow: var(--shadow);
+            transform: translateX(400px);
+            transition: var(--transition);
+            z-index: 2000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--danger-color);
+        }
+
+        /* 模态框 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            animation: modalSlideUp 0.3s ease-out;
+        }
+
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
+    <div class="bg-animation"></div>
+
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="logo">律思客</div>
+            <ul class="nav-menu">
+                <li><a href="#" class="active">仪表盘</a></li>
+                <li><a href="#cases">案件管理</a></li>
+                <li><a href="#documents">文书生成</a></li>
+                <li><a href="#delivery">发送服务</a></li>
+                <li><a href="#finance">财务中心</a></li>
+            </ul>
+            <div class="user-menu">
+                <div class="avatar" onclick="showUserMenu()">U</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <div class="main-container">
+        <!-- 仪表盘统计 -->
+        <div class="dashboard-grid">
+            <div class="card stats-card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">📊</div>
+                    <div>
+                        <div class="card-title">总案件数</div>
+                        <div class="card-subtitle">累计处理案件</div>
+                    </div>
+                </div>
+                <div class="stats-number" id="totalCases">0</div>
+                <div class="stats-label">已处理案件</div>
+            </div>
+
+            <div class="card stats-card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #84fab0, #8fd3f4);">📄</div>
+                    <div>
+                        <div class="card-title">文书生成</div>
+                        <div class="card-subtitle">AI智能生成</div>
+                    </div>
+                </div>
+                <div class="stats-number" id="totalDocuments">0</div>
+                <div class="stats-label">已生成文书</div>
+            </div>
+
+            <div class="card stats-card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #ffeaa7, #fab1a0);">💰</div>
+                    <div>
+                        <div class="card-title">收入统计</div>
+                        <div class="card-subtitle">30秒实时分账</div>
+                    </div>
+                </div>
+                <div class="stats-number" id="totalEarnings">¥0</div>
+                <div class="stats-label">总收入</div>
+            </div>
+
+            <div class="card stats-card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #fd79a8, #fdcb6e);">🚀</div>
+                    <div>
+                        <div class="card-title">发送成功率</div>
+                        <div class="card-subtitle">多渠道发送</div>
+                    </div>
+                </div>
+                <div class="stats-number" id="deliveryRate">0%</div>
+                <div class="stats-label">成功率</div>
+            </div>
+        </div>
+
+        <!-- 快捷操作 -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">⚡</div>
+                <div>
+                    <div class="card-title">快捷操作</div>
+                    <div class="card-subtitle">一键完成常用操作</div>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <div class="action-card" onclick="showNewCaseModal()">
+                    <div class="action-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                        📋
+                    </div>
+                    <div class="action-title">新建案件</div>
+                    <div class="action-desc">快速创建债务催收案件</div>
+                </div>
+
+                <div class="action-card" onclick="showDocumentGenerator()">
+                    <div class="action-icon" style="background: linear-gradient(135deg, #84fab0, #8fd3f4);">
+                        🤖
+                    </div>
+                    <div class="action-title">AI生成文书</div>
+                    <div class="action-desc">智能生成律师函等法律文书</div>
+                </div>
+
+                <div class="action-card" onclick="showQuickSend()">
+                    <div class="action-icon" style="background: linear-gradient(135deg, #ffeaa7, #fab1a0);">
+                        📤
+                    </div>
+                    <div class="action-title">一键发送</div>
+                    <div class="action-desc">邮件/短信/快递多渠道发送</div>
+                </div>
+
+                <div class="action-card" onclick="window.location.href='admin-config.html'">
+                    <div class="action-icon" style="background: linear-gradient(135deg, #fd79a8, #fdcb6e);">
+                        ⚙️
+                    </div>
+                    <div class="action-title">系统配置</div>
+                    <div class="action-desc">管理AI密钥和系统参数</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知组件 -->
+    <div class="notification" id="notification">
+        <span id="notificationText"></span>
+    </div>
+
+    <!-- 新建案件模态框 -->
+    <div class="modal" id="newCaseModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 1.5rem;">新建催收案件</h2>
+            <form id="newCaseForm">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">债务人姓名</label>
+                    <input type="text" name="debtorName" required style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: var(--bg-glass); color: var(--text-primary);">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">欠款金额</label>
+                    <input type="number" name="amount" required step="0.01" style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: var(--bg-glass); color: var(--text-primary);">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">联系方式</label>
+                    <input type="text" name="contact" required style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: var(--bg-glass); color: var(--text-primary);">
+                </div>
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">案件描述</label>
+                    <textarea name="description" rows="3" style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: var(--bg-glass); color: var(--text-primary); resize: vertical;"></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="hideModal('newCaseModal')">取消</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="loading" id="newCaseLoading" style="display: none;"></span>
+                        创建案件
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let currentUser = null;
+        let dashboardData = {
+            totalCases: 0,
+            totalDocuments: 0,
+            totalEarnings: 0,
+            deliveryRate: 0
+        };
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', async function() {
+            await initializeApp();
+            await loadDashboardData();
+            setInterval(loadDashboardData, 30000); // 30秒更新一次数据
+        });
+
+        // 初始化应用
+        async function initializeApp() {
+            try {
+                // 检查用户登录状态
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // 获取用户信息
+                const userResponse = await fetch('/api/v1/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!userResponse.ok) {
+                    localStorage.removeItem('token');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                currentUser = await userResponse.json();
+                updateUserAvatar();
+
+            } catch (error) {
+                console.error('初始化应用失败:', error);
+                showNotification('初始化应用失败', 'error');
+            }
+        }
+
+        // 更新用户头像
+        function updateUserAvatar() {
+            const avatar = document.querySelector('.avatar');
+            if (currentUser && currentUser.username) {
+                avatar.textContent = currentUser.username.charAt(0).toUpperCase();
+            }
+        }
+
+        // 加载仪表盘数据
+        async function loadDashboardData() {
+            try {
+                const token = localStorage.getItem('token');
+                
+                // 并行获取各种统计数据
+                const [casesResponse, documentsResponse, financeResponse, deliveryResponse] = await Promise.all([
+                    fetch('/api/v1/cases/stats', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }),
+                    fetch('/api/v1/documents/stats', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }),
+                    fetch('/api/v1/finance/wallet', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }),
+                    fetch('/api/v1/delivery/channels', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    })
+                ]);
+
+                // 更新案件统计
+                if (casesResponse.ok) {
+                    const casesData = await casesResponse.json();
+                    dashboardData.totalCases = casesData.total || 0;
+                    animateNumber('totalCases', dashboardData.totalCases);
+                }
+
+                // 更新文书统计
+                if (documentsResponse.ok) {
+                    const documentsData = await documentsResponse.json();
+                    dashboardData.totalDocuments = documentsData.total || 0;
+                    animateNumber('totalDocuments', dashboardData.totalDocuments);
+                }
+
+                // 更新财务统计
+                if (financeResponse.ok) {
+                    const financeData = await financeResponse.json();
+                    dashboardData.totalEarnings = financeData.total_earned || 0;
+                    animateNumber('totalEarnings', dashboardData.totalEarnings, '¥');
+                }
+
+                // 更新发送成功率
+                if (deliveryResponse.ok) {
+                    const deliveryData = await deliveryResponse.json();
+                    dashboardData.deliveryRate = 95; // 模拟数据
+                    animateNumber('deliveryRate', dashboardData.deliveryRate, '', '%');
+                }
+
+            } catch (error) {
+                console.error('加载仪表盘数据失败:', error);
+            }
+        }
+
+        // 数字动画效果
+        function animateNumber(elementId, targetValue, prefix = '', suffix = '') {
+            const element = document.getElementById(elementId);
+            const startValue = parseInt(element.textContent.replace(/[^\d]/g, '')) || 0;
+            const duration = 1000;
+            const startTime = Date.now();
+
+            function updateNumber() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easeProgress = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+                const currentValue = Math.floor(startValue + (targetValue - startValue) * easeProgress);
+                
+                element.textContent = prefix + currentValue.toLocaleString() + suffix;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(updateNumber);
+                }
+            }
+
+            requestAnimationFrame(updateNumber);
+        }
+
+        // 显示通知
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // 显示模态框
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+
+        // 隐藏模态框
+        function hideModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        // 显示新建案件模态框
+        function showNewCaseModal() {
+            showModal('newCaseModal');
+        }
+
+        // 显示文书生成器
+        function showDocumentGenerator() {
+            // TODO: 实现文书生成器
+            showNotification('文书生成功能即将上线', 'info');
+        }
+
+        // 显示快速发送
+        function showQuickSend() {
+            // TODO: 实现快速发送
+            showNotification('快速发送功能即将上线', 'info');
+        }
+
+        // 显示用户菜单
+        function showUserMenu() {
+            // TODO: 实现用户菜单
+            showNotification('用户菜单功能即将上线', 'info');
+        }
+
+        // 新建案件表单提交
+        document.getElementById('newCaseForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const loading = document.getElementById('newCaseLoading');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            loading.style.display = 'inline-block';
+            submitBtn.disabled = true;
+            
+            try {
+                const formData = new FormData(e.target);
+                const caseData = {
+                    debtor_name: formData.get('debtorName'),
+                    amount: parseFloat(formData.get('amount')),
+                    contact_info: formData.get('contact'),
+                    description: formData.get('description')
+                };
+                
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/v1/cases/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(caseData)
+                });
+                
+                if (response.ok) {
+                    showNotification('案件创建成功！');
+                    hideModal('newCaseModal');
+                    e.target.reset();
+                    await loadDashboardData(); // 刷新数据
+                } else {
+                    const error = await response.json();
+                    showNotification(error.detail || '创建案件失败', 'error');
+                }
+                
+            } catch (error) {
+                console.error('创建案件失败:', error);
+                showNotification('创建案件失败', 'error');
+            } finally {
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+
+        // 点击模态框外部关闭
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('show');
+            }
+        });
+
+        // ESC键关闭模态框
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const openModal = document.querySelector('.modal.show');
+                if (openModal) {
+                    openModal.classList.remove('show');
+                }
+            }
+        });
+    </script>
   </body>
 </html> 

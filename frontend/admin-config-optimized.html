@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2563eb">
+    <title>Lawsker 管理后台 - 系统配置</title>
+    <style>
+        /* 现代化CSS变量设计系统 */
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
+            
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            
+            --radius: 12px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
+            line-height: 1.6;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .nav-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--gray-600);
+            font-size: 0.875rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* 主容器 */
+        .main-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--gray-600);
+            font-size: 1rem;
+        }
+
+        /* 配置网格 */
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* 配置卡片 */
+        .config-card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .config-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--gray-300);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            background: var(--primary);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem;
+            color: white;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .card-subtitle {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        /* 表单组件 */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--gray-300);
+            border-radius: calc(var(--radius) - 2px);
+            font-size: 0.875rem;
+            transition: var(--transition);
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+        }
+
+        .form-input:disabled {
+            background: var(--gray-100);
+            color: var(--gray-500);
+        }
+
+        /* 按钮组件 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid transparent;
+            border-radius: calc(var(--radius) - 2px);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            justify-content: center;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border-color: var(--gray-300);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--gray-200);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #059669;
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.8125rem;
+        }
+
+        /* 操作按钮组 */
+        .card-actions {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* 加载动画 */
+        .loading {
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 通知系统 */
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            padding: 1rem;
+            box-shadow: var(--shadow-lg);
+            transform: translateX(400px);
+            transition: var(--transition);
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        .notification.warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        .notification-content {
+            font-size: 0.875rem;
+            color: var(--gray-900);
+        }
+
+        /* 状态指示器 */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: rgb(16 185 129 / 0.1);
+            color: var(--success);
+        }
+
+        .status-warning {
+            background: rgb(245 158 11 / 0.1);
+            color: var(--warning);
+        }
+
+        .status-inactive {
+            background: var(--gray-100);
+            color: var(--gray-600);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-container {
+                padding: 1rem;
+            }
+
+            .main-container {
+                padding: 1rem;
+            }
+
+            .config-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .config-card {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .card-actions {
+                flex-direction: column;
+            }
+        }
+
+        /* 快速操作区域 */
+        .quick-actions {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .actions-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 1rem;
+        }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+
+        /* 性能优化 */
+        .gpu-layer {
+            transform: translateZ(0);
+            will-change: transform;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">Lawsker 管理后台</a>
+            <div class="nav-info">
+                <div class="status-dot"></div>
+                <span>系统运行正常</span>
+                <span>v1.0.0</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <div class="main-container">
+        <!-- 页面标题 -->
+        <div class="page-header">
+            <h1 class="page-title">系统配置管理</h1>
+            <p class="page-subtitle">统一管理AI服务、支付配置、业务规则等系统参数</p>
+        </div>
+
+        <!-- 快速操作 -->
+        <div class="quick-actions">
+            <h2 class="actions-title">快速操作</h2>
+            <div class="actions-grid">
+                <button class="btn btn-success btn-sm" onclick="initializeConfigs()">
+                    <span class="loading" id="initLoading" style="display: none;"></span>
+                    初始化配置
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="exportConfigs()">
+                    导出配置
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="testConnections()">
+                    测试连接
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="reloadConfigs()">
+                    重载配置
+                </button>
+            </div>
+        </div>
+
+        <!-- 配置网格 -->
+        <div class="config-grid">
+            <!-- AI服务配置 -->
+            <div class="config-card">
+                <div class="card-header">
+                    <div class="card-icon">🤖</div>
+                    <div>
+                        <div class="card-title">AI服务配置</div>
+                        <div class="card-subtitle">OpenAI & Deepseek API配置</div>
+                    </div>
+                    <div class="status-badge status-active">
+                        <div class="status-dot"></div>
+                        已启用
+                    </div>
+                </div>
+
+                <form id="aiConfigForm">
+                    <div class="form-group">
+                        <label class="form-label">OpenAI API Key</label>
+                        <input type="password" class="form-input" name="openai_key" 
+                               placeholder="sk-proj-..." 
+                               value="sk-proj-YOUR_OPENAI_API_KEY_HERE">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Deepseek API Key</label>
+                        <input type="password" class="form-input" name="deepseek_key" 
+                               placeholder="sk-..." 
+                               value="sk-YOUR_DEEPSEEK_API_KEY_HERE">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">默认模型</label>
+                        <select class="form-input" name="default_model">
+                            <option value="gpt-4" selected>GPT-4</option>
+                            <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                            <option value="deepseek-chat">Deepseek Chat</option>
+                        </select>
+                    </div>
+                </form>
+
+                <div class="card-actions">
+                    <button class="btn btn-primary" onclick="saveConfig('ai')">
+                        <span class="loading" id="aiLoading" style="display: none;"></span>
+                        保存配置
+                    </button>
+                    <button class="btn btn-secondary" onclick="testConnection('ai')">
+                        测试连接
+                    </button>
+                </div>
+            </div>
+
+            <!-- 支付配置 -->
+            <div class="config-card">
+                <div class="card-header">
+                    <div class="card-icon">💳</div>
+                    <div>
+                        <div class="card-title">支付服务配置</div>
+                        <div class="card-subtitle">微信支付 & 支付宝配置</div>
+                    </div>
+                    <div class="status-badge status-warning">
+                        <div class="status-dot"></div>
+                        待配置
+                    </div>
+                </div>
+
+                <form id="paymentConfigForm">
+                    <div class="form-group">
+                        <label class="form-label">微信商户号</label>
+                        <input type="text" class="form-input" name="wechat_mch_id" 
+                               placeholder="1234567890">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">微信API密钥</label>
+                        <input type="password" class="form-input" name="wechat_key" 
+                               placeholder="32位密钥">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">支付宝App ID</label>
+                        <input type="text" class="form-input" name="alipay_app_id" 
+                               placeholder="2021001234567890">
+                    </div>
+                </form>
+
+                <div class="card-actions">
+                    <button class="btn btn-primary" onclick="saveConfig('payment')">
+                        <span class="loading" id="paymentLoading" style="display: none;"></span>
+                        保存配置
+                    </button>
+                    <button class="btn btn-secondary" onclick="testConnection('payment')">
+                        测试支付
+                    </button>
+                </div>
+            </div>
+
+            <!-- 业务配置 -->
+            <div class="config-card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <div>
+                        <div class="card-title">业务参数配置</div>
+                        <div class="card-subtitle">分成比例 & 风险阈值</div>
+                    </div>
+                    <div class="status-badge status-active">
+                        <div class="status-dot"></div>
+                        已配置
+                    </div>
+                </div>
+
+                <form id="businessConfigForm">
+                    <div class="form-group">
+                        <label class="form-label">律师分成比例 (%)</label>
+                        <input type="number" class="form-input" name="lawyer_rate" 
+                               value="30" min="0" max="100" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">销售分成比例 (%)</label>
+                        <input type="number" class="form-input" name="sales_rate" 
+                               value="20" min="0" max="100" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">平台分成比例 (%)</label>
+                        <input type="number" class="form-input" name="platform_rate" 
+                               value="50" min="0" max="100" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">安全边际 (%)</label>
+                        <input type="number" class="form-input" name="safety_margin" 
+                               value="15" min="0" max="50" step="0.1">
+                    </div>
+                </form>
+
+                <div class="card-actions">
+                    <button class="btn btn-primary" onclick="saveConfig('business')">
+                        <span class="loading" id="businessLoading" style="display: none;"></span>
+                        更新规则
+                    </button>
+                    <button class="btn btn-secondary" onclick="previewImpact()">
+                        预览影响
+                    </button>
+                </div>
+            </div>
+
+            <!-- 第三方服务 -->
+            <div class="config-card">
+                <div class="card-header">
+                    <div class="card-icon">🔌</div>
+                    <div>
+                        <div class="card-title">第三方服务配置</div>
+                        <div class="card-subtitle">短信 & 邮件 & 快递服务</div>
+                    </div>
+                    <div class="status-badge status-inactive">
+                        <div class="status-dot"></div>
+                        未配置
+                    </div>
+                </div>
+
+                <form id="servicesConfigForm">
+                    <div class="form-group">
+                        <label class="form-label">短信服务商</label>
+                        <select class="form-input" name="sms_provider">
+                            <option value="">请选择服务商</option>
+                            <option value="aliyun">阿里云短信</option>
+                            <option value="tencent">腾讯云短信</option>
+                            <option value="huawei">华为云短信</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">短信API密钥</label>
+                        <input type="password" class="form-input" name="sms_key" 
+                               placeholder="短信服务API密钥">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">邮件SMTP服务器</label>
+                        <input type="text" class="form-input" name="smtp_host" 
+                               placeholder="smtp.example.com" value="smtp.163.com">
+                    </div>
+                </form>
+
+                <div class="card-actions">
+                    <button class="btn btn-primary" onclick="saveConfig('services')">
+                        <span class="loading" id="servicesLoading" style="display: none;"></span>
+                        保存配置
+                    </button>
+                    <button class="btn btn-secondary" onclick="testConnection('services')">
+                        测试服务
+                    </button>
+                </div>
+            </div>
+
+            <!-- 系统配置 -->
+            <div class="config-card">
+                <div class="card-header">
+                    <div class="card-icon">⚙️</div>
+                    <div>
+                        <div class="card-title">系统配置</div>
+                        <div class="card-subtitle">基础系统参数设置</div>
+                    </div>
+                    <div class="status-badge status-active">
+                        <div class="status-dot"></div>
+                        运行中
+                    </div>
+                </div>
+
+                <form id="systemConfigForm">
+                    <div class="form-group">
+                        <label class="form-label">系统名称</label>
+                        <input type="text" class="form-input" name="system_name" 
+                               value="律思客管理平台" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">系统版本</label>
+                        <input type="text" class="form-input" name="version" 
+                               value="1.0.0" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">调试模式</label>
+                        <select class="form-input" name="debug_mode">
+                            <option value="false" selected>关闭</option>
+                            <option value="true">开启</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">日志级别</label>
+                        <select class="form-input" name="log_level">
+                            <option value="ERROR">ERROR</option>
+                            <option value="WARN">WARN</option>
+                            <option value="INFO" selected>INFO</option>
+                            <option value="DEBUG">DEBUG</option>
+                        </select>
+                    </div>
+                </form>
+
+                <div class="card-actions">
+                    <button class="btn btn-primary" onclick="saveConfig('system')">
+                        <span class="loading" id="systemLoading" style="display: none;"></span>
+                        应用设置
+                    </button>
+                    <button class="btn btn-secondary" onclick="restartSystem()">
+                        重启系统
+                    </button>
+                </div>
+            </div>
+
+            <!-- 安全配置 -->
+            <div class="config-card">
+                <div class="card-header">
+                    <div class="card-icon">🔒</div>
+                    <div>
+                        <div class="card-title">安全配置</div>
+                        <div class="card-subtitle">访问控制 & 加密设置</div>
+                    </div>
+                    <div class="status-badge status-active">
+                        <div class="status-dot"></div>
+                        已保护
+                    </div>
+                </div>
+
+                <form id="securityConfigForm">
+                    <div class="form-group">
+                        <label class="form-label">JWT密钥强度</label>
+                        <select class="form-input" name="jwt_strength">
+                            <option value="256" selected>256位</option>
+                            <option value="512">512位</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">会话超时时间 (小时)</label>
+                        <input type="number" class="form-input" name="session_timeout" 
+                               value="24" min="1" max="168">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">最大登录尝试次数</label>
+                        <input type="number" class="form-input" name="max_attempts" 
+                               value="5" min="3" max="10">
+                    </div>
+                </form>
+
+                <div class="card-actions">
+                    <button class="btn btn-primary" onclick="saveConfig('security')">
+                        <span class="loading" id="securityLoading" style="display: none;"></span>
+                        更新安全设置
+                    </button>
+                    <button class="btn btn-secondary" onclick="generateNewKeys()">
+                        重新生成密钥
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知组件 -->
+    <div class="notification" id="notification">
+        <div class="notification-content" id="notificationContent"></div>
+    </div>
+
+    <script>
+        // 全局变量
+        let isSubmitting = false;
+        let activeRequests = new Set();
+
+        // 显示通知
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const content = document.getElementById('notificationContent');
+            
+            content.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 4000);
+        }
+
+        // 防抖函数（性能优化）
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // 保存配置
+        async function saveConfig(type) {
+            const requestId = `save_${type}_${Date.now()}`;
+            
+            if (activeRequests.has(type)) {
+                showNotification('操作进行中，请稍候...', 'warning');
+                return;
+            }
+
+            activeRequests.add(type);
+            
+            const loadingElement = document.getElementById(`${type}Loading`);
+            const form = document.getElementById(`${type}ConfigForm`);
+            
+            if (loadingElement) loadingElement.style.display = 'inline-block';
+            
+            try {
+                // 模拟API调用
+                await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+                
+                // 获取表单数据
+                const formData = new FormData(form);
+                const configData = Object.fromEntries(formData);
+                
+                // 这里应该调用实际的API
+                console.log(`保存${type}配置:`, configData);
+                
+                showNotification(`${getConfigName(type)}配置保存成功！`, 'success');
+                
+                // 更新状态指示器
+                updateStatusBadge(type, 'active');
+                
+            } catch (error) {
+                showNotification(`保存配置失败: ${error.message}`, 'error');
+                console.error('保存配置失败:', error);
+            } finally {
+                if (loadingElement) loadingElement.style.display = 'none';
+                activeRequests.delete(type);
+            }
+        }
+
+        // 测试连接
+        async function testConnection(type) {
+            if (activeRequests.has(`test_${type}`)) return;
+            
+            activeRequests.add(`test_${type}`);
+            
+            try {
+                showNotification(`正在测试${getConfigName(type)}连接...`, 'info');
+                
+                // 模拟测试
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                const success = Math.random() > 0.3; // 70% 成功率
+                
+                if (success) {
+                    showNotification(`${getConfigName(type)}连接测试成功！`, 'success');
+                } else {
+                    showNotification(`${getConfigName(type)}连接测试失败，请检查配置`, 'error');
+                }
+                
+            } catch (error) {
+                showNotification(`测试连接失败: ${error.message}`, 'error');
+            } finally {
+                activeRequests.delete(`test_${type}`);
+            }
+        }
+
+        // 获取配置名称
+        function getConfigName(type) {
+            const names = {
+                'ai': 'AI服务',
+                'payment': '支付服务',
+                'business': '业务参数',
+                'services': '第三方服务',
+                'system': '系统',
+                'security': '安全'
+            };
+            return names[type] || type;
+        }
+
+        // 更新状态指示器
+        function updateStatusBadge(type, status) {
+            const card = document.querySelector(`#${type}ConfigForm`).closest('.config-card');
+            const badge = card.querySelector('.status-badge');
+            
+            badge.className = `status-badge status-${status}`;
+            
+            const statusTexts = {
+                'active': '已启用',
+                'warning': '待配置',
+                'inactive': '未配置'
+            };
+            
+            badge.querySelector('div:last-child').textContent = statusTexts[status];
+        }
+
+        // 快速操作函数
+        async function initializeConfigs() {
+            const loading = document.getElementById('initLoading');
+            loading.style.display = 'inline-block';
+            
+            try {
+                showNotification('正在初始化系统配置...', 'info');
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                showNotification('系统配置初始化完成！', 'success');
+            } catch (error) {
+                showNotification('初始化失败', 'error');
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function exportConfigs() {
+            showNotification('配置导出功能开发中...', 'warning');
+        }
+
+        function testConnections() {
+            showNotification('正在测试所有连接...', 'info');
+            // 依次测试所有服务
+            ['ai', 'payment', 'services'].forEach((type, index) => {
+                setTimeout(() => testConnection(type), index * 1000);
+            });
+        }
+
+        function reloadConfigs() {
+            showNotification('配置重载完成', 'success');
+        }
+
+        function previewImpact() {
+            showNotification('分成规则影响分析：预计影响收益分配，建议谨慎调整', 'warning');
+        }
+
+        function restartSystem() {
+            if (confirm('确定要重启系统吗？这将中断当前所有服务。')) {
+                showNotification('系统重启命令已发送', 'info');
+            }
+        }
+
+        function generateNewKeys() {
+            if (confirm('重新生成密钥将使所有现有会话失效，确定继续吗？')) {
+                showNotification('新的安全密钥已生成', 'success');
+            }
+        }
+
+        // 性能优化：使用 requestAnimationFrame 优化滚动
+        let ticking = false;
+        function onScroll() {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    // 滚动优化逻辑（如有需要）
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 添加GPU加速类
+            document.querySelectorAll('.config-card').forEach(card => {
+                card.classList.add('gpu-layer');
+            });
+            
+            // 优化事件监听器
+            window.addEventListener('scroll', onScroll, { passive: true });
+            
+            // 初始化完成提示
+            setTimeout(() => {
+                showNotification('Lawsker 管理后台加载完成', 'success');
+            }, 500);
+        });
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 's':
+                        e.preventDefault();
+                        showNotification('使用快捷键 Ctrl+S 快速保存配置', 'info');
+                        break;
+                    case 'r':
+                        e.preventDefault();
+                        reloadConfigs();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html> 
