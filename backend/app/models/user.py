@@ -72,7 +72,10 @@ class User(Base):
     cases_uploaded = relationship("Case", foreign_keys="Case.sales_user_id", back_populates="sales_user")
     clients_owned = relationship("Client", back_populates="sales_owner")
     wallet = relationship("Wallet", back_populates="user", uselist=False)
-    lawyer_qualification = relationship("LawyerQualification", back_populates="user", uselist=False)
+    lawyer_qualification = relationship("LawyerQualification", foreign_keys="LawyerQualification.user_id", back_populates="user", uselist=False)
+    workload = relationship("LawyerWorkload", back_populates="lawyer", uselist=False)
+    assigned_review_tasks = relationship("DocumentReviewTask", foreign_keys="DocumentReviewTask.lawyer_id", back_populates="lawyer")
+    created_review_tasks = relationship("DocumentReviewTask", foreign_keys="DocumentReviewTask.creator_id", back_populates="creator")
 
     def __repr__(self):
         return f"<User(id={self.id}, username={self.username}, status={self.status.value})>"
@@ -183,7 +186,7 @@ class LawyerQualification(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     
     # 关联关系
-    user = relationship("User", back_populates="lawyer_qualification")
+    user = relationship("User", foreign_keys=[user_id], back_populates="lawyer_qualification")
     reviewer = relationship("User", foreign_keys=[reviewer_id])
 
     def __repr__(self):

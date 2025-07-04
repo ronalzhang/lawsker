@@ -8,6 +8,7 @@ from app.models.tenant import Tenant, SystemConfig
 from app.models.case import Case, Client, CaseLog, Insurance
 from app.models.finance import Transaction, CommissionSplit, Wallet
 from app.models.lawyer_letter import LawyerLetterOrder, LawyerLetterTemplate, LetterSendRecord
+from app.models.lawyer_review import DocumentReviewTask, DocumentReviewLog, LawyerWorkload, ReviewStatus
 
 __all__ = [
     # 用户相关模型
@@ -37,4 +38,10 @@ __all__ = [
     "LawyerLetterOrder",
     "LawyerLetterTemplate", 
     "LetterSendRecord",
+    
+    # 律师审核工作流模型
+    "DocumentReviewTask",
+    "DocumentReviewLog",
+    "LawyerWorkload",
+    "ReviewStatus",
 ] 

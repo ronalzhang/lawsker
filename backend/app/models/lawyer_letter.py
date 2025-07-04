@@ -118,6 +118,7 @@ class LawyerLetterOrder(Base):
     reviewer = relationship("User", foreign_keys=[reviewed_by_id])
     template = relationship("LawyerLetterTemplate", back_populates="orders")
     send_records = relationship("LetterSendRecord", back_populates="order")
+    review_tasks = relationship("DocumentReviewTask", back_populates="lawyer_letter_order")
 
     def __repr__(self):
         return f"<LawyerLetterOrder(id={self.id}, order_number={self.order_number}, status={self.status.value}, amount={self.amount})>"

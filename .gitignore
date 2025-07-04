@@ -164,4 +164,36 @@ alembic/versions/
 uploads/
 documents/
 reports/
-backups/ 
+backups/
+
+# ==============================
+# 🔐 SENSITIVE DATA - NEVER COMMIT
+# ==============================
+# API Keys and secrets - MUST NEVER be pushed to repository
+API-KEY
+api-key
+*.key
+**/secrets/
+**/keys/
+.secrets
+.keys
+*.pem
+*.crt
+*.p12
+# Database credentials
+.env.production
+.env.local
+.env.secret
+# Payment and third-party service keys  
+payment-keys.json
+wechat-keys.json
+alipay-keys.json
+# AI service keys
+openai-key.txt
+deepseek-key.txt
+# Blockchain private keys
+*.wallet
+private-keys/
+# Certificates and tokens
+ssl-certs/
+jwt-secrets/ 

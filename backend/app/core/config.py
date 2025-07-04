@@ -43,6 +43,8 @@ class Settings(BaseSettings):
     # AI配置
     OPENAI_API_KEY: Optional[str] = None
     OPENAI_BASE_URL: str = "https://api.openai.com/v1"
+    DEEPSEEK_API_KEY: Optional[str] = None
+    DEEPSEEK_BASE_URL: str = "https://api.deepseek.com/v1"
     
     # 文件存储配置
     MINIO_ENDPOINT: str = "localhost:9000"
