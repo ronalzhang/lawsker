@@ -3,10 +3,11 @@ Lawsker 数据模型包
 包含所有数据库表模型定义
 """
 
-from app.models.user import User, Role, UserRole, Profile
+from app.models.user import User, Role, UserRole, Profile, LawyerQualification, CollectionRecord
 from app.models.tenant import Tenant, SystemConfig
 from app.models.case import Case, Client, CaseLog, Insurance
 from app.models.finance import Transaction, CommissionSplit, Wallet
+from app.models.lawyer_letter import LawyerLetterOrder, LawyerLetterTemplate, LetterSendRecord
 
 __all__ = [
     # 用户相关模型
@@ -14,6 +15,8 @@ __all__ = [
     "Role", 
     "UserRole",
     "Profile",
+    "LawyerQualification",
+    "CollectionRecord",
     
     # 租户相关模型
     "Tenant",
@@ -29,4 +32,9 @@ __all__ = [
     "Transaction",
     "CommissionSplit",
     "Wallet",
+    
+    # 律师函服务模型
+    "LawyerLetterOrder",
+    "LawyerLetterTemplate", 
+    "LetterSendRecord",
 ] 
