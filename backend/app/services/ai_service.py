@@ -8,6 +8,7 @@ import json
 from typing import Dict, Any, Optional, List
 from uuid import UUID
 from datetime import datetime
+from enum import Enum
 import aiohttp
 import logging
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,6 +17,15 @@ from app.services.config_service import SystemConfigService
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
+
+
+class DocumentType(str, Enum):
+    """文档类型枚举"""
+    COLLECTION_LETTER = "collection_letter"
+    DEMAND_LETTER = "demand_letter" 
+    WARNING_LETTER = "warning_letter"
+    CEASE_DESIST = "cease_desist"
+    BREACH_NOTICE = "breach_notice"
 
 
 class AIServiceError(Exception):

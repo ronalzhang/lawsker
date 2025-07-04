@@ -99,6 +99,38 @@ class CommissionSplit(Base):
         return f"<CommissionSplit(id={self.id}, user_id={self.user_id}, role={self.role_at_split}, amount={self.amount}, status={self.status.value})>"
 
 
+class PaymentOrder(Base):
+    """支付订单表"""
+    __tablename__ = "payment_orders"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    order_no = Column(String(100), unique=True, nullable=False)
+    case_id = Column(UUID(as_uuid=True), ForeignKey("cases.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    
+    # 订单信息
+    amount = Column(DECIMAL(18, 2), nullable=False)
+    description = Column(String(500), nullable=True)
+    status = Column(String(20), default="pending", nullable=False)  # pending, paid, expired, cancelled
+    
+    # 微信支付信息
+    prepay_id = Column(String(100), nullable=True)
+    code_url = Column(String(500), nullable=True)  # 二维码链接
+    transaction_id = Column(String(100), nullable=True)  # 微信交易号
+    
+    # 时间戳
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    paid_at = Column(DateTime(timezone=True), nullable=True)
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+    
+    # 关联关系
+    case = relationship("Case")
+    user = relationship("User")
+
+    def __repr__(self):
+        return f"<PaymentOrder(order_no={self.order_no}, amount={self.amount}, status={self.status})>"
+
+
 class Wallet(Base):
     """用户钱包表"""
     __tablename__ = "wallets"
