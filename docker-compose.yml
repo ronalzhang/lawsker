@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  # PostgreSQL数据库
+  postgres:
+    image: postgres:14
+    container_name: lawsker_postgres
+    environment:
+      POSTGRES_DB: lawsker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - lawsker_network
+
+  # Redis缓存
+  redis:
+    image: redis:6-alpine
+    container_name: lawsker_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - lawsker_network
+
+  # MinIO对象存储
+  minio:
+    image: minio/minio:latest
+    container_name: lawsker_minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - lawsker_network
+
+  # Lawsker后端API (开发模式)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: lawsker_backend
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/lawsker
+      REDIS_URL: redis://redis:6379/0
+      MINIO_ENDPOINT: minio:9000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - postgres
+      - redis
+      - minio
+    networks:
+      - lawsker_network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Lawsker前端 (开发模式)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: lawsker_frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - lawsker_network
+    command: npm run dev
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+
+networks:
+  lawsker_network:
+    driver: bridge 
