@@ -10,7 +10,8 @@
     <meta name="theme-color" content="#0f1424">
     <meta name="description" content="Lawsker (律思客) - AI驱动的O2O专业服务平台，法律智慧，即刻送达" />
     <meta name="keywords" content="法律服务,AI,催收,律师,O2O平台" />
-    <title>律思客 - 专业法律服务平台</title>
+    <title>Lawsker 律思客 - 法律服务O2O平台</title>
+    <!-- 移除自动重定向，让用户可以浏览首页内容 -->
     <style>
         :root {
             --primary-color: #667eea;
@@ -40,9 +41,9 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1d35 50%, var(--bg-dark) 100%);
-            color: var(--text-primary);
+            font-family: 'Microsoft YaHei', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
             min-height: 100vh;
             overflow-x: hidden;
         }
@@ -93,16 +94,17 @@
 
         /* 导航栏 */
         .navbar {
-            backdrop-filter: blur(20px);
-            background: var(--bg-card);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 1rem 0;
-            position: sticky;
+            position: fixed;
+            width: 100%;
             top: 0;
             z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
         }
 
-        .navbar-content {
+        .nav-container {
             max-width: 1200px;
             margin: 0 auto;
             display: flex;
@@ -112,325 +114,271 @@
         }
 
         .logo {
-            font-size: 2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2563eb;
         }
 
-        .nav-menu {
+        .nav-links {
             display: flex;
             gap: 2rem;
-            list-style: none;
         }
 
-        .nav-menu a {
-            color: var(--text-secondary);
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #2563eb;
+        }
+
+        .login-btn {
+            background: #2563eb;
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 25px;
             text-decoration: none;
             font-weight: 500;
-            transition: var(--transition);
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius);
+            transition: all 0.3s;
         }
 
-        .nav-menu a:hover, .nav-menu a.active {
-            color: var(--text-primary);
-            background: var(--bg-glass);
+        .login-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
         }
 
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .hero {
+            padding: 8rem 0 4rem;
+            text-align: center;
             color: white;
-            font-weight: 600;
-            cursor: pointer;
         }
 
-        /* 主要内容区 */
-        .main-container {
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 0 2rem;
         }
 
-        .dashboard-grid {
+        .revenue-section {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 2rem 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #2563eb;
+        }
+
+        .revenue-models {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
         }
 
-        .card {
-            background: var(--bg-card);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--border-radius);
+        .revenue-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 15px;
             padding: 2rem;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s;
         }
 
-        .card:hover {
+        .revenue-card:hover {
+            border-color: #2563eb;
             transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
 
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .card-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .revenue-card h3 {
+            color: #2563eb;
+            margin-bottom: 1rem;
             font-size: 1.5rem;
         }
 
-        .card-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .card-subtitle {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        /* 按钮样式 */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: var(--border-radius);
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 0.9rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        .revenue-card .role {
+            background: #2563eb;
             color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            display: inline-block;
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        .revenue-card .commission {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #10b981;
+            margin: 1rem 0;
         }
 
-        .btn-secondary {
-            background: var(--bg-glass);
-            color: var(--text-primary);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        .revenue-card .description {
+            color: #666;
+            line-height: 1.6;
         }
 
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
+        .calculator {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
         }
 
-        /* 统计卡片 */
-        .stats-card {
+        .calculator h3 {
+            color: #2563eb;
+            margin-bottom: 1.5rem;
             text-align: center;
         }
 
-        .stats-number {
-            font-size: 3rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-
-        .stats-label {
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        /* 快捷操作 */
-        .quick-actions {
+        .calc-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-            margin-top: 2rem;
+            gap: 1.5rem;
         }
 
-        .action-card {
-            background: var(--bg-card);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .action-card:hover {
-            transform: translateY(-3px);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .action-icon {
-            width: 60px;
-            height: 60px;
-            margin: 0 auto 1rem;
-            border-radius: 50%;
+        .calc-item {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: white;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
-        .action-title {
-            font-size: 1.1rem;
-            font-weight: 600;
+        .calc-item label {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .calc-item input {
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .calc-item input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .calc-results {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            border: 2px solid #10b981;
+        }
+
+        .calc-results h4 {
+            color: #10b981;
+            margin-bottom: 1rem;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            background: #f0fdf4;
+            border-radius: 5px;
+        }
+
+        .result-amount {
+            font-weight: bold;
+            color: #10b981;
+        }
+
+        .business-overview {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 2rem 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .business-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .business-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .business-card h3 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .business-card .price {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+
+        .business-card .features {
+            list-style: none;
+            text-align: left;
+        }
+
+        .business-card .features li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .footer {
+            background: #1e293b;
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        .footer p {
             margin-bottom: 0.5rem;
         }
 
-        .action-desc {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        /* 响应式设计 */
         @media (max-width: 768px) {
-            .navbar-content {
-                padding: 0 1rem;
+            .hero h1 {
+                font-size: 2rem;
             }
-
-            .nav-menu {
-                display: none;
-            }
-
-            .main-container {
-                padding: 1rem;
-            }
-
-            .dashboard-grid {
-                grid-template-columns: 1fr;
+            
+            .nav-container {
+                flex-direction: column;
                 gap: 1rem;
             }
-
-            .card {
-                padding: 1.5rem;
+            
+            .nav-links {
+                gap: 1rem;
             }
-
-            .logo {
-                font-size: 1.5rem;
-            }
-
-            .quick-actions {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        /* 加载动画 */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: var(--primary-color);
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* 通知样式 */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--bg-card);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--border-radius);
-            padding: 1rem 1.5rem;
-            box-shadow: var(--shadow);
-            transform: translateX(400px);
-            transition: var(--transition);
-            z-index: 2000;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        .notification.success {
-            border-left: 4px solid var(--success-color);
-        }
-
-        .notification.error {
-            border-left: 4px solid var(--danger-color);
-        }
-
-        /* 模态框 */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 3000;
-        }
-
-        .modal.show {
-            display: flex;
-        }
-
-        .modal-content {
-            background: var(--bg-card);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--border-radius);
-            padding: 2rem;
-            max-width: 90%;
-            max-height: 90%;
-            overflow-y: auto;
-            animation: modalSlideUp 0.3s ease-out;
-        }
-
-        @keyframes modalSlideUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
+            
+            .main-content {
+                padding: 0 1rem;
             }
         }
     </style>
@@ -440,402 +388,378 @@
 
     <!-- 导航栏 -->
     <nav class="navbar">
-        <div class="navbar-content">
-            <div class="logo">律思客</div>
-            <ul class="nav-menu">
-                <li><a href="#" class="active">仪表盘</a></li>
-                <li><a href="#cases">案件管理</a></li>
-                <li><a href="#documents">文书生成</a></li>
-                <li><a href="#delivery">发送服务</a></li>
-                <li><a href="#finance">财务中心</a></li>
-            </ul>
-            <div class="user-menu">
-                <div class="avatar" onclick="showUserMenu()">U</div>
+        <div class="nav-container">
+            <div class="logo">Lawsker 律思客</div>
+            <div class="nav-links">
+                <a href="#home">首页</a>
+                <a href="#revenue">收益模式</a>
+                <a href="#services">服务介绍</a>
+                <a href="#about">关于我们</a>
             </div>
+            <a href="login.html" class="login-btn">立即登录</a>
         </div>
     </nav>
 
+    <!-- 英雄区域 -->
+    <section class="hero">
+        <div class="main-content">
+            <h1>Lawsker 律思客</h1>
+            <p>专注于国内法律服务的O2O平台 · 法律智慧，即刻送达</p>
+            <p style="font-size: 1.1rem; margin-top: 1rem;">以债务催收为核心业务，通过AI技术优化传统法律服务流程</p>
+        </div>
+    </section>
+
     <!-- 主要内容 -->
-    <div class="main-container">
-        <!-- 仪表盘统计 -->
-        <div class="dashboard-grid">
-            <div class="card stats-card">
-                <div class="card-header">
-                    <div class="card-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">📊</div>
-                    <div>
-                        <div class="card-title">总案件数</div>
-                        <div class="card-subtitle">累计处理案件</div>
+    <div class="main-content">
+        
+        <!-- 核心业务模块 -->
+        <section class="business-overview">
+            <h2 class="section-title">💼 核心业务模块</h2>
+            <div class="business-grid">
+                <div class="business-card">
+                    <h3>🎯 主营业务：债务催收服务</h3>
+                    <div class="business-flow">
+                        <div class="flow-step">机构委托</div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">律师接单</div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">AI辅助催收</div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">分期回款</div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">自动分账</div>
+                    </div>
+                    <div class="business-features">
+                        <p>✓ 专业律师资质 + AI效率提升</p>
+                        <p>✓ 透明分账机制</p>
+                        <p>✓ 目标客户：银行、助贷机构、小额贷款公司</p>
                     </div>
                 </div>
-                <div class="stats-number" id="totalCases">0</div>
-                <div class="stats-label">已处理案件</div>
-            </div>
 
-            <div class="card stats-card">
-                <div class="card-header">
-                    <div class="card-icon" style="background: linear-gradient(135deg, #84fab0, #8fd3f4);">📄</div>
-                    <div>
-                        <div class="card-title">文书生成</div>
-                        <div class="card-subtitle">AI智能生成</div>
+                <div class="business-card">
+                    <h3>📧 次要业务：律师函服务</h3>
+                    <div class="price">30元/份</div>
+                    <div class="business-flow">
+                        <div class="flow-step">客户下单付款</div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">AI生成律师函</div>
+                        <div class="flow-arrow">→</div>
+                        <div class="flow-step">短信/邮件发送</div>
                     </div>
-                </div>
-                <div class="stats-number" id="totalDocuments">0</div>
-                <div class="stats-label">已生成文书</div>
-            </div>
-
-            <div class="card stats-card">
-                <div class="card-header">
-                    <div class="card-icon" style="background: linear-gradient(135deg, #ffeaa7, #fab1a0);">💰</div>
-                    <div>
-                        <div class="card-title">收入统计</div>
-                        <div class="card-subtitle">30秒实时分账</div>
+                    <div class="business-features">
+                        <p>✓ 无纸化、秒级到达</p>
+                        <p>✓ 成本极低</p>
+                        <p>✓ 可定时发送</p>
                     </div>
-                </div>
-                <div class="stats-number" id="totalEarnings">¥0</div>
-                <div class="stats-label">总收入</div>
-            </div>
-
-            <div class="card stats-card">
-                <div class="card-header">
-                    <div class="card-icon" style="background: linear-gradient(135deg, #fd79a8, #fdcb6e);">🚀</div>
-                    <div>
-                        <div class="card-title">发送成功率</div>
-                        <div class="card-subtitle">多渠道发送</div>
-                    </div>
-                </div>
-                <div class="stats-number" id="deliveryRate">0%</div>
-                <div class="stats-label">成功率</div>
-            </div>
-        </div>
-
-        <!-- 快捷操作 -->
-        <div class="card">
-            <div class="card-header">
-                <div class="card-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">⚡</div>
-                <div>
-                    <div class="card-title">快捷操作</div>
-                    <div class="card-subtitle">一键完成常用操作</div>
                 </div>
             </div>
+        </section>
 
-            <div class="quick-actions">
-                <div class="action-card" onclick="showNewCaseModal()">
-                    <div class="action-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">
-                        📋
+        <!-- 双模式运营策略 -->
+        <section class="revenue-section">
+            <h2 class="section-title">🏗️ 双模式运营策略</h2>
+            <div class="revenue-models">
+                <div class="revenue-card">
+                    <h3>SaaS在线模式</h3>
+                    <div class="role">中小企业</div>
+                    <div class="strategy-features">
+                        <p>✓ 零门槛快速接入</p>
+                        <p>✓ 按量付费成本可控</p>
+                        <p>✓ 网络效应规模经济</p>
+                        <p style="color: #10b981; font-weight: bold;">收入：订阅+抽成+增值</p>
                     </div>
-                    <div class="action-title">新建案件</div>
-                    <div class="action-desc">快速创建债务催收案件</div>
                 </div>
 
-                <div class="action-card" onclick="showDocumentGenerator()">
-                    <div class="action-icon" style="background: linear-gradient(135deg, #84fab0, #8fd3f4);">
-                        🤖
+                <div class="revenue-card">
+                    <h3>私有化部署</h3>
+                    <div class="role">大企业</div>
+                    <div class="strategy-features">
+                        <p>✓ 数据安全私有部署</p>
+                        <p>✓ 深度定制个性化流程</p>
+                        <p>✓ 高客单价高粘性</p>
+                        <p style="color: #10b981; font-weight: bold;">收入：授权+定制+维护</p>
                     </div>
-                    <div class="action-title">AI生成文书</div>
-                    <div class="action-desc">智能生成律师函等法律文书</div>
-                </div>
-
-                <div class="action-card" onclick="showQuickSend()">
-                    <div class="action-icon" style="background: linear-gradient(135deg, #ffeaa7, #fab1a0);">
-                        📤
-                    </div>
-                    <div class="action-title">一键发送</div>
-                    <div class="action-desc">邮件/短信/快递多渠道发送</div>
-                </div>
-
-                <div class="action-card" onclick="window.location.href='admin-config.html'">
-                    <div class="action-icon" style="background: linear-gradient(135deg, #fd79a8, #fdcb6e);">
-                        ⚙️
-                    </div>
-                    <div class="action-title">系统配置</div>
-                    <div class="action-desc">管理AI密钥和系统参数</div>
                 </div>
             </div>
-        </div>
+        </section>
+
+        <!-- 商业模式与分成机制 -->
+        <section class="revenue-section">
+            <h2 class="section-title">💰 商业模式与分成机制</h2>
+            <div class="revenue-flow">
+                <h3 style="text-align: center; margin-bottom: 2rem;">资金流设计</h3>
+                <div class="flow-diagram">
+                    <div class="flow-item">债务人还款</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-item">平台托管账户</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-item">智能分账系统</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-item">各方收益账户</div>
+                </div>
+            </div>
+            
+            <div class="revenue-models">
+                <div class="revenue-card">
+                    <h3>🏢 机构返还</h3>
+                    <div class="commission">50%</div>
+                    <div class="description">返还委托方</div>
+                </div>
+
+                <div class="revenue-card">
+                    <h3>🎯 平台分成</h3>
+                    <div class="commission">32.5%</div>
+                    <div class="description">技术服务+运营成本</div>
+                </div>
+
+                <div class="revenue-card">
+                    <h3>⚖️ 律师佣金</h3>
+                    <div class="commission">10%</div>
+                    <div class="description">资质授权+执行服务</div>
+                </div>
+
+                <div class="revenue-card">
+                    <h3>📊 销售佣金</h3>
+                    <div class="commission">7.5%</div>
+                    <div class="description">业务开发</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 收入预测 -->
+        <section class="business-overview">
+            <h2 class="section-title">📊 第一年收入目标</h2>
+            <div class="business-grid">
+                <div class="business-card">
+                    <h3>催收业务</h3>
+                    <div class="price">1.625亿元</div>
+                    <p>处理5亿催收金额，平台分成32.5%</p>
+                </div>
+
+                <div class="business-card">
+                    <h3>律师函服务</h3>
+                    <div class="price">300万元</div>
+                    <p>10万份 × 30元/份</p>
+                </div>
+
+                <div class="business-card">
+                    <h3>SaaS订阅</h3>
+                    <div class="price">960万元</div>
+                    <p>200家机构 × 3999元/月 × 12月</p>
+                </div>
+
+                <div class="business-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <h3>总营收目标</h3>
+                    <div class="price">1.655亿元</div>
+                    <p>净利润：1.485亿（净利率89.7%）</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 月收入计算器 -->
+        <section class="calculator">
+            <h3>💰 月收入预测计算器</h3>
+            <div class="calc-grid">
+                <div class="calc-item">
+                    <label for="caseCount">处理案件数量</label>
+                    <input type="number" id="caseCount" value="100" onchange="calculateRevenue()">
+                </div>
+
+                <div class="calc-item">
+                    <label for="avgAmount">平均案件金额（万元）</label>
+                    <input type="number" id="avgAmount" value="10" onchange="calculateRevenue()">
+                </div>
+
+                <div class="calc-item">
+                    <label for="successRate">成功催收率（%）</label>
+                    <input type="number" id="successRate" value="60" onchange="calculateRevenue()">
+                </div>
+
+                <div class="calc-item">
+                    <label for="userRole">您的角色</label>
+                    <select id="userRole" onchange="calculateRevenue()">
+                        <option value="platform">平台（32.5%）</option>
+                        <option value="lawyer">律师（10%）</option>
+                        <option value="sales">销售（7.5%）</option>
+                        <option value="institution">机构（50%）</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="calc-results" id="calcResults">
+                <h4>💰 月收入预测结果</h4>
+                <div class="result-item">
+                    <span>总催收金额：</span>
+                    <span class="result-amount" id="totalAmount">600万元</span>
+                </div>
+                <div class="result-item">
+                    <span>您的分成收入：</span>
+                    <span class="result-amount" id="yourIncome">195万元</span>
+                </div>
+                <div class="result-item">
+                    <span>年化收入预测：</span>
+                    <span class="result-amount" id="yearlyIncome">2340万元</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 服务优势 -->
+        <section class="business-overview">
+            <h2 class="section-title">🤖 AI技术应用优势</h2>
+            <div class="business-grid">
+                <div style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                    <h3 style="color: #2563eb;">AI催收文书生成</h3>
+                    <ul style="text-align: left; color: #666; line-height: 1.8;">
+                        <li>三种风格：友好提醒、正式通知、法律威慑</li>
+                        <li>个性化定制：根据债务类型、金额、逾期时长自动调整</li>
+                        <li>法条智能引用：自动匹配相关法律条文</li>
+                        <li>多轮催收策略：15天、30天、60天递进式模板</li>
+                    </ul>
+                </div>
+
+                <div style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                    <h3 style="color: #2563eb;">智能业务流程</h3>
+                    <ul style="text-align: left; color: #666; line-height: 1.8;">
+                        <li>智能模板选择：根据案件类型自动选择合适模板</li>
+                        <li>动态内容填充：自动填入当事人信息、法律依据</li>
+                        <li>格式规范化：确保符合法律文书标准格式</li>
+                        <li>质量检查：AI自动检查逻辑错误和格式问题</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
     </div>
 
-    <!-- 通知组件 -->
-    <div class="notification" id="notification">
-        <span id="notificationText"></span>
-    </div>
-
-    <!-- 新建案件模态框 -->
-    <div class="modal" id="newCaseModal">
-        <div class="modal-content">
-            <h2 style="margin-bottom: 1.5rem;">新建催收案件</h2>
-            <form id="newCaseForm">
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">债务人姓名</label>
-                    <input type="text" name="debtorName" required style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: var(--bg-glass); color: var(--text-primary);">
-                </div>
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">欠款金额</label>
-                    <input type="number" name="amount" required step="0.01" style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: var(--bg-glass); color: var(--text-primary);">
-                </div>
-                <div style="margin-bottom: 1rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">联系方式</label>
-                    <input type="text" name="contact" required style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: var(--bg-glass); color: var(--text-primary);">
-                </div>
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; margin-bottom: 0.5rem; color: var(--text-secondary);">案件描述</label>
-                    <textarea name="description" rows="3" style="width: 100%; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; background: var(--bg-glass); color: var(--text-primary); resize: vertical;"></textarea>
-                </div>
-                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                    <button type="button" class="btn btn-secondary" onclick="hideModal('newCaseModal')">取消</button>
-                    <button type="submit" class="btn btn-primary">
-                        <span class="loading" id="newCaseLoading" style="display: none;"></span>
-                        创建案件
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <!-- 页脚 -->
+    <footer class="footer">
+        <p>&copy; 2024 Lawsker 律思客. 保留所有权利.</p>
+        <p>专注核心，稳步发展！🎯</p>
+    </footer>
 
     <script>
-        // 全局变量
-        let currentUser = null;
-        let dashboardData = {
-            totalCases: 0,
-            totalDocuments: 0,
-            totalEarnings: 0,
-            deliveryRate: 0
-        };
+        // 收入计算器
+        function calculateRevenue() {
+            const caseCount = parseInt(document.getElementById('caseCount').value) || 0;
+            const avgAmount = parseFloat(document.getElementById('avgAmount').value) || 0;
+            const successRate = parseFloat(document.getElementById('successRate').value) || 0;
+            const userRole = document.getElementById('userRole').value;
 
-        // 初始化应用
-        document.addEventListener('DOMContentLoaded', async function() {
-            await initializeApp();
-            await loadDashboardData();
-            setInterval(loadDashboardData, 30000); // 30秒更新一次数据
+            // 计算总催收金额（成功案件）
+            const totalAmount = caseCount * avgAmount * (successRate / 100);
+
+            // 分成比例
+            const commissionRates = {
+                platform: 0.325,
+                lawyer: 0.10,
+                sales: 0.075,
+                institution: 0.50
+            };
+
+            // 计算收入
+            const yourIncome = totalAmount * commissionRates[userRole];
+            const yearlyIncome = yourIncome * 12;
+
+            // 更新显示
+            document.getElementById('totalAmount').textContent = totalAmount.toFixed(0) + '万元';
+            document.getElementById('yourIncome').textContent = yourIncome.toFixed(1) + '万元';
+            document.getElementById('yearlyIncome').textContent = yearlyIncome.toFixed(0) + '万元';
+        }
+
+        // 页面加载时计算一次
+        document.addEventListener('DOMContentLoaded', function() {
+            calculateRevenue();
         });
 
-        // 初始化应用
-        async function initializeApp() {
-            try {
-                // 检查用户登录状态
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                // 获取用户信息
-                const userResponse = await fetch('/api/v1/auth/me', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (!userResponse.ok) {
-                    localStorage.removeItem('token');
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                currentUser = await userResponse.json();
-                updateUserAvatar();
-
-            } catch (error) {
-                console.error('初始化应用失败:', error);
-                showNotification('初始化应用失败', 'error');
-            }
-        }
-
-        // 更新用户头像
-        function updateUserAvatar() {
-            const avatar = document.querySelector('.avatar');
-            if (currentUser && currentUser.username) {
-                avatar.textContent = currentUser.username.charAt(0).toUpperCase();
-            }
-        }
-
-        // 加载仪表盘数据
-        async function loadDashboardData() {
-            try {
-                const token = localStorage.getItem('token');
-                
-                // 并行获取各种统计数据
-                const [casesResponse, documentsResponse, financeResponse, deliveryResponse] = await Promise.all([
-                    fetch('/api/v1/cases/stats', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    }),
-                    fetch('/api/v1/documents/stats', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    }),
-                    fetch('/api/v1/finance/wallet', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    }),
-                    fetch('/api/v1/delivery/channels', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    })
-                ]);
-
-                // 更新案件统计
-                if (casesResponse.ok) {
-                    const casesData = await casesResponse.json();
-                    dashboardData.totalCases = casesData.total || 0;
-                    animateNumber('totalCases', dashboardData.totalCases);
-                }
-
-                // 更新文书统计
-                if (documentsResponse.ok) {
-                    const documentsData = await documentsResponse.json();
-                    dashboardData.totalDocuments = documentsData.total || 0;
-                    animateNumber('totalDocuments', dashboardData.totalDocuments);
-                }
-
-                // 更新财务统计
-                if (financeResponse.ok) {
-                    const financeData = await financeResponse.json();
-                    dashboardData.totalEarnings = financeData.total_earned || 0;
-                    animateNumber('totalEarnings', dashboardData.totalEarnings, '¥');
-                }
-
-                // 更新发送成功率
-                if (deliveryResponse.ok) {
-                    const deliveryData = await deliveryResponse.json();
-                    dashboardData.deliveryRate = 95; // 模拟数据
-                    animateNumber('deliveryRate', dashboardData.deliveryRate, '', '%');
-                }
-
-            } catch (error) {
-                console.error('加载仪表盘数据失败:', error);
-            }
-        }
-
-        // 数字动画效果
-        function animateNumber(elementId, targetValue, prefix = '', suffix = '') {
-            const element = document.getElementById(elementId);
-            const startValue = parseInt(element.textContent.replace(/[^\d]/g, '')) || 0;
-            const duration = 1000;
-            const startTime = Date.now();
-
-            function updateNumber() {
-                const elapsed = Date.now() - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const easeProgress = 1 - Math.pow(1 - progress, 3); // ease-out cubic
-                const currentValue = Math.floor(startValue + (targetValue - startValue) * easeProgress);
-                
-                element.textContent = prefix + currentValue.toLocaleString() + suffix;
-                
-                if (progress < 1) {
-                    requestAnimationFrame(updateNumber);
-                }
+        // 添加样式
+        const additionalStyles = `
+            .business-flow {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                margin: 1rem 0;
             }
 
-            requestAnimationFrame(updateNumber);
-        }
+            .flow-step {
+                background: rgba(255, 255, 255, 0.2);
+                padding: 0.5rem 1rem;
+                border-radius: 8px;
+                font-size: 0.9rem;
+                white-space: nowrap;
+            }
 
-        // 显示通知
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            const notificationText = document.getElementById('notificationText');
-            
-            notificationText.textContent = message;
-            notification.className = `notification ${type}`;
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
+            .flow-arrow {
+                color: rgba(255, 255, 255, 0.8);
+                font-size: 1.2rem;
+                font-weight: bold;
+            }
 
-        // 显示模态框
-        function showModal(modalId) {
-            document.getElementById(modalId).classList.add('show');
-        }
+            .business-features {
+                margin-top: 1rem;
+                text-align: left;
+            }
 
-        // 隐藏模态框
-        function hideModal(modalId) {
-            document.getElementById(modalId).classList.remove('show');
-        }
+            .business-features p {
+                margin: 0.5rem 0;
+                font-size: 0.9rem;
+            }
 
-        // 显示新建案件模态框
-        function showNewCaseModal() {
-            showModal('newCaseModal');
-        }
+            .strategy-features {
+                text-align: left;
+                margin-top: 1rem;
+            }
 
-        // 显示文书生成器
-        function showDocumentGenerator() {
-            // TODO: 实现文书生成器
-            showNotification('文书生成功能即将上线', 'info');
-        }
+            .strategy-features p {
+                margin: 0.5rem 0;
+                padding: 0.5rem;
+                background: rgba(37, 99, 235, 0.1);
+                border-radius: 5px;
+            }
 
-        // 显示快速发送
-        function showQuickSend() {
-            // TODO: 实现快速发送
-            showNotification('快速发送功能即将上线', 'info');
-        }
+            .revenue-flow {
+                margin-bottom: 2rem;
+            }
 
-        // 显示用户菜单
-        function showUserMenu() {
-            // TODO: 实现用户菜单
-            showNotification('用户菜单功能即将上线', 'info');
-        }
+            .flow-diagram {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 1rem;
+                margin: 2rem 0;
+            }
 
-        // 新建案件表单提交
-        document.getElementById('newCaseForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const loading = document.getElementById('newCaseLoading');
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            
-            loading.style.display = 'inline-block';
-            submitBtn.disabled = true;
-            
-            try {
-                const formData = new FormData(e.target);
-                const caseData = {
-                    debtor_name: formData.get('debtorName'),
-                    amount: parseFloat(formData.get('amount')),
-                    contact_info: formData.get('contact'),
-                    description: formData.get('description')
-                };
-                
-                const token = localStorage.getItem('token');
-                const response = await fetch('/api/v1/cases/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(caseData)
-                });
-                
-                if (response.ok) {
-                    showNotification('案件创建成功！');
-                    hideModal('newCaseModal');
-                    e.target.reset();
-                    await loadDashboardData(); // 刷新数据
-                } else {
-                    const error = await response.json();
-                    showNotification(error.detail || '创建案件失败', 'error');
+            .flow-item {
+                background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 10px;
+                font-weight: 500;
+                min-width: 120px;
+                text-align: center;
+            }
+
+            @media (max-width: 768px) {
+                .business-flow {
+                    flex-direction: column;
+                    align-items: center;
                 }
-                
-            } catch (error) {
-                console.error('创建案件失败:', error);
-                showNotification('创建案件失败', 'error');
-            } finally {
-                loading.style.display = 'none';
-                submitBtn.disabled = false;
-            }
-        });
 
-        // 点击模态框外部关闭
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('modal')) {
-                e.target.classList.remove('show');
-            }
-        });
+                .flow-arrow {
+                    transform: rotate(90deg);
+                }
 
-        // ESC键关闭模态框
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                const openModal = document.querySelector('.modal.show');
-                if (openModal) {
-                    openModal.classList.remove('show');
+                .flow-diagram {
+                    flex-direction: column;
                 }
             }
-        });
+        `;
+
+        // 添加样式到页面
+        const style = document.createElement('style');
+        style.textContent = additionalStyles;
+        document.head.appendChild(style);
     </script>
   </body>
 </html> 

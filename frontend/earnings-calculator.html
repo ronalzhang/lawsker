@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>收入计算器 - Lawsker 律思客</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #10b981;
+            --danger-color: #dc2626;
+            --warning-color: #f59e0b;
+            --success-color: #10b981;
+            --bg-primary: #f8fafc;
+            --bg-card: #ffffff;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .calculator-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            height: fit-content;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .role-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .role-option {
+            padding: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: var(--bg-primary);
+        }
+
+        .role-option:hover {
+            border-color: var(--primary-color);
+            background: #eff6ff;
+        }
+
+        .role-option.active {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .role-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .role-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .role-desc {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .input-suffix {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .range-slider {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .range-value {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .result-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+
+        .result-amount {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .result-breakdown {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .breakdown-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .breakdown-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        .breakdown-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .comparison-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .comparison-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .comparison-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .comparison-amount {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .comparison-desc {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .comparison-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-primary);
+            border-color: var(--primary-color);
+        }
+
+        .tips-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .tips-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .tips-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .tip-item {
+            display: flex;
+            align-items: start;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border-radius: 10px;
+        }
+
+        .tip-icon {
+            font-size: 1.2rem;
+            margin-top: 0.25rem;
+        }
+
+        .tip-content {
+            flex: 1;
+        }
+
+        .tip-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+        }
+
+        .tip-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .calculator-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .role-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .result-breakdown {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Lawsker 收入计算器</h1>
+            <p>预测您在法律服务平台的月收入潜力</p>
+            <div class="nav-links">
+                <a href="index.html">返回首页</a>
+                <a href="login.html">立即登录</a>
+            </div>
+        </div>
+
+        <div class="calculator-grid">
+            <div class="calculator-card">
+                <h3 class="card-title">🎯 选择您的角色</h3>
+                
+                <div class="role-selector">
+                    <div class="role-option active" data-role="lawyer">
+                        <div class="role-icon">⚖️</div>
+                        <div class="role-title">律师</div>
+                        <div class="role-desc">专业催收执业</div>
+                    </div>
+                    <div class="role-option" data-role="sales">
+                        <div class="role-icon">📊</div>
+                        <div class="role-title">销售</div>
+                        <div class="role-desc">客户开发佣金</div>
+                    </div>
+                    <div class="role-option" data-role="institution">
+                        <div class="role-icon">🏢</div>
+                        <div class="role-title">机构</div>
+                        <div class="role-desc">批量委托收益</div>
+                    </div>
+                    <div class="role-option" data-role="platform">
+                        <div class="role-icon">🚀</div>
+                        <div class="role-title">平台</div>
+                        <div class="role-desc">整体收入预测</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="caseCount">月处理案件数量</label>
+                    <div class="input-group">
+                        <input type="number" id="caseCount" value="20" min="1" max="1000">
+                        <span class="input-suffix">件</span>
+                    </div>
+                    <input type="range" class="range-slider" id="caseCountRange" min="1" max="200" value="20">
+                    <div class="range-value">
+                        <span>1件</span>
+                        <span>200件</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="avgAmount">平均案件金额</label>
+                    <div class="input-group">
+                        <input type="number" id="avgAmount" value="50000" min="1000" max="1000000">
+                        <span class="input-suffix">元</span>
+                    </div>
+                    <input type="range" class="range-slider" id="avgAmountRange" min="1000" max="500000" value="50000">
+                    <div class="range-value">
+                        <span>1千元</span>
+                        <span>50万元</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="commissionRate">佣金比例</label>
+                    <div class="input-group">
+                        <input type="number" id="commissionRate" value="15" min="1" max="50" step="0.1">
+                        <span class="input-suffix">%</span>
+                    </div>
+                    <input type="range" class="range-slider" id="commissionRateRange" min="1" max="50" value="15" step="0.1">
+                    <div class="range-value">
+                        <span>1%</span>
+                        <span>50%</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="successRate">成功率</label>
+                    <div class="input-group">
+                        <input type="number" id="successRate" value="70" min="10" max="100" step="1">
+                        <span class="input-suffix">%</span>
+                    </div>
+                    <input type="range" class="range-slider" id="successRateRange" min="10" max="100" value="70">
+                    <div class="range-value">
+                        <span>10%</span>
+                        <span>100%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="calculator-card">
+                <div class="result-card">
+                    <div class="result-title">预计月收入</div>
+                    <div class="result-amount" id="monthlyIncome">¥105,000</div>
+                    <div class="result-breakdown">
+                        <div class="breakdown-item">
+                            <div class="breakdown-value" id="successfulCases">14</div>
+                            <div class="breakdown-label">成功案件</div>
+                        </div>
+                        <div class="breakdown-item">
+                            <div class="breakdown-value" id="totalValue">¥700,000</div>
+                            <div class="breakdown-label">总案件价值</div>
+                        </div>
+                        <div class="breakdown-item">
+                            <div class="breakdown-value" id="yearlyIncome">¥126万</div>
+                            <div class="breakdown-label">年收入预测</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tips-section">
+                    <h4 class="tips-title">💡 收入优化建议</h4>
+                    <div class="tips-list" id="tipsList">
+                        <!-- 动态生成建议 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="comparison-grid">
+            <div class="comparison-card">
+                <div class="comparison-icon">⚖️</div>
+                <div class="comparison-title">律师收入模式</div>
+                <div class="comparison-amount">¥12-50万/月</div>
+                <div class="comparison-desc">专业执业，按案件成功收费</div>
+                <div class="comparison-details">
+                    <span>佣金: 10-25%</span>
+                    <span>成功率: 60-80%</span>
+                </div>
+            </div>
+
+            <div class="comparison-card">
+                <div class="comparison-icon">📊</div>
+                <div class="comparison-title">销售收入模式</div>
+                <div class="comparison-amount">¥8-35万/月</div>
+                <div class="comparison-desc">客户开发，获取分成佣金</div>
+                <div class="comparison-details">
+                    <span>佣金: 5-15%</span>
+                    <span>转化率: 40-60%</span>
+                </div>
+            </div>
+
+            <div class="comparison-card">
+                <div class="comparison-icon">🏢</div>
+                <div class="comparison-title">机构收入模式</div>
+                <div class="comparison-amount">¥50-200万/月</div>
+                <div class="comparison-desc">批量委托，规模化收益</div>
+                <div class="comparison-details">
+                    <span>服务费: 20-40%</span>
+                    <span>案件量: 500-2000件</span>
+                </div>
+            </div>
+
+            <div class="comparison-card">
+                <div class="comparison-icon">🚀</div>
+                <div class="comparison-title">平台总收入</div>
+                <div class="comparison-amount">¥500-2000万/月</div>
+                <div class="comparison-desc">全平台交易手续费收入</div>
+                <div class="comparison-details">
+                    <span>手续费: 5-8%</span>
+                    <span>月交易: 1-5亿</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="login.html" class="btn btn-primary">
+                🚀 立即开始赚钱
+            </a>
+            <a href="index.html" class="btn btn-secondary">
+                📖 了解更多
+            </a>
+        </div>
+    </div>
+
+    <script>
+        let currentRole = 'lawyer';
+        
+        // 角色选择逻辑
+        document.querySelectorAll('.role-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.role-option').forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                currentRole = this.dataset.role;
+                updateCalculation();
+                updateTips();
+            });
+        });
+
+        // 绑定输入事件
+        const inputs = ['caseCount', 'avgAmount', 'commissionRate', 'successRate'];
+        inputs.forEach(inputId => {
+            const input = document.getElementById(inputId);
+            const range = document.getElementById(inputId + 'Range');
+            
+            input.addEventListener('input', function() {
+                range.value = this.value;
+                updateCalculation();
+            });
+            
+            range.addEventListener('input', function() {
+                input.value = this.value;
+                updateCalculation();
+            });
+        });
+
+        // 计算收入
+        function updateCalculation() {
+            const caseCount = parseInt(document.getElementById('caseCount').value) || 0;
+            const avgAmount = parseInt(document.getElementById('avgAmount').value) || 0;
+            const commissionRate = parseFloat(document.getElementById('commissionRate').value) || 0;
+            const successRate = parseFloat(document.getElementById('successRate').value) || 0;
+            
+            const successfulCases = Math.round(caseCount * (successRate / 100));
+            const totalValue = successfulCases * avgAmount;
+            const monthlyIncome = Math.round(totalValue * (commissionRate / 100));
+            const yearlyIncome = monthlyIncome * 12;
+            
+            // 根据角色调整计算
+            let adjustedIncome = monthlyIncome;
+            switch(currentRole) {
+                case 'lawyer':
+                    adjustedIncome = monthlyIncome;
+                    break;
+                case 'sales':
+                    adjustedIncome = Math.round(monthlyIncome * 0.6); // 销售分成较低
+                    break;
+                case 'institution':
+                    adjustedIncome = Math.round(monthlyIncome * 2.5); // 机构批量收益
+                    break;
+                case 'platform':
+                    adjustedIncome = Math.round(monthlyIncome * 15); // 平台总收益
+                    break;
+            }
+            
+            document.getElementById('monthlyIncome').textContent = `¥${adjustedIncome.toLocaleString()}`;
+            document.getElementById('successfulCases').textContent = successfulCases;
+            document.getElementById('totalValue').textContent = `¥${totalValue.toLocaleString()}`;
+            document.getElementById('yearlyIncome').textContent = `¥${Math.round(adjustedIncome * 12 / 10000)}万`;
+        }
+
+        // 更新建议
+        function updateTips() {
+            const tipsList = document.getElementById('tipsList');
+            const tips = {
+                lawyer: [
+                    { icon: '📈', title: '提升专业能力', desc: '获得更高佣金比例' },
+                    { icon: '⚡', title: '提高处理效率', desc: '增加月案件处理量' },
+                    { icon: '🎯', title: '专注高价值案件', desc: '选择金额较大的案件' },
+                    { icon: '💪', title: '提高成功率', desc: '精细化案件管理' }
+                ],
+                sales: [
+                    { icon: '📞', title: '扩大客户网络', desc: '获取更多潜在客户' },
+                    { icon: '🤝', title: '提升转化率', desc: '优化销售话术技巧' },
+                    { icon: '🎨', title: '个人品牌建设', desc: '提升客户信任度' },
+                    { icon: '📊', title: '数据驱动销售', desc: '分析客户成交规律' }
+                ],
+                institution: [
+                    { icon: '📋', title: '批量处理优势', desc: '规模化降低成本' },
+                    { icon: '🤖', title: '自动化流程', desc: '提升处理效率' },
+                    { icon: '🏆', title: '质量管控', desc: '保证服务质量' },
+                    { icon: '��', title: '渠道拓展', desc: '多渠道获取案件' }
+                ],
+                platform: [
+                    { icon: '🚀', title: '用户增长', desc: '扩大平台用户基数' },
+                    { icon: '💡', title: '功能优化', desc: '提升用户体验' },
+                    { icon: '��', title: '市场拓展', desc: '进入新的市场领域' },
+                    { icon: '🔄', title: '生态建设', desc: '完善服务生态链' }
+                ]
+            };
+            
+            const roleTips = tips[currentRole] || tips.lawyer;
+            tipsList.innerHTML = roleTips.map(tip => `
+                <div class="tip-item">
+                    <div class="tip-icon">${tip.icon}</div>
+                    <div class="tip-content">
+                        <div class="tip-title">${tip.title}</div>
+                        <div class="tip-desc">${tip.desc}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 初始化
+        updateCalculation();
+        updateTips();
+    </script>
+</body>
+</html>
