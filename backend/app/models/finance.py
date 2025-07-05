@@ -3,7 +3,7 @@
 包含交易、分账、钱包等模型
 """
 
-from sqlalchemy import Column, String, DateTime, ForeignKey, Enum as SQLEnum, DECIMAL
+from sqlalchemy import Column, String, DateTime, ForeignKey, Enum as SQLEnum, DECIMAL, Text, Boolean
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -32,6 +32,17 @@ class CommissionStatus(enum.Enum):
     PENDING = "pending"  # 待分账
     PAID = "paid"        # 已支付
     FAILED = "failed"    # 失败
+
+
+class WithdrawalStatus(enum.Enum):
+    """提现状态枚举"""
+    PENDING = "pending"        # 待审核
+    APPROVED = "approved"      # 已批准
+    PROCESSING = "processing"  # 处理中
+    COMPLETED = "completed"    # 已完成
+    REJECTED = "rejected"      # 已拒绝
+    FAILED = "failed"         # 失败
+    CANCELLED = "cancelled"    # 已取消
 
 
 class Transaction(Base):
@@ -154,6 +165,55 @@ class Wallet(Base):
     
     # 关联关系
     user = relationship("User", back_populates="wallet")
+    withdrawal_requests = relationship("WithdrawalRequest", back_populates="wallet")
 
     def __repr__(self):
-        return f"<Wallet(user_id={self.user_id}, balance={self.balance}, withdrawable={self.withdrawable_balance})>" 
+        return f"<Wallet(user_id={self.user_id}, balance={self.balance}, withdrawable={self.withdrawable_balance})>"
+
+
+class WithdrawalRequest(Base):
+    """提现申请表"""
+    __tablename__ = "withdrawal_requests"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    wallet_id = Column(UUID(as_uuid=True), ForeignKey("wallets.user_id"), nullable=False)
+    
+    # 申请信息
+    request_number = Column(String(100), unique=True, nullable=False)       # 申请单号
+    amount = Column(DECIMAL(18, 2), nullable=False)                         # 申请金额
+    fee = Column(DECIMAL(18, 2), default=0, nullable=False)                 # 手续费
+    actual_amount = Column(DECIMAL(18, 2), nullable=False)                  # 实际到账金额
+    
+    # 银行信息
+    bank_account = Column(String(255), nullable=False)                      # 银行账户
+    bank_name = Column(String(100), nullable=False)                         # 银行名称
+    account_holder = Column(String(100), nullable=False)                    # 账户姓名
+    
+    # 状态和审核
+    status = Column(SQLEnum(WithdrawalStatus), default=WithdrawalStatus.PENDING, nullable=False)
+    admin_notes = Column(Text, nullable=True)                               # 管理员备注
+    processed_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # 处理人
+    processed_at = Column(DateTime(timezone=True), nullable=True)           # 处理时间
+    
+    # 支付信息
+    payment_gateway = Column(String(50), nullable=True)                     # 支付渠道
+    gateway_txn_id = Column(String(255), nullable=True)                     # 支付网关交易号
+    gateway_response = Column(JSONB, nullable=True)                         # 网关响应
+    
+    # 风控信息
+    risk_score = Column(DECIMAL(5, 2), nullable=True)                       # 风险评分
+    auto_approved = Column(Boolean, default=False)                          # 是否自动审批
+    require_manual_review = Column(Boolean, default=False)                  # 是否需要人工审核
+    
+    # 时间戳
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    
+    # 关联关系
+    user = relationship("User")
+    wallet = relationship("Wallet", back_populates="withdrawal_requests")
+    processed_by_user = relationship("User", foreign_keys=[processed_by])
+
+    def __repr__(self):
+        return f"<WithdrawalRequest(id={self.id}, request_number={self.request_number}, amount={self.amount}, status={self.status.value})>" 

@@ -19,7 +19,7 @@ from fastapi import HTTPException
 
 from app.services.config_service import SystemConfigService
 from app.core.database import get_db
-from app.models.finance import Transaction, CommissionSplit, PaymentOrder, Wallet, TransactionType, TransactionStatus, CommissionStatus
+from app.models.finance import Transaction, CommissionSplit, PaymentOrder, Wallet, WithdrawalRequest, TransactionType, TransactionStatus, CommissionStatus, WithdrawalStatus
 from app.models.case import Case
 from app.models.user import User
 
@@ -33,6 +33,11 @@ class WeChatPayError(Exception):
 
 class CommissionSplitError(Exception):
     """分账异常"""
+    pass
+
+
+class WithdrawalError(Exception):
+    """提现异常"""
     pass
 
 
@@ -546,6 +551,391 @@ class CommissionSplitService:
             raise HTTPException(status_code=500, detail=f"获取分成明细失败: {str(e)}")
 
 
+class WithdrawalService:
+    """提现服务类"""
+    
+    def __init__(self, config_service: SystemConfigService):
+        self.config_service = config_service
+    
+    async def create_withdrawal_request(
+        self,
+        user_id: UUID,
+        amount: Decimal,
+        bank_account: str,
+        bank_name: str,
+        account_holder: str,
+        db: Session,
+        tenant_id: Optional[UUID] = None
+    ) -> Dict[str, Any]:
+        """
+        创建提现申请
+        
+        Args:
+            user_id: 用户ID
+            amount: 提现金额
+            bank_account: 银行账户
+            bank_name: 银行名称
+            account_holder: 账户姓名
+            db: 数据库会话
+            tenant_id: 租户ID
+            
+        Returns:
+            提现申请信息
+        """
+        try:
+            # 获取用户钱包
+            wallet = db.query(Wallet).filter(Wallet.user_id == user_id).first()
+            if not wallet:
+                raise WithdrawalError("钱包不存在")
+            
+            # 获取提现配置
+            withdrawal_config = await self.config_service.get_config("business", "withdrawal_settings", tenant_id)
+            if not withdrawal_config:
+                withdrawal_config = {
+                    "min_amount": 10.0,
+                    "max_amount": 50000.0,
+                    "daily_limit": 100000.0,
+                    "fee_rate": 0.001,
+                    "min_fee": 1.0,
+                    "max_fee": 50.0,
+                    "auto_approve_threshold": 1000.0
+                }
+            
+            min_amount = Decimal(str(withdrawal_config.get("min_amount", 10.0)))
+            max_amount = Decimal(str(withdrawal_config.get("max_amount", 50000.0)))
+            daily_limit = Decimal(str(withdrawal_config.get("daily_limit", 100000.0)))
+            
+            # 验证金额
+            if amount < min_amount:
+                raise WithdrawalError(f"提现金额不能少于{min_amount}元")
+            
+            if amount > max_amount:
+                raise WithdrawalError(f"单次提现金额不能超过{max_amount}元")
+            
+            if amount > wallet.withdrawable_balance:
+                raise WithdrawalError("可提现余额不足")
+            
+            # 检查日限额
+            today = datetime.now().date()
+            today_withdrawals = db.query(WithdrawalRequest).filter(
+                WithdrawalRequest.user_id == user_id,
+                WithdrawalRequest.created_at >= today,
+                WithdrawalRequest.status.in_([WithdrawalStatus.PENDING, WithdrawalStatus.APPROVED, WithdrawalStatus.PROCESSING, WithdrawalStatus.COMPLETED])
+            ).all()
+            
+            today_total = sum(w.amount for w in today_withdrawals)
+            if today_total + amount > daily_limit:
+                raise WithdrawalError(f"超过每日提现限额{daily_limit}元")
+            
+            # 计算手续费
+            fee_rate = Decimal(str(withdrawal_config.get("fee_rate", 0.001)))
+            min_fee = Decimal(str(withdrawal_config.get("min_fee", 1.0)))
+            max_fee = Decimal(str(withdrawal_config.get("max_fee", 50.0)))
+            
+            fee = max(min_fee, min(amount * fee_rate, max_fee))
+            actual_amount = amount - fee
+            
+            # 生成申请单号
+            request_number = f"WD{int(time.time())}{str(user_id)[-6:]}"
+            
+            # 风险评估
+            risk_score = await self._calculate_risk_score(user_id, amount, db)
+            auto_approve_threshold = Decimal(str(withdrawal_config.get("auto_approve_threshold", 1000.0)))
+            auto_approved = amount <= auto_approve_threshold and risk_score < 30
+            require_manual_review = risk_score >= 70
+            
+            # 创建提现申请
+            withdrawal_request = WithdrawalRequest(
+                user_id=user_id,
+                wallet_id=user_id,  # wallet的主键就是user_id
+                request_number=request_number,
+                amount=amount,
+                fee=fee,
+                actual_amount=actual_amount,
+                bank_account=bank_account,
+                bank_name=bank_name,
+                account_holder=account_holder,
+                status=WithdrawalStatus.APPROVED if auto_approved else WithdrawalStatus.PENDING,
+                risk_score=risk_score,
+                auto_approved=auto_approved,
+                require_manual_review=require_manual_review
+            )
+            
+            db.add(withdrawal_request)
+            
+            # 冻结相应金额
+            wallet.withdrawable_balance -= amount
+            wallet.frozen_balance += amount
+            
+            db.commit()
+            
+            # 如果自动审批，立即处理
+            if auto_approved:
+                await self._process_withdrawal(withdrawal_request.id, db, auto_process=True)
+            
+            return {
+                "id": str(withdrawal_request.id),
+                "request_number": request_number,
+                "amount": float(amount),
+                "fee": float(fee),
+                "actual_amount": float(actual_amount),
+                "status": withdrawal_request.status.value,
+                "auto_approved": auto_approved,
+                "estimated_arrival": "1-3个工作日" if not auto_approved else "24小时内"
+            }
+            
+        except Exception as e:
+            db.rollback()
+            logger.error(f"创建提现申请失败: {str(e)}")
+            raise WithdrawalError(f"创建提现申请失败: {str(e)}")
+    
+    async def get_withdrawal_requests(
+        self,
+        user_id: Optional[UUID] = None,
+        status: Optional[WithdrawalStatus] = None,
+        page: int = 1,
+        size: int = 20,
+        db: Session = None
+    ) -> Dict[str, Any]:
+        """获取提现申请列表"""
+        try:
+            query = db.query(WithdrawalRequest)
+            
+            if user_id:
+                query = query.filter(WithdrawalRequest.user_id == user_id)
+            
+            if status:
+                query = query.filter(WithdrawalRequest.status == status)
+            
+            query = query.order_by(WithdrawalRequest.created_at.desc())
+            
+            total = query.count()
+            requests = query.offset((page - 1) * size).limit(size).all()
+            
+            items = []
+            for req in requests:
+                user = db.query(User).filter(User.id == req.user_id).first()
+                items.append({
+                    "id": str(req.id),
+                    "request_number": req.request_number,
+                    "user_id": str(req.user_id),
+                    "user_name": user.username if user else "未知用户",
+                    "amount": float(req.amount),
+                    "fee": float(req.fee),
+                    "actual_amount": float(req.actual_amount),
+                    "bank_account": req.bank_account,
+                    "bank_name": req.bank_name,
+                    "account_holder": req.account_holder,
+                    "status": req.status.value,
+                    "risk_score": float(req.risk_score) if req.risk_score else None,
+                    "auto_approved": req.auto_approved,
+                    "admin_notes": req.admin_notes,
+                    "created_at": req.created_at.isoformat(),
+                    "processed_at": req.processed_at.isoformat() if req.processed_at else None
+                })
+            
+            return {
+                "items": items,
+                "total": total,
+                "page": page,
+                "size": size,
+                "pages": (total + size - 1) // size
+            }
+            
+        except Exception as e:
+            logger.error(f"获取提现申请列表失败: {str(e)}")
+            raise WithdrawalError(f"获取提现申请列表失败: {str(e)}")
+    
+    async def approve_withdrawal(
+        self,
+        withdrawal_id: UUID,
+        admin_id: UUID,
+        admin_notes: Optional[str] = None,
+        db: Session = None
+    ) -> Dict[str, Any]:
+        """审批通过提现申请"""
+        try:
+            withdrawal = db.query(WithdrawalRequest).filter(
+                WithdrawalRequest.id == withdrawal_id
+            ).first()
+            
+            if not withdrawal:
+                raise WithdrawalError("提现申请不存在")
+            
+            if withdrawal.status != WithdrawalStatus.PENDING:
+                raise WithdrawalError("该申请已处理，不能重复操作")
+            
+            withdrawal.status = WithdrawalStatus.APPROVED
+            withdrawal.processed_by = admin_id
+            withdrawal.processed_at = datetime.now()
+            if admin_notes:
+                withdrawal.admin_notes = admin_notes
+            
+            db.commit()
+            
+            # 异步处理实际转账
+            await self._process_withdrawal(withdrawal_id, db)
+            
+            return {
+                "success": True,
+                "message": "提现申请已审批通过",
+                "withdrawal_id": str(withdrawal_id)
+            }
+            
+        except Exception as e:
+            db.rollback()
+            logger.error(f"审批提现申请失败: {str(e)}")
+            raise WithdrawalError(f"审批提现申请失败: {str(e)}")
+    
+    async def reject_withdrawal(
+        self,
+        withdrawal_id: UUID,
+        admin_id: UUID,
+        admin_notes: str,
+        db: Session = None
+    ) -> Dict[str, Any]:
+        """拒绝提现申请"""
+        try:
+            withdrawal = db.query(WithdrawalRequest).filter(
+                WithdrawalRequest.id == withdrawal_id
+            ).first()
+            
+            if not withdrawal:
+                raise WithdrawalError("提现申请不存在")
+            
+            if withdrawal.status != WithdrawalStatus.PENDING:
+                raise WithdrawalError("该申请已处理，不能重复操作")
+            
+            # 恢复钱包余额
+            wallet = db.query(Wallet).filter(Wallet.user_id == withdrawal.user_id).first()
+            if wallet:
+                wallet.withdrawable_balance += withdrawal.amount
+                wallet.frozen_balance -= withdrawal.amount
+            
+            withdrawal.status = WithdrawalStatus.REJECTED
+            withdrawal.processed_by = admin_id
+            withdrawal.processed_at = datetime.now()
+            withdrawal.admin_notes = admin_notes
+            
+            db.commit()
+            
+            return {
+                "success": True,
+                "message": "提现申请已拒绝",
+                "withdrawal_id": str(withdrawal_id)
+            }
+            
+        except Exception as e:
+            db.rollback()
+            logger.error(f"拒绝提现申请失败: {str(e)}")
+            raise WithdrawalError(f"拒绝提现申请失败: {str(e)}")
+    
+    async def _calculate_risk_score(
+        self,
+        user_id: UUID,
+        amount: Decimal,
+        db: Session
+    ) -> Decimal:
+        """计算风险评分"""
+        try:
+            risk_score = Decimal('0')
+            
+            # 获取用户历史提现记录
+            user_withdrawals = db.query(WithdrawalRequest).filter(
+                WithdrawalRequest.user_id == user_id
+            ).all()
+            
+            # 新用户风险
+            if len(user_withdrawals) == 0:
+                risk_score += Decimal('20')
+            
+            # 大额提现风险
+            if amount > Decimal('10000'):
+                risk_score += Decimal('30')
+            elif amount > Decimal('5000'):
+                risk_score += Decimal('15')
+            
+            # 频繁提现风险
+            recent_withdrawals = [w for w in user_withdrawals 
+                                if w.created_at >= datetime.now() - timedelta(days=7)]
+            if len(recent_withdrawals) > 3:
+                risk_score += Decimal('25')
+            
+            # 失败记录风险
+            failed_withdrawals = [w for w in user_withdrawals 
+                                if w.status == WithdrawalStatus.FAILED]
+            if len(failed_withdrawals) > 0:
+                risk_score += Decimal('15')
+            
+            return min(risk_score, Decimal('100'))
+            
+        except Exception as e:
+            logger.error(f"计算风险评分失败: {str(e)}")
+            return Decimal('50')  # 默认中等风险
+    
+    async def _process_withdrawal(
+        self,
+        withdrawal_id: UUID,
+        db: Session,
+        auto_process: bool = False
+    ):
+        """处理实际转账"""
+        try:
+            withdrawal = db.query(WithdrawalRequest).filter(
+                WithdrawalRequest.id == withdrawal_id
+            ).first()
+            
+            if not withdrawal:
+                return
+            
+            # 更新状态为处理中
+            withdrawal.status = WithdrawalStatus.PROCESSING
+            db.commit()
+            
+            # 这里应该调用实际的银行转账API
+            # 目前模拟转账成功
+            success = await self._simulate_bank_transfer(withdrawal)
+            
+            if success:
+                # 转账成功
+                withdrawal.status = WithdrawalStatus.COMPLETED
+                withdrawal.gateway_txn_id = f"TXN{int(time.time())}"
+                
+                # 更新钱包统计
+                wallet = db.query(Wallet).filter(Wallet.user_id == withdrawal.user_id).first()
+                if wallet:
+                    wallet.frozen_balance -= withdrawal.amount
+                    wallet.total_withdrawn += withdrawal.amount
+                
+            else:
+                # 转账失败，恢复余额
+                withdrawal.status = WithdrawalStatus.FAILED
+                
+                wallet = db.query(Wallet).filter(Wallet.user_id == withdrawal.user_id).first()
+                if wallet:
+                    wallet.withdrawable_balance += withdrawal.amount
+                    wallet.frozen_balance -= withdrawal.amount
+            
+            db.commit()
+            
+        except Exception as e:
+            logger.error(f"处理提现转账失败: {str(e)}")
+            # 转账失败，更新状态并恢复余额
+            if withdrawal:
+                withdrawal.status = WithdrawalStatus.FAILED
+                wallet = db.query(Wallet).filter(Wallet.user_id == withdrawal.user_id).first()
+                if wallet:
+                    wallet.withdrawable_balance += withdrawal.amount
+                    wallet.frozen_balance -= withdrawal.amount
+                db.commit()
+    
+    async def _simulate_bank_transfer(self, withdrawal: WithdrawalRequest) -> bool:
+        """模拟银行转账（实际应调用银行API）"""
+        # 模拟90%成功率
+        import random
+        return random.random() > 0.1
+
+
 # 服务实例工厂函数
 def create_wechat_pay_service(config_service: SystemConfigService) -> WeChatPayService:
     """创建微信支付服务实例"""
@@ -554,4 +944,9 @@ def create_wechat_pay_service(config_service: SystemConfigService) -> WeChatPayS
 
 def create_commission_split_service(config_service: SystemConfigService) -> CommissionSplitService:
     """创建分账服务实例"""
-    return CommissionSplitService(config_service) 
+    return CommissionSplitService(config_service)
+
+
+def create_withdrawal_service(config_service: SystemConfigService) -> WithdrawalService:
+    """创建提现服务实例"""
+    return WithdrawalService(config_service) 

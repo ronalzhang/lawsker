@@ -2,23 +2,33 @@
 财务管理相关API端点
 """
 
+import logging
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Dict, Any, Optional, List
 from uuid import UUID
 import time
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Body, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Body, Request
+from fastapi import status as http_status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from app.core.deps import get_db, get_current_user, get_config_service
+from app.core.config import settings
 from app.models.user import User
-from app.models.finance import Transaction, CommissionSplit, Wallet, TransactionStatus, CommissionStatus, PaymentOrder
-from app.services.payment_service import WeChatPayService, CommissionSplitService, WeChatPayError
+from app.models.finance import Transaction, CommissionSplit, Wallet, WithdrawalRequest, TransactionStatus, CommissionStatus, PaymentOrder, WithdrawalStatus
+from app.services.payment_service import WeChatPayService, CommissionSplitService, WithdrawalService, WeChatPayError, WithdrawalError
 from app.services.config_service import SystemConfigService
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
+
+# 创建同步数据库引擎（用于服务类）
+sync_engine = create_engine(settings.DATABASE_URL)
+SyncSessionLocal = sessionmaker(bind=sync_engine)
 
 
 # Pydantic 模型定义
@@ -80,6 +90,65 @@ class CommissionListResponse(BaseModel):
     total_pages: int
 
 
+class WithdrawalCreateRequest(BaseModel):
+    """创建提现请求"""
+    amount: float = Field(..., gt=0, description="提现金额")
+    bank_account: str = Field(..., max_length=255, description="银行账户")
+    bank_name: str = Field(..., max_length=100, description="银行名称")
+    account_holder: str = Field(..., max_length=100, description="账户姓名")
+
+
+class WithdrawalResponse(BaseModel):
+    """提现响应"""
+    id: str
+    request_number: str
+    amount: float
+    fee: float
+    actual_amount: float
+    status: str
+    auto_approved: bool
+    estimated_arrival: str
+
+
+class WithdrawalDetailResponse(BaseModel):
+    """提现详情响应"""
+    id: str
+    request_number: str
+    user_id: str
+    user_name: str
+    amount: float
+    fee: float
+    actual_amount: float
+    bank_account: str
+    bank_name: str
+    account_holder: str
+    status: str
+    risk_score: Optional[float]
+    auto_approved: bool
+    admin_notes: Optional[str]
+    created_at: str
+    processed_at: Optional[str]
+
+
+class WithdrawalListResponse(BaseModel):
+    """提现列表响应"""
+    items: List[WithdrawalDetailResponse]
+    total: int
+    page: int
+    size: int
+    pages: int
+
+
+class WithdrawalApprovalRequest(BaseModel):
+    """提现审批请求"""
+    admin_notes: Optional[str] = Field(None, description="管理员备注")
+
+
+class WithdrawalRejectionRequest(BaseModel):
+    """提现拒绝请求"""
+    admin_notes: str = Field(..., description="拒绝原因")
+
+
 class TransactionResponse(BaseModel):
     id: str
     case_id: str
@@ -102,83 +171,84 @@ class TransactionListResponse(BaseModel):
     total_pages: int
 
 
-class WithdrawalRequest(BaseModel):
-    """提现请求"""
-    amount: Decimal = Field(..., gt=0, description="提现金额")
-    bank_account: str = Field(..., max_length=50, description="银行账户")
-    bank_name: str = Field(..., max_length=100, description="银行名称")
-    account_name: str = Field(..., max_length=100, description="账户姓名")
-
-
 @router.post("/payment/create", response_model=PaymentResponse)
 async def create_payment(
-    payment_request: PaymentRequest,
+    request: PaymentRequest,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
     config_service: SystemConfigService = Depends(get_config_service)
 ):
-    """创建支付订单"""
+    """创建微信支付订单"""
     
     try:
-        wechat_service = WeChatPayService(db, config_service)
+        wechat_service = WeChatPayService(config_service)
         
-        # 生成回调URL（实际部署时需要配置真实域名）
-        notify_url = "https://api.lawsker.com/api/v1/finance/payment/callback"
+        # 使用同步数据库会话
+        sync_session = SyncSessionLocal()
         
-        result = await wechat_service.create_payment_order(
-            case_id=payment_request.case_id,
-            amount=Decimal(str(payment_request.amount)),
-            body=payment_request.description or f"案件支付",
-            notify_url=notify_url,
-            tenant_id=current_user.tenant_id
-        )
-        
-        return PaymentResponse(
-            success=True,
-            out_trade_no=result["out_trade_no"],
-            qr_code=result["qr_code"],
-            message="支付订单创建成功"
-        )
+        try:
+            result = await wechat_service.create_payment_order(
+                case_id=request.case_id,
+                amount=Decimal(str(request.amount)),
+                description=request.description or "律师服务费用",
+                user_id=UUID(str(current_user.id)),
+                db=sync_session,
+                tenant_id=UUID(str(current_user.tenant_id))
+            )
+            
+            return PaymentResponse(
+                success=True,
+                out_trade_no=result["order_no"],
+                qr_code=result["qr_code"],
+                message="支付订单创建成功"
+            )
+            
+        finally:
+            sync_session.close()
         
     except WeChatPayError as e:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=http_status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="创建支付订单失败"
         )
 
 
 @router.post("/payment/callback")
-async def handle_payment_callback(
-    callback_data: PaymentCallbackRequest,
+async def payment_callback(
+    request: Request,
     db: AsyncSession = Depends(get_db),
     config_service: SystemConfigService = Depends(get_config_service)
 ):
-    """处理微信支付回调"""
+    """微信支付回调处理"""
     
     try:
-        wechat_service = WeChatPayService(db, config_service)
+        wechat_service = WeChatPayService(config_service)
         
-        # 转换回调数据格式
-        payment_data = {
-            "out_trade_no": callback_data.out_trade_no,
-            "transaction_id": callback_data.transaction_id,
-            "total_fee": callback_data.total_fee,
-            "time_end": callback_data.time_end
-        }
+        # 获取XML数据
+        xml_data = await request.body()
         
-        result = await wechat_service.handle_payment_callback(payment_data)
+        # 使用同步数据库会话
+        sync_session = SyncSessionLocal()
         
-        return {"return_code": "SUCCESS", "return_msg": "OK"}
+        try:
+            result = await wechat_service.handle_payment_callback(
+                xml_data=xml_data.decode('utf-8'),
+                db=sync_session
+            )
+            
+            return {"status": "success", "message": "回调处理成功"}
+            
+        finally:
+            sync_session.close()
         
-    except WeChatPayError as e:
-        return {"return_code": "FAIL", "return_msg": str(e)}
     except Exception as e:
-        return {"return_code": "FAIL", "return_msg": "处理回调失败"}
+        logger.error(f"支付回调处理失败: {str(e)}")
+        return {"status": "fail", "message": "回调处理失败"}
 
 
 @router.get("/wallet", response_model=WalletResponse)
@@ -224,105 +294,102 @@ async def get_wallet(
         
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="获取钱包信息失败"
         )
 
 
 @router.get("/commission/summary", response_model=CommissionSummaryResponse)
 async def get_commission_summary(
-    days: int = Query(30, ge=1, le=365, description="统计天数"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
     config_service: SystemConfigService = Depends(get_config_service)
 ):
-    """获取用户分账汇总"""
+    """获取分成汇总信息"""
     
     try:
-        commission_service = CommissionSplitService(db, config_service)
+        commission_service = CommissionSplitService(config_service)
         
-        # 计算时间范围
-        end_date = datetime.utcnow()
-        start_date = end_date - timedelta(days=days)
+        # 使用同步数据库会话
+        sync_session = SyncSessionLocal()
         
-        summary = await commission_service.get_commission_summary(
-            user_id=current_user.id,
-            tenant_id=current_user.tenant_id,
-            start_date=start_date,
-            end_date=end_date
-        )
-        
-        # 生成月度趋势数据（简化版本）
-        monthly_trend = []
-        for i in range(min(days // 30, 12)):
-            month_start = end_date - timedelta(days=(i+1)*30)
-            month_end = end_date - timedelta(days=i*30)
-            monthly_trend.append({
-                "month": month_start.strftime("%Y-%m"),
-                "amount": summary["total_amount"] / max(days // 30, 1),  # 简化计算
-                "count": summary["total_count"] // max(days // 30, 1)
-            })
-        
-        return CommissionSummaryResponse(
-            total_count=summary["total_count"],
-            total_amount=summary["total_amount"],
-            average_amount=summary["average_amount"],
-            monthly_trend=monthly_trend
-        )
-        
+        try:
+            summary = commission_service.get_commission_summary(
+                user_id=UUID(str(current_user.id)),
+                db=sync_session
+            )
+            
+            return CommissionSummaryResponse(
+                total_count=summary["total_count"],
+                total_amount=summary["total_amount"],
+                average_amount=summary["average_amount"],
+                monthly_trend=summary["monthly_trend"]
+            )
+            
+        finally:
+            sync_session.close()
+            
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="获取分账汇总失败"
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="获取分成汇总失败"
         )
 
 
 @router.get("/commission/details", response_model=CommissionListResponse)
 async def get_commission_details(
     page: int = Query(1, ge=1, description="页码"),
-    page_size: int = Query(20, ge=1, le=100, description="每页数量"),
+    size: int = Query(20, ge=1, le=100, description="每页数量"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
     config_service: SystemConfigService = Depends(get_config_service)
 ):
-    """获取用户分账明细"""
+    """获取分成明细列表"""
     
     try:
-        commission_service = CommissionSplitService(db, config_service)
+        commission_service = CommissionSplitService(config_service)
         
-        result = await commission_service.get_commission_details(
-            user_id=current_user.id,
-            page=page,
-            page_size=page_size
-        )
+        # 使用同步数据库会话
+        sync_session = SyncSessionLocal()
         
-        # 构建响应数据
-        items = []
-        for split in result["items"]:
-            items.append(CommissionDetailResponse(
-                id=str(split.id),
-                transaction_id=str(split.transaction_id),
-                case_number=split.transaction.case.case_number if split.transaction and split.transaction.case else "未知",  # type: ignore
-                role_at_split=split.role_at_split,  # type: ignore
-                amount=float(split.amount),  # type: ignore
-                percentage=float(split.percentage),  # type: ignore
-                status=split.status.value,  # type: ignore
-                created_at=split.created_at,  # type: ignore
-                paid_at=split.paid_at  # type: ignore
-            ))
-        
-        return CommissionListResponse(
-            items=items,
-            total=result["total"],
-            page=result["page"],
-            page_size=result["page_size"],
-            total_pages=result["total_pages"]
-        )
-        
+        try:
+            details = commission_service.get_commission_details(
+                user_id=UUID(str(current_user.id)),
+                page=page,
+                size=size,
+                db=sync_session
+            )
+            
+            items = [
+                CommissionDetailResponse(
+                    id=item["id"],
+                    transaction_id=item["transaction_id"],
+                    case_number=item["case_number"],
+                    role_at_split=item["role_at_split"],
+                    amount=item["amount"],
+                    percentage=item["percentage"],
+                    status=item["status"],
+                    created_at=datetime.fromisoformat(item["created_at"]),
+                    paid_at=datetime.fromisoformat(item["paid_at"]) if item["paid_at"] else None
+                )
+                for item in details["items"]
+            ]
+            
+            return CommissionListResponse(
+                items=items,
+                total=details["total"],
+                page=details["page"],
+                page_size=details["page_size"],
+                total_pages=details["total_pages"]
+            )
+            
+        finally:
+            sync_session.close()
+            
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="获取分账明细失败"
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="获取分成明细失败"
         )
 
 
@@ -396,69 +463,377 @@ async def get_transactions(
         
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="获取交易记录失败"
         )
 
 
-@router.post("/wallet/withdraw")
-async def request_withdrawal(
-    request: WithdrawalRequest,
+@router.post("/withdrawal/create", response_model=WithdrawalResponse)
+async def create_withdrawal_request(
+    request: WithdrawalCreateRequest,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    config_service: SystemConfigService = Depends(get_config_service)
 ):
-    """申请提现"""
+    """创建提现申请"""
     
     try:
-        from sqlalchemy import select
+        withdrawal_service = WithdrawalService(config_service)
         
-        # 查询用户钱包
-        wallet_query = select(Wallet).where(Wallet.user_id == current_user.id)
-        wallet_result = await db.execute(wallet_query)
-        wallet = wallet_result.scalar_one_or_none()
+        # 使用同步数据库会话
+        sync_session = SyncSessionLocal()
         
-        if not wallet:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="钱包不存在"
+        try:
+            result = await withdrawal_service.create_withdrawal_request(
+                user_id=UUID(str(current_user.id)),
+                amount=Decimal(str(request.amount)),
+                bank_account=request.bank_account,
+                bank_name=request.bank_name,
+                account_holder=request.account_holder,
+                db=sync_session,
+                tenant_id=UUID(str(current_user.tenant_id))
             )
-        
-        # 检查余额
-        if float(wallet.withdrawable_balance) < float(request.amount):  # type: ignore
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="可提现余额不足"
+            
+            return WithdrawalResponse(
+                id=result["id"],
+                request_number=result["request_number"],
+                amount=result["amount"],
+                fee=result["fee"],
+                actual_amount=result["actual_amount"],
+                status=result["status"],
+                auto_approved=result["auto_approved"],
+                estimated_arrival=result["estimated_arrival"]
             )
+            
+        finally:
+            sync_session.close()
         
-        # 这里应该调用实际的提现处理逻辑
-        # 目前只返回成功响应
-        return {
-            "success": True,
-            "message": "提现申请已提交，请等待处理",
-            "amount": float(request.amount),
-            "estimated_arrival": "1-3个工作日"
-        }
-        
-    except HTTPException:
-        raise
+    except WithdrawalError as e:
+        raise HTTPException(
+            status_code=http_status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="提现申请失败"
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="创建提现申请失败"
+        )
+
+
+@router.get("/withdrawal/list", response_model=WithdrawalListResponse)
+async def get_user_withdrawal_requests(
+    page: int = Query(1, ge=1, description="页码"),
+    size: int = Query(20, ge=1, le=100, description="每页数量"),
+    status: Optional[str] = Query(None, description="状态筛选"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    config_service: SystemConfigService = Depends(get_config_service)
+):
+    """获取用户提现申请列表"""
+    
+    try:
+        withdrawal_service = WithdrawalService(config_service)
+        
+        # 转换状态参数
+        status_filter = None
+        if status:
+            try:
+                status_filter = WithdrawalStatus(status)
+            except ValueError:
+                raise HTTPException(
+                    status_code=http_status.HTTP_400_BAD_REQUEST,
+                    detail="无效的状态参数"
+                )
+        
+        # 使用同步数据库会话
+        sync_session = SyncSessionLocal()
+        
+        try:
+            result = await withdrawal_service.get_withdrawal_requests(
+                user_id=UUID(str(current_user.id)),
+                status=status_filter,
+                page=page,
+                size=size,
+                db=sync_session
+            )
+            
+            items = [
+                WithdrawalDetailResponse(
+                    id=item["id"],
+                    request_number=item["request_number"],
+                    user_id=item["user_id"],
+                    user_name=item["user_name"],
+                    amount=item["amount"],
+                    fee=item["fee"],
+                    actual_amount=item["actual_amount"],
+                    bank_account=item["bank_account"],
+                    bank_name=item["bank_name"],
+                    account_holder=item["account_holder"],
+                    status=item["status"],
+                    risk_score=item["risk_score"],
+                    auto_approved=item["auto_approved"],
+                    admin_notes=item["admin_notes"],
+                    created_at=item["created_at"],
+                    processed_at=item["processed_at"]
+                )
+                for item in result["items"]
+            ]
+            
+            return WithdrawalListResponse(
+                items=items,
+                total=result["total"],
+                page=result["page"],
+                size=result["size"],
+                pages=result["pages"]
+            )
+            
+        finally:
+            sync_session.close()
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="获取提现申请列表失败"
+        )
+
+
+@router.get("/withdrawal/admin/list", response_model=WithdrawalListResponse)
+async def get_admin_withdrawal_requests(
+    page: int = Query(1, ge=1, description="页码"),
+    size: int = Query(20, ge=1, le=100, description="每页数量"),
+    status: Optional[str] = Query(None, description="状态筛选"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    config_service: SystemConfigService = Depends(get_config_service)
+):
+    """管理员获取所有提现申请列表"""
+    
+    # 检查管理员权限
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=http_status.HTTP_403_FORBIDDEN,
+            detail="仅管理员可访问"
+        )
+    
+    try:
+        withdrawal_service = WithdrawalService(config_service)
+        
+        # 转换状态参数
+        status_filter = None
+        if status:
+            try:
+                status_filter = WithdrawalStatus(status)
+            except ValueError:
+                raise HTTPException(
+                    status_code=http_status.HTTP_400_BAD_REQUEST,
+                    detail="无效的状态参数"
+                )
+        
+        # 使用同步数据库会话
+        sync_session = SyncSessionLocal()
+        
+        try:
+            result = await withdrawal_service.get_withdrawal_requests(
+                user_id=None,  # 管理员查看所有用户
+                status=status_filter,
+                page=page,
+                size=size,
+                db=sync_session
+            )
+            
+            items = [
+                WithdrawalDetailResponse(
+                    id=item["id"],
+                    request_number=item["request_number"],
+                    user_id=item["user_id"],
+                    user_name=item["user_name"],
+                    amount=item["amount"],
+                    fee=item["fee"],
+                    actual_amount=item["actual_amount"],
+                    bank_account=item["bank_account"],
+                    bank_name=item["bank_name"],
+                    account_holder=item["account_holder"],
+                    status=item["status"],
+                    risk_score=item["risk_score"],
+                    auto_approved=item["auto_approved"],
+                    admin_notes=item["admin_notes"],
+                    created_at=item["created_at"],
+                    processed_at=item["processed_at"]
+                )
+                for item in result["items"]
+            ]
+            
+            return WithdrawalListResponse(
+                items=items,
+                total=result["total"],
+                page=result["page"],
+                size=result["size"],
+                pages=result["pages"]
+            )
+            
+        finally:
+            sync_session.close()
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="获取提现申请列表失败"
+        )
+
+
+@router.post("/withdrawal/admin/{withdrawal_id}/approve")
+async def approve_withdrawal_request(
+    withdrawal_id: UUID,
+    request: WithdrawalApprovalRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    config_service: SystemConfigService = Depends(get_config_service)
+):
+    """管理员审批通过提现申请"""
+    
+    # 检查管理员权限
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=http_status.HTTP_403_FORBIDDEN,
+            detail="仅管理员可访问"
+        )
+    
+    try:
+        withdrawal_service = WithdrawalService(config_service)
+        
+        # 使用同步数据库会话
+        sync_session = SyncSessionLocal()
+        
+        try:
+            result = await withdrawal_service.approve_withdrawal(
+                withdrawal_id=withdrawal_id,
+                admin_id=UUID(str(current_user.id)),
+                admin_notes=request.admin_notes,
+                db=sync_session
+            )
+            
+            return result
+            
+        finally:
+            sync_session.close()
+        
+    except WithdrawalError as e:
+        raise HTTPException(
+            status_code=http_status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="审批提现申请失败"
+        )
+
+
+@router.post("/withdrawal/admin/{withdrawal_id}/reject")
+async def reject_withdrawal_request(
+    withdrawal_id: UUID,
+    request: WithdrawalRejectionRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    config_service: SystemConfigService = Depends(get_config_service)
+):
+    """管理员拒绝提现申请"""
+    
+    # 检查管理员权限
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=http_status.HTTP_403_FORBIDDEN,
+            detail="仅管理员可访问"
+        )
+    
+    try:
+        withdrawal_service = WithdrawalService(config_service)
+        
+        # 使用同步数据库会话
+        sync_session = SyncSessionLocal()
+        
+        try:
+            result = await withdrawal_service.reject_withdrawal(
+                withdrawal_id=withdrawal_id,
+                admin_id=UUID(str(current_user.id)),
+                admin_notes=request.admin_notes,
+                db=sync_session
+            )
+            
+            return result
+            
+        finally:
+            sync_session.close()
+        
+    except WithdrawalError as e:
+        raise HTTPException(
+            status_code=http_status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="拒绝提现申请失败"
+        )
+
+
+@router.get("/withdrawal/config")
+async def get_withdrawal_config(
+    current_user: User = Depends(get_current_user),
+    config_service: SystemConfigService = Depends(get_config_service)
+):
+    """获取提现配置信息"""
+    
+    try:
+        # 获取提现配置
+        withdrawal_config = await config_service.get_config("business", "withdrawal_settings")
+        if not withdrawal_config:
+            withdrawal_config = {
+                "min_amount": 10.0,
+                "max_amount": 50000.0,
+                "daily_limit": 100000.0,
+                "fee_rate": 0.001,
+                "min_fee": 1.0,
+                "max_fee": 50.0,
+                "auto_approve_threshold": 1000.0,
+                "processing_time": "1-3个工作日"
+            }
+        
+        return {
+            "withdrawal_settings": withdrawal_config,
+            "available_banks": [
+                {"code": "ICBC", "name": "中国工商银行"},
+                {"code": "CCB", "name": "中国建设银行"},
+                {"code": "ABC", "name": "中国农业银行"},
+                {"code": "BOC", "name": "中国银行"},
+                {"code": "COMM", "name": "交通银行"},
+                {"code": "CMB", "name": "招商银行"},
+                {"code": "CITIC", "name": "中信银行"},
+                {"code": "CEB", "name": "光大银行"},
+                {"code": "CMBC", "name": "民生银行"},
+                {"code": "PAB", "name": "平安银行"}
+            ]
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取提现配置失败: {str(e)}"
         )
 
 
 @router.get("/config")
 async def get_finance_config(
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    config_service: SystemConfigService = Depends(get_config_service)
 ):
     """
     获取财务配置信息（仅管理员）
     """
     if not current_user.is_superuser:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
+            status_code=http_status.HTTP_403_FORBIDDEN,
             detail="仅管理员可访问"
         )
     
@@ -477,6 +852,16 @@ async def get_finance_config(
         payment_config = await config_service.get_config("payment_keys", "wechat_pay")
         payment_enabled = bool(payment_config and payment_config.get("enabled"))
         
+        # 获取提现配置
+        withdrawal_config = await config_service.get_config("business", "withdrawal_settings")
+        if not withdrawal_config:
+            withdrawal_config = {
+                "min_amount": 10.0,
+                "max_amount": 50000.0,
+                "daily_limit": 100000.0,
+                "processing_time": "1-3个工作日"
+            }
+        
         return {
             "commission_rates": commission_config,
             "payment_channels": {
@@ -489,16 +874,11 @@ async def get_finance_config(
                     "name": "支付宝"
                 }
             },
-            "withdrawal_settings": {
-                "min_amount": 10.0,
-                "max_amount": 50000.0,
-                "daily_limit": 100000.0,
-                "processing_time": "1-3个工作日"
-            }
+            "withdrawal_settings": withdrawal_config
         }
         
     except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"获取财务配置失败: {str(e)}"
         ) 
