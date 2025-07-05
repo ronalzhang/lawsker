@@ -11,97 +11,74 @@
     <meta name="description" content="Lawsker (律思客) - AI驱动的O2O专业服务平台，法律智慧，即刻送达" />
     <meta name="keywords" content="法律服务,AI,催收,律师,O2O平台" />
     <title>Lawsker 律思客 - 法律服务O2O平台</title>
-    <!-- 移除自动重定向，让用户可以浏览首页内容 -->
     <style>
         :root {
-            --primary-color: #667eea;
-            --secondary-color: #764ba2;
-            --success-color: #84fab0;
-            --warning-color: #ffeaa7;
-            --danger-color: #fd79a8;
-            --info-color: #74b9ff;
-            
+            --glass-bg: rgba(22, 28, 48, 0.75);
+            --glass-border: rgba(122, 160, 255, 0.25);
+            --glass-shadow: rgba(0, 0, 0, 0.3);
+            --blur-radius: 25px;
+            --border-radius: 20px;
             --text-primary: #f0f4ff;
             --text-secondary: #a8b2d1;
             --text-muted: #6c7b8a;
-            
-            --bg-dark: #0f1424;
-            --bg-card: rgba(22, 28, 48, 0.8);
-            --bg-glass: rgba(255, 255, 255, 0.1);
-            
-            --border-radius: 16px;
-            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-success: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            --app-padding: 16px;
+            --safe-area-top: env(safe-area-inset-top, 0px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
-            font-family: 'Microsoft YaHei', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f1424 0%, #1a1d35 50%, #0f1424 100%);
+            color: var(--text-primary);
             min-height: 100vh;
+            position: relative;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding-top: var(--safe-area-top);
+            padding-bottom: var(--safe-area-bottom);
         }
 
-        /* 动态背景 */
-        .bg-animation {
+        /* 优化的背景效果，减少性能消耗 */
+        body::before {
+            content: '';
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(122, 160, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(122, 160, 255, 0.08) 0%, transparent 50%);
             z-index: -1;
-        }
-
-        .bg-animation::before {
-            content: '';
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
-            animation: float1 20s ease-in-out infinite;
-            top: 20%;
-            left: 10%;
-        }
-
-        .bg-animation::after {
-            content: '';
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(118, 75, 162, 0.08) 0%, transparent 70%);
-            animation: float2 15s ease-in-out infinite;
-            bottom: 20%;
-            right: 10%;
-        }
-
-        @keyframes float1 {
-            0%, 100% { transform: translateY(0px) translateX(0px); }
-            33% { transform: translateY(-30px) translateX(20px); }
-            66% { transform: translateY(20px) translateX(-10px); }
-        }
-
-        @keyframes float2 {
-            0%, 100% { transform: translateY(0px) translateX(0px); }
-            50% { transform: translateY(-20px) translateX(15px); }
         }
 
         /* 导航栏 */
         .navbar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 1rem 0;
             position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            top: var(--safe-area-top);
+            left: 0;
+            right: 0;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-radius));
+            -webkit-backdrop-filter: blur(var(--blur-radius));
+            border-bottom: 1px solid var(--glass-border);
+            padding: 16px var(--app-padding);
+            z-index: 100;
+            box-shadow: 0 8px 32px var(--glass-shadow);
         }
 
         .nav-container {
@@ -110,656 +87,631 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 2rem;
         }
 
         .logo {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #2563eb;
+            font-size: 24px;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo::before {
+            content: '⚡';
+            font-size: 20px;
+            filter: drop-shadow(0 0 8px rgba(122, 160, 255, 0.5));
+            -webkit-text-fill-color: initial;
         }
 
         .nav-links {
             display: flex;
             gap: 2rem;
+            align-items: center;
         }
 
-        .nav-links a {
+        .nav-link {
+            color: var(--text-secondary);
             text-decoration: none;
-            color: #333;
             font-weight: 500;
-            transition: color 0.3s;
+            padding: 8px 16px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-size: 14px;
         }
 
-        .nav-links a:hover {
-            color: #2563eb;
+        .nav-link:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.1);
         }
 
-        .login-btn {
-            background: #2563eb;
+        .btn-login {
+            background: var(--gradient-primary);
             color: white;
-            padding: 0.7rem 1.5rem;
-            border-radius: 25px;
+            padding: 10px 20px;
+            border-radius: 12px;
             text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(122, 160, 255, 0.3);
+            transition: all 0.3s ease;
         }
 
-        .login-btn:hover {
-            background: #1d4ed8;
+        .btn-login:hover {
             transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(122, 160, 255, 0.4);
         }
 
-        .hero {
-            padding: 8rem 0 4rem;
-            text-align: center;
-            color: white;
-        }
-
-        .hero h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .hero p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
-        }
-
-        .main-content {
+        /* 主内容区 */
+        .main-container {
+            margin-top: calc(var(--safe-area-top) + 80px);
+            padding: 0 var(--app-padding);
             max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .revenue-section {
-            background: white;
-            border-radius: 20px;
-            padding: 3rem;
-            margin: 2rem 0;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .section-title {
-            font-size: 2rem;
+        /* 英雄区域 */
+        .hero-section {
             text-align: center;
+            padding: 60px 0;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
             margin-bottom: 2rem;
-            color: #2563eb;
-        }
-
-        .revenue-models {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-
-        .revenue-card {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            border-radius: 15px;
-            padding: 2rem;
-            text-align: center;
-            border: 2px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .revenue-card:hover {
-            border-color: #2563eb;
-            transform: translateY(-5px);
-        }
-
-        .revenue-card h3 {
-            color: #2563eb;
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
-        }
-
-        .revenue-card .role {
-            background: #2563eb;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-            display: inline-block;
-        }
-
-        .revenue-card .commission {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #10b981;
-            margin: 1rem 0;
-        }
-
-        .revenue-card .description {
-            color: #666;
             line-height: 1.6;
         }
 
-        .calculator {
-            background: #f8fafc;
-            border-radius: 15px;
-            padding: 2rem;
-            margin: 2rem 0;
-        }
-
-        .calculator h3 {
-            color: #2563eb;
-            margin-bottom: 1.5rem;
-            text-align: center;
-        }
-
-        .calc-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .calc-item {
+        .hero-buttons {
             display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
         }
 
-        .calc-item label {
-            font-weight: 500;
-            color: #333;
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
         }
 
-        .calc-item input {
-            padding: 0.75rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s;
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(122, 160, 255, 0.3);
         }
 
-        .calc-item input:focus {
-            outline: none;
-            border-color: #2563eb;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(122, 160, 255, 0.4);
         }
 
-        .calc-results {
-            background: white;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin-top: 1.5rem;
-            border: 2px solid #10b981;
+        .btn-secondary {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-radius));
+            -webkit-backdrop-filter: blur(var(--blur-radius));
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
         }
 
-        .calc-results h4 {
-            color: #10b981;
-            margin-bottom: 1rem;
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
         }
 
-        .result-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-            padding: 0.5rem;
-            background: #f0fdf4;
-            border-radius: 5px;
-        }
-
-        .result-amount {
-            font-weight: bold;
-            color: #10b981;
-        }
-
-        .business-overview {
-            background: white;
-            border-radius: 20px;
-            padding: 3rem;
-            margin: 2rem 0;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .business-grid {
+        /* 特色卡片 */
+        .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
+            margin: 4rem 0;
         }
 
-        .business-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        .feature-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-radius));
+            -webkit-backdrop-filter: blur(var(--blur-radius));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
             padding: 2rem;
-            border-radius: 15px;
             text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 8px 32px var(--glass-shadow);
+            will-change: transform;
+            position: relative;
+            overflow: hidden;
         }
 
-        .business-card h3 {
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
             margin-bottom: 1rem;
+            filter: drop-shadow(0 0 10px rgba(122, 160, 255, 0.3));
+        }
+
+        .feature-title {
             font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
         }
 
-        .business-card .price {
-            font-size: 2rem;
-            font-weight: bold;
-            margin: 1rem 0;
+        .feature-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
         }
 
-        .business-card .features {
-            list-style: none;
-            text-align: left;
+        .feature-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--glass-border);
         }
 
-        .business-card .features li {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .footer {
-            background: #1e293b;
-            color: white;
-            padding: 2rem 0;
+        .stat-item {
             text-align: center;
-            margin-top: 4rem;
         }
 
-        .footer p {
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* 收入计算器 */
+        .calculator-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-radius));
+            -webkit-backdrop-filter: blur(var(--blur-radius));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 3rem;
+            margin: 4rem 0;
+            box-shadow: 0 8px 32px var(--glass-shadow);
+        }
+
+        .calculator-title {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+        }
+
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .calculator-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .calculator-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .calculator-label {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
             margin-bottom: 0.5rem;
         }
 
+        .calculator-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .calculator-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        /* 商业模式展示 */
+        .business-model {
+            margin: 4rem 0;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 3rem;
+        }
+
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .model-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-radius));
+            -webkit-backdrop-filter: blur(var(--blur-radius));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: 0 8px 32px var(--glass-shadow);
+            transition: transform 0.3s ease;
+            will-change: transform;
+        }
+
+        .model-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .model-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .model-icon {
+            font-size: 2rem;
+            padding: 12px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .model-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .model-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .model-income {
+            background: var(--gradient-success);
+            color: #065f46;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        /* 响应式优化 */
         @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2rem;
-            }
-            
-            .nav-container {
-                flex-direction: column;
-                gap: 1rem;
-            }
-            
             .nav-links {
-                gap: 1rem;
+                display: none;
             }
             
-            .main-content {
-                padding: 0 1rem;
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
             }
+            
+            .features-grid,
+            .calculator-grid,
+            .model-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .calculator-section {
+                padding: 2rem;
+            }
+            
+            .main-container {
+                padding: 0 12px;
+            }
+        }
+
+        /* 性能优化 */
+        .feature-card,
+        .model-card,
+        .btn {
+            will-change: transform;
+        }
+
+        /* 触摸反馈 */
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .feature-card:active,
+        .model-card:active {
+            transform: scale(0.98);
         }
     </style>
   </head>
   <body>
-    <div class="bg-animation"></div>
-
     <!-- 导航栏 -->
     <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">Lawsker 律思客</div>
-            <div class="nav-links">
-                <a href="#home">首页</a>
-                <a href="#revenue">收益模式</a>
-                <a href="#services">服务介绍</a>
-                <a href="#about">关于我们</a>
-            </div>
-            <a href="login.html" class="login-btn">立即登录</a>
+      <div class="nav-container">
+        <div class="logo">
+          Lawsker 律思客
         </div>
+        <div class="nav-links">
+          <a href="#features" class="nav-link">核心业务</a>
+          <a href="#calculator" class="nav-link">收入计算</a>
+          <a href="#business" class="nav-link">商业模式</a>
+          <a href="login.html" class="btn-login">立即体验</a>
+        </div>
+      </div>
     </nav>
 
-    <!-- 英雄区域 -->
-    <section class="hero">
-        <div class="main-content">
-            <h1>Lawsker 律思客</h1>
-            <p>专注于国内法律服务的O2O平台 · 法律智慧，即刻送达</p>
-            <p style="font-size: 1.1rem; margin-top: 1rem;">以债务催收为核心业务，通过AI技术优化传统法律服务流程</p>
-        </div>
-    </section>
-
     <!-- 主要内容 -->
-    <div class="main-content">
-        
-        <!-- 核心业务模块 -->
-        <section class="business-overview">
-            <h2 class="section-title">💼 核心业务模块</h2>
-            <div class="business-grid">
-                <div class="business-card">
-                    <h3>🎯 主营业务：债务催收服务</h3>
-                    <div class="business-flow">
-                        <div class="flow-step">机构委托</div>
-                        <div class="flow-arrow">→</div>
-                        <div class="flow-step">律师接单</div>
-                        <div class="flow-arrow">→</div>
-                        <div class="flow-step">AI辅助催收</div>
-                        <div class="flow-arrow">→</div>
-                        <div class="flow-step">分期回款</div>
-                        <div class="flow-arrow">→</div>
-                        <div class="flow-step">自动分账</div>
-                    </div>
-                    <div class="business-features">
-                        <p>✓ 专业律师资质 + AI效率提升</p>
-                        <p>✓ 透明分账机制</p>
-                        <p>✓ 目标客户：银行、助贷机构、小额贷款公司</p>
-                    </div>
-                </div>
+    <div class="main-container">
+      <!-- 英雄区域 -->
+      <section class="hero-section">
+        <h1 class="hero-title">法律智慧，即刻送达</h1>
+        <p class="hero-subtitle">
+          AI驱动的O2O法律服务平台<br>
+          专注债务催收与律师函服务，让法律服务更高效、更便民、更专业
+        </p>
+        <div class="hero-buttons">
+          <a href="login.html" class="btn btn-primary">
+            🚀 开始使用
+          </a>
+          <a href="earnings-calculator.html" class="btn btn-secondary">
+            💰 收入预测
+          </a>
+        </div>
+      </section>
 
-                <div class="business-card">
-                    <h3>📧 次要业务：律师函服务</h3>
-                    <div class="price">30元/份</div>
-                    <div class="business-flow">
-                        <div class="flow-step">客户下单付款</div>
-                        <div class="flow-arrow">→</div>
-                        <div class="flow-step">AI生成律师函</div>
-                        <div class="flow-arrow">→</div>
-                        <div class="flow-step">短信/邮件发送</div>
-                    </div>
-                    <div class="business-features">
-                        <p>✓ 无纸化、秒级到达</p>
-                        <p>✓ 成本极低</p>
-                        <p>✓ 可定时发送</p>
-                    </div>
-                </div>
+      <!-- 核心业务特色 -->
+      <section id="features" class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">⚖️</div>
+          <h3 class="feature-title">AI智能债务催收</h3>
+          <p class="feature-description">
+            专业律师资质背书，AI辅助生成催收文书，30秒实时分账系统，透明高效的债务催收服务
+          </p>
+          <div class="feature-stats">
+            <div class="stat-item">
+              <span class="stat-value">85%</span>
+              <span class="stat-label">回收成功率</span>
             </div>
-        </section>
-
-        <!-- 双模式运营策略 -->
-        <section class="revenue-section">
-            <h2 class="section-title">🏗️ 双模式运营策略</h2>
-            <div class="revenue-models">
-                <div class="revenue-card">
-                    <h3>SaaS在线模式</h3>
-                    <div class="role">中小企业</div>
-                    <div class="strategy-features">
-                        <p>✓ 零门槛快速接入</p>
-                        <p>✓ 按量付费成本可控</p>
-                        <p>✓ 网络效应规模经济</p>
-                        <p style="color: #10b981; font-weight: bold;">收入：订阅+抽成+增值</p>
-                    </div>
-                </div>
-
-                <div class="revenue-card">
-                    <h3>私有化部署</h3>
-                    <div class="role">大企业</div>
-                    <div class="strategy-features">
-                        <p>✓ 数据安全私有部署</p>
-                        <p>✓ 深度定制个性化流程</p>
-                        <p>✓ 高客单价高粘性</p>
-                        <p style="color: #10b981; font-weight: bold;">收入：授权+定制+维护</p>
-                    </div>
-                </div>
+            <div class="stat-item">
+              <span class="stat-value">30秒</span>
+              <span class="stat-label">实时分账</span>
             </div>
-        </section>
-
-        <!-- 商业模式与分成机制 -->
-        <section class="revenue-section">
-            <h2 class="section-title">💰 商业模式与分成机制</h2>
-            <div class="revenue-flow">
-                <h3 style="text-align: center; margin-bottom: 2rem;">资金流设计</h3>
-                <div class="flow-diagram">
-                    <div class="flow-item">债务人还款</div>
-                    <div class="flow-arrow">→</div>
-                    <div class="flow-item">平台托管账户</div>
-                    <div class="flow-arrow">→</div>
-                    <div class="flow-item">智能分账系统</div>
-                    <div class="flow-arrow">→</div>
-                    <div class="flow-item">各方收益账户</div>
-                </div>
+            <div class="stat-item">
+              <span class="stat-value">50%</span>
+              <span class="stat-label">机构分成</span>
             </div>
-            
-            <div class="revenue-models">
-                <div class="revenue-card">
-                    <h3>🏢 机构返还</h3>
-                    <div class="commission">50%</div>
-                    <div class="description">返还委托方</div>
-                </div>
+          </div>
+        </div>
 
-                <div class="revenue-card">
-                    <h3>🎯 平台分成</h3>
-                    <div class="commission">32.5%</div>
-                    <div class="description">技术服务+运营成本</div>
-                </div>
-
-                <div class="revenue-card">
-                    <h3>⚖️ 律师佣金</h3>
-                    <div class="commission">10%</div>
-                    <div class="description">资质授权+执行服务</div>
-                </div>
-
-                <div class="revenue-card">
-                    <h3>📊 销售佣金</h3>
-                    <div class="commission">7.5%</div>
-                    <div class="description">业务开发</div>
-                </div>
+        <div class="feature-card">
+          <div class="feature-icon">📝</div>
+          <h3 class="feature-title">一键律师函服务</h3>
+          <p class="feature-description">
+            30元起步价，AI生成专业律师函，短信/邮件秒级送达，无纸化操作，成本极低
+          </p>
+          <div class="feature-stats">
+            <div class="stat-item">
+              <span class="stat-value">30元</span>
+              <span class="stat-label">起步价格</span>
             </div>
-        </section>
-
-        <!-- 收入预测 -->
-        <section class="business-overview">
-            <h2 class="section-title">📊 第一年收入目标</h2>
-            <div class="business-grid">
-                <div class="business-card">
-                    <h3>催收业务</h3>
-                    <div class="price">1.625亿元</div>
-                    <p>处理5亿催收金额，平台分成32.5%</p>
-                </div>
-
-                <div class="business-card">
-                    <h3>律师函服务</h3>
-                    <div class="price">300万元</div>
-                    <p>10万份 × 30元/份</p>
-                </div>
-
-                <div class="business-card">
-                    <h3>SaaS订阅</h3>
-                    <div class="price">960万元</div>
-                    <p>200家机构 × 3999元/月 × 12月</p>
-                </div>
-
-                <div class="business-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                    <h3>总营收目标</h3>
-                    <div class="price">1.655亿元</div>
-                    <p>净利润：1.485亿（净利率89.7%）</p>
-                </div>
+            <div class="stat-item">
+              <span class="stat-value">秒级</span>
+              <span class="stat-label">送达速度</span>
             </div>
-        </section>
-
-        <!-- 月收入计算器 -->
-        <section class="calculator">
-            <h3>💰 月收入预测计算器</h3>
-            <div class="calc-grid">
-                <div class="calc-item">
-                    <label for="caseCount">处理案件数量</label>
-                    <input type="number" id="caseCount" value="100" onchange="calculateRevenue()">
-                </div>
-
-                <div class="calc-item">
-                    <label for="avgAmount">平均案件金额（万元）</label>
-                    <input type="number" id="avgAmount" value="10" onchange="calculateRevenue()">
-                </div>
-
-                <div class="calc-item">
-                    <label for="successRate">成功催收率（%）</label>
-                    <input type="number" id="successRate" value="60" onchange="calculateRevenue()">
-                </div>
-
-                <div class="calc-item">
-                    <label for="userRole">您的角色</label>
-                    <select id="userRole" onchange="calculateRevenue()">
-                        <option value="platform">平台（32.5%）</option>
-                        <option value="lawyer">律师（10%）</option>
-                        <option value="sales">销售（7.5%）</option>
-                        <option value="institution">机构（50%）</option>
-                    </select>
-                </div>
+            <div class="stat-item">
+              <span class="stat-value">10万+</span>
+              <span class="stat-label">年服务量</span>
             </div>
+          </div>
+        </div>
 
-            <div class="calc-results" id="calcResults">
-                <h4>💰 月收入预测结果</h4>
-                <div class="result-item">
-                    <span>总催收金额：</span>
-                    <span class="result-amount" id="totalAmount">600万元</span>
-                </div>
-                <div class="result-item">
-                    <span>您的分成收入：</span>
-                    <span class="result-amount" id="yourIncome">195万元</span>
-                </div>
-                <div class="result-item">
-                    <span>年化收入预测：</span>
-                    <span class="result-amount" id="yearlyIncome">2340万元</span>
-                </div>
+        <div class="feature-card">
+          <div class="feature-icon">🤖</div>
+          <h3 class="feature-title">双模式运营</h3>
+          <p class="feature-description">
+            SaaS在线模式服务中小企业，私有化部署满足大企业需求，灵活适配各种业务场景
+          </p>
+          <div class="feature-stats">
+            <div class="stat-item">
+              <span class="stat-value">200+</span>
+              <span class="stat-label">合作机构</span>
             </div>
-        </section>
-
-        <!-- 服务优势 -->
-        <section class="business-overview">
-            <h2 class="section-title">🤖 AI技术应用优势</h2>
-            <div class="business-grid">
-                <div style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-                    <h3 style="color: #2563eb;">AI催收文书生成</h3>
-                    <ul style="text-align: left; color: #666; line-height: 1.8;">
-                        <li>三种风格：友好提醒、正式通知、法律威慑</li>
-                        <li>个性化定制：根据债务类型、金额、逾期时长自动调整</li>
-                        <li>法条智能引用：自动匹配相关法律条文</li>
-                        <li>多轮催收策略：15天、30天、60天递进式模板</li>
-                    </ul>
-                </div>
-
-                <div style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-                    <h3 style="color: #2563eb;">智能业务流程</h3>
-                    <ul style="text-align: left; color: #666; line-height: 1.8;">
-                        <li>智能模板选择：根据案件类型自动选择合适模板</li>
-                        <li>动态内容填充：自动填入当事人信息、法律依据</li>
-                        <li>格式规范化：确保符合法律文书标准格式</li>
-                        <li>质量检查：AI自动检查逻辑错误和格式问题</li>
-                    </ul>
-                </div>
+            <div class="stat-item">
+              <span class="stat-value">5亿</span>
+              <span class="stat-label">年处理金额</span>
             </div>
-        </section>
+            <div class="stat-item">
+              <span class="stat-value">1.6亿</span>
+              <span class="stat-label">年营收目标</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 收入计算器预览 -->
+      <section id="calculator" class="calculator-section">
+        <h2 class="calculator-title">💰 月收入潜力预测</h2>
+        <div class="calculator-grid">
+          <div class="calculator-item">
+            <div class="calculator-icon">⚖️</div>
+            <div class="calculator-label">执业律师</div>
+            <div class="calculator-value">¥12-50万</div>
+            <div class="calculator-desc">基于案件数量和10%佣金比例</div>
+          </div>
+          <div class="calculator-item">
+            <div class="calculator-icon">📊</div>
+            <div class="calculator-label">业务销售</div>
+            <div class="calculator-value">¥8-35万</div>
+            <div class="calculator-desc">基于客户开发和7.5%提成</div>
+          </div>
+          <div class="calculator-item">
+            <div class="calculator-icon">🏢</div>
+            <div class="calculator-label">助贷机构</div>
+            <div class="calculator-value">¥50-200万</div>
+            <div class="calculator-desc">基于委托案件和50%回收分成</div>
+          </div>
+          <div class="calculator-item">
+            <div class="calculator-icon">🚀</div>
+            <div class="calculator-label">平台总收入</div>
+            <div class="calculator-value">¥500-2000万</div>
+            <div class="calculator-desc">基于32.5%平台分成和增值服务</div>
+          </div>
+        </div>
+        <div style="text-align: center; margin-top: 2rem;">
+          <a href="earnings-calculator.html" class="btn btn-primary">
+            📈 详细计算器
+          </a>
+        </div>
+      </section>
+
+      <!-- 商业模式展示 -->
+      <section id="business" class="business-model">
+        <h2 class="section-title">🎯 核心商业模式</h2>
+        <div class="model-grid">
+          <div class="model-card">
+            <div class="model-header">
+              <div class="model-icon">⚖️</div>
+              <div class="model-title">债务催收服务</div>
+            </div>
+            <p class="model-description">
+              <strong>主营业务：</strong>机构委托 → 律师接单 → AI辅助催收 → 分期回款 → 自动分账<br>
+              <strong>核心价值：</strong>专业律师资质 + AI效率提升 + 透明分账机制<br>
+              <strong>目标客户：</strong>银行、助贷机构、小额贷款公司
+            </p>
+            <div class="model-income">
+              年处理5亿催收金额，平台分成1.625亿
+            </div>
+          </div>
+
+          <div class="model-card">
+            <div class="model-header">
+              <div class="model-icon">📝</div>
+              <div class="model-title">律师函服务</div>
+            </div>
+            <p class="model-description">
+              <strong>服务特色：</strong>30元一键快发，AI生成 + 律师资质背书<br>
+              <strong>技术实现：</strong>客户下单付款 → AI生成律师函 → 短信/邮件发送<br>
+              <strong>差异化优势：</strong>无纸化、秒级到达、成本极低
+            </p>
+            <div class="model-income">
+              年服务10万份，收入300万
+            </div>
+          </div>
+
+          <div class="model-card">
+            <div class="model-header">
+              <div class="model-icon">💻</div>
+              <div class="model-title">SaaS订阅服务</div>
+            </div>
+            <p class="model-description">
+              <strong>在线模式：</strong>零门槛快速接入，按量付费成本可控<br>
+              <strong>私有部署：</strong>数据安全私有部署，深度定制个性化流程<br>
+              <strong>收入模式：</strong>订阅+抽成+增值，授权+定制+维护
+            </p>
+            <div class="model-income">
+              200家机构×3999元/月，年收入960万
+            </div>
+          </div>
+
+          <div class="model-card">
+            <div class="model-header">
+              <div class="model-icon">💰</div>
+              <div class="model-title">分成机制透明</div>
+            </div>
+            <p class="model-description">
+              <strong>资金流设计：</strong>债务人还款 → 平台托管账户 → 智能分账系统 → 各方收益账户<br>
+              <strong>分成比例：</strong>机构返还50% + 平台分成32.5% + 律师佣金10% + 销售佣金7.5%<br>
+              <strong>实时分账：</strong>30秒内完成自动分账，透明可查
+            </p>
+            <div class="model-income">
+              第一年总营收目标：1.655亿元
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
-
-    <!-- 页脚 -->
-    <footer class="footer">
-        <p>&copy; 2024 Lawsker 律思客. 保留所有权利.</p>
-        <p>专注核心，稳步发展！🎯</p>
-    </footer>
-
-    <script>
-        // 收入计算器
-        function calculateRevenue() {
-            const caseCount = parseInt(document.getElementById('caseCount').value) || 0;
-            const avgAmount = parseFloat(document.getElementById('avgAmount').value) || 0;
-            const successRate = parseFloat(document.getElementById('successRate').value) || 0;
-            const userRole = document.getElementById('userRole').value;
-
-            // 计算总催收金额（成功案件）
-            const totalAmount = caseCount * avgAmount * (successRate / 100);
-
-            // 分成比例
-            const commissionRates = {
-                platform: 0.325,
-                lawyer: 0.10,
-                sales: 0.075,
-                institution: 0.50
-            };
-
-            // 计算收入
-            const yourIncome = totalAmount * commissionRates[userRole];
-            const yearlyIncome = yourIncome * 12;
-
-            // 更新显示
-            document.getElementById('totalAmount').textContent = totalAmount.toFixed(0) + '万元';
-            document.getElementById('yourIncome').textContent = yourIncome.toFixed(1) + '万元';
-            document.getElementById('yearlyIncome').textContent = yearlyIncome.toFixed(0) + '万元';
-        }
-
-        // 页面加载时计算一次
-        document.addEventListener('DOMContentLoaded', function() {
-            calculateRevenue();
-        });
-
-        // 添加样式
-        const additionalStyles = `
-            .business-flow {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: 0.5rem;
-                margin: 1rem 0;
-            }
-
-            .flow-step {
-                background: rgba(255, 255, 255, 0.2);
-                padding: 0.5rem 1rem;
-                border-radius: 8px;
-                font-size: 0.9rem;
-                white-space: nowrap;
-            }
-
-            .flow-arrow {
-                color: rgba(255, 255, 255, 0.8);
-                font-size: 1.2rem;
-                font-weight: bold;
-            }
-
-            .business-features {
-                margin-top: 1rem;
-                text-align: left;
-            }
-
-            .business-features p {
-                margin: 0.5rem 0;
-                font-size: 0.9rem;
-            }
-
-            .strategy-features {
-                text-align: left;
-                margin-top: 1rem;
-            }
-
-            .strategy-features p {
-                margin: 0.5rem 0;
-                padding: 0.5rem;
-                background: rgba(37, 99, 235, 0.1);
-                border-radius: 5px;
-            }
-
-            .revenue-flow {
-                margin-bottom: 2rem;
-            }
-
-            .flow-diagram {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: 1rem;
-                margin: 2rem 0;
-            }
-
-            .flow-item {
-                background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-                color: white;
-                padding: 1rem 1.5rem;
-                border-radius: 10px;
-                font-weight: 500;
-                min-width: 120px;
-                text-align: center;
-            }
-
-            @media (max-width: 768px) {
-                .business-flow {
-                    flex-direction: column;
-                    align-items: center;
-                }
-
-                .flow-arrow {
-                    transform: rotate(90deg);
-                }
-
-                .flow-diagram {
-                    flex-direction: column;
-                }
-            }
-        `;
-
-        // 添加样式到页面
-        const style = document.createElement('style');
-        style.textContent = additionalStyles;
-        document.head.appendChild(style);
-    </script>
   </body>
 </html> 
