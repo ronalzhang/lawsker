@@ -211,7 +211,7 @@ class WithdrawalRequest(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     
     # 关联关系
-    user = relationship("User")
+    user = relationship("User", foreign_keys=[user_id])
     wallet = relationship("Wallet", back_populates="withdrawal_requests")
     processed_by_user = relationship("User", foreign_keys=[processed_by])
 

@@ -26,10 +26,12 @@ class SimpleWithdrawalTester:
     """简化的提现系统测试器"""
     
     def __init__(self):
-        # 创建数据库连接
-        self.engine = create_engine(settings.DATABASE_URL)
+        # 创建同步数据库连接（替换asyncpg为psycopg2）
+        sync_db_url = settings.DATABASE_URL.replace("postgresql+asyncpg://", "postgresql+psycopg2://")
+        self.engine = create_engine(sync_db_url)
         self.SessionLocal = sessionmaker(bind=self.engine)
         print("🔗 数据库连接已创建")
+        print(f"📍 使用数据库: {sync_db_url}")
     
     def test_database_connection(self):
         """测试数据库连接"""
