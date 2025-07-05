@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>匿名任务提交 - 律思客</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 动态背景粒子 */
+        .background-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        /* 液体玻璃效果 */
+        .glass-container {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        .glass-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .glass-container:hover::before {
+            left: 100%;
+        }
+
+        .main-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-icon {
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        }
+
+        .form-input::placeholder, .form-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .verification-group {
+            display: flex;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .verification-group .form-input {
+            flex: 1;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            margin-top: 20px;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .progress-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .task-result {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 16px;
+            margin-top: 20px;
+        }
+
+        .task-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #10b981;
+            margin-bottom: 10px;
+        }
+
+        .track-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .track-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 20px;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景粒子 -->
+    <div class="background-particles" id="particles"></div>
+
+    <div class="main-container">
+        <div class="header">
+            <h1>匿名任务提交</h1>
+            <p>无需注册，即可提交法律服务需求</p>
+        </div>
+
+        <div class="glass-container">
+            <div class="form-container">
+                <div id="alert" class="alert"></div>
+
+                <form id="taskForm">
+                    <!-- 联系信息 -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <span class="section-icon">📱</span>
+                            联系信息
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">姓名 *</label>
+                                <input type="text" class="form-input" name="contact_name" required
+                                       placeholder="请输入您的姓名">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">手机号 *</label>
+                                <input type="tel" class="form-input" name="contact_phone" required
+                                       placeholder="请输入手机号码">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">邮箱</label>
+                            <input type="email" class="form-input" name="contact_email"
+                                   placeholder="请输入邮箱地址（可选）">
+                        </div>
+                    </div>
+
+                    <!-- 服务信息 -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <span class="section-icon">⚖️</span>
+                            服务信息
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">服务类型 *</label>
+                                <select class="form-select" name="service_type" required>
+                                    <option value="">请选择服务类型</option>
+                                    <option value="collection_letter">催收函</option>
+                                    <option value="demand_letter">律师函</option>
+                                    <option value="legal_consultation">法律咨询</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">紧急程度</label>
+                                <select class="form-select" name="urgency">
+                                    <option value="普通">普通</option>
+                                    <option value="加急">加急</option>
+                                    <option value="紧急">紧急</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 案件信息 -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <span class="section-icon">📋</span>
+                            案件信息
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">案件标题 *</label>
+                            <input type="text" class="form-input" name="case_title" required
+                                   placeholder="请简要描述案件标题">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">案件描述 *</label>
+                            <textarea class="form-textarea" name="case_description" required
+                                      placeholder="请详细描述案件情况、争议焦点、您的诉求等"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">对方姓名</label>
+                                <input type="text" class="form-input" name="target_name"
+                                       placeholder="请输入对方姓名">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">对方电话</label>
+                                <input type="tel" class="form-input" name="target_phone"
+                                       placeholder="请输入对方电话">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">对方地址</label>
+                                <input type="text" class="form-input" name="target_address"
+                                       placeholder="请输入对方地址">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">涉及金额（元）</label>
+                                <input type="number" class="form-input" name="amount"
+                                       placeholder="请输入涉及金额">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 验证码 -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <span class="section-icon">🔐</span>
+                            短信验证
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">短信验证码 *</label>
+                            <div class="verification-group">
+                                <input type="text" class="form-input" name="verification_code" required
+                                       placeholder="请输入验证码">
+                                <button type="button" class="btn btn-secondary" id="sendCodeBtn">
+                                    发送验证码
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 提交按钮 -->
+                    <button type="submit" class="btn btn-primary submit-btn" id="submitBtn">
+                        <span class="loading-spinner" id="loadingSpinner"></span>
+                        提交任务
+                    </button>
+                </form>
+
+                <!-- 进度显示 -->
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">0%</div>
+                </div>
+
+                <!-- 任务结果 -->
+                <div class="task-result" id="taskResult">
+                    <div class="task-number" id="taskNumber"></div>
+                    <p>任务已成功提交，我们将在24小时内处理</p>
+                    <p>您可以通过以下链接查询进度：</p>
+                    <a href="#" class="track-link" id="trackLink">点击查询任务进度</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/task-handler.js"></script>
+    <script>
+        // 创建背景粒子
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                container.appendChild(particle);
+            }
+        }
+
+        // 显示消息
+        function showAlert(message, type = 'error') {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type}`;
+            alert.style.display = 'block';
+            
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        // 表单提交处理
+        document.getElementById('taskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const progressContainer = document.getElementById('progressContainer');
+            const taskResult = document.getElementById('taskResult');
+            
+            try {
+                // 显示加载状态
+                submitBtn.disabled = true;
+                loadingSpinner.style.display = 'inline-block';
+                progressContainer.style.display = 'block';
+                
+                // 收集表单数据
+                const formData = new FormData(e.target);
+                const taskData = Object.fromEntries(formData.entries());
+                
+                // 转换数字字段
+                if (taskData.amount) {
+                    taskData.amount = parseFloat(taskData.amount);
+                }
+                
+                // 提交任务
+                const result = await taskHandler.submitAnonymousTask(taskData);
+                
+                // 显示成功结果
+                document.getElementById('taskNumber').textContent = `任务编号：${result.task_number}`;
+                document.getElementById('trackLink').href = result.tracking_url;
+                
+                // 隐藏表单，显示结果
+                document.getElementById('taskForm').style.display = 'none';
+                progressContainer.style.display = 'none';
+                taskResult.style.display = 'block';
+                
+                showAlert('任务提交成功！', 'success');
+                
+            } catch (error) {
+                showAlert(error.message || '提交失败，请重试');
+                submitBtn.disabled = false;
+                loadingSpinner.style.display = 'none';
+                progressContainer.style.display = 'none';
+            }
+        });
+
+        // 发送验证码
+        document.getElementById('sendCodeBtn').addEventListener('click', async () => {
+            const phoneInput = document.querySelector('input[name="contact_phone"]');
+            const sendCodeBtn = document.getElementById('sendCodeBtn');
+            
+            if (!phoneInput.value) {
+                showAlert('请先输入手机号码');
+                return;
+            }
+            
+            try {
+                const result = await taskHandler.sendVerificationCode(phoneInput.value);
+                
+                if (result.success) {
+                    showAlert(`验证码已发送${result.dev_code ? '：' + result.dev_code : ''}`, 'success');
+                    taskHandler.startVerificationCountdown(sendCodeBtn);
+                } else {
+                    showAlert(result.message || '发送失败');
+                }
+            } catch (error) {
+                showAlert(error.message || '发送验证码失败');
+            }
+        });
+
+        // 初始化
+        createParticles();
+        
+        // 页面卸载时清理
+        window.addEventListener('beforeunload', () => {
+            if (window.taskHandler) {
+                window.taskHandler.cleanup();
+            }
+        });
+    </script>
+</body>
+</html> 

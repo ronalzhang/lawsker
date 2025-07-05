@@ -7,75 +7,155 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="律思客">
-    <meta name="theme-color" content="#0f1424">
+    <meta name="theme-color" content="#0a0a0a">
     <meta name="description" content="Lawsker (律思客) - AI驱动的O2O专业服务平台，法律智慧，即刻送达" />
     <meta name="keywords" content="法律服务,AI,催收,律师,O2O平台" />
     <title>Lawsker (律思客) - 法律智慧，即刻送达</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2563eb;
-            --secondary-color: #1e40af;
-            --accent-color: #f59e0b;
-            --success-color: #059669;
-            --text-dark: #1f2937;
-            --text-light: #6b7280;
-            --bg-light: #f8fafc;
-            --bg-white: #ffffff;
-            --border-light: #e5e7eb;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --text-muted: rgba(255, 255, 255, 0.6);
+            --dark-bg: #0a0a0a;
+            --dark-card: rgba(255, 255, 255, 0.05);
+            --animation-speed: 0.3s;
+            --border-radius: 20px;
         }
 
-        * {
+        *, *::before, *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
         }
 
         html {
             scroll-behavior: smooth;
+            overflow-x: hidden;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: var(--text-dark);
-            min-height: 100vh;
-            position: relative;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            padding-top: env(safe-area-inset-top, 0px);
-            padding-bottom: env(safe-area-inset-bottom, 0px);
         }
 
-        /* 优化的背景效果，减少性能消耗 */
-        body::before {
-            content: '';
+        /* 动态液态背景 */
+        .liquid-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: 
-                radial-gradient(circle at 20% 30%, rgba(122, 160, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(122, 160, 255, 0.08) 0%, transparent 50%);
+            z-index: -2;
+            background: linear-gradient(45deg, #0a0a0a, #1a1a1a, #2a2a2a);
+            will-change: transform;
+        }
+
+        .liquid-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(102, 126, 234, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(240, 147, 251, 0.2) 0%, transparent 50%);
+            animation: liquidMove 20s ease-in-out infinite;
+            will-change: transform;
+        }
+
+        @keyframes liquidMove {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+
+        /* 浮动粒子效果 */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             z-index: -1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite;
+            will-change: transform;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            50% { transform: translateY(-100px) rotate(180deg); opacity: 1; }
+        }
+
+        /* 液态玻璃效果容器 */
+        .glass-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            box-shadow: var(--glass-shadow);
+            position: relative;
+            overflow: hidden;
+            will-change: transform;
+        }
+
+        .glass-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .glass-container:hover::before {
+            transform: translateX(100%);
         }
 
         /* 导航栏 */
         .navbar {
             position: fixed;
-            top: env(safe-area-inset-top, 0px);
+            top: 0;
             left: 0;
             right: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border-light);
-            padding: 1rem 0;
             z-index: 1000;
+            padding: 1rem 0;
+            transition: all var(--animation-speed) ease;
+        }
+
+        .navbar.scrolled {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
         }
 
         .nav-container {
@@ -90,443 +170,583 @@
         .logo {
             font-size: 1.8rem;
             font-weight: 700;
-            color: var(--primary-color);
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             text-decoration: none;
+            position: relative;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-gradient);
+            transition: width var(--animation-speed) ease;
+        }
+
+        .logo:hover::after {
+            width: 100%;
         }
 
         .nav-menu {
             display: flex;
             list-style: none;
             gap: 2rem;
+            align-items: center;
         }
 
         .nav-link {
+            color: var(--text-secondary);
             text-decoration: none;
-            color: var(--text-dark);
             font-weight: 500;
-            transition: color 0.3s ease;
+            transition: all var(--animation-speed) ease;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--accent-gradient);
+            transition: all var(--animation-speed) ease;
+            transform: translateX(-50%);
         }
 
         .nav-link:hover {
-            color: var(--primary-color);
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
         }
 
         .auth-buttons {
             display: flex;
             gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all var(--animation-speed) ease;
+            position: relative;
+            overflow: hidden;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            will-change: transform;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .btn:hover::before {
+            transform: translateX(100%);
         }
 
         .btn-outline {
-            padding: 0.5rem 1rem;
-            border: 2px solid var(--primary-color);
-            color: var(--primary-color);
-            text-decoration: none;
-            border-radius: 0.5rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
+            background: transparent;
+            border: 2px solid var(--glass-border);
+            color: var(--text-primary);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
         }
 
         .btn-outline:hover {
-            background: var(--primary-color);
-            color: white;
+            background: var(--glass-bg);
+            border-color: var(--text-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.1);
         }
 
         .btn-primary {
-            padding: 0.5rem 1rem;
-            background: var(--primary-color);
+            background: var(--primary-gradient);
             color: white;
-            text-decoration: none;
-            border-radius: 0.5rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
+            border: none;
         }
 
         .btn-primary:hover {
-            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
         }
 
         /* 主内容区 */
         .main-content {
             margin-top: 80px;
+            min-height: 100vh;
         }
 
         /* 英雄区域 */
         .hero-section {
-            padding: 4rem 0;
-            text-align: center;
-            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 0;
+            position: relative;
         }
 
         .hero-container {
             max-width: 1200px;
-            margin: 0 auto;
+            width: 100%;
             padding: 0 2rem;
+            text-align: center;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         .hero-title {
-            font-size: 3.5rem;
+            font-size: clamp(2.5rem, 8vw, 4rem);
             font-weight: 700;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #a8a8a8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            from { text-shadow: 0 0 20px rgba(255, 255, 255, 0.1); }
+            to { text-shadow: 0 0 40px rgba(255, 255, 255, 0.2); }
         }
 
         .hero-subtitle {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
+            color: var(--text-secondary);
             margin-bottom: 2rem;
-            opacity: 0.9;
+            font-weight: 400;
+            animation: slideUp 1s ease-out 0.2s both;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .hero-stats {
-            display: flex;
-            justify-content: center;
-            gap: 4rem;
-            margin: 3rem 0;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 2rem;
+            margin: 4rem 0;
+            animation: slideUp 1s ease-out 0.4s both;
         }
 
-        .stat-item {
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 2rem 1rem;
             text-align: center;
+            transition: all var(--animation-speed) ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .stat-card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--text-primary);
+            box-shadow: 0 20px 50px rgba(255, 255, 255, 0.1);
         }
 
         .stat-number {
             font-size: 2.5rem;
             font-weight: 700;
-            color: var(--accent-color);
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+            margin-bottom: 0.5rem;
         }
 
         .stat-label {
-            font-size: 1rem;
-            opacity: 0.9;
-        }
-
-        .hero-cta {
-            margin-top: 3rem;
-        }
-
-        .btn-hero {
-            padding: 1rem 2rem;
-            background: var(--accent-color);
-            color: white;
-            text-decoration: none;
-            border-radius: 0.75rem;
-            font-size: 1.1rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: inline-block;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .btn-hero:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
-        }
-
-        /* 内容区域 */
-        .content-section {
-            background: var(--bg-light);
-            padding: 4rem 0;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 3rem;
-            color: var(--text-dark);
-        }
-
-        /* 业务流程 */
-        .process-flow {
-            display: flex;
-            justify-content: space-between;
-            gap: 2rem;
-            margin: 3rem 0;
-            flex-wrap: wrap;
-        }
-
-        .process-step {
-            flex: 1;
-            min-width: 200px;
-            background: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            text-align: center;
-            box-shadow: var(--shadow-md);
-            position: relative;
-        }
-
-        .process-step::after {
-            content: '→';
-            position: absolute;
-            right: -1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 1.5rem;
-            color: var(--primary-color);
-        }
-
-        .process-step:last-child::after {
-            display: none;
-        }
-
-        .process-icon {
-            width: 4rem;
-            height: 4rem;
-            background: var(--primary-color);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1rem;
-            font-size: 1.5rem;
-            color: white;
-        }
-
-        .process-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .process-desc {
-            color: var(--text-light);
+            color: var(--text-secondary);
             font-size: 0.9rem;
-        }
-
-        /* 收益计算器 */
-        .calculator-section {
-            background: white;
-            padding: 4rem 0;
-        }
-
-        .calculator-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .calculator-card {
-            background: var(--bg-light);
-            padding: 2rem;
-            border-radius: 1rem;
-            border: 1px solid var(--border-light);
-        }
-
-        .card-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--primary-color);
-        }
-
-        .input-group {
-            margin-bottom: 1rem;
-        }
-
-        .input-label {
-            display: block;
-            margin-bottom: 0.5rem;
             font-weight: 500;
         }
 
-        .input-field {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border-light);
-            border-radius: 0.5rem;
-            font-size: 1rem;
-        }
-
-        .result-display {
-            background: var(--primary-color);
-            color: white;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            text-align: center;
-            margin-top: 1rem;
-        }
-
-        .result-amount {
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-
-        /* 成功案例 */
-        .cases-section {
-            background: var(--bg-light);
-            padding: 4rem 0;
-        }
-
-        .cases-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .case-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: var(--shadow-md);
-        }
-
-        .case-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--primary-color);
-        }
-
-        .case-metrics {
+        .hero-cta {
             display: flex;
-            justify-content: space-between;
-            margin: 1rem 0;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: slideUp 1s ease-out 0.6s both;
         }
 
-        .metric {
-            text-align: center;
-        }
-
-        .metric-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--success-color);
-        }
-
-        .metric-label {
-            font-size: 0.9rem;
-            color: var(--text-light);
-        }
-
-        /* 注册区域 */
-        .register-section {
-            background: white;
-            padding: 4rem 0;
-        }
-
-        .register-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .register-card {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
+        /* 收益计算器 */
+        .earnings-calculator {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
             padding: 2rem;
-            border-radius: 1rem;
-            text-align: center;
+            margin: 4rem auto;
+            max-width: 500px;
             position: relative;
             overflow: hidden;
         }
 
-        .register-card::before {
+        .earnings-calculator::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
         }
 
-        .register-card > * {
-            position: relative;
-            z-index: 1;
+        .earnings-calculator:hover::before {
+            transform: translateX(100%);
         }
 
-        .register-title {
+        .calculator-title {
             font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-        }
-
-        .register-desc {
-            margin-bottom: 1rem;
-            opacity: 0.9;
-        }
-
-        .register-benefits {
-            list-style: none;
-            margin: 1.5rem 0;
-        }
-
-        .register-benefits li {
-            margin-bottom: 0.5rem;
-            opacity: 0.9;
-        }
-
-        .register-benefits li::before {
-            content: '✓ ';
-            color: var(--accent-color);
-            font-weight: bold;
-        }
-
-        .btn-register {
-            background: var(--accent-color);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 0.5rem;
             font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .btn-register:hover {
-            background: #d97706;
-            transform: translateY(-2px);
+        .calculator-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
         }
 
-        /* 页脚 */
-        .footer {
-            background: var(--text-dark);
-            color: white;
-            padding: 3rem 0 1rem;
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
-        .footer-content {
+        .form-label {
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            background: var(--dark-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all var(--animation-speed) ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--text-primary);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        }
+
+        .form-select {
+            background: var(--dark-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all var(--animation-speed) ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .earnings-result {
+            background: var(--dark-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .earnings-amount {
+            font-size: 2rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .earnings-breakdown {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* 特色功能区 */
+        .features-section {
+            padding: 6rem 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .features-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .features-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            text-align: center;
+            transition: all var(--animation-speed) ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .feature-card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--text-primary);
+            box-shadow: 0 25px 60px rgba(255, 255, 255, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* 工作台入口 */
+        .workspace-section {
+            padding: 6rem 0;
+        }
+
+        .workspace-container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 2rem;
             text-align: center;
         }
 
-        .footer-links {
-            display: flex;
-            justify-content: center;
+        .workspace-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .workspace-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all var(--animation-speed) ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .workspace-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .workspace-card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .workspace-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--text-primary);
+            box-shadow: 0 25px 60px rgba(255, 255, 255, 0.1);
+        }
+
+        .workspace-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .workspace-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .workspace-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* 页脚 */
+        .footer {
+            background: var(--dark-card);
+            border-top: 1px solid var(--glass-border);
+            padding: 3rem 0 1rem;
+            margin-top: 6rem;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            text-align: center;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 2rem;
             margin-bottom: 2rem;
-            flex-wrap: wrap;
         }
 
-        .footer-link {
-            color: white;
+        .footer-section h3 {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .footer-section p, .footer-section a {
+            color: var(--text-secondary);
             text-decoration: none;
-            opacity: 0.8;
-            transition: opacity 0.3s ease;
+            line-height: 1.6;
         }
 
-        .footer-link:hover {
-            opacity: 1;
+        .footer-section a:hover {
+            color: var(--text-primary);
         }
 
-        .copyright {
-            opacity: 0.6;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 1rem;
+        .footer-bottom {
+            border-top: 1px solid var(--glass-border);
+            padding-top: 2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
         }
 
         /* 响应式设计 */
@@ -534,448 +754,461 @@
             .nav-menu {
                 display: none;
             }
-
-            .hero-title {
-                font-size: 2.5rem;
-            }
-
+            
             .hero-stats {
-                gap: 2rem;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
             }
-
-            .process-flow {
+            
+            .hero-cta {
                 flex-direction: column;
+                align-items: center;
             }
-
-            .process-step::after {
-                display: none;
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
             }
-
-            .section-title {
-                font-size: 2rem;
+            
+            .features-grid,
+            .workspace-grid {
+                grid-template-columns: 1fr;
             }
-        }
-
-        /* 动画效果 */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: left;
             }
         }
 
-        .fade-in-up {
-            animation: fadeInUp 0.6s ease-out;
-        }
-
-        /* 浮动菜单 */
-        .floating-menu {
+        /* 加载动画 */
+        .loading-overlay {
             position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.5s ease;
         }
 
-        .menu-trigger {
-            width: 60px;
-            height: 60px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--glass-border);
+            border-top: 2px solid var(--text-primary);
             border-radius: 50%;
-            font-size: 1.5rem;
-            cursor: pointer;
-            box-shadow: var(--shadow-lg);
-            transition: all 0.3s ease;
+            animation: spin 1s linear infinite;
         }
 
-        .menu-trigger:hover {
-            transform: scale(1.1);
-            background: var(--secondary-color);
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        .menu-items {
-            position: absolute;
-            bottom: 70px;
-            right: 0;
-            background: white;
-            border-radius: 1rem;
-            box-shadow: var(--shadow-lg);
-            padding: 1rem;
-            min-width: 200px;
-            display: none;
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
 
-        .menu-items.show {
-            display: block;
-            animation: fadeInUp 0.3s ease-out;
+        ::-webkit-scrollbar-track {
+            background: var(--dark-bg);
         }
 
-        .menu-item {
-            display: block;
-            padding: 0.75rem 1rem;
-            color: var(--text-dark);
-            text-decoration: none;
-            border-radius: 0.5rem;
-            transition: background-color 0.3s ease;
+        ::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 4px;
         }
 
-        .menu-item:hover {
-            background: var(--bg-light);
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
         }
     </style>
   </head>
   <body>
+    <!-- 加载动画 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- 液态背景 -->
+    <div class="liquid-bg"></div>
+
+    <!-- 浮动粒子 -->
+    <div class="particles" id="particles"></div>
+
     <!-- 导航栏 -->
-    <nav class="navbar">
-      <div class="nav-container">
-        <a href="#" class="logo">Lawsker 律思客</a>
-        <ul class="nav-menu">
-          <li><a href="#home" class="nav-link">首页</a></li>
-          <li><a href="#process" class="nav-link">工作原理</a></li>
-          <li><a href="#calculator" class="nav-link">收益计算</a></li>
-          <li><a href="#cases" class="nav-link">成功案例</a></li>
-          <li><a href="#register" class="nav-link">加入我们</a></li>
-        </ul>
-        <div class="auth-buttons">
-          <a href="login.html" class="btn-outline">登录</a>
-          <a href="#register" class="btn-primary">注册</a>
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">Lawsker</a>
+            
+            <ul class="nav-menu">
+                <li><a href="#features" class="nav-link">特色功能</a></li>
+                <li><a href="#workspace" class="nav-link">工作台</a></li>
+                <li><a href="#pricing" class="nav-link">收费标准</a></li>
+                <li><a href="#about" class="nav-link">关于我们</a></li>
+            </ul>
+            
+            <div class="auth-buttons">
+                <a href="login.html" class="btn btn-outline">登录</a>
+                <a href="login.html" class="btn btn-primary">注册</a>
+            </div>
         </div>
-      </div>
     </nav>
 
     <!-- 主内容 -->
     <main class="main-content">
-      <!-- 英雄区域 -->
-      <section id="home" class="hero-section">
-        <div class="hero-container">
-          <h1 class="hero-title fade-in-up">法律智慧，即刻送达</h1>
-          <p class="hero-subtitle fade-in-up">用AI重新定义法律服务，效率提升480倍</p>
-          
-          <div class="hero-stats fade-in-up">
-            <div class="stat-item">
-              <div class="stat-number">¥3760万</div>
-              <div class="stat-label">第一年净利润</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-number">69%</div>
-              <div class="stat-label">净利率</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-number">221%</div>
-              <div class="stat-label">ROI</div>
-            </div>
-            <div class="stat-item">
-              <div class="stat-number">480倍</div>
-              <div class="stat-label">效率提升</div>
-            </div>
-          </div>
-
-          <div class="hero-cta">
-            <a href="#register" class="btn-hero">立即注册体验</a>
-          </div>
-        </div>
-      </section>
-
-      <!-- 平台运行逻辑 -->
-      <section id="process" class="content-section">
-        <div class="container">
-          <h2 class="section-title">平台运行逻辑</h2>
-          <div class="process-flow">
-            <div class="process-step">
-              <div class="process-icon">📝</div>
-              <h3 class="process-title">用户发布需求</h3>
-              <p class="process-desc">机构提交债务数据，个人申请律师函服务</p>
-            </div>
-            <div class="process-step">
-              <div class="process-icon">🤖</div>
-              <h3 class="process-title">AI智能匹配</h3>
-              <p class="process-desc">Lawsker AI自动匹配最优专业服务者</p>
-            </div>
-            <div class="process-step">
-              <div class="process-icon">⚖️</div>
-              <h3 class="process-title">专业服务执行</h3>
-              <p class="process-desc">执业律师提供专业法律服务</p>
-            </div>
-            <div class="process-step">
-              <div class="process-icon">💰</div>
-              <h3 class="process-title">30秒自动分账</h3>
-              <p class="process-desc">智能分账系统自动分配收益</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 收益计算器 -->
-      <section id="calculator" class="calculator-section">
-        <div class="container">
-          <h2 class="section-title">收益计算器</h2>
-          <div class="calculator-grid">
-            <!-- 律师收益 -->
-            <div class="calculator-card">
-              <h3 class="card-title">👨‍⚖️ 律师月收入计算</h3>
-              <div class="input-group">
-                <label class="input-label">月处理案件数量</label>
-                <input type="number" class="input-field" id="lawyer-cases" value="50" min="1">
-              </div>
-              <div class="input-group">
-                <label class="input-label">平均案件金额 (元)</label>
-                <input type="number" class="input-field" id="lawyer-amount" value="10000" min="100">
-              </div>
-              <div class="result-display">
-                <div>月收入预估</div>
-                <div class="result-amount" id="lawyer-income">¥10,000</div>
-                <div style="font-size: 0.9rem; opacity: 0.9;">佣金比例: 20%</div>
-              </div>
-            </div>
-
-            <!-- 销售收益 -->
-            <div class="calculator-card">
-              <h3 class="card-title">📈 销售月收入计算</h3>
-              <div class="input-group">
-                <label class="input-label">服务客户数量</label>
-                <input type="number" class="input-field" id="sales-clients" value="10" min="1">
-              </div>
-              <div class="input-group">
-                <label class="input-label">月业务总额 (元)</label>
-                <input type="number" class="input-field" id="sales-volume" value="100000" min="1000">
-              </div>
-              <div class="result-display">
-                <div>月收入预估</div>
-                <div class="result-amount" id="sales-income">¥7,500</div>
-                <div style="font-size: 0.9rem; opacity: 0.9;">佣金比例: 7.5%</div>
-              </div>
-            </div>
-
-            <!-- 机构收益 -->
-            <div class="calculator-card">
-              <h3 class="card-title">🏢 机构年收益计算</h3>
-              <div class="input-group">
-                <label class="input-label">年投入成本 (万元)</label>
-                <input type="number" class="input-field" id="institution-cost" value="100" min="10">
-              </div>
-              <div class="input-group">
-                <label class="input-label">ROI倍数</label>
-                <input type="number" class="input-field" id="institution-roi" value="3" min="1" step="0.1">
-              </div>
-              <div class="result-display">
-                <div>年收益预估</div>
-                <div class="result-amount" id="institution-income">¥300万</div>
-                <div style="font-size: 0.9rem; opacity: 0.9;">效率提升: 450%</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 成功案例 -->
-      <section id="cases" class="cases-section">
-        <div class="container">
-          <h2 class="section-title">成功案例展示</h2>
-          <div class="cases-grid">
-            <div class="case-card">
-              <h3 class="case-title">🏦 某城商银行</h3>
-              <p>通过Lawsker平台处理不良资产催收，大幅提升回款效率，降低运营成本。</p>
-              <div class="case-metrics">
-                <div class="metric">
-                  <div class="metric-value">450%</div>
-                  <div class="metric-label">效率提升</div>
+        <!-- 英雄区域 -->
+        <section class="hero-section">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <h1 class="hero-title">法律智慧，即刻送达</h1>
+                    <p class="hero-subtitle">
+                        AI驱动的O2O专业服务平台，为您提供高效、专业的法律服务解决方案
+                    </p>
+                    
+                    <div class="hero-stats">
+                        <div class="stat-card">
+                            <div class="stat-number">10K+</div>
+                            <div class="stat-label">成功案例</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">500+</div>
+                            <div class="stat-label">专业律师</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">95%</div>
+                            <div class="stat-label">客户满意度</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">24h</div>
+                            <div class="stat-label">快速响应</div>
+                        </div>
+                    </div>
+                    
+                    <div class="hero-cta">
+                        <a href="#calculator" class="btn btn-primary">立即体验</a>
+                        <a href="#features" class="btn btn-outline">了解更多</a>
+                    </div>
                 </div>
-                <div class="metric">
-                  <div class="metric-value">78%</div>
-                  <div class="metric-label">成本降低</div>
-                </div>
-                <div class="metric">
-                  <div class="metric-value">92%</div>
-                  <div class="metric-label">满意度</div>
-                </div>
-              </div>
             </div>
+        </section>
 
-            <div class="case-card">
-              <h3 class="case-title">💳 某消费金融公司</h3>
-              <p>借助AI技术和专业律师团队，实现业务规模快速扩张，客户满意度显著提升。</p>
-              <div class="case-metrics">
-                <div class="metric">
-                  <div class="metric-value">3倍</div>
-                  <div class="metric-label">业务扩大</div>
+        <!-- 收益计算器 -->
+        <section id="calculator" class="earnings-calculator">
+            <h2 class="calculator-title">💰 收益计算器</h2>
+            <form class="calculator-form">
+                <div class="form-group">
+                    <label class="form-label">案件金额 (¥)</label>
+                    <input type="number" class="form-input" id="caseAmount" placeholder="请输入案件金额" min="0">
                 </div>
-                <div class="metric">
-                  <div class="metric-value">89%</div>
-                  <div class="metric-label">客户满意度</div>
+                
+                <div class="form-group">
+                    <label class="form-label">服务类型</label>
+                    <select class="form-select" id="serviceType">
+                        <option value="collection">债务催收</option>
+                        <option value="letter">律师函</option>
+                        <option value="consultation">法律咨询</option>
+                    </select>
                 </div>
-                <div class="metric">
-                  <div class="metric-value">300%</div>
-                  <div class="metric-label">ROI</div>
+                
+                <div class="form-group">
+                    <label class="form-label">角色</label>
+                    <select class="form-select" id="userRole">
+                        <option value="lawyer">律师</option>
+                        <option value="sales">销售</option>
+                        <option value="platform">平台</option>
+                    </select>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+                
+                <div class="earnings-result" id="earningsResult" style="display: none;">
+                    <div class="earnings-amount" id="earningsAmount">¥0</div>
+                    <div class="earnings-breakdown" id="earningsBreakdown"></div>
+                </div>
+            </form>
+        </section>
 
-      <!-- 注册入口 -->
-      <section id="register" class="register-section">
-        <div class="container">
-          <h2 class="section-title">加入Lawsker，开启新机遇</h2>
-          <div class="register-grid">
-            <!-- 律师注册 -->
-            <div class="register-card">
-              <h3 class="register-title">👨‍⚖️ 律师注册</h3>
-              <p class="register-desc">利用AI工具，提升执业效率，获得丰厚收益</p>
-              <ul class="register-benefits">
-                <li>Lawsker AI智能辅助</li>
-                <li>月入10万+</li>
-                <li>专业技能提升</li>
-                <li>灵活工作时间</li>
-              </ul>
-              <a href="lawyer-workspace.html" class="btn-register">律师注册</a>
+        <!-- 特色功能 -->
+        <section id="features" class="features-section">
+            <div class="features-container">
+                <h2 class="features-title">🚀 核心特色</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🤖</div>
+                        <h3 class="feature-title">AI智能生成</h3>
+                        <p class="feature-description">
+                            运用先进的AI技术，智能生成专业法律文书，提高工作效率，确保文书质量。
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3 class="feature-title">实时分账</h3>
+                        <p class="feature-description">
+                            30秒内完成自动分账，律师30%、销售20%、平台50%，透明公正的收益分配。
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">🔒</div>
+                        <h3 class="feature-title">安全保障</h3>
+                        <p class="feature-description">
+                            银行级安全加密，完善的风险控制体系，确保资金安全和数据隐私。
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">📱</div>
+                        <h3 class="feature-title">多渠道发送</h3>
+                        <p class="feature-description">
+                            支持邮件、短信、快递等多种发送方式，确保文书及时送达。
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3 class="feature-title">数据分析</h3>
+                        <p class="feature-description">
+                            全面的数据统计和分析，帮助您优化业务流程，提升服务质量。
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h3 class="feature-title">专业匹配</h3>
+                        <p class="feature-description">
+                            智能匹配最合适的律师，基于专业领域和工作负荷进行精准分配。
+                        </p>
+                    </div>
+                </div>
             </div>
+        </section>
 
-            <!-- 销售注册 -->
-            <div class="register-card">
-              <h3 class="register-title">📈 销售注册</h3>
-              <p class="register-desc">零门槛加入，CRM支持，高额佣金收益</p>
-              <ul class="register-benefits">
-                <li>零门槛准入</li>
-                <li>CRM系统支持</li>
-                <li>月入50万+</li>
-                <li>客户关系锁定</li>
-              </ul>
-              <a href="sales-workspace.html" class="btn-register">销售注册</a>
+        <!-- 工作台入口 -->
+        <section id="workspace" class="workspace-section">
+            <div class="workspace-container">
+                <h2 class="workspace-title">🏢 专业工作台</h2>
+                <div class="workspace-grid">
+                    <a href="lawyer-workspace.html" class="workspace-card">
+                        <div class="workspace-icon">⚖️</div>
+                        <div class="workspace-name">律师工作台</div>
+                        <div class="workspace-description">案件管理、AI文书生成、收入统计</div>
+                    </a>
+                    
+                    <a href="sales-workspace.html" class="workspace-card">
+                        <div class="workspace-icon">💼</div>
+                        <div class="workspace-name">销售工作台</div>
+                        <div class="workspace-description">客户管理、业务跟踪、佣金统计</div>
+                    </a>
+                    
+                    <a href="institution-workspace.html" class="workspace-card">
+                        <div class="workspace-icon">🏛️</div>
+                        <div class="workspace-name">机构工作台</div>
+                        <div class="workspace-description">业务监控、分账管理、数据报表</div>
+                    </a>
+                    
+                    <a href="admin-config.html" class="workspace-card">
+                        <div class="workspace-icon">⚙️</div>
+                        <div class="workspace-name">系统管理</div>
+                        <div class="workspace-description">配置管理、用户管理、系统监控</div>
+                    </a>
+                </div>
+                
+                <div class="hero-cta">
+                    <a href="withdrawal.html" class="btn btn-primary">💰 提现管理</a>
+                    <a href="login.html" class="btn btn-outline">立即开始</a>
+                </div>
             </div>
-
-            <!-- 机构注册 -->
-            <div class="register-card">
-              <h3 class="register-title">🏢 机构注册</h3>
-              <p class="register-desc">零前期成本，效率提升，投资回报翻倍</p>
-              <ul class="register-benefits">
-                <li>零前期成本</li>
-                <li>效率提升450%</li>
-                <li>ROI 300%+</li>
-                <li>专业合规保障</li>
-              </ul>
-              <a href="institution-workspace.html" class="btn-register">机构注册</a>
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
     </main>
 
     <!-- 页脚 -->
     <footer class="footer">
-      <div class="footer-content">
-        <div class="footer-links">
-          <a href="#" class="footer-link">关于我们</a>
-          <a href="#" class="footer-link">服务条款</a>
-          <a href="#" class="footer-link">隐私政策</a>
-          <a href="#" class="footer-link">联系我们</a>
-          <a href="admin-config.html" class="footer-link">系统管理</a>
-          <a href="withdrawal.html" class="footer-link">💰 提现管理</a>
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>关于Lawsker</h3>
+                    <p>专业的法律服务O2O平台，致力于为用户提供高效、便捷的法律服务解决方案。</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>核心服务</h3>
+                    <p>
+                        <a href="#">债务催收</a><br>
+                        <a href="#">律师函</a><br>
+                        <a href="#">法律咨询</a><br>
+                        <a href="#">合同审查</a>
+                    </p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>联系我们</h3>
+                    <p>
+                        电话：400-888-8888<br>
+                        邮箱：contact@lawsker.com<br>
+                        地址：北京市朝阳区
+                    </p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Lawsker (律思客). All rights reserved.</p>
+            </div>
         </div>
-        <div class="copyright">
-          <p>&copy; 2024 Lawsker (律思客). All rights reserved. Powered by WorkBridge.</p>
-        </div>
-      </div>
     </footer>
 
-    <!-- 浮动菜单 -->
-    <div class="floating-menu">
-      <button class="menu-trigger" onclick="toggleMenu()">⚡</button>
-      <div class="menu-items" id="floating-menu">
-        <a href="lawyer-workspace.html" class="menu-item">👨‍⚖️ 律师工作台</a>
-        <a href="sales-workspace.html" class="menu-item">📈 销售管理台</a>
-        <a href="institution-workspace.html" class="menu-item">🏢 机构控制台</a>
-        <a href="earnings-calculator.html" class="menu-item">💰 收益计算器</a>
-        <a href="dashboard.html" class="menu-item">📊 数据面板</a>
-        <a href="withdrawal.html" class="menu-item">💸 提现管理</a>
-      </div>
-    </div>
-
     <script>
-      // 收益计算器
-      function updateCalculators() {
-        // 律师收益计算
-        const lawyerCases = document.getElementById('lawyer-cases').value;
-        const lawyerAmount = document.getElementById('lawyer-amount').value;
-        const lawyerIncome = lawyerCases * lawyerAmount * 0.2;
-        document.getElementById('lawyer-income').textContent = 
-          '¥' + lawyerIncome.toLocaleString();
-
-        // 销售收益计算
-        const salesClients = document.getElementById('sales-clients').value;
-        const salesVolume = document.getElementById('sales-volume').value;
-        const salesIncome = salesVolume * 0.075;
-        document.getElementById('sales-income').textContent = 
-          '¥' + salesIncome.toLocaleString();
-
-        // 机构收益计算
-        const institutionCost = document.getElementById('institution-cost').value;
-        const institutionROI = document.getElementById('institution-roi').value;
-        const institutionIncome = institutionCost * institutionROI;
-        document.getElementById('institution-income').textContent = 
-          '¥' + institutionIncome.toLocaleString() + '万';
-      }
-
-      // 绑定输入事件
-      document.addEventListener('DOMContentLoaded', function() {
-        const inputs = document.querySelectorAll('.input-field');
-        inputs.forEach(input => {
-          input.addEventListener('input', updateCalculators);
+        // 页面加载完成后隐藏加载动画
+        window.addEventListener('load', function() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            setTimeout(() => {
+                loadingOverlay.classList.add('hidden');
+            }, 500);
         });
-        updateCalculators();
-      });
 
-      // 浮动菜单
-      function toggleMenu() {
-        const menu = document.getElementById('floating-menu');
-        menu.classList.toggle('show');
-      }
-
-      // 点击外部关闭菜单
-      document.addEventListener('click', function(event) {
-        const menu = document.getElementById('floating-menu');
-        const trigger = document.querySelector('.menu-trigger');
-        if (!menu.contains(event.target) && !trigger.contains(event.target)) {
-          menu.classList.remove('show');
+        // 创建浮动粒子
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 5) + 's';
+                particlesContainer.appendChild(particle);
+            }
         }
-      });
 
-      // 平滑滚动
-      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-          e.preventDefault();
-          const target = document.querySelector(this.getAttribute('href'));
-          if (target) {
-            target.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start'
+        // 导航栏滚动效果
+        function handleNavbarScroll() {
+            const navbar = document.getElementById('navbar');
+            const scrolled = window.scrollY > 50;
+            
+            navbar.classList.toggle('scrolled', scrolled);
+        }
+
+        // 收益计算器
+        function initCalculator() {
+            const caseAmount = document.getElementById('caseAmount');
+            const serviceType = document.getElementById('serviceType');
+            const userRole = document.getElementById('userRole');
+            const earningsResult = document.getElementById('earningsResult');
+            const earningsAmount = document.getElementById('earningsAmount');
+            const earningsBreakdown = document.getElementById('earningsBreakdown');
+            
+            function calculateEarnings() {
+                const amount = parseFloat(caseAmount.value) || 0;
+                const service = serviceType.value;
+                const role = userRole.value;
+                
+                if (amount <= 0) {
+                    earningsResult.style.display = 'none';
+                    return;
+                }
+                
+                // 服务费率
+                const serviceRates = {
+                    collection: 0.15,  // 催收15%
+                    letter: 0.10,     // 律师函10%
+                    consultation: 0.08 // 咨询8%
+                };
+                
+                // 角色分成比例
+                const roleRates = {
+                    lawyer: 0.30,
+                    sales: 0.20,
+                    platform: 0.50
+                };
+                
+                const serviceFee = amount * serviceRates[service];
+                const earnings = serviceFee * roleRates[role];
+                
+                earningsAmount.textContent = `¥${earnings.toFixed(2)}`;
+                earningsBreakdown.textContent = `基于¥${amount.toFixed(2)}的${getServiceName(service)}，${getRoleName(role)}可获得${(roleRates[role] * 100).toFixed(0)}%分成`;
+                earningsResult.style.display = 'block';
+            }
+            
+            function getServiceName(service) {
+                const names = {
+                    collection: '债务催收',
+                    letter: '律师函',
+                    consultation: '法律咨询'
+                };
+                return names[service] || service;
+            }
+            
+            function getRoleName(role) {
+                const names = {
+                    lawyer: '律师',
+                    sales: '销售',
+                    platform: '平台'
+                };
+                return names[role] || role;
+            }
+            
+            // 绑定事件
+            caseAmount.addEventListener('input', calculateEarnings);
+            serviceType.addEventListener('change', calculateEarnings);
+            userRole.addEventListener('change', calculateEarnings);
+        }
+
+        // 平滑滚动
+        function initSmoothScroll() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
             });
-          }
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            initCalculator();
+            initSmoothScroll();
+            
+            // 绑定滚动事件
+            window.addEventListener('scroll', handleNavbarScroll);
+            
+            // 优化性能：使用 passive 事件监听器
+            window.addEventListener('scroll', handleNavbarScroll, { passive: true });
         });
-      });
 
-      // 滚动动画
-      const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-      };
+        // 性能优化：防抖函数
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
 
-      const observer = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('fade-in-up');
-          }
-        });
-      }, observerOptions);
-
-      document.querySelectorAll('.calculator-card, .case-card, .register-card').forEach(el => {
-        observer.observe(el);
-      });
+        // 使用防抖优化滚动事件
+        const debouncedScrollHandler = debounce(handleNavbarScroll, 10);
+        window.addEventListener('scroll', debouncedScrollHandler, { passive: true });
     </script>
   </body>
 </html> 

@@ -5,7 +5,7 @@ API路由主文件
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, users, cases, finance, admin, ai
+from app.api.v1.endpoints import auth, users, cases, finance, admin, ai, tasks
 
 # 创建API路由器
 api_router = APIRouter()
@@ -14,6 +14,7 @@ api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["认证"])
 api_router.include_router(users.router, prefix="/users", tags=["用户管理"])
 api_router.include_router(cases.router, prefix="/cases", tags=["案件管理"])
+api_router.include_router(tasks.router, prefix="/tasks", tags=["任务管理"])
 api_router.include_router(finance.router, prefix="/finance", tags=["财务管理"])
 api_router.include_router(ai.router, prefix="/ai", tags=["AI服务"])
 api_router.include_router(admin.router, prefix="/admin", tags=["管理员"])

@@ -360,6 +360,44 @@ class SystemConfigService:
                 "description": "风险控制阈值配置"
             },
             {
+                "key": "withdrawal_settings",
+                "value": {
+                    "min_withdrawal_amount": 10.0,
+                    "max_withdrawal_amount": 50000.0,
+                    "daily_withdrawal_limit": 100000.0,
+                    "auto_approval_risk_threshold": 30,
+                    "manual_review_risk_threshold": 30,
+                    "processing_time_hours": 24,
+                    "high_risk_processing_time_hours": 72,
+                    "enabled": True
+                },
+                "description": "提现设置配置"
+            },
+            {
+                "key": "withdrawal_fees",
+                "value": {
+                    "tier_1": {"min_amount": 0, "max_amount": 1000, "fee_rate": 0.01},
+                    "tier_2": {"min_amount": 1001, "max_amount": 5000, "fee_rate": 0.005},
+                    "tier_3": {"min_amount": 5001, "max_amount": 999999999, "fee_rate": 0.001},
+                    "min_fee": 0.1,
+                    "max_fee": 100.0
+                },
+                "description": "提现手续费配置"
+            },
+            {
+                "key": "risk_scoring_rules",
+                "value": {
+                    "user_history_weight": 0.3,
+                    "amount_weight": 0.25,
+                    "timing_weight": 0.2,
+                    "account_verification_weight": 0.15,
+                    "frequency_weight": 0.1,
+                    "high_risk_user_threshold": 70,
+                    "blacklist_user_threshold": 90
+                },
+                "description": "风险评分规则配置"
+            },
+            {
                 "key": "business_rules",
                 "value": {
                     "max_cases_per_lawyer": 50,
