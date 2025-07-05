@@ -307,7 +307,7 @@ class SystemConfigService:
             {
                 "key": "openai",
                 "value": {
-                    "api_key": "sk-proj-YOUR_OPENAI_API_KEY_HERE",
+                    "api_key": "OPENAI_API_KEY_PLACEHOLDER",
                     "base_url": "https://api.openai.com/v1",
                     "model": "gpt-4",
                     "timeout": 60,
@@ -467,7 +467,7 @@ class SystemConfigService:
             
             if not current_config:
                 current_config = {
-                    "api_key": "",
+                    "api_key": "OPENAI_API_KEY_PLACEHOLDER",
                     "base_url": "https://api.openai.com/v1" if provider == "openai" else "https://api.deepseek.com/v1",
                     "model": "gpt-4" if provider == "openai" else "deepseek-chat",
                     "timeout": 60,

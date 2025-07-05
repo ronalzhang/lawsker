@@ -690,7 +690,7 @@
       "category": "ai_api_keys",
       "key": "openai",
       "value": {
-        "api_key": "sk-proj-...",
+        "api_key": "您的OpenAI_API密钥",
         "model": "gpt-4",
         "base_url": "https://api.openai.com/v1"
       },
@@ -714,7 +714,7 @@
     "category": "ai_api_keys",
     "key": "openai",
     "value": {
-      "api_key": "sk-proj-...",
+      "api_key": "您的OpenAI_API密钥",
       "model": "gpt-4"
     },
     "description": "OpenAI配置"

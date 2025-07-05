@@ -509,7 +509,7 @@
                     status: 'active',
                     description: '配置OpenAI服务的API密钥和模型参数，用于AI文书生成和智能分析功能。',
                     fields: [
-                        { label: 'API Key', type: 'password', placeholder: 'sk-proj-...', value: 'sk-proj-TFfWkQE4eIV3XH...' },
+                        { label: 'API Key', type: 'password', placeholder: '请输入OpenAI API密钥', value: '' },
                         { label: '模型', type: 'select', options: ['gpt-4', 'gpt-4-turbo', 'gpt-3.5-turbo'], value: 'gpt-4' },
                         { label: 'API Base URL', type: 'text', placeholder: 'https://api.openai.com/v1', value: 'https://api.openai.com/v1' }
                     ]
@@ -520,7 +520,7 @@
                     status: 'active',
                     description: '配置Deepseek AI服务，作为OpenAI的备用选项，提供更经济的AI文书生成服务。',
                     fields: [
-                        { label: 'API Key', type: 'password', placeholder: 'sk-...', value: 'sk-ef32d9215e4542c0...' },
+                        { label: 'API Key', type: 'password', placeholder: '请输入Deepseek API密钥', value: '' },
                         { label: '模型', type: 'select', options: ['deepseek-chat', 'deepseek-coder'], value: 'deepseek-chat' },
                         { label: '优先级', type: 'select', options: [{ value: '2', text: '备用（优先级2）' }, { value: '1', text: '主要（优先级1）' }], value: '2' }
                     ]
