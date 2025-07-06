@@ -6,34 +6,37 @@ import urllib.parse
 
 class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
+        # 保存原始路径
+        original_path = self.path
+        
         # URL路由映射
         routes = {
-            '/user': '/user-workspace.html',
-            '/legal': '/lawyer-workspace.html',
-            '/institution': '/institution-workspace.html',
-            '/calculator': '/earnings-calculator.html',
-            '/earnings-calculator': '/earnings-calculator.html',
-            '/withdraw': '/withdrawal.html',
-            '/submit': '/anonymous-task.html',
-            '/auth': '/login.html',
-            '/admin': '/admin-config.html',
-            '/admin-pro': '/admin-config-optimized.html',
-            '/console': '/dashboard.html'
+            '/user': 'user-workspace.html',
+            '/legal': 'lawyer-workspace.html',
+            '/institution': 'institution-workspace.html',
+            '/calculator': 'earnings-calculator.html',
+            '/earnings-calculator': 'earnings-calculator.html',
+            '/withdraw': 'withdrawal.html',
+            '/submit': 'anonymous-task.html',
+            '/auth': 'login.html',
+            '/admin': 'admin-config.html',
+            '/admin-pro': 'admin-config-optimized.html',
+            '/console': 'dashboard.html'
         }
         
         # 处理重定向
-        if self.path == '/sales':
+        if original_path == '/sales':
             self.send_response(301)
             self.send_header('Location', '/user')
             self.end_headers()
             return
         
         # 检查是否是需要重写的路由
-        if self.path in routes:
-            self.path = routes[self.path]
+        if original_path in routes:
+            self.path = '/' + routes[original_path]
         
         # 如果是根路径，重定向到index.html
-        if self.path == '/':
+        if original_path == '/':
             self.path = '/index.html'
         
         # 调用父类方法处理请求
