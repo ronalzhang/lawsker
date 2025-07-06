@@ -6,11 +6,53 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f1424">
-    <title>销售工作台 - Lawsker 律客</title>
+    <title>用户工作台 - Lawsker 律客</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
     <link rel="stylesheet" href="css/lawsker-glass.css">
     <script src="js/api-client.js"></script>
     <style>
+        :root {
+            --glass-bg: rgba(22, 28, 48, 0.75);
+            --glass-border: rgba(122, 160, 255, 0.25);
+            --glass-shadow: rgba(0, 0, 0, 0.3);
+            --blur-radius: 25px;
+            --border-radius: 20px;
+            --text-primary: #f0f4ff;
+            --text-secondary: #a8b2d1;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-success: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            --gradient-warning: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            --gradient-danger: linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%);
+            --app-padding: 16px;
+            --safe-area-top: env(safe-area-inset-top, 0px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        /* 用户等级标签样式 */
+        .user-level-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--gradient-primary);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 16px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            animation: levelGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes levelGlow {
+            from { box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3); }
+            to { box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5); }
+        }
+
+        .level-icon {
+            font-size: 14px;
+        }
+
         /* 页面特定样式 */
         .workspace-grid {
             display: grid;
@@ -660,11 +702,11 @@
                 ⚖️ Lawsker 律客
             </a>
             <div class="nav-menu">
-                <a href="/sales" class="nav-link active">销售工作台</a>
+                <a href="/user" class="nav-link active">用户工作台</a>
                 <a href="/earnings-calculator" class="nav-link">收益计算</a>
                 <div class="user-info">
-                    <span class="user-name">销售顾问</span>
-                    <div class="user-avatar">销</div>
+                    <span class="user-name">律客用户</span>
+                    <div class="user-avatar">用</div>
                     <button class="logout-btn" onclick="logout()">退出</button>
                 </div>
             </div>
@@ -675,7 +717,13 @@
     <div class="main-container">
         <!-- 页面标题 -->
         <div class="page-header">
-            <h1 class="page-title">销售工作台</h1>
+            <h1 class="page-title">
+                用户工作台
+                <span class="user-level-badge">
+                    <span class="level-icon">⭐</span>
+                    <span id="userLevel">律客达人</span>
+                </span>
+            </h1>
             <p class="page-subtitle">发布任务、上传数据、管理收益 - 一站式业务管理平台</p>
         </div>
 
@@ -921,10 +969,6 @@
                         <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">冻结金额</div>
                         <div style="color: var(--text-primary); font-size: 24px; font-weight: 600;" id="frozenAmount">¥380.00</div>
                     </div>
-                    <div style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
-                        <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">本月提现</div>
-                        <div style="color: var(--text-primary); font-size: 24px; font-weight: 600;" id="monthlyWithdrawal">¥1,200.00</div>
-                    </div>
                 </div>
             </div>
 
@@ -947,8 +991,8 @@
                     </div>
                     
                     <div style="text-align: center; padding: 16px; background: var(--glass-bg); border-radius: 12px; border: 1px solid var(--glass-border);">
-                        <div style="font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;" id="salesAverageAmount">¥0.00</div>
-                        <div style="color: var(--text-secondary); font-size: 12px;">平均金额</div>
+                        <div style="font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;" id="monthlyWithdrawal">¥1,200.00</div>
+                        <div style="color: var(--text-secondary); font-size: 12px;">本月提现</div>
                     </div>
                     
                     <div style="text-align: center; padding: 16px; background: var(--glass-bg); border-radius: 12px; border: 1px solid var(--glass-border);">
@@ -1007,17 +1051,17 @@
                         </thead>
                         <tbody>
                             <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                                <td style="padding: 12px; color: var(--text-primary); font-size: 14px;">2024-01-10<br>15:30</td>
+                                <td style="padding: 12px; color: var(--text-primary); font-size: 14px;">2024-01-10 15:30</td>
                                 <td style="padding: 12px; color: var(--text-primary); font-size: 14px; font-weight: 600;">¥1,200.00</td>
-                                <td style="padding: 12px; color: var(--text-primary); font-size: 14px;">支付宝</td>
-                                <td style="padding: 12px;"><span style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 4px 8px; border-radius: 8px; font-size: 11px;">已完成</span></td>
-                                <td style="padding: 12px; color: var(--text-primary); font-size: 14px;">2024-01-11<br>09:15</td>
+                                <td style="padding: 12px; color: var(--text-primary); font-size: 14px;"><span style="background: rgba(102, 126, 234, 0.2); color: #667eea; padding: 4px 8px; border-radius: 8px; font-size: 11px;">支</span></td>
+                                <td style="padding: 12px;"><span style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 4px 8px; border-radius: 8px; font-size: 11px; white-space: nowrap;">已完成</span></td>
+                                <td style="padding: 12px; color: var(--text-primary); font-size: 14px;">2024-01-11 09:15</td>
                             </tr>
                             <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                                <td style="padding: 12px; color: var(--text-primary); font-size: 14px;">2024-01-05<br>11:20</td>
+                                <td style="padding: 12px; color: var(--text-primary); font-size: 14px;">2024-01-05 11:20</td>
                                 <td style="padding: 12px; color: var(--text-primary); font-size: 14px; font-weight: 600;">¥800.00</td>
-                                <td style="padding: 12px; color: var(--text-primary); font-size: 14px;">银行卡</td>
-                                <td style="padding: 12px;"><span style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; padding: 4px 8px; border-radius: 8px; font-size: 11px;">处理中</span></td>
+                                <td style="padding: 12px; color: var(--text-primary); font-size: 14px;"><span style="background: rgba(102, 126, 234, 0.2); color: #667eea; padding: 4px 8px; border-radius: 8px; font-size: 11px;">银</span></td>
+                                <td style="padding: 12px;"><span style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; padding: 4px 8px; border-radius: 8px; font-size: 11px; white-space: nowrap;">处理中</span></td>
                                 <td style="padding: 12px; color: var(--text-secondary); font-size: 14px;">-</td>
                             </tr>
                         </tbody>
@@ -1411,11 +1455,55 @@
             }
         }
 
+        // 用户等级计算
+        function calculateUserLevel(totalBusiness, totalEarnings) {
+            const levels = [
+                { name: '律客新手', minBusiness: 0, minEarnings: 0, icon: '🌱' },
+                { name: '律客用户', minBusiness: 100, minEarnings: 1000, icon: '⭐' },
+                { name: '律客达人', minBusiness: 500, minEarnings: 5000, icon: '🌟' },
+                { name: '律客专家', minBusiness: 1000, minEarnings: 15000, icon: '💫' },
+                { name: '律客精英', minBusiness: 2000, minEarnings: 30000, icon: '✨' },
+                { name: '律客初级合伙人', minBusiness: 5000, minEarnings: 80000, icon: '🏆' },
+                { name: '律客中级合伙人', minBusiness: 10000, minEarnings: 200000, icon: '🏅' },
+                { name: '律客高级合伙人', minBusiness: 20000, minEarnings: 500000, icon: '👑' },
+                { name: '律客钻石合伙人', minBusiness: 50000, minEarnings: 1200000, icon: '💎' },
+                { name: '律客至尊合伙人', minBusiness: 100000, minEarnings: 3000000, icon: '🌈' }
+            ];
+            
+            for (let i = levels.length - 1; i >= 0; i--) {
+                const level = levels[i];
+                if (totalBusiness >= level.minBusiness && totalEarnings >= level.minEarnings) {
+                    return level;
+                }
+            }
+            return levels[0]; // 默认返回新手等级
+        }
+
+        // 更新用户等级显示
+        function updateUserLevel() {
+            // 这里应该从API获取真实数据，现在使用示例数据
+            const totalBusiness = 1250; // 总业务数量
+            const totalEarnings = 12580; // 总收益金额
+            
+            const userLevel = calculateUserLevel(totalBusiness, totalEarnings);
+            
+            const levelElement = document.getElementById('userLevel');
+            const levelIcon = document.querySelector('.user-level-badge .level-icon');
+            
+            if (levelElement) {
+                levelElement.textContent = userLevel.name;
+            }
+            if (levelIcon) {
+                levelIcon.textContent = userLevel.icon;
+            }
+        }
+
         // 页面初始化
         document.addEventListener('DOMContentLoaded', async function() {
             await loadStats();
             await loadTasks();
             await loadSalesWithdrawalStats();
+            updateUserLevel();
         });
     </script>
 </body>

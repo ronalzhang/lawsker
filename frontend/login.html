@@ -470,7 +470,7 @@
                             </div>
                             <div class="role-option" data-role="sales">
                                 <span class="role-icon">📊</span>
-                                <span>业务销售</span>
+                                <span>律客用户</span>
                             </div>
                         </div>
                     </div>
@@ -526,7 +526,7 @@
                             </div>
                             <div class="role-option" data-role="sales">
                                 <span class="role-icon">📊</span>
-                                <span>业务销售</span>
+                                <span>律客用户</span>
                             </div>
                         </div>
                     </div>
@@ -545,7 +545,7 @@
                         ⚖️ 律师账号
                     </button>
                     <button class="demo-btn" onclick="loginDemo('sales_demo', 'demo123', 'sales')">
-                        📊 销售账号
+                        📊 用户账号
                     </button>
                 </div>
             </div>
@@ -640,7 +640,7 @@
                     setTimeout(() => {
                         const workspaceMap = {
                             'lawyer': 'lawyer-workspace.html',
-                            'sales': 'sales-workspace.html'
+                            'sales': 'user-workspace.html'
                         };
                         window.location.href = workspaceMap[selectedRole] || '/';
                     }, 1000);
@@ -821,7 +821,7 @@
             if (role) {
                 const workspaceMap = {
                     'lawyer': 'lawyer-workspace.html',
-                    'sales': 'sales-workspace.html',
+                    'sales': 'user-workspace.html',
                     'institution': 'institution-workspace.html',
                     'admin': 'admin-config.html'
                 };
@@ -846,7 +846,7 @@
                     // 显示登录状态提示，而不是自动跳转
                     const roleNames = {
                         'lawyer': '律师',
-                        'sales': '销售',
+                        'sales': '律客用户',
                         'institution': '机构',
                         'admin': '管理员'
                     };
