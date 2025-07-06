@@ -301,6 +301,97 @@
             margin-bottom: 10px;
         }
 
+        /* 支付相关样式 */
+        .service-price {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .price-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .price-item:last-child {
+            border-bottom: none;
+        }
+
+        .price-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .price-value {
+            color: white;
+            font-weight: 600;
+        }
+
+        .price-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0 0;
+            border-top: 2px solid rgba(255, 255, 255, 0.2);
+            margin-top: 12px;
+        }
+
+        .total-label {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .total-value {
+            color: #10b981;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .payment-method {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .payment-method:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .payment-method.active {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .method-icon {
+            font-size: 1.2rem;
+        }
+
+        .method-name {
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
         .track-link {
             color: #667eea;
             text-decoration: none;
@@ -457,10 +548,42 @@
                         </div>
                     </div>
 
+                    <!-- 服务费用 -->
+                    <div class="form-section">
+                        <div class="section-title">
+                            <span class="section-icon">💰</span>
+                            服务费用
+                        </div>
+                        <div class="service-price">
+                            <div class="price-item">
+                                <div class="price-label">律师函服务费</div>
+                                <div class="price-value">¥30.00</div>
+                            </div>
+                            <div class="price-item">
+                                <div class="price-label">发送费用（短信/邮件）</div>
+                                <div class="price-value">免费</div>
+                            </div>
+                            <div class="price-total">
+                                <div class="total-label">总计</div>
+                                <div class="total-value">¥30.00</div>
+                            </div>
+                        </div>
+                        <div class="payment-methods">
+                            <div class="payment-method active" data-method="wechat">
+                                <div class="method-icon">💚</div>
+                                <div class="method-name">微信支付</div>
+                            </div>
+                            <div class="payment-method" data-method="alipay">
+                                <div class="method-icon">🔵</div>
+                                <div class="method-name">支付宝</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- 提交按钮 -->
                     <button type="submit" class="btn btn-primary submit-btn" id="submitBtn">
                         <span class="loading-spinner" id="loadingSpinner"></span>
-                        提交任务
+                        💰 立即支付并提交律师函
                     </button>
                 </form>
 
@@ -581,6 +704,14 @@
             } catch (error) {
                 showAlert(error.message || '发送验证码失败');
             }
+        });
+
+        // 支付方式选择
+        document.querySelectorAll('.payment-method').forEach(method => {
+            method.addEventListener('click', () => {
+                document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('active'));
+                method.classList.add('active');
+            });
         });
 
         // 初始化
