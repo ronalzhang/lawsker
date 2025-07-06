@@ -761,10 +761,10 @@
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label">预期律师费</label>
-                        <input type="number" class="form-input" id="expectedLawyerFee" placeholder="请输入您希望支付的律师费金额" min="0" step="50" required>
+                        <label class="form-label">预期律师费（元）</label>
+                        <input type="number" class="form-input" id="expectedLawyerFee" placeholder="请输入整数金额，如：500" min="1" step="1" required>
                         <div style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;">
-                            💡 律师主要根据此金额来决定是否接单，建议参考市场价格合理设置
+                            💡 只能输入大于0的整数，律师主要根据此金额来决定是否接单
                         </div>
                     </div>
                     
@@ -1135,11 +1135,23 @@
         document.getElementById('taskForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            // 验证预期律师费
+            const lawyerFeeInput = document.getElementById('expectedLawyerFee');
+            const lawyerFee = parseFloat(lawyerFeeInput.value);
+            
+            // 检查是否为正整数
+            if (!Number.isInteger(lawyerFee) || lawyerFee <= 0) {
+                alert('预期律师费必须是大于0的整数');
+                lawyerFeeInput.focus();
+                return;
+            }
+            
             const formData = {
                 type: document.getElementById('taskType').value,
                 title: document.getElementById('taskTitle').value,
                 description: document.getElementById('taskDescription').value,
-                budget: parseFloat(document.getElementById('taskBudget').value)
+                budget: lawyerFee,
+                expectedLawyerFee: lawyerFee.toFixed(2) // 格式化为两位小数显示
             };
             
             try {

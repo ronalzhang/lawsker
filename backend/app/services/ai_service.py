@@ -367,8 +367,39 @@ class AIDocumentService:
         prompt_builder = base_prompts.get(document_type, self._get_generic_prompt)
         return prompt_builder(case_info, tone, additional_requirements)
     
+    def _generate_installment_plan(self, debt_amount: float) -> str:
+        """根据债务金额生成智能分期方案"""
+        if debt_amount <= 0:
+            return "- 请联系我方协商具体还款方案"
+        
+        plans = []
+        
+        # 3期方案
+        period_3 = debt_amount / 3
+        plans.append(f"- 3期方案：每期还款 {period_3:.2f}元")
+        
+        # 6期方案
+        period_6 = debt_amount / 6
+        plans.append(f"- 6期方案：每期还款 {period_6:.2f}元")
+        
+        # 9期方案
+        period_9 = debt_amount / 9
+        plans.append(f"- 9期方案：每期还款 {period_9:.2f}元")
+        
+        # 12期方案（仅当金额较大时）
+        if debt_amount >= 10000:
+            period_12 = debt_amount / 12
+            plans.append(f"- 12期方案：每期还款 {period_12:.2f}元")
+        
+        # 特殊大额方案（超过50万）
+        if debt_amount >= 500000:
+            period_18 = debt_amount / 18
+            plans.append(f"- 18期方案（特殊）：每期还款 {period_18:.2f}元")
+        
+        return "\n   ".join(plans)
+
     def _get_collection_letter_prompt(self, case_info: Dict[str, Any], tone: str, additional_requirements: str) -> str:
-        """催收律师函提示词"""
+        """催收律师函提示词 - 专业优化版本"""
         tone_mapping = {
             "friendly_reminder": "友好提醒",
             "formal_notice": "正式通知", 
@@ -376,35 +407,63 @@ class AIDocumentService:
         }
         
         tone_desc = tone_mapping.get(tone, "正式通知")
+        debt_amount = float(case_info.get('debt_amount', 0))
+        
+        # 根据债务金额智能推荐分期方案
+        installment_plan = self._generate_installment_plan(debt_amount)
         
         return f"""
-请根据以下信息生成一份{tone_desc}语气的催收律师函：
+你是一位资深执业律师，专精债务催收和分期还款协商。请根据以下信息生成一份专业、有效、符合法律规范的催收律师函。
 
-债务人信息：
-- 姓名：{case_info.get('debtor_name', '')}
-- 身份证号：{case_info.get('debtor_id', '***')}
-- 联系地址：{case_info.get('debtor_address', '')}
+【案件基本信息】
+债务人：{case_info.get('debtor_name', '')}
+身份证号：{case_info.get('debtor_id', '***')}
+联系地址：{case_info.get('debtor_address', '')}
+债权人：{case_info.get('creditor_name', '')}
+债务本金：{case_info.get('debt_amount', '')}元
+债务形成日期：{case_info.get('debt_date', '')}
+约定还款日期：{case_info.get('due_date', '')}
+逾期天数：{case_info.get('overdue_days', '')}天
 
-债权信息：
-- 债权人：{case_info.get('creditor_name', '')}
-- 债务金额：{case_info.get('debt_amount', '')}元
-- 债务形成日期：{case_info.get('debt_date', '')}
-- 约定还款日期：{case_info.get('due_date', '')}
-- 逾期天数：{case_info.get('overdue_days', '')}天
+【语气要求】：{tone_desc}
 
-案件详情：
-{case_info.get('case_description', '')}
+【核心要求】
+1. 必须提供3-4种分期还款方案供债务人选择：
+   {installment_plan}
 
-特殊要求：
+2. 分期方案特点：
+   - 优先推荐3期、6期、9期、12期方案
+   - 一般不超过12个月，除非债务金额巨大（超过50万）
+   - 每期金额要具体计算并明确标注
+   - 首期可适当减少以降低还款压力
+
+3. 法律威慑要素：
+   - 引用《民法典》相关条款
+   - 明确逾期的法律后果
+   - 提及可能采取的法律措施（起诉、强制执行等）
+
+4. 格式要求：
+   - 函件编号：[年份]-[机构简称]-催字第[编号]号
+   - 正式的律师函格式
+   - 条理清晰，逻辑严密
+   - 专业术语准确
+
+5. 时间期限：
+   - 给出明确的回复期限（通常7-15天）
+   - 说明超期后果
+
+【特殊要求】
 {additional_requirements}
 
-请生成格式规范、内容完整的律师函，包含：
-1. 函件抬头和编号
-2. 债务事实陈述
-3. 法律依据
-4. 催收要求和期限
-5. 法律后果提醒
-6. 律师署名
+【案件详情】
+{case_info.get('case_description', '')}
+
+请生成完整的律师函内容，确保：
+- 语言专业且有威慑力
+- 分期方案实用且有吸引力
+- 法律依据准确充分
+- 格式规范标准
+- 逻辑清晰易懂
 """
     
     def _get_demand_letter_prompt(self, case_info: Dict[str, Any], tone: str, additional_requirements: str) -> str:
