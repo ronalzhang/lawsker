@@ -973,14 +973,12 @@
                     
                     document.body.appendChild(alertDiv);
                     
-                    // 3秒后自动跳转（可以被用户取消）
-                    const autoRedirect = setTimeout(() => {
-                        continueLogin();
-                    }, 3000);
-                    
-                    // 如果用户点击了任何按钮，取消自动跳转
-                    alertDiv.addEventListener('click', () => {
-                        clearTimeout(autoRedirect);
+                    // 用户必须主动选择，不自动跳转
+                    // 如果用户点击了任何按钮，隐藏提示框
+                    alertDiv.addEventListener('click', (e) => {
+                        if (e.target.tagName === 'BUTTON') {
+                            alertDiv.style.display = 'none';
+                        }
                     });
                 }
             }
