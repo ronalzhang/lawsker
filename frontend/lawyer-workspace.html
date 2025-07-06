@@ -695,22 +695,22 @@
             </p>
             
             <div class="quick-actions">
-                <a href="#" class="action-btn">
+                <a href="javascript:void(0)" class="action-btn" onclick="createCase()">
                     <div class="action-icon">📝</div>
                     <div>新建案件</div>
                 </a>
                 
-                <a href="#" class="action-btn">
+                <a href="javascript:void(0)" class="action-btn" onclick="generateAIDocument()">
                     <div class="action-icon">🤖</div>
                     <div>AI文书生成</div>
                 </a>
                 
-                <a href="#" class="action-btn">
+                <a href="javascript:void(0)" class="action-btn" onclick="manageTemplates()">
                     <div class="action-icon">📋</div>
                     <div>模板管理</div>
                 </a>
                 
-                <a href="#" class="action-btn">
+                <a href="javascript:void(0)" class="action-btn" onclick="viewReports()">
                     <div class="action-icon">📊</div>
                     <div>数据报表</div>
                 </a>
@@ -1135,6 +1135,23 @@
                 document.getElementById('userName').textContent = userName;
                 document.getElementById('userAvatar').textContent = userName.charAt(0);
             }
+        }
+
+        // 快速操作函数
+        function createCase() {
+            alert('新建案件功能开发中...');
+        }
+
+        function generateAIDocument() {
+            alert('AI文书生成功能开发中...');
+        }
+
+        function manageTemplates() {
+            alert('模板管理功能开发中...');
+        }
+
+        function viewReports() {
+            alert('数据报表功能开发中...');
         }
 
         // 初始化页面
