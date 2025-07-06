@@ -14,8 +14,10 @@
 - `payment_orders` - 支付订单表 (100% 实现)
 - `lawyer_qualifications` - 律师资质表 (100% 实现)
 
+### **⚠️ 高优先级待补充表**
+- `withdrawal_requests` - 提现申请表 (前端已集成，急需后端支持)
+
 ### **❌ 待补充表**
-- `withdrawal_requests` - 提现申请表 (需要补充)
 - `case_logs` - 案件日志表 (需要补充)
 - `lawyer_workloads` - 律师工作负荷表 (需要补充)
 - `clients` - 客户表 (需要补充)
@@ -24,7 +26,8 @@
 - `dao_proposals` - DAO提案表 (未来功能)
 - `dao_votes` - DAO投票表 (未来功能)
 
-### **数据库完成度: 85%**
+### **数据库完成度: 90%**
+### **前端工作台已完成，需要提现管理API支持**
 
 ---
 
@@ -223,18 +226,24 @@
 | `created_at` | `TIMESTAMPZ` | `NOT NULL` | 创建时间 |
 | `updated_at` | `TIMESTAMPZ` | `NOT NULL` | 更新时间 |
 
-### `withdrawal_requests` - 提现申请表
+### `withdrawal_requests` - 提现申请表 ⚠️ 急需实现
 | 字段名 | 类型 | 约束 | 描述 |
 |---|---|---|---|
 | `id` | `UUID` | **PK** | 申请ID |
 | `user_id` | `UUID` | `FK > users.id` | 用户ID |
 | `amount` | `DECIMAL(18, 2)` | `NOT NULL` | 提现金额 |
-| `bank_account` | `VARCHAR(255)` | | 银行账户 |
-| `bank_name` | `VARCHAR(100)` | | 银行名称 |
-| `account_holder` | `VARCHAR(100)` | | 开户人姓名 |
-| `status` | `VARCHAR(20)` | `DEFAULT 'pending'` | 申请状态 |
+| `withdrawal_method` | `VARCHAR(50)` | `NOT NULL` | 提现方式（银行卡、支付宝、微信） |
+| `account_info` | `JSONB` | `NOT NULL` | 收款账户信息 |
+| `account_holder` | `VARCHAR(100)` | `NOT NULL` | 收款人姓名 |
+| `status` | `ENUM('pending', 'approved', 'rejected', 'completed')` | `DEFAULT 'pending'` | 申请状态 |
+| `admin_notes` | `TEXT` | | 管理员备注 |
+| `processed_by` | `UUID` | `FK > users.id` | 处理人ID |
 | `processed_at` | `TIMESTAMPZ` | | 处理时间 |
+| `completed_at` | `TIMESTAMPZ` | | 完成时间 |
 | `created_at` | `TIMESTAMPZ` | `NOT NULL` | 申请时间 |
+| `updated_at` | `TIMESTAMPZ` | `NOT NULL` | 更新时间 |
+
+**注意**: 前端提现管理界面已集成到律师和销售工作台，急需对应的后端API支持。
 
 ---
 
