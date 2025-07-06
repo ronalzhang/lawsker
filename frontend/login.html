@@ -621,7 +621,7 @@
 
             <!-- 返回首页 -->
             <div class="back-home">
-                <a href="index.html">← 返回首页</a>
+                <a href="/">← 返回首页</a>
             </div>
         </div>
     </div>
@@ -713,7 +713,7 @@
                             'institution': 'institution-workspace.html',
                             'admin': 'admin-config.html'
                         };
-                        window.location.href = workspaceMap[selectedRole] || 'dashboard.html';
+                        window.location.href = workspaceMap[selectedRole] || '/console';
                     }, 1000);
                 } else {
                     showMessage(data.detail || '登录失败，请检查用户名、密码和角色', 'error');
@@ -896,7 +896,7 @@
                     'institution': 'institution-workspace.html',
                     'admin': 'admin-config.html'
                 };
-                window.location.href = workspaceMap[role] || 'dashboard.html';
+                window.location.href = workspaceMap[role] || '/console';
             }
         }
 

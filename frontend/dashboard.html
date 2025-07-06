@@ -156,13 +156,13 @@
     <!-- 导航栏 -->
     <nav class="navbar">
         <div class="navbar-content">
-            <a href="index.html" class="logo">Lawsker</a>
+            <a href="/" class="logo">Lawsker</a>
             <div class="nav-menu">
-                <a href="dashboard.html" class="nav-link active">仪表盘</a>
-                <a href="sales-workspace.html" class="nav-link">销售工作台</a>
-                <a href="lawyer-workspace.html" class="nav-link">律师工作台</a>
-                <a href="earnings-calculator.html" class="nav-link">收益计算</a>
-                <a href="withdrawal.html" class="nav-link">提现管理</a>
+                <a href="/console" class="nav-link active">仪表盘</a>
+                <a href="/sales" class="nav-link">销售工作台</a>
+                <a href="/legal" class="nav-link">律师工作台</a>
+                <a href="/calculator" class="nav-link">收益计算</a>
+                <a href="/withdraw" class="nav-link">提现管理</a>
                 <div class="user-info">
                     <span class="user-name" id="userName">用户</span>
                     <div class="user-avatar" id="userAvatar">U</div>
@@ -230,37 +230,37 @@
 
         <!-- 快速操作 -->
         <div class="actions-grid">
-            <div class="action-card" onclick="navigateTo('anonymous-task.html')">
+            <div class="action-card" onclick="navigateTo('/submit')">
                 <div class="action-icon icon-green">⚖️</div>
                 <div class="action-title">一键律师函</div>
                 <div class="action-description">快速发布律师函任务</div>
             </div>
 
-            <div class="action-card" onclick="navigateTo('lawyer-workspace.html')">
+            <div class="action-card" onclick="navigateTo('/legal')">
                 <div class="action-icon icon-blue">⚖️</div>
                 <div class="action-title">律师工作台</div>
                 <div class="action-description">管理法律案件</div>
             </div>
 
-            <div class="action-card" onclick="navigateTo('sales-workspace.html')">
+            <div class="action-card" onclick="navigateTo('/sales')">
                 <div class="action-icon icon-purple">💼</div>
                 <div class="action-title">销售工作台</div>
                 <div class="action-description">跟进销售机会</div>
             </div>
 
-            <div class="action-card" onclick="navigateTo('institution-workspace.html')">
+            <div class="action-card" onclick="navigateTo('/institution')">
                 <div class="action-icon icon-orange">🏢</div>
                 <div class="action-title">机构工作台</div>
                 <div class="action-description">管理机构业务</div>
             </div>
 
-            <div class="action-card" onclick="navigateTo('earnings-calculator.html')">
+            <div class="action-card" onclick="navigateTo('/calculator')">
                 <div class="action-icon icon-red">📊</div>
                 <div class="action-title">收益计算器</div>
                 <div class="action-description">计算收益分成</div>
             </div>
 
-            <div class="action-card" onclick="navigateTo('withdrawal.html')">
+            <div class="action-card" onclick="navigateTo('/withdraw')">
                 <div class="action-icon icon-pink">💳</div>
                 <div class="action-title">提现管理</div>
                 <div class="action-description">处理提现申请</div>
@@ -292,7 +292,7 @@
         function logout() {
             if (confirm('确定要退出登录吗？')) {
                 localStorage.removeItem('authToken');
-                window.location.href = 'login.html';
+                window.location.href = '/auth';
             }
         }
 

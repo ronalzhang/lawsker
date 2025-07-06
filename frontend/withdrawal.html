@@ -482,13 +482,13 @@
     <!-- 导航栏 -->
     <nav class="navbar">
         <div class="navbar-content">
-            <a href="index.html" class="logo">Lawsker</a>
+            <a href="/" class="logo">Lawsker</a>
             <div class="nav-menu">
-                <a href="dashboard.html" class="nav-link">仪表盘</a>
-                <a href="sales-workspace.html" class="nav-link">销售工作台</a>
-                <a href="lawyer-workspace.html" class="nav-link">律师工作台</a>
-                <a href="withdrawal.html" class="nav-link active">提现管理</a>
-                <a href="earnings-calculator.html" class="nav-link">收益计算</a>
+                <a href="/console" class="nav-link">仪表盘</a>
+                <a href="/sales" class="nav-link">销售工作台</a>
+                <a href="/legal" class="nav-link">律师工作台</a>
+                <a href="/withdraw" class="nav-link active">提现管理</a>
+                <a href="/calculator" class="nav-link">收益计算</a>
                 <div class="user-info">
                     <span class="user-name" id="userName">用户</span>
                     <div class="user-avatar" id="userAvatar">用</div>
@@ -811,7 +811,7 @@
         function logout() {
             if (confirm('确定要退出登录吗？')) {
                 localStorage.removeItem('authToken');
-                window.location.href = 'login.html';
+                window.location.href = '/auth';
             }
         }
 
