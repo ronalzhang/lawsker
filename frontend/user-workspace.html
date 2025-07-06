@@ -904,6 +904,22 @@
                 </div>
             </div>
 
+            <!-- 任务反馈状态 -->
+            <div class="task-list" style="margin-bottom: 32px;">
+                <div class="task-list-header">
+                    <h3 class="task-list-title">任务反馈状态</h3>
+                    <button class="btn btn-secondary" onclick="refreshTaskFeedback()" style="padding: 6px 12px; font-size: 12px;">刷新状态</button>
+                </div>
+                <div id="taskFeedbackBody">
+                    <!-- 任务反馈内容将由JavaScript动态生成 -->
+                    <div class="task-item" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                        <div>暂无任务反馈信息</div>
+                        <div style="font-size: 12px; margin-top: 8px;">律师接单后会在此显示详细信息</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 收益统计 -->
             <div class="earnings-summary">
                 <h3 class="earnings-title">收益统计</h3>
@@ -1677,6 +1693,7 @@
             await loadTasks();
             await loadSalesWithdrawalStats();
             updateUserLevel();
+            refreshTaskFeedback(); // 添加任务反馈状态刷新
             
             // 监听任务类型变化，自动推荐律师费
             const taskTypeSelect = document.getElementById('taskType');
@@ -1684,6 +1701,71 @@
                 taskTypeSelect.addEventListener('change', autoSuggestFee);
             }
         });
+
+        // 刷新任务反馈状态
+        function refreshTaskFeedback() {
+            const taskUpdates = JSON.parse(localStorage.getItem('taskUpdates') || '[]');
+            const taskFeedbackBody = document.getElementById('taskFeedbackBody');
+            
+            if (taskUpdates.length === 0) {
+                taskFeedbackBody.innerHTML = `
+                    <div class="task-item" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                        <div>暂无任务反馈信息</div>
+                        <div style="font-size: 12px; margin-top: 8px;">律师接单后会在此显示详细信息</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            taskFeedbackBody.innerHTML = '';
+            taskUpdates.forEach(update => {
+                const feedbackItem = document.createElement('div');
+                feedbackItem.className = 'task-item';
+                feedbackItem.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="flex: 1;">
+                            <div class="task-title" style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span>任务 ${update.taskId}</span>
+                                <span class="task-status ${getStatusClass(update.status)}">${getStatusDisplayText(update.status)}</span>
+                            </div>
+                            <div class="task-details" style="margin-bottom: 12px;">
+                                接单时间：${new Date(update.timestamp).toLocaleString()}
+                            </div>
+                            <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border);">
+                                <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">📋 律师信息</div>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; font-size: 13px; color: var(--text-secondary);">
+                                    <div><strong>姓名：</strong>${update.lawyerInfo.name}</div>
+                                    <div><strong>律所：</strong>${update.lawyerInfo.firm}</div>
+                                    <div><strong>经验：</strong>${update.lawyerInfo.experience}</div>
+                                    <div><strong>评分：</strong>⭐ ${update.lawyerInfo.rating}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-left: 16px;">
+                            <button class="btn btn-secondary" onclick="viewTaskDetail('${update.taskId}')" style="padding: 6px 12px; font-size: 12px;">查看详情</button>
+                        </div>
+                    </div>
+                `;
+                taskFeedbackBody.appendChild(feedbackItem);
+            });
+        }
+
+        // 获取状态显示文本
+        function getStatusDisplayText(status) {
+            const statusMap = {
+                'accepted': '已接受',
+                'in_progress': '进行中',
+                'completed': '已完成',
+                'delivered': '已交付'
+            };
+            return statusMap[status] || status;
+        }
+
+        // 查看任务详情
+        function viewTaskDetail(taskId) {
+            alert(`查看任务 ${taskId} 的详细信息功能开发中...`);
+        }
     </script>
 </body>
 </html>

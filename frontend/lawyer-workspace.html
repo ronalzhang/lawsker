@@ -687,25 +687,20 @@
         <!-- 待处理任务列表 -->
         <div class="content-section" style="margin-bottom: 32px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <div>
-                    <h2 class="section-title">
-                        <span>📋</span>
-                        平台分配的任务 (待审核AI文案)
-                    </h2>
-                    <p class="section-description">
-                        审核AI生成的律师函内容，确认后可一键发送
-                    </p>
-                </div>
+                <h2 class="section-title" style="margin: 0; text-align: left;">
+                    <span>📋</span>
+                    已分配任务
+                </h2>
                 <button class="btn btn-primary" onclick="batchSendAll()" id="batchSendBtn" style="min-width: 200px;">
                     <span>📤</span>
-                    一键发送所有已确认任务 (<span id="confirmedCount">0</span>)
+                    一键发送全部已确认任务 (<span id="confirmedCount">0</span>)
                 </button>
             </div>
             
             <div class="tasks-container" style="background: var(--glass-bg); border-radius: 16px; border: 1px solid var(--glass-border); overflow: hidden;">
                 <div id="tasksList">
                     <!-- 示例任务 -->
-                    <div class="task-item" data-task-id="task-001" style="border-bottom: 1px solid var(--glass-border); padding: 20px;">
+                    <div class="task-item" data-task-id="task-001" style="border-bottom: 1px solid var(--glass-border); padding: 16px 20px;">
                         <div class="task-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                             <div class="task-info">
                                 <div class="task-title" style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 8px;">债务催收律师函 - 北京科技有限公司</div>
@@ -747,7 +742,7 @@
                         </div>
                     </div>
 
-                    <div class="task-item" data-task-id="task-002" style="border-bottom: 1px solid var(--glass-border); padding: 20px;">
+                    <div class="task-item" data-task-id="task-002" style="border-bottom: 1px solid var(--glass-border); padding: 16px 20px;">
                         <div class="task-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                             <div class="task-info">
                                 <div class="task-title" style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 8px;">合同纠纷律师函 - 李四贸易公司</div>
@@ -791,22 +786,29 @@
                         </div>
                     </div>
 
-                    <div class="task-item confirmed" data-task-id="task-003" style="padding: 20px; background: rgba(76, 175, 80, 0.1);">
+                    <div class="task-item" data-task-id="task-003" style="border-bottom: 1px solid var(--glass-border); padding: 16px 20px;">
                         <div class="task-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
                             <div class="task-info">
                                 <div class="task-title" style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 8px;">法律咨询回复 - 张三个人</div>
                                 <div class="task-meta" style="display: flex; gap: 16px; color: var(--text-secondary); font-size: 14px;">
                                     <span>💰 ¥300</span>
                                     <span>📅 2024-01-13</span>
-                                    <span>✅ 已确认待发送</span>
+                                    <span>⏰ 1天内完成</span>
                                 </div>
                             </div>
                             <div class="task-actions">
-                                <span class="status-badge" style="padding: 6px 12px; border-radius: 6px; background: rgba(76, 175, 80, 0.2); color: #4caf50; font-size: 12px; font-weight: 500;">已确认</span>
+                                <button class="btn-small btn-primary" onclick="grabTask('task-003')" style="padding: 6px 12px; border-radius: 6px; border: none; background: var(--gradient-primary); color: white; cursor: pointer;">抢任务</button>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+            
+            <!-- 表格底部描述 -->
+            <div style="text-align: right; margin-top: 8px;">
+                <small style="color: var(--text-secondary); font-size: 12px;">
+                    审核AI生成的律师函内容，确认后可一键发送
+                </small>
             </div>
         </div>
 
@@ -1286,6 +1288,61 @@
                 updateConfirmedCount();
                 alert('任务已确认，可以一键发送！');
             }
+        }
+
+        // 抢任务功能 - 类似滴滴司机抢单
+        function grabTask(taskId) {
+            const taskItem = document.querySelector(`[data-task-id="${taskId}"]`);
+            if (taskItem) {
+                if (confirm('确定要抢这个任务吗？抢到后需要在规定时间内完成。')) {
+                    // 模拟抢单竞争
+                    const grabBtn = taskItem.querySelector('button');
+                    grabBtn.disabled = true;
+                    grabBtn.textContent = '抢单中...';
+                    
+                    // 模拟网络延迟和竞争
+                    setTimeout(() => {
+                        const success = Math.random() > 0.3; // 70%成功率
+                        
+                        if (success) {
+                            taskItem.classList.add('grabbed');
+                            taskItem.style.background = 'rgba(59, 130, 246, 0.1)';
+                            
+                            // 更新按钮状态
+                            const actions = taskItem.querySelector('.task-actions');
+                            actions.innerHTML = '<span class="status-badge" style="padding: 6px 12px; border-radius: 6px; background: rgba(59, 130, 246, 0.2); color: #3b82f6; font-size: 12px; font-weight: 500;">已接受</span>';
+                            
+                            alert('恭喜！您已成功抢到这个任务，请按时完成。客户信息将发送到您的工作台。');
+                            
+                            // 通知用户工作台更新任务状态
+                            notifyUserWorkspace(taskId, 'accepted');
+                        } else {
+                            grabBtn.disabled = false;
+                            grabBtn.textContent = '抢任务';
+                            alert('很遗憾，其他律师抢先一步，请尝试其他任务。');
+                        }
+                    }, 1000 + Math.random() * 2000); // 1-3秒随机延迟
+                }
+            }
+        }
+
+        // 通知用户工作台任务状态更新
+        function notifyUserWorkspace(taskId, status) {
+            // 这里可以通过WebSocket或定期轮询通知用户工作台
+            // 暂时使用localStorage模拟
+            const taskUpdates = JSON.parse(localStorage.getItem('taskUpdates') || '[]');
+            taskUpdates.push({
+                taskId: taskId,
+                status: status,
+                lawyerInfo: {
+                    name: '张律师',
+                    firm: '北京律师事务所',
+                    experience: '8年执业经验',
+                    rating: 4.8
+                },
+                timestamp: new Date().toISOString()
+            });
+            localStorage.setItem('taskUpdates', JSON.stringify(taskUpdates));
         }
 
         function updateConfirmedCount() {
