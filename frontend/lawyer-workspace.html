@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f1424">
-    <title>律师工作台 - Lawsker 律思客</title>
+    <title>律师工作台 - Lawsker 律客</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
     <script src="js/api-client.js"></script>
     <style>
@@ -775,7 +775,7 @@
     <nav class="navbar">
         <div class="navbar-content">
             <a href="/" class="logo">
-                ⚖️ Lawsker 律思客
+                ⚖️ Lawsker 律客
             </a>
             <div class="nav-menu">
                 <a href="/lawyer-workspace" class="nav-link active">律师工作台</a>
@@ -907,7 +907,7 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td title="LAW2024001234567890123">#LAW...7890123</td>
+                        <td title="LAW2024001234567890123">#L...123</td>
                         <td>北京科技有限公司</td>
                         <td>债务催收</td>
                         <td><span class="case-status status-active">进行中</span></td>
@@ -916,7 +916,7 @@
                         <td>¥50,000</td>
                     </tr>
                     <tr>
-                        <td title="LAW2024002345678901234">#LAW...8901234</td>
+                        <td title="LAW2024002345678901234">#L...234</td>
                         <td>张三</td>
                         <td>律师函</td>
                         <td><span class="case-status status-pending">待处理</span></td>
@@ -925,7 +925,7 @@
                         <td>¥30</td>
                     </tr>
                     <tr>
-                        <td title="LAW2024003456789012345">#LAW...9012345</td>
+                        <td title="LAW2024003456789012345">#L...345</td>
                         <td>李四贸易公司</td>
                         <td>合同纠纷</td>
                         <td><span class="case-status status-urgent">紧急</span></td>
@@ -934,7 +934,7 @@
                         <td>¥120,000</td>
                     </tr>
                     <tr>
-                        <td title="LAW2024004567890123456">#LAW...0123456</td>
+                        <td title="LAW2024004567890123456">#L...456</td>
                         <td>王五</td>
                         <td>法律咨询</td>
                         <td><span class="case-status status-completed">已完成</span></td>
@@ -1108,10 +1108,42 @@
                 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 
-                // 这里可以添加实际的过滤逻辑
-                console.log('过滤:', this.textContent);
+                // 实际的过滤逻辑
+                const filterType = this.textContent.trim();
+                filterCases(filterType);
             });
         });
+
+        // 过滤案件函数
+        function filterCases(filterType) {
+            const casesTable = document.querySelector('.cases-table tbody');
+            const rows = casesTable.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                const statusCell = row.querySelector('.case-status');
+                const caseTypeCell = row.cells[2]; // 案件类型列
+                
+                let shouldShow = true;
+                
+                if (filterType === '全部') {
+                    shouldShow = true;
+                } else if (filterType === '进行中') {
+                    shouldShow = statusCell && statusCell.textContent.trim() === '进行中';
+                } else if (filterType === '待处理') {
+                    shouldShow = statusCell && statusCell.textContent.trim() === '待处理';
+                } else if (filterType === '紧急') {
+                    shouldShow = statusCell && statusCell.textContent.trim() === '紧急';
+                } else if (filterType === '已完成') {
+                    shouldShow = statusCell && statusCell.textContent.trim() === '已完成';
+                } else if (filterType === '律师函') {
+                    shouldShow = caseTypeCell && caseTypeCell.textContent.trim() === '律师函';
+                } else if (filterType === '债务催收') {
+                    shouldShow = caseTypeCell && caseTypeCell.textContent.trim() === '债务催收';
+                }
+                
+                row.style.display = shouldShow ? '' : 'none';
+            });
+        }
 
         // 加载律师统计数据
         async function loadLawyerStats() {
@@ -1159,10 +1191,10 @@
 
             casesTable.innerHTML = '';
             cases.forEach(caseItem => {
-                // 案件编号缩略显示：显示前4位+中间省略号+后4位
+                // 案件编号缩略显示：显示前2位+中间省略号+后3位
                 let caseNumberDisplay = caseItem.case_number;
-                if (caseNumberDisplay && caseNumberDisplay.length > 12) {
-                    caseNumberDisplay = caseNumberDisplay.substring(0, 4) + '...' + caseNumberDisplay.substring(caseNumberDisplay.length - 4);
+                if (caseNumberDisplay && caseNumberDisplay.length > 8) {
+                    caseNumberDisplay = caseNumberDisplay.substring(0, 2) + '...' + caseNumberDisplay.substring(caseNumberDisplay.length - 3);
                 }
                 
                 const row = document.createElement('tr');

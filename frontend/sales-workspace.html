@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f1424">
-    <title>销售工作台 - Lawsker 律思客</title>
+    <title>销售工作台 - Lawsker 律客</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
     <link rel="stylesheet" href="css/lawsker-glass.css">
     <script src="js/api-client.js"></script>
@@ -583,7 +583,7 @@
     <nav class="navbar">
         <div class="navbar-content">
             <a href="/" class="logo">
-                ⚖️ Lawsker 律思客
+                ⚖️ Lawsker 律客
             </a>
             <div class="nav-menu">
                 <a href="/sales-workspace" class="nav-link active">销售工作台</a>
@@ -641,8 +641,8 @@
                 <div class="card-header">
                     <div class="card-icon">⚖️</div>
                     <div>
-                        <h3 class="card-title">任务发布</h3>
-                        <p class="card-subtitle">快速发布单个法律服务任务</p>
+                        <h3 class="card-title">免费发布任务</h3>
+                        <p class="card-subtitle">快速发布个人法律服务需求</p>
                     </div>
                 </div>
                 
@@ -670,13 +670,8 @@
                         <textarea class="form-textarea" id="taskDescription" placeholder="请详细描述任务需求..." required></textarea>
                     </div>
                     
-                    <div class="form-group">
-                        <label class="form-label">预算金额</label>
-                        <input type="number" class="form-input" id="taskBudget" placeholder="请输入预算金额" min="1" required>
-                    </div>
-                    
                     <div class="btn-group">
-                        <button type="submit" class="btn btn-primary">发布任务</button>
+                        <button type="submit" class="btn btn-primary">免费发布</button>
                         <button type="button" class="btn btn-secondary" onclick="clearTaskForm()">清空</button>
                     </div>
                 </form>
@@ -687,8 +682,8 @@
                 <div class="card-header">
                     <div class="card-icon">📊</div>
                     <div>
-                        <h3 class="card-title">数据上传</h3>
-                        <p class="card-subtitle">上传机构业务数据，获得相应收益</p>
+                        <h3 class="card-title">付费数据上传</h3>
+                        <p class="card-subtitle">上传机构业务数据，支付上传费用</p>
                     </div>
                 </div>
                 
@@ -719,80 +714,38 @@
                         </div>
                         <input type="file" id="fileInput" style="display: none;" accept=".xlsx,.xls,.csv,.pdf,.doc,.docx" multiple>
                     </div>
-                    
+
+                    <!-- 支付方式选择 -->
                     <div class="form-group">
-                        <label class="form-label">预期收益</label>
-                        <input type="number" class="form-input" id="expectedEarnings" placeholder="请输入预期收益金额" min="1" required>
+                        <label class="form-label">支付方式</label>
+                        <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="radio" name="paymentMethod" value="wechat" checked>
+                                <span>💬 微信支付</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="radio" name="paymentMethod" value="alipay">
+                                <span>💰 支付宝</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="radio" name="paymentMethod" value="balance">
+                                <span>💳 余额支付</span>
+                            </label>
+                        </div>
+                        <div style="color: var(--text-secondary); font-size: 12px;">
+                            上传费用：¥50.00 | 当前余额：<span id="currentBalance">¥0.00</span>
+                        </div>
                     </div>
                     
                     <div class="btn-group">
-                        <button type="submit" class="btn btn-primary">上传数据</button>
+                        <button type="submit" class="btn btn-primary">支付并上传数据</button>
                         <button type="button" class="btn btn-secondary" onclick="clearDataForm()">清空</button>
                     </div>
                 </form>
             </div>
         </div>
 
-        <!-- 任务列表 -->
-        <div class="task-list">
-            <div class="task-list-header">
-                <h3 class="task-list-title">我的任务</h3>
-                <button class="btn btn-secondary" onclick="refreshTasks()">刷新</button>
-            </div>
-            <div id="taskListBody">
-                <!-- 示例任务 -->
-                <div class="task-item">
-                    <div class="task-info">
-                        <div>
-                            <div class="task-title">债务催收律师函</div>
-                            <div class="task-details">发布时间：2024-01-15 | 预算：¥500</div>
-                        </div>
-                        <span class="task-status status-processing">处理中</span>
-                    </div>
-                </div>
-                <div class="task-item">
-                    <div class="task-info">
-                        <div>
-                            <div class="task-title">合同审查服务</div>
-                            <div class="task-details">发布时间：2024-01-14 | 预算：¥800</div>
-                        </div>
-                        <span class="task-status status-completed">已完成</span>
-                    </div>
-                </div>
-                <div class="task-item">
-                    <div class="task-info">
-                        <div>
-                            <div class="task-title">法律咨询服务</div>
-                            <div class="task-details">发布时间：2024-01-13 | 预算：¥300</div>
-                        </div>
-                        <span class="task-status status-pending">待处理</span>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- 收益统计 -->
-        <div class="earnings-summary">
-            <h3 class="earnings-title">收益统计</h3>
-            <div class="earnings-grid">
-                <div class="earnings-item">
-                    <div class="earnings-value">¥2,580</div>
-                    <div class="earnings-label">总收益</div>
-                </div>
-                <div class="earnings-item">
-                    <div class="earnings-value">¥680</div>
-                    <div class="earnings-label">本月收益</div>
-                </div>
-                <div class="earnings-item">
-                    <div class="earnings-value">¥1,200</div>
-                    <div class="earnings-label">任务收益</div>
-                </div>
-                <div class="earnings-item">
-                    <div class="earnings-value">¥1,380</div>
-                    <div class="earnings-label">数据收益</div>
-                </div>
-            </div>
-        </div>
         </div>
 
         <!-- 任务管理标签页 -->
