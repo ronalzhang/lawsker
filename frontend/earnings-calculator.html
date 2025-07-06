@@ -7,6 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f1424">
     <title>收益计算器 - Lawsker 律思客</title>
+    <link rel="stylesheet" href="css/lawsker-glass.css">
     <style>
         :root {
             --glass-bg: rgba(22, 28, 48, 0.75);
@@ -64,120 +65,7 @@
             z-index: -1;
         }
 
-        /* 导航栏 */
-        .navbar {
-            position: fixed;
-            top: var(--safe-area-top);
-            left: 0;
-            right: 0;
-            background: var(--glass-bg);
-            backdrop-filter: blur(var(--blur-radius));
-            -webkit-backdrop-filter: blur(var(--blur-radius));
-            border-bottom: 1px solid var(--glass-border);
-            padding: 16px var(--app-padding);
-            z-index: 100;
-            box-shadow: 0 8px 32px var(--glass-shadow);
-        }
 
-        .navbar-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .logo {
-            font-size: 20px;
-            font-weight: 700;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .logo::before {
-            content: '📊';
-            font-size: 18px;
-            -webkit-text-fill-color: initial;
-        }
-
-        .nav-menu {
-            display: flex;
-            align-items: center;
-            gap: 24px;
-        }
-
-        .nav-link {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            padding: 8px 0;
-            position: relative;
-        }
-
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            width: 0;
-            height: 2px;
-            background: var(--gradient-primary);
-            transition: all 0.3s ease;
-            transform: translateX(-50%);
-        }
-
-        .nav-link:hover,
-        .nav-link.active {
-            color: var(--text-primary);
-        }
-
-        .nav-link:hover::after,
-        .nav-link.active::after {
-            width: 100%;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: var(--gradient-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .logout-btn {
-            background: var(--gradient-danger);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            font-family: inherit;
-        }
-
-        .logout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(253, 121, 168, 0.4);
-        }
 
         /* 主内容区 */
         .main-container {
@@ -652,9 +540,11 @@
     <!-- 导航栏 -->
     <nav class="navbar">
         <div class="navbar-content">
-            <div class="logo">收益计算器</div>
+            <a href="dashboard.html" class="logo">Lawsker</a>
             <div class="nav-menu">
                 <a href="dashboard.html" class="nav-link">仪表盘</a>
+                <a href="sales-workspace.html" class="nav-link">销售工作台</a>
+                <a href="lawyer-workspace.html" class="nav-link">律师工作台</a>
                 <a href="withdrawal.html" class="nav-link">提现管理</a>
                 <a href="earnings-calculator.html" class="nav-link active">收益计算</a>
                 <div class="user-info">
