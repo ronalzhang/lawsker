@@ -360,6 +360,15 @@ async def get_demo_dashboard_data() -> Dict[str, Any]:
     """获取演示数据（无需认证）"""
     
     return {
+        # 通用统计数据
+        "total_tasks": 128,
+        "completed_tasks": 95,
+        "active_users": 42,
+        "total_revenue": 285600,
+        "monthly_revenue": 68400,
+        "completion_rate": 89.5,
+        
+        # 管理员仪表盘数据
         "total_cases": 1247,
         "active_cases": 89,
         "completed_cases": 1158,
@@ -373,15 +382,28 @@ async def get_demo_dashboard_data() -> Dict[str, Any]:
         "today_transactions": 34,
         "success_rate": 92.86,
         "avg_case_value": 12586.50,
+        
+        # 销售工作台数据
+        "published_tasks": 15,
+        "uploaded_data": 8,
+        "total_earnings": 12580,
+        "monthly_earnings": 3200,
+        "upload_records": 23,
+        
+        # 律师工作台数据
         "my_cases": 67,
+        "monthly_income": 18500,
+        "pending_cases": 3,
         "pending_earnings": 45600.00,
         "this_month_earnings": 28900.00,
-        "upload_records": 23,
-        "published_tasks": 45,
         "review_tasks": 12,
         "pending_reviews": 3,
-        "total_earnings": 156780.00,
+        
+        # 机构管理端数据
+        "registered_lawyers": 28,
         "recovery_rate": 87.5,
+        
+        "user_type": "demo",
         "recent_activities": [
             {
                 "id": "demo-1",

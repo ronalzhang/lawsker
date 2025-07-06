@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API测试 - Lawsker</title>
+    <script src="js/api-client.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        .error {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Lawsker API 测试页面</h1>
+    
+    <div class="test-section">
+        <h2>基础连接测试</h2>
+        <button onclick="testApiHealth()">测试API健康状态</button>
+        <button onclick="testDemoData()">测试演示数据</button>
+        <div id="basicResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>统计数据测试</h2>
+        <button onclick="testDashboardStats()">测试仪表盘统计</button>
+        <button onclick="testRecentActivities()">测试最近活动</button>
+        <div id="statsResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>用户认证测试</h2>
+        <button onclick="testUserInfo()">测试用户信息</button>
+        <button onclick="testLoginDemo()">测试演示登录</button>
+        <div id="authResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>业务数据测试</h2>
+        <button onclick="testCases()">测试案件数据</button>
+        <button onclick="testTasks()">测试任务数据</button>
+        <div id="businessResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>API客户端状态</h2>
+        <button onclick="showApiStatus()">显示API状态</button>
+        <div id="statusResult" class="result"></div>
+    </div>
+
+    <script>
+        // 显示结果的辅助函数
+        function showResult(elementId, data, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.textContent = JSON.stringify(data, null, 2);
+            element.className = isSuccess ? 'result success' : 'result error';
+        }
+
+        // 测试API健康状态
+        async function testApiHealth() {
+            try {
+                const result = await apiClient.get('/health');
+                showResult('basicResult', result);
+            } catch (error) {
+                showResult('basicResult', { error: error.message }, false);
+            }
+        }
+
+        // 测试演示数据
+        async function testDemoData() {
+            try {
+                const result = await apiClient.getDemoData();
+                showResult('basicResult', result);
+            } catch (error) {
+                showResult('basicResult', { error: error.message }, false);
+            }
+        }
+
+        // 测试仪表盘统计
+        async function testDashboardStats() {
+            try {
+                const result = await apiClient.getDashboardStats();
+                showResult('statsResult', result);
+            } catch (error) {
+                showResult('statsResult', { error: error.message }, false);
+            }
+        }
+
+        // 测试最近活动
+        async function testRecentActivities() {
+            try {
+                const result = await apiClient.getRecentActivities();
+                showResult('statsResult', result);
+            } catch (error) {
+                showResult('statsResult', { error: error.message }, false);
+            }
+        }
+
+        // 测试用户信息
+        async function testUserInfo() {
+            try {
+                const result = await apiClient.getUserInfo();
+                showResult('authResult', result);
+            } catch (error) {
+                showResult('authResult', { error: error.message }, false);
+            }
+        }
+
+        // 测试演示登录
+        async function testLoginDemo() {
+            try {
+                const result = await apiClient.login({
+                    username: 'demo@lawsker.com',
+                    password: 'demo123'
+                });
+                showResult('authResult', result);
+            } catch (error) {
+                showResult('authResult', { error: error.message }, false);
+            }
+        }
+
+        // 测试案件数据
+        async function testCases() {
+            try {
+                const result = await apiClient.getCases();
+                showResult('businessResult', result);
+            } catch (error) {
+                showResult('businessResult', { error: error.message }, false);
+            }
+        }
+
+        // 测试任务数据
+        async function testTasks() {
+            try {
+                const result = await apiClient.getTasks();
+                showResult('businessResult', result);
+            } catch (error) {
+                showResult('businessResult', { error: error.message }, false);
+            }
+        }
+
+        // 显示API状态
+        function showApiStatus() {
+            const status = {
+                baseURL: apiClient.baseURL,
+                hasToken: !!apiClient.token,
+                isAuthenticated: apiClient.isAuthenticated(),
+                userRole: apiClient.getUserRole(),
+                userInfo: apiClient.getUserInfo()
+            };
+            showResult('statusResult', status);
+        }
+
+        // 页面加载时显示API状态
+        document.addEventListener('DOMContentLoaded', function() {
+            showApiStatus();
+        });
+    </script>
+</body>
+</html> 

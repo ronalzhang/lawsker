@@ -8,6 +8,7 @@
     <meta name="theme-color" content="#0f1424">
     <title>销售工作台 - Lawsker 律思客</title>
     <link rel="stylesheet" href="css/lawsker-glass.css">
+    <script src="js/api-client.js"></script>
     <style>
         /* 页面特定样式 */
         .workspace-grid {
@@ -591,41 +592,70 @@
         }
 
         // 任务发布表单提交
-        document.getElementById('taskForm').addEventListener('submit', function(e) {
+        document.getElementById('taskForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const formData = {
                 type: document.getElementById('taskType').value,
                 title: document.getElementById('taskTitle').value,
                 description: document.getElementById('taskDescription').value,
-                budget: document.getElementById('taskBudget').value
+                budget: parseFloat(document.getElementById('taskBudget').value)
             };
             
-            console.log('发布任务:', formData);
-            alert('任务发布成功！');
-            clearTaskForm();
-            
-            // 更新统计数据
-            updateStats();
+            try {
+                if (apiClient.isAuthenticated()) {
+                    await apiClient.publishTask(formData);
+                    alert('任务发布成功！');
+                    clearTaskForm();
+                    await loadStats();
+                    await loadTasks();
+                } else {
+                    console.log('演示模式 - 发布任务:', formData);
+                    alert('任务发布成功！（演示模式）');
+                    clearTaskForm();
+                    updateStats();
+                }
+            } catch (error) {
+                console.error('发布任务失败:', error);
+                alert('发布任务失败，请稍后重试');
+            }
         });
 
         // 数据上传表单提交
-        document.getElementById('dataUploadForm').addEventListener('submit', function(e) {
+        document.getElementById('dataUploadForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const formData = {
-                type: document.getElementById('dataType').value,
-                description: document.getElementById('dataDescription').value,
-                expectedEarnings: document.getElementById('expectedEarnings').value,
-                files: document.getElementById('fileInput').files
-            };
+            const formData = new FormData();
+            formData.append('type', document.getElementById('dataType').value);
+            formData.append('description', document.getElementById('dataDescription').value);
+            formData.append('expectedEarnings', document.getElementById('expectedEarnings').value);
             
-            console.log('上传数据:', formData);
-            alert('数据上传成功！');
-            clearDataForm();
+            const files = document.getElementById('fileInput').files;
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
             
-            // 更新统计数据
-            updateStats();
+            try {
+                if (apiClient.isAuthenticated()) {
+                    await apiClient.uploadData(formData);
+                    alert('数据上传成功！');
+                    clearDataForm();
+                    await loadStats();
+                } else {
+                    console.log('演示模式 - 上传数据:', {
+                        type: document.getElementById('dataType').value,
+                        description: document.getElementById('dataDescription').value,
+                        expectedEarnings: document.getElementById('expectedEarnings').value,
+                        files: files.length
+                    });
+                    alert('数据上传成功！（演示模式）');
+                    clearDataForm();
+                    updateStats();
+                }
+            } catch (error) {
+                console.error('上传数据失败:', error);
+                alert('上传数据失败，请稍后重试');
+            }
         });
 
         // 文件拖拽上传
@@ -675,13 +705,98 @@
             document.getElementById('uploadedData').textContent = uploadedData;
         }
 
+        // 加载统计数据
+        async function loadStats() {
+            try {
+                let stats;
+                if (apiClient.isAuthenticated()) {
+                    try {
+                        stats = await apiClient.getDashboardStats();
+                    } catch (error) {
+                        console.warn('获取销售统计数据失败，使用演示数据:', error);
+                        stats = await apiClient.getDemoData();
+                    }
+                } else {
+                    stats = await apiClient.getDemoData();
+                }
+
+                // 更新销售工作台统计数据
+                document.getElementById('totalTasks').textContent = stats.published_tasks || 5;
+                document.getElementById('uploadedData').textContent = stats.uploaded_data || 3;
+                document.getElementById('totalEarnings').textContent = '¥' + (stats.total_earnings || 2580).toLocaleString();
+                document.getElementById('monthlyEarnings').textContent = '¥' + (stats.monthly_earnings || 680).toLocaleString();
+            } catch (error) {
+                console.error('获取销售统计数据失败:', error);
+                // 使用默认数据
+                document.getElementById('totalTasks').textContent = '5';
+                document.getElementById('uploadedData').textContent = '3';
+                document.getElementById('totalEarnings').textContent = '¥2,580';
+                document.getElementById('monthlyEarnings').textContent = '¥680';
+            }
+        }
+
+        // 加载任务列表
+        async function loadTasks() {
+            try {
+                if (apiClient.isAuthenticated()) {
+                    const tasks = await apiClient.getTasks({ user_type: 'sales' });
+                    updateTaskList(tasks);
+                }
+            } catch (error) {
+                console.error('获取任务列表失败:', error);
+            }
+        }
+
+        // 更新任务列表显示
+        function updateTaskList(tasks) {
+            const taskListBody = document.getElementById('taskListBody');
+            if (!tasks || tasks.length === 0) {
+                return; // 保持现有的示例数据
+            }
+
+            taskListBody.innerHTML = '';
+            tasks.forEach(task => {
+                const taskItem = document.createElement('div');
+                taskItem.className = 'task-item';
+                taskItem.innerHTML = `
+                    <div class="task-info">
+                        <div>
+                            <div class="task-title">${task.title}</div>
+                            <div class="task-details">发布时间：${new Date(task.created_at).toLocaleDateString()} | 预算：¥${task.budget}</div>
+                        </div>
+                        <span class="task-status status-${getStatusClass(task.status)}">${getStatusText(task.status)}</span>
+                    </div>
+                `;
+                taskListBody.appendChild(taskItem);
+            });
+        }
+
+        // 获取状态样式类
+        function getStatusClass(status) {
+            const statusMap = {
+                'pending': 'pending',
+                'in_progress': 'processing',
+                'completed': 'completed',
+                'cancelled': 'pending'
+            };
+            return statusMap[status] || 'pending';
+        }
+
+        // 获取状态文本
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': '待处理',
+                'in_progress': '处理中',
+                'completed': '已完成',
+                'cancelled': '已取消'
+            };
+            return statusMap[status] || '待处理';
+        }
+
         // 页面初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            // 初始化统计数据
-            document.getElementById('totalTasks').textContent = '5';
-            document.getElementById('uploadedData').textContent = '3';
-            document.getElementById('totalEarnings').textContent = '¥2,580';
-            document.getElementById('monthlyEarnings').textContent = '¥680';
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadStats();
+            await loadTasks();
         });
     </script>
 </body>

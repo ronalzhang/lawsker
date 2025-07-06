@@ -56,7 +56,6 @@ async def create_test_data():
                 role = Role(
                     id=uuid4(),
                     name=role_name,
-                    display_name=role_name.title(),
                     description=f"{role_name.title()}角色",
                     permissions={"read": True, "write": True, "delete": False}
                 )

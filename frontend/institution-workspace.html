@@ -8,6 +8,7 @@
     <meta name="theme-color" content="#0f1424">
     <title>机构管理端 - Lawsker 律思客</title>
     <link rel="stylesheet" href="css/lawsker-glass.css">
+    <script src="js/api-client.js"></script>
     <style>
         :root {
             --glass-bg: rgba(22, 28, 48, 0.75);
@@ -800,11 +801,117 @@
             }
         }
 
+        // 加载机构统计数据
+        async function loadInstitutionStats() {
+            try {
+                let stats;
+                if (apiClient.isAuthenticated()) {
+                    try {
+                        stats = await apiClient.getDashboardStats();
+                    } catch (error) {
+                        console.warn('获取机构统计数据失败，使用演示数据:', error);
+                        stats = await apiClient.getDemoData();
+                    }
+                } else {
+                    stats = await apiClient.getDemoData();
+                }
+
+                // 更新机构工作台统计数据
+                document.querySelector('.stats-grid .stat-card:nth-child(1) .stat-value').textContent = stats.registered_lawyers || 28;
+                document.querySelector('.stats-grid .stat-card:nth-child(2) .stat-value').textContent = stats.active_cases || 156;
+                document.querySelector('.stats-grid .stat-card:nth-child(3) .stat-value').textContent = '¥' + (stats.monthly_revenue || 285600).toLocaleString();
+                document.querySelector('.stats-grid .stat-card:nth-child(4) .stat-value').textContent = (stats.completion_rate || 92) + '%';
+            } catch (error) {
+                console.error('获取机构统计数据失败:', error);
+            }
+        }
+
+        // 加载案件列表
+        async function loadInstitutionCases() {
+            try {
+                if (apiClient.isAuthenticated()) {
+                    const cases = await apiClient.getCases({ user_type: 'institution' });
+                    updateInstitutionCasesList(cases);
+                }
+            } catch (error) {
+                console.error('获取案件列表失败:', error);
+            }
+        }
+
+        // 更新案件列表显示
+        function updateInstitutionCasesList(cases) {
+            const casesTable = document.querySelector('.data-table tbody');
+            if (!cases || cases.length === 0) {
+                return; // 保持现有的示例数据
+            }
+
+            casesTable.innerHTML = '';
+            cases.forEach(caseItem => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${caseItem.case_number}</td>
+                    <td>${caseItem.case_type}</td>
+                    <td>${caseItem.client_name}</td>
+                    <td>${caseItem.lawyer_name}</td>
+                    <td>¥${caseItem.amount ? caseItem.amount.toLocaleString() : '0'}</td>
+                    <td><span class="status-badge status-${getInstitutionStatusClass(caseItem.status)}">${getInstitutionStatusText(caseItem.status)}</span></td>
+                    <td>${new Date(caseItem.created_at).toLocaleDateString()}</td>
+                    <td>
+                        <button class="action-btn">查看</button>
+                        <button class="action-btn">编辑</button>
+                    </td>
+                `;
+                casesTable.appendChild(row);
+            });
+        }
+
+        // 获取机构案件状态样式类
+        function getInstitutionStatusClass(status) {
+            const statusMap = {
+                'active': 'active',
+                'pending': 'pending',
+                'completed': 'active',
+                'suspended': 'suspended'
+            };
+            return statusMap[status] || 'pending';
+        }
+
+        // 获取机构案件状态文本
+        function getInstitutionStatusText(status) {
+            const statusMap = {
+                'active': '进行中',
+                'pending': '待处理',
+                'completed': '已完成',
+                'suspended': '暂停'
+            };
+            return statusMap[status] || '待处理';
+        }
+
         // 初始化用户信息
-        document.addEventListener('DOMContentLoaded', function() {
-            const userName = localStorage.getItem('userName') || '机构管理员';
-            document.getElementById('userName').textContent = userName;
-            document.getElementById('userAvatar').textContent = userName.charAt(0);
+        async function loadUserInfo() {
+            try {
+                if (apiClient.isAuthenticated()) {
+                    const userInfo = await apiClient.getUserInfo();
+                    document.getElementById('userName').textContent = userInfo.name || userInfo.username || '机构管理员';
+                    document.getElementById('userAvatar').textContent = (userInfo.name || userInfo.username || '机构管理员').charAt(0);
+                } else {
+                    const userName = localStorage.getItem('userName') || '机构管理员';
+                    document.getElementById('userName').textContent = userName;
+                    document.getElementById('userAvatar').textContent = userName.charAt(0);
+                }
+            } catch (error) {
+                console.error('获取用户信息失败:', error);
+                const userName = localStorage.getItem('userName') || '机构管理员';
+                document.getElementById('userName').textContent = userName;
+                document.getElementById('userAvatar').textContent = userName.charAt(0);
+            }
+        }
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadUserInfo();
+            await loadInstitutionStats();
+            await loadInstitutionCases();
         });
 
         // 表格行点击事件
