@@ -546,6 +546,48 @@
             }
         }
 
+        /* 标签页样式 */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 24px;
+            background: var(--glass-bg);
+            border-radius: 12px;
+            padding: 4px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 2px 8px rgba(122, 160, 255, 0.3);
+        }
+
+        .tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
         /* 性能优化 */
         .stat-card,
         .action-btn,
@@ -558,13 +600,18 @@
     <!-- 导航栏 -->
     <nav class="navbar">
         <div class="navbar-content">
-            <a href="/" class="logo">Lawsker</a>
+            <a href="/" class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L15.09 8.26L22 9L17 14.74L18.18 22L12 18.77L5.82 22L7 14.74L2 9L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                    </svg>
+                </div>
+                <span class="logo-text">Lawsker</span>
+            </a>
             <div class="nav-menu">
-                <a href="/console" class="nav-link">仪表盘</a>
-                <a href="/sales" class="nav-link">销售工作台</a>
-                <a href="/legal" class="nav-link active">律师工作台</a>
-                <a href="/calculator" class="nav-link">收益计算</a>
-                <a href="/withdraw" class="nav-link">提现管理</a>
+                <a href="/lawyer-workspace" class="nav-link active">律师工作台</a>
+                <a href="/earnings-calculator" class="nav-link">收益计算</a>
                 <div class="user-info">
                     <span class="user-name" id="userName">张律师</span>
                     <div class="user-avatar" id="userAvatar">张</div>
@@ -582,8 +629,17 @@
             <p class="page-subtitle">管理您的案件、查看收入统计、生成法律文书</p>
         </div>
 
-        <!-- 统计卡片 -->
-        <div class="stats-grid">
+        <!-- 标签页导航 -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('overview')">工作概览</button>
+            <button class="tab" onclick="switchTab('cases')">案件管理</button>
+            <button class="tab" onclick="switchTab('withdrawal')">提现管理</button>
+        </div>
+
+        <!-- 工作概览标签页 -->
+        <div id="overview" class="tab-content active">
+            <!-- 统计卡片 -->
+            <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-header">
                     <div class="stat-icon success">📊</div>
@@ -653,7 +709,10 @@
                 </a>
             </div>
         </div>
+        </div>
 
+        <!-- 案件管理标签页 -->
+        <div id="cases" class="tab-content">
         <!-- 案件列表 -->
         <div class="cases-section">
             <div class="cases-header">
@@ -718,9 +777,125 @@
                 </tbody>
             </table>
         </div>
+        </div>
+
+        <!-- 提现管理标签页 -->
+        <div id="withdrawal" class="tab-content">
+            <!-- 钱包信息 -->
+            <div class="wallet-info" style="margin-bottom: 24px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                    <div style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">可提现余额</div>
+                        <div style="color: var(--text-primary); font-size: 24px; font-weight: 600;" id="availableBalance">¥12,580.00</div>
+                    </div>
+                    <div style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">冻结金额</div>
+                        <div style="color: var(--text-primary); font-size: 24px; font-weight: 600;" id="frozenAmount">¥2,150.00</div>
+                    </div>
+                    <div style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">本月提现</div>
+                        <div style="color: var(--text-primary); font-size: 24px; font-weight: 600;" id="monthlyWithdrawal">¥8,500.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 提现申请表单 -->
+            <div style="background: var(--glass-bg); border-radius: 16px; padding: 24px; border: 1px solid var(--glass-border); margin-bottom: 24px;">
+                <h3 style="color: var(--text-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                    <span>💳</span>
+                    提现申请
+                </h3>
+                
+                <form id="withdrawalForm" style="display: grid; gap: 16px;">
+                    <div>
+                        <label style="display: block; color: var(--text-primary); margin-bottom: 8px; font-weight: 500;">提现金额</label>
+                        <input type="number" id="withdrawAmount" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--text-primary);" placeholder="请输入提现金额" min="100" max="50000" step="0.01">
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">最低提现金额：¥100，最高：¥50,000</div>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: var(--text-primary); margin-bottom: 8px; font-weight: 500;">提现方式</label>
+                        <select id="withdrawMethod" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--text-primary);">
+                            <option value="bank">银行卡转账</option>
+                            <option value="alipay">支付宝</option>
+                            <option value="wechat">微信支付</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: var(--text-primary); margin-bottom: 8px; font-weight: 500;">收款账户</label>
+                        <input type="text" id="bankAccount" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--text-primary);" placeholder="请输入银行卡号或支付宝账号">
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; color: var(--text-primary); margin-bottom: 8px; font-weight: 500;">收款人姓名</label>
+                        <input type="text" id="accountName" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--text-primary);" placeholder="请输入收款人真实姓名">
+                    </div>
+                    
+                    <button type="submit" style="background: var(--gradient-primary); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer;">申请提现</button>
+                </form>
+            </div>
+
+            <!-- 提现记录 -->
+            <div style="background: var(--glass-bg); border-radius: 16px; padding: 24px; border: 1px solid var(--glass-border);">
+                <h3 style="color: var(--text-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                    <span>📋</span>
+                    提现记录
+                </h3>
+                
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid var(--glass-border);">
+                                <th style="text-align: left; padding: 12px; color: var(--text-secondary); font-weight: 500;">申请时间</th>
+                                <th style="text-align: left; padding: 12px; color: var(--text-secondary); font-weight: 500;">金额</th>
+                                <th style="text-align: left; padding: 12px; color: var(--text-secondary); font-weight: 500;">方式</th>
+                                <th style="text-align: left; padding: 12px; color: var(--text-secondary); font-weight: 500;">状态</th>
+                                <th style="text-align: left; padding: 12px; color: var(--text-secondary); font-weight: 500;">到账时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <td style="padding: 12px; color: var(--text-primary);">2024-01-15 14:30</td>
+                                <td style="padding: 12px; color: var(--text-primary);">¥5,000.00</td>
+                                <td style="padding: 12px; color: var(--text-primary);">银行卡</td>
+                                <td style="padding: 12px;"><span style="background: rgba(76, 175, 80, 0.2); color: #4caf50; padding: 4px 8px; border-radius: 4px; font-size: 12px;">已到账</span></td>
+                                <td style="padding: 12px; color: var(--text-primary);">2024-01-15 14:32</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <td style="padding: 12px; color: var(--text-primary);">2024-01-10 09:15</td>
+                                <td style="padding: 12px; color: var(--text-primary);">¥3,500.00</td>
+                                <td style="padding: 12px; color: var(--text-primary);">支付宝</td>
+                                <td style="padding: 12px;"><span style="background: rgba(76, 175, 80, 0.2); color: #4caf50; padding: 4px 8px; border-radius: 4px; font-size: 12px;">已到账</span></td>
+                                <td style="padding: 12px; color: var(--text-primary);">2024-01-10 09:16</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
+        // 标签页切换
+        function switchTab(tabName) {
+            // 隐藏所有标签页内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 移除所有标签的激活状态
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 显示选中的标签页内容
+            document.getElementById(tabName).classList.add('active');
+            
+            // 激活选中的标签
+            event.target.classList.add('active');
+        }
+
         // 退出登录
         function logout() {
             if (confirm('确定要退出登录吗？')) {

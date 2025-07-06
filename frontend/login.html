@@ -691,11 +691,9 @@
                     setTimeout(() => {
                         const workspaceMap = {
                             'lawyer': 'lawyer-workspace.html',
-                            'sales': 'sales-workspace.html',
-                            'institution': 'institution-workspace.html',
-                            'admin': 'admin-config.html'
+                            'sales': 'sales-workspace.html'
                         };
-                        window.location.href = workspaceMap[selectedRole] || '/console';
+                        window.location.href = workspaceMap[selectedRole] || '/';
                     }, 1000);
                 } else {
                     showMessage(data.detail || '登录失败，请检查用户名、密码和角色', 'error');

@@ -355,19 +355,66 @@
                 grid-template-columns: 1fr 1fr;
             }
         }
+
+        /* 标签页样式 */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 24px;
+            background: var(--glass-bg);
+            border-radius: 12px;
+            padding: 4px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 2px 8px rgba(122, 160, 255, 0.3);
+        }
+
+        .tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <!-- 导航栏 -->
     <nav class="navbar">
         <div class="navbar-content">
-            <a href="/" class="logo">Lawsker</a>
+            <a href="/" class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L15.09 8.26L22 9L17 14.74L18.18 22L12 18.77L5.82 22L7 14.74L2 9L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                    </svg>
+                </div>
+                <span class="logo-text">Lawsker</span>
+            </a>
             <div class="nav-menu">
-                <a href="/console" class="nav-link">仪表盘</a>
-                <a href="/sales" class="nav-link active">销售工作台</a>
-                <a href="/legal" class="nav-link">律师工作台</a>
-                <a href="/calculator" class="nav-link">收益计算</a>
-                <a href="/withdraw" class="nav-link">提现管理</a>
+                <a href="/sales-workspace" class="nav-link active">销售工作台</a>
+                <a href="/earnings-calculator" class="nav-link">收益计算</a>
                 <div class="user-info">
                     <span class="user-name">销售顾问</span>
                     <div class="user-avatar">销</div>
@@ -383,6 +430,13 @@
         <div class="page-header">
             <h1 class="page-title">销售工作台</h1>
             <p class="page-subtitle">发布任务、上传数据、管理收益 - 一站式业务管理平台</p>
+        </div>
+
+        <!-- 标签页导航 -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('overview')">工作概览</button>
+            <button class="tab" onclick="switchTab('tasks')">任务管理</button>
+            <button class="tab" onclick="switchTab('withdrawal')">提现管理</button>
         </div>
 
         <!-- 统计卡片 -->
