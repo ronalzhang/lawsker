@@ -306,6 +306,7 @@
         }
 
         .demo-btn {
+            display: block;
             padding: 10px 12px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -316,6 +317,7 @@
             transition: all 0.3s ease;
             text-align: center;
             font-family: inherit;
+            text-decoration: none;
         }
 
         .demo-btn:hover {
@@ -389,6 +391,16 @@
 
         /* 响应式设计 */
         @media (max-width: 480px) {
+            /* 确保窄屏下背景正常显示 */
+            html, body {
+                height: 100%;
+                min-height: 100vh;
+                background: var(--bg-primary, #0f1424) !important;
+                background-image: var(--bg-pattern, radial-gradient(circle at 25% 25%, #1a2332 0%, transparent 50%),
+                                                    radial-gradient(circle at 75% 75%, #2a3441 0%, transparent 50%)) !important;
+                background-attachment: fixed !important;
+            }
+            
             .login-card {
                 padding: 2rem 1.5rem;
             }
