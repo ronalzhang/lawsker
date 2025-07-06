@@ -138,8 +138,6 @@
             text-decoration: none;
         }
 
-
-
         .nav-menu {
             display: flex;
             align-items: center;
@@ -528,9 +526,9 @@
 
         .footer-content {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 32px;
-            margin-bottom: 32px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
         }
 
         .footer-section h3 {
@@ -558,7 +556,7 @@
 
         .footer-bottom {
             text-align: center;
-            padding-top: 20px;
+            padding-top: 16px;
             border-top: 1px solid var(--glass-border);
             color: var(--text-secondary);
             font-size: 14px;
@@ -583,40 +581,24 @@
             }
             
             .navbar-content {
-                flex-direction: column;
                 gap: 16px;
             }
             
             .nav-menu {
-                flex-direction: column;
-                gap: 12px;
-                width: 100%;
-                text-align: center;
+                gap: 20px;
             }
             
             .auth-buttons {
-                flex-direction: column;
                 gap: 8px;
-                width: 100%;
-            }
-            
-            .btn {
-                width: 100%;
-                max-width: 200px;
-                margin: 0 auto;
-            }
-            
-            .hero-section {
-                padding: 80px var(--app-padding) 40px;
             }
             
             .features-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: 1fr;
                 gap: 16px;
             }
             
             .workspace-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: 1fr;
                 gap: 16px;
             }
             
@@ -632,69 +614,27 @@
         }
 
         @media (max-width: 480px) {
-            .navbar {
-                padding: 10px var(--app-padding);
-            }
-            
-            .navbar-content {
-                gap: 12px;
-            }
-            
             .nav-menu {
-                gap: 8px;
+                gap: 16px;
             }
             
-            .logo {
-                font-size: 20px;
+            .auth-buttons {
+                gap: 6px;
             }
             
-            .hero-section {
-                padding: 60px var(--app-padding) 32px;
+            .btn {
+                padding: 8px 16px;
+                font-size: 13px;
             }
-            
-            .features-section,
-            .workspace-section {
-                padding: 40px var(--app-padding);
-            }
-            
+        }
+
+        /* 确保功能卡片在大屏幕上两两排列 */
+        @media (min-width: 1025px) {
             .features-grid {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
-            }
-            
-            .workspace-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
-            }
-            
-            .feature-card {
-                padding: 16px;
-            }
-            
-            .workspace-card {
-                padding: 20px 16px;
-            }
-            
-            .feature-icon,
-            .workspace-icon {
-                font-size: 36px;
-                margin-bottom: 12px;
-            }
-            
-            .feature-title,
-            .workspace-name {
-                font-size: 16px;
-                margin-bottom: 8px;
-            }
-            
-            .feature-description,
-            .workspace-description {
-                font-size: 13px;
-                line-height: 1.4;
-            }
-            
-            .footer {
-                padding: 32px var(--app-padding) 16px;
+                gap: 24px;
+                max-width: 800px;
+                margin: 0 auto;
             }
         }
 
@@ -726,7 +666,6 @@
                 <a href="#about" class="nav-link">关于我们</a>
                 <div class="auth-buttons">
                     <a href="/auth" class="btn btn-outline">登录</a>
-                    <a href="/submit" class="btn btn-primary">一键发布法律任务</a>
                 </div>
             </div>
         </div>
@@ -785,10 +724,10 @@
                     </div>
                     
                     <div class="feature-card">
-                        <div class="feature-icon">💰</div>
-                        <h3 class="feature-title">智能分账系统</h3>
+                        <div class="feature-icon">🔒</div>
+                        <h3 class="feature-title">安全保障体系</h3>
                         <p class="feature-description">
-                            30秒实时分账，支持机构、律师、销售多方收益结算，透明的收益分配机制。
+                            银行级安全加密，数据隐私保护，合规风控体系，确保您的信息和资金安全。
                         </p>
                     </div>
                     
@@ -861,25 +800,16 @@
                 <div class="footer-section">
                     <h3>核心服务</h3>
                     <p>
-                        <a href="#">债务催收</a><br>
-                        <a href="#">律师函</a><br>
-                        <a href="#">法律咨询</a><br>
+                        <a href="#">债务催收</a> | 
+                        <a href="#">律师函</a> | 
+                        <a href="#">法律咨询</a> | 
                         <a href="#">合同审查</a>
-                    </p>
-                </div>
-                
-                <div class="footer-section">
-                    <h3>联系我们</h3>
-                    <p>
-                        电话：400-888-8888<br>
-                        邮箱：contact@lawsker.com<br>
-                        地址：北京市朝阳区
                     </p>
                 </div>
             </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2024 律客 (Lawsker). All rights reserved.</p>
+                <p>&copy; 2025 律客 (Lawsker). All rights reserved.</p>
             </div>
         </div>
     </footer>
