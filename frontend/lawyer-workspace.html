@@ -684,6 +684,132 @@
             </div>
         </div>
 
+        <!-- 待处理任务列表 -->
+        <div class="content-section" style="margin-bottom: 32px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <div>
+                    <h2 class="section-title">
+                        <span>📋</span>
+                        平台分配的任务 (待审核AI文案)
+                    </h2>
+                    <p class="section-description">
+                        审核AI生成的律师函内容，确认后可一键发送
+                    </p>
+                </div>
+                <button class="btn btn-primary" onclick="batchSendAll()" id="batchSendBtn" style="min-width: 200px;">
+                    <span>📤</span>
+                    一键发送所有已确认任务 (<span id="confirmedCount">0</span>)
+                </button>
+            </div>
+            
+            <div class="tasks-container" style="background: var(--glass-bg); border-radius: 16px; border: 1px solid var(--glass-border); overflow: hidden;">
+                <div id="tasksList">
+                    <!-- 示例任务 -->
+                    <div class="task-item" data-task-id="task-001" style="border-bottom: 1px solid var(--glass-border); padding: 20px;">
+                        <div class="task-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div class="task-info">
+                                <div class="task-title" style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 8px;">债务催收律师函 - 北京科技有限公司</div>
+                                <div class="task-meta" style="display: flex; gap: 16px; color: var(--text-secondary); font-size: 14px;">
+                                    <span>💰 ¥500</span>
+                                    <span>📅 2024-01-15</span>
+                                    <span>⏰ 3天内完成</span>
+                                </div>
+                            </div>
+                            <div class="task-actions" style="display: flex; gap: 8px;">
+                                <button class="btn-small btn-secondary" onclick="toggleTaskContent('task-001')" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.1); color: var(--text-primary); cursor: pointer;">预览</button>
+                                <button class="btn-small btn-success" onclick="confirmTask('task-001')" style="padding: 6px 12px; border-radius: 6px; border: none; background: var(--gradient-success); color: white; cursor: pointer;">确认发送</button>
+                            </div>
+                        </div>
+                        <div class="task-content" id="task-content-001" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--glass-border);">
+                            <div class="ai-generated-content">
+                                <h4 style="color: var(--text-primary); margin-bottom: 12px;">AI生成的律师函内容：</h4>
+                                <div class="edit-area">
+                                    <textarea class="form-textarea" id="content-001" rows="8" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--text-primary); font-family: monospace; line-height: 1.6;">致：北京科技有限公司
+
+根据我们的记录，贵公司对我方委托人存在逾期债务，金额为人民币50,000元。
+
+根据《中华人民共和国民法典》第六百七十五条及相关法律规定，债务人应当按照约定的期限履行债务。现贵公司已逾期未履行还款义务，严重违反了合同约定。
+
+特此函告，请贵公司在收到本函后7日内，将上述欠款本金及相应利息一并清偿至指定账户。如逾期仍不履行，我方将依法采取法律手段维护委托人合法权益，由此产生的一切法律后果由贵公司承担。
+
+此致
+敬礼！
+
+[律师签名]
+[律师事务所]
+[日期]</textarea>
+                                    <div style="margin-top: 8px; display: flex; gap: 8px;">
+                                        <button onclick="resetContent('task-001')" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.1); color: var(--text-primary); cursor: pointer;">重置</button>
+                                        <button onclick="saveContent('task-001')" style="padding: 6px 12px; border-radius: 6px; border: none; background: var(--gradient-primary); color: white; cursor: pointer;">保存修改</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="task-item" data-task-id="task-002" style="border-bottom: 1px solid var(--glass-border); padding: 20px;">
+                        <div class="task-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div class="task-info">
+                                <div class="task-title" style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 8px;">合同纠纷律师函 - 李四贸易公司</div>
+                                <div class="task-meta" style="display: flex; gap: 16px; color: var(--text-secondary); font-size: 14px;">
+                                    <span>💰 ¥800</span>
+                                    <span>📅 2024-01-14</span>
+                                    <span>⏰ 2天内完成</span>
+                                </div>
+                            </div>
+                            <div class="task-actions" style="display: flex; gap: 8px;">
+                                <button class="btn-small btn-secondary" onclick="toggleTaskContent('task-002')" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.1); color: var(--text-primary); cursor: pointer;">预览</button>
+                                <button class="btn-small btn-success" onclick="confirmTask('task-002')" style="padding: 6px 12px; border-radius: 6px; border: none; background: var(--gradient-success); color: white; cursor: pointer;">确认发送</button>
+                            </div>
+                        </div>
+                        <div class="task-content" id="task-content-002" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--glass-border);">
+                            <div class="ai-generated-content">
+                                <h4 style="color: var(--text-primary); margin-bottom: 12px;">AI生成的律师函内容：</h4>
+                                <div class="edit-area">
+                                    <textarea class="form-textarea" id="content-002" rows="8" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--text-primary); font-family: monospace; line-height: 1.6;">致：李四贸易公司
+
+关于贵公司与我方委托人签署的《商品采购合同》履行问题，现郑重通知如下：
+
+根据双方签署的合同第三条约定，贵公司应于2023年12月31日前交付合格商品，但至今仍未履行交付义务，已构成根本性违约。
+
+依据《中华人民共和国民法典》第五百七十七条规定，当事人一方不履行合同义务的，应当承担继续履行、采取补救措施或者赔偿损失等违约责任。
+
+请贵公司在收到本函后10日内履行合同义务并承担相应违约责任，否则我方将依法提起诉讼。
+
+此致
+敬礼！
+
+[律师签名]
+[律师事务所]
+[日期]</textarea>
+                                    <div style="margin-top: 8px; display: flex; gap: 8px;">
+                                        <button onclick="resetContent('task-002')" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.1); color: var(--text-primary); cursor: pointer;">重置</button>
+                                        <button onclick="saveContent('task-002')" style="padding: 6px 12px; border-radius: 6px; border: none; background: var(--gradient-primary); color: white; cursor: pointer;">保存修改</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="task-item confirmed" data-task-id="task-003" style="padding: 20px; background: rgba(76, 175, 80, 0.1);">
+                        <div class="task-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div class="task-info">
+                                <div class="task-title" style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 8px;">法律咨询回复 - 张三个人</div>
+                                <div class="task-meta" style="display: flex; gap: 16px; color: var(--text-secondary); font-size: 14px;">
+                                    <span>💰 ¥300</span>
+                                    <span>📅 2024-01-13</span>
+                                    <span>✅ 已确认待发送</span>
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <span class="status-badge" style="padding: 6px 12px; border-radius: 6px; background: rgba(76, 175, 80, 0.2); color: #4caf50; font-size: 12px; font-weight: 500;">已确认</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- 快速操作 -->
         <div class="content-section">
             <h2 class="section-title">
@@ -1137,6 +1263,88 @@
             }
         }
 
+        // 任务管理相关函数
+        function toggleTaskContent(taskId) {
+            const content = document.getElementById('task-content-' + taskId);
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+            } else {
+                content.style.display = 'none';
+            }
+        }
+
+        function confirmTask(taskId) {
+            const taskItem = document.querySelector(`[data-task-id="${taskId}"]`);
+            if (taskItem) {
+                taskItem.classList.add('confirmed');
+                taskItem.style.background = 'rgba(76, 175, 80, 0.1)';
+                
+                // 更新按钮状态
+                const actions = taskItem.querySelector('.task-actions');
+                actions.innerHTML = '<span class="status-badge" style="padding: 6px 12px; border-radius: 6px; background: rgba(76, 175, 80, 0.2); color: #4caf50; font-size: 12px; font-weight: 500;">已确认</span>';
+                
+                updateConfirmedCount();
+                alert('任务已确认，可以一键发送！');
+            }
+        }
+
+        function updateConfirmedCount() {
+            const confirmedTasks = document.querySelectorAll('.task-item.confirmed').length;
+            document.getElementById('confirmedCount').textContent = confirmedTasks;
+            
+            const batchBtn = document.getElementById('batchSendBtn');
+            if (confirmedTasks > 0) {
+                batchBtn.disabled = false;
+                batchBtn.style.opacity = '1';
+            } else {
+                batchBtn.disabled = true;
+                batchBtn.style.opacity = '0.5';
+            }
+        }
+
+        function batchSendAll() {
+            const confirmedTasks = document.querySelectorAll('.task-item.confirmed');
+            if (confirmedTasks.length === 0) {
+                alert('没有已确认的任务可以发送');
+                return;
+            }
+            
+            if (confirm(`确定要发送 ${confirmedTasks.length} 个已确认的任务吗？发送后将通过短信、邮件等方式送达客户。`)) {
+                // 模拟批量发送
+                alert(`正在发送 ${confirmedTasks.length} 个任务的律师函...`);
+                
+                // 模拟发送过程
+                setTimeout(() => {
+                    confirmedTasks.forEach(task => {
+                        task.style.background = 'rgba(102, 126, 234, 0.1)';
+                        const actions = task.querySelector('.task-actions');
+                        actions.innerHTML = '<span class="status-badge" style="padding: 6px 12px; border-radius: 6px; background: rgba(102, 126, 234, 0.2); color: #667eea; font-size: 12px; font-weight: 500;">已发送</span>';
+                        task.classList.remove('confirmed');
+                        task.classList.add('sent');
+                    });
+                    
+                    updateConfirmedCount();
+                    alert('所有律师函已成功发送！客户将在5分钟内收到通知。');
+                }, 1000);
+            }
+        }
+
+        function resetContent(taskId) {
+            const textarea = document.getElementById('content-' + taskId);
+            if (textarea && confirm('确定要重置内容吗？')) {
+                // 这里可以从API重新获取原始AI生成的内容
+                alert('内容已重置为AI原始生成版本');
+            }
+        }
+
+        function saveContent(taskId) {
+            const textarea = document.getElementById('content-' + taskId);
+            if (textarea) {
+                // 这里可以保存修改后的内容到后端
+                alert('修改已保存！');
+            }
+        }
+
         // 快速操作函数
         function createCase() {
             alert('新建案件功能开发中...');
@@ -1160,6 +1368,7 @@
             await loadLawyerStats();
             await loadCases();
             await loadWithdrawalStats();
+            updateConfirmedCount();
         });
     </script>
 </body>

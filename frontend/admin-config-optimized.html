@@ -589,6 +589,41 @@
                             <option value="deepseek-chat">Deepseek Chat</option>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">律师函AI Prompt模板</label>
+                        <textarea class="form-input" name="lawyer_letter_prompt" 
+                                  rows="6" placeholder="请输入律师函生成的AI提示词模板">你是一位专业的律师，请根据以下信息生成一份正式的律师函：
+
+案件类型：{case_type}
+当事人：{client_name}
+对方：{target_name}
+争议金额：{amount}
+案件描述：{description}
+法律依据：{legal_basis}
+
+请确保律师函包含以下要素：
+1. 正式的开头称谓
+2. 事实陈述清晰准确
+3. 法律依据充分
+4. 要求明确具体
+5. 后果警告适当
+6. 正式的结尾和签名位置
+
+语言要求：专业、严谨、有威慑力但不过激</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">债务催收函Prompt模板</label>
+                        <textarea class="form-input" name="debt_collection_prompt" 
+                                  rows="4" placeholder="请输入债务催收函的AI提示词模板">你是一位专业的律师，请生成一份债务催收律师函：
+
+债务人：{debtor_name}
+债权人：{creditor_name}
+欠款金额：{debt_amount}
+逾期天数：{overdue_days}
+合同编号：{contract_number}
+
+要求：语气严厉但合法合规，明确还款期限和法律后果</textarea>
+                    </div>
                 </form>
 
                 <div class="card-actions">

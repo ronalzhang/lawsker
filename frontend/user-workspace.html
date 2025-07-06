@@ -33,8 +33,8 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: var(--gradient-primary);
-            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff !important;
             padding: 6px 12px;
             border-radius: 20px;
             font-size: 12px;
@@ -42,6 +42,11 @@
             margin-left: 16px;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
             animation: levelGlow 2s ease-in-out infinite alternate;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .user-level-badge * {
+            color: #ffffff !important;
         }
 
         @keyframes levelGlow {
@@ -755,6 +760,14 @@
                         <textarea class="form-textarea" id="taskDescription" placeholder="请详细描述任务需求..." required></textarea>
                     </div>
                     
+                    <div class="form-group">
+                        <label class="form-label">预期律师费</label>
+                        <input type="number" class="form-input" id="expectedLawyerFee" placeholder="请输入您希望支付的律师费金额" min="0" step="50" required>
+                        <div style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;">
+                            💡 律师主要根据此金额来决定是否接单，建议参考市场价格合理设置
+                        </div>
+                    </div>
+                    
                     <div class="btn-group">
                         <button type="submit" class="btn btn-primary">免费发布</button>
                         <button type="button" class="btn btn-secondary" onclick="clearTaskForm()">清空</button>
@@ -1443,21 +1456,68 @@
         }
 
         // 更新用户等级显示
-        function updateUserLevel() {
-            // 这里应该从API获取真实数据，现在使用示例数据
-            const totalBusiness = 1250; // 总业务数量
-            const totalEarnings = 12580; // 总收益金额
-            
-            const userLevel = calculateUserLevel(totalBusiness, totalEarnings);
-            
-            const levelElement = document.getElementById('userLevel');
-            const levelIcon = document.querySelector('.user-level-badge .level-icon');
-            
-            if (levelElement) {
-                levelElement.textContent = userLevel.name;
-            }
-            if (levelIcon) {
-                levelIcon.textContent = userLevel.icon;
+        async function updateUserLevel() {
+            try {
+                if (apiClient.isAuthenticated()) {
+                    // 尝试从API获取用户业务数据
+                    const response = await fetch('/api/v1/users/stats', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    let totalBusiness = 1250; // 默认示例数据
+                    let totalEarnings = 12580; // 默认示例数据
+
+                    if (response.ok) {
+                        const stats = await response.json();
+                        totalBusiness = stats.total_business || totalBusiness;
+                        totalEarnings = stats.total_earnings || totalEarnings;
+                    } else {
+                        console.warn('获取用户统计数据失败，使用默认数据');
+                    }
+
+                    const userLevel = calculateUserLevel(totalBusiness, totalEarnings);
+                    
+                    const levelElement = document.getElementById('userLevel');
+                    const levelIcon = document.querySelector('.user-level-badge .level-icon');
+                    
+                    if (levelElement) {
+                        levelElement.textContent = userLevel.name;
+                    }
+                    if (levelIcon) {
+                        levelIcon.textContent = userLevel.icon;
+                    }
+                } else {
+                    // 未登录时显示默认等级
+                    const userLevel = calculateUserLevel(0, 0);
+                    
+                    const levelElement = document.getElementById('userLevel');
+                    const levelIcon = document.querySelector('.user-level-badge .level-icon');
+                    
+                    if (levelElement) {
+                        levelElement.textContent = userLevel.name;
+                    }
+                    if (levelIcon) {
+                        levelIcon.textContent = userLevel.icon;
+                    }
+                }
+            } catch (error) {
+                console.error('更新用户等级失败:', error);
+                // 错误时使用默认数据
+                const userLevel = calculateUserLevel(1250, 12580);
+                
+                const levelElement = document.getElementById('userLevel');
+                const levelIcon = document.querySelector('.user-level-badge .level-icon');
+                
+                if (levelElement) {
+                    levelElement.textContent = userLevel.name;
+                }
+                if (levelIcon) {
+                    levelIcon.textContent = userLevel.icon;
+                }
             }
         }
 
