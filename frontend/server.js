@@ -12,50 +12,25 @@ app.use(express.static(__dirname, {
     }
 }));
 
-// 路由映射 - 使用简单的字符串匹配
-app.get('/user', (req, res) => {
-    res.sendFile(path.join(__dirname, 'user-workspace.html'));
-});
+// 简单路由映射 - 避免path-to-regexp问题
+const routeHandler = (filePath) => {
+    return (req, res) => {
+        res.sendFile(path.join(__dirname, filePath));
+    };
+};
 
-app.get('/legal', (req, res) => {
-    res.sendFile(path.join(__dirname, 'lawyer-workspace.html'));
-});
-
-app.get('/institution', (req, res) => {
-    res.sendFile(path.join(__dirname, 'institution-workspace.html'));
-});
-
-app.get('/calculator', (req, res) => {
-    res.sendFile(path.join(__dirname, 'earnings-calculator.html'));
-});
-
-app.get('/earnings-calculator', (req, res) => {
-    res.sendFile(path.join(__dirname, 'earnings-calculator.html'));
-});
-
-app.get('/withdraw', (req, res) => {
-    res.sendFile(path.join(__dirname, 'withdrawal.html'));
-});
-
-app.get('/submit', (req, res) => {
-    res.sendFile(path.join(__dirname, 'anonymous-task.html'));
-});
-
-app.get('/auth', (req, res) => {
-    res.sendFile(path.join(__dirname, 'login.html'));
-});
-
-app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin-config.html'));
-});
-
-app.get('/admin-pro', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin-config-optimized.html'));
-});
-
-app.get('/console', (req, res) => {
-    res.sendFile(path.join(__dirname, 'dashboard.html'));
-});
+// 定义所有路由
+app.get('/user', routeHandler('user-workspace.html'));
+app.get('/legal', routeHandler('lawyer-workspace.html'));
+app.get('/institution', routeHandler('institution-workspace.html'));
+app.get('/calculator', routeHandler('earnings-calculator.html'));
+app.get('/earnings-calculator', routeHandler('earnings-calculator.html'));
+app.get('/withdraw', routeHandler('withdrawal.html'));
+app.get('/submit', routeHandler('anonymous-task.html'));
+app.get('/auth', routeHandler('login.html'));
+app.get('/admin', routeHandler('admin-config.html'));
+app.get('/admin-pro', routeHandler('admin-config-optimized.html'));
+app.get('/console', routeHandler('dashboard.html'));
 
 // 兼容性重定向
 app.get('/sales', (req, res) => {
@@ -63,13 +38,17 @@ app.get('/sales', (req, res) => {
 });
 
 // 默认首页
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+app.get('/', routeHandler('index.html'));
+
+// 404处理
+app.use((req, res) => {
+    res.status(404).sendFile(path.join(__dirname, 'index.html'));
 });
 
-// 处理404，返回首页
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+// 错误处理
+app.use((err, req, res, next) => {
+    console.error('Server error:', err);
+    res.status(500).send('Internal Server Error');
 });
 
 app.listen(port, '0.0.0.0', () => {
