@@ -172,6 +172,57 @@
             color: #fd79a8;
         }
 
+        /* 分页样式 */
+        .pagination-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-radius));
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .pagination-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+            padding: 0 8px;
+            white-space: nowrap;
+        }
+
         /* 内容区域 */
         .content-section {
             background: var(--glass-bg);
@@ -395,21 +446,22 @@
                 font-size: 10px;
             }
             
-            /* 提现汇总统计 - 2x2布局 */
+            /* 提现汇总统计 - 窄屏优化 */
             .withdrawal-stats-grid {
-                grid-template-columns: 1fr 1fr !important;
+                grid-template-columns: 1fr 1fr;
                 gap: 12px;
             }
             
             .withdrawal-stats-grid > div {
-                padding: 12px !important;
+                padding: 12px;
             }
             
             .withdrawal-stats-grid [id*="total"],
             .withdrawal-stats-grid [id*="Count"],
             .withdrawal-stats-grid [id*="average"],
             .withdrawal-stats-grid [id*="pending"] {
-                font-size: 16px !important;
+                font-size: 16px;
+                font-weight: 600;
             }
             
             /* 案件管理表格优化 */
@@ -486,57 +538,78 @@
             .content-section div[style*="display: flex"][style*="justify-content: space-between"] {
                 flex-direction: column;
                 gap: 12px;
-                align-items: stretch !important;
+                align-items: stretch;
             }
             
             .content-section #batchSendBtn {
-                min-width: auto !important;
+                min-width: auto;
                 width: 100%;
                 padding: 10px 16px;
                 font-size: 14px;
             }
             
             .task-item {
-                padding: 14px 16px !important;
+                padding: 14px 16px;
             }
             
             .task-header {
-                flex-direction: column !important;
+                flex-direction: column;
                 gap: 10px;
             }
             
             .task-title {
-                font-size: 15px !important;
-                margin-bottom: 6px !important;
+                font-size: 15px;
+                margin-bottom: 6px;
+                text-align: left;
             }
             
             .task-meta {
-                gap: 12px 16px !important;
-                font-size: 13px !important;
+                gap: 12px 16px;
+                font-size: 13px;
             }
             
             .task-actions {
-                justify-content: center !important;
-                gap: 10px !important;
+                justify-content: center;
+                gap: 10px;
             }
             
             .task-actions button {
                 flex: 1;
                 max-width: 120px;
-                font-size: 13px !important;
+                font-size: 13px;
             }
             
             /* 任务内容展开区域768px优化 */
             .task-content h4 {
-                font-size: 15px !important;
+                font-size: 15px;
             }
             
             .task-content textarea {
-                font-size: 13px !important;
+                font-size: 13px;
             }
             
             .task-content .edit-area > div {
-                gap: 10px !important;
+                gap: 10px;
+            }
+            
+            /* 分页在窄屏下的优化 */
+            .pagination-container {
+                margin-top: 8px;
+            }
+            
+            .pagination {
+                padding: 3px;
+            }
+            
+            .pagination-btn {
+                width: 24px;
+                height: 24px;
+                font-size: 12px;
+            }
+            
+            .page-info {
+                font-size: 11px;
+                padding: 0 6px;
             }
             
             /* 提现记录表格优化 */
@@ -633,13 +706,13 @@
             
             /* 一键发送按钮在窄屏下的优化 - 更精确的选择器 */
             .content-section div[style*="display: flex"][style*="justify-content: space-between"] {
-                flex-direction: column !important;
+                flex-direction: column;
                 gap: 12px;
-                align-items: stretch !important;
+                align-items: stretch;
             }
             
             .content-section #batchSendBtn {
-                min-width: auto !important;
+                min-width: auto;
                 width: 100%;
                 padding: 12px 16px;
                 font-size: 14px;
@@ -648,13 +721,13 @@
             
             /* 任务卡片优化 */
             .task-item {
-                padding: 12px 16px !important;
+                padding: 12px 16px;
             }
             
             .task-header {
-                flex-direction: column !important;
+                flex-direction: column;
                 gap: 12px;
-                align-items: stretch !important;
+                align-items: stretch;
             }
             
             .task-info {
@@ -662,38 +735,67 @@
             }
             
             .task-title {
-                font-size: 14px !important;
+                font-size: 14px;
                 line-height: 1.4;
-                margin-bottom: 8px !important;
+                margin-bottom: 8px;
+                text-align: left;
             }
             
             .task-meta {
-                flex-wrap: wrap !important;
-                gap: 8px 12px !important;
-                font-size: 12px !important;
+                flex-wrap: wrap;
+                gap: 8px 12px;
+                font-size: 12px;
             }
             
             .task-actions {
-                justify-content: center !important;
-                gap: 8px !important;
+                justify-content: center;
+                gap: 8px;
             }
             
             .task-actions button {
                 flex: 1;
                 min-width: 80px;
-                font-size: 12px !important;
-                padding: 8px 12px !important;
+                font-size: 12px;
+                padding: 8px 12px;
             }
             
             /* 任务内容展开区域优化 */
             .task-content {
-                margin-top: 12px !important;
-                padding-top: 12px !important;
+                margin-top: 12px;
+                padding-top: 12px;
             }
             
             .task-content h4 {
-                font-size: 14px !important;
-                margin-bottom: 8px !important;
+                font-size: 14px;
+                margin-bottom: 8px;
+            }
+            
+            /* 分页在超窄屏下的优化 */
+            div[style*="display: flex"][style*="justify-content: space-between"][style*="margin-top: 8px"] {
+                flex-direction: column;
+                gap: 8px;
+                align-items: flex-start;
+            }
+            
+            .pagination-container {
+                width: 100%;
+                justify-content: flex-end;
+                margin-top: 0;
+            }
+            
+            .pagination {
+                padding: 2px;
+            }
+            
+            .pagination-btn {
+                width: 22px;
+                height: 22px;
+                font-size: 11px;
+            }
+            
+            .page-info {
+                font-size: 10px;
+                padding: 0 4px;
             }
             
             .task-content textarea {
@@ -970,11 +1072,20 @@
                 </div>
             </div>
             
-            <!-- 表格底部描述 -->
-            <div style="text-align: right; margin-top: 8px;">
+            <!-- 表格底部描述和分页 -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
                 <small style="color: var(--text-secondary); font-size: 12px;">
                     审核AI生成的律师函内容，确认后可一键发送
                 </small>
+                
+                <!-- 分页控件 -->
+                <div id="tasksPagination" class="pagination-container" style="display: none;">
+                    <div class="pagination">
+                        <button id="prevPage" class="pagination-btn" onclick="changePage(-1)">‹</button>
+                        <span id="pageInfo" class="page-info">1/1</span>
+                        <button id="nextPage" class="pagination-btn" onclick="changePage(1)">›</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1585,6 +1696,70 @@
             alert('数据报表功能开发中...');
         }
 
+        // 分页相关变量
+        let currentPage = 1;
+        const tasksPerPage = 10;
+        let allTasks = [];
+
+        // 分页功能
+        function initializePagination() {
+            // 获取所有任务
+            allTasks = Array.from(document.querySelectorAll('.task-item'));
+            const totalPages = Math.ceil(allTasks.length / tasksPerPage);
+            
+            // 如果任务数量少于等于10个，隐藏分页
+            const paginationContainer = document.getElementById('tasksPagination');
+            if (allTasks.length <= tasksPerPage) {
+                paginationContainer.style.display = 'none';
+                return;
+            }
+            
+            // 显示分页并更新状态
+            paginationContainer.style.display = 'flex';
+            updatePaginationDisplay();
+            showCurrentPage();
+        }
+
+        function showCurrentPage() {
+            // 隐藏所有任务
+            allTasks.forEach(task => {
+                task.style.display = 'none';
+            });
+            
+            // 显示当前页的任务
+            const startIndex = (currentPage - 1) * tasksPerPage;
+            const endIndex = startIndex + tasksPerPage;
+            const currentTasks = allTasks.slice(startIndex, endIndex);
+            
+            currentTasks.forEach(task => {
+                task.style.display = 'block';
+            });
+        }
+
+        function updatePaginationDisplay() {
+            const totalPages = Math.ceil(allTasks.length / tasksPerPage);
+            
+            // 更新页码信息
+            document.getElementById('pageInfo').textContent = `${currentPage}/${totalPages}`;
+            
+            // 更新按钮状态
+            document.getElementById('prevPage').disabled = currentPage <= 1;
+            document.getElementById('nextPage').disabled = currentPage >= totalPages;
+        }
+
+        function changePage(direction) {
+            const totalPages = Math.ceil(allTasks.length / tasksPerPage);
+            
+            currentPage += direction;
+            
+            // 确保页码在有效范围内
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+            
+            showCurrentPage();
+            updatePaginationDisplay();
+        }
+
         // 初始化页面
         document.addEventListener('DOMContentLoaded', async function() {
             // 获取URL中的律师ID
@@ -1600,6 +1775,9 @@
             await loadCases();
             await loadWithdrawalStats();
             updateConfirmedCount();
+            
+            // 初始化分页功能
+            initializePagination();
         });
 
         // 从URL获取律师ID
