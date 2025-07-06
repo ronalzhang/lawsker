@@ -9,6 +9,14 @@ app.use(express.static(__dirname, {
         if (path.endsWith('.html')) {
             res.setHeader('Cache-Control', 'no-cache');
         }
+        // 确保CSS文件正确的Content-Type
+        if (path.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css');
+        }
+        // 确保JS文件正确的Content-Type
+        if (path.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript');
+        }
     }
 }));
 
@@ -31,9 +39,15 @@ app.get('/earnings-calculator', routeHandler('earnings-calculator.html'));
 app.get('/withdraw', routeHandler('withdrawal.html'));
 app.get('/submit', routeHandler('anonymous-task.html'));
 app.get('/auth', routeHandler('login.html'));
-app.get('/admin', routeHandler('admin-config.html'));
+
+// 管理后台路由 - 只允许admin-pro访问
 app.get('/admin-pro', routeHandler('admin-config-optimized.html'));
 app.get('/console', routeHandler('dashboard.html'));
+
+// 禁止直接访问HTML文件
+app.get('/admin-config-optimized.html', (req, res) => {
+    res.status(404).send('Not Found');
+});
 
 // 兼容性重定向
 app.get('/sales', (req, res) => {
@@ -56,4 +70,5 @@ app.use((err, req, res, next) => {
 
 app.listen(port, '0.0.0.0', () => {
     console.log(`Lawsker frontend server running on port ${port}`);
+    console.log(`Static files served from: ${__dirname}`);
 }); 
