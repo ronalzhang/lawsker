@@ -8,6 +8,7 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         # 保存原始路径
         original_path = self.path
+        print(f"Request for: {original_path}")
         
         # URL路由映射
         routes = {
@@ -33,12 +34,15 @@ class CustomHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         
         # 检查是否是需要重写的路由
         if original_path in routes:
-            self.path = '/' + routes[original_path]
+            new_path = '/' + routes[original_path]
+            print(f"Rewriting {original_path} to {new_path}")
+            self.path = new_path
         
         # 如果是根路径，重定向到index.html
         if original_path == '/':
             self.path = '/index.html'
         
+        print(f"Final path: {self.path}")
         # 调用父类方法处理请求
         super().do_GET()
 
