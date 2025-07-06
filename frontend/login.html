@@ -872,6 +872,34 @@
             messageArea.innerHTML = '';
         }
 
+        // 清除登录状态
+        function clearLoginState() {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('username');
+            showMessage('登录状态已清除，您可以重新登录', 'success');
+            
+            // 隐藏自动跳转提示
+            const loginAlert = document.getElementById('loginAlert');
+            if (loginAlert) {
+                loginAlert.style.display = 'none';
+            }
+        }
+
+        // 继续之前的登录
+        function continueLogin() {
+            const role = localStorage.getItem('userRole');
+            if (role) {
+                const workspaceMap = {
+                    'lawyer': 'lawyer-workspace.html',
+                    'sales': 'sales-workspace.html',
+                    'institution': 'institution-workspace.html',
+                    'admin': 'admin-config.html'
+                };
+                window.location.href = workspaceMap[role] || 'dashboard.html';
+            }
+        }
+
         // 页面初始化
         document.addEventListener('DOMContentLoaded', function() {
             // 默认选择律师角色
@@ -884,17 +912,76 @@
             const token = localStorage.getItem('accessToken');
             if (token) {
                 const role = localStorage.getItem('userRole');
+                const username = localStorage.getItem('username');
                 if (role) {
-                    const workspaceMap = {
-                        'lawyer': 'lawyer-workspace.html',
-                        'sales': 'sales-workspace.html',
-                        'institution': 'institution-workspace.html',
-                        'admin': 'admin-config.html'
+                    // 显示登录状态提示，而不是自动跳转
+                    const roleNames = {
+                        'lawyer': '律师',
+                        'sales': '销售',
+                        'institution': '机构',
+                        'admin': '管理员'
                     };
-                    showMessage('检测到您已登录，正在跳转...', 'success');
-                    setTimeout(() => {
-                        window.location.href = workspaceMap[role] || 'dashboard.html';
-                    }, 1000);
+                    
+                    // 创建提示框
+                    const alertDiv = document.createElement('div');
+                    alertDiv.id = 'loginAlert';
+                    alertDiv.style.cssText = `
+                        position: fixed;
+                        top: 20px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        background: rgba(22, 28, 48, 0.95);
+                        backdrop-filter: blur(20px);
+                        border: 1px solid rgba(122, 160, 255, 0.3);
+                        border-radius: 15px;
+                        padding: 20px;
+                        color: #f0f4ff;
+                        text-align: center;
+                        z-index: 1000;
+                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                        min-width: 320px;
+                    `;
+                    
+                    alertDiv.innerHTML = `
+                        <div style="margin-bottom: 15px;">
+                            <strong>检测到您已登录</strong><br>
+                            <span style="color: #a8b2d1;">用户：${username || '未知'} | 角色：${roleNames[role] || role}</span>
+                        </div>
+                        <div style="display: flex; gap: 10px; justify-content: center;">
+                            <button onclick="continueLogin()" style="
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                color: white;
+                                border: none;
+                                padding: 10px 20px;
+                                border-radius: 10px;
+                                cursor: pointer;
+                                font-size: 14px;
+                                transition: all 0.3s ease;
+                            ">继续登录</button>
+                            <button onclick="clearLoginState()" style="
+                                background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+                                color: white;
+                                border: none;
+                                padding: 10px 20px;
+                                border-radius: 10px;
+                                cursor: pointer;
+                                font-size: 14px;
+                                transition: all 0.3s ease;
+                            ">重新登录</button>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(alertDiv);
+                    
+                    // 3秒后自动跳转（可以被用户取消）
+                    const autoRedirect = setTimeout(() => {
+                        continueLogin();
+                    }, 3000);
+                    
+                    // 如果用户点击了任何按钮，取消自动跳转
+                    alertDiv.addEventListener('click', () => {
+                        clearTimeout(autoRedirect);
+                    });
                 }
             }
         });
