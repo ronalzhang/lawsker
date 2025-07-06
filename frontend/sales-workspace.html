@@ -341,18 +341,136 @@
             color: var(--text-secondary);
         }
 
+        /* 标签页样式 */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 16px;
+        }
+
+        .tab {
+            background: transparent;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
         /* 响应式设计 */
         @media (max-width: 768px) {
+            .navbar-content {
+                flex-direction: row;
+                gap: 8px;
+            }
+            
+            .nav-menu {
+                flex-wrap: nowrap;
+                gap: 12px;
+                font-size: 14px;
+            }
+            
+            .nav-link {
+                padding: 6px 0;
+                white-space: nowrap;
+            }
+            
+            .user-info {
+                gap: 8px;
+            }
+            
+            .user-name {
+                display: none;
+            }
+            
             .workspace-grid {
                 grid-template-columns: 1fr;
             }
             
             .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+            
+            .stat-card {
+                padding: 16px;
+            }
+            
+            .stat-value {
+                font-size: 20px;
+            }
+            
+            .stat-label {
+                font-size: 12px;
             }
             
             .earnings-grid {
                 grid-template-columns: 1fr 1fr;
+            }
+            
+            .tabs {
+                gap: 2px;
+                overflow-x: auto;
+                padding: 2px;
+            }
+            
+            .tab {
+                padding: 10px 16px;
+                font-size: 13px;
+                white-space: nowrap;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-container {
+                padding: 16px 12px 32px;
+            }
+            
+            .navbar-content {
+                padding: 0 8px;
+            }
+            
+            .nav-menu {
+                gap: 8px;
+                font-size: 13px;
+            }
+            
+            .logo {
+                font-size: 16px;
+            }
+            
+            .user-avatar {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+            }
+            
+            .logout-btn {
+                padding: 6px 12px;
+                font-size: 12px;
             }
         }
 
@@ -439,6 +557,8 @@
             <button class="tab" onclick="switchTab('withdrawal')">提现管理</button>
         </div>
 
+        <!-- 工作概览标签页 -->
+        <div id="overview" class="tab-content active">
         <!-- 统计卡片 -->
         <div class="stats-grid">
             <div class="stat-card">
@@ -618,9 +738,280 @@
                 </div>
             </div>
         </div>
+        </div>
+
+        <!-- 任务管理标签页 -->
+        <div id="tasks" class="tab-content">
+            <!-- 任务发布改为免费发布个人业务 -->
+            <div class="workspace-card" style="margin-bottom: 24px;">
+                <div class="card-header">
+                    <div class="card-icon">⚖️</div>
+                    <div>
+                        <h3 class="card-title">免费发布个人业务</h3>
+                        <p class="card-subtitle">快速发布个人法律服务需求</p>
+                    </div>
+                </div>
+                
+                <form id="taskForm">
+                    <div class="form-group">
+                        <label class="form-label">业务类型</label>
+                        <select class="form-select" id="taskType" required>
+                            <option value="">选择业务类型</option>
+                            <option value="律师函">律师函</option>
+                            <option value="债务催收">债务催收</option>
+                            <option value="合同审查">合同审查</option>
+                            <option value="法律咨询">法律咨询</option>
+                            <option value="诉讼代理">诉讼代理</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">业务标题</label>
+                        <input type="text" class="form-input" id="taskTitle" placeholder="请输入业务标题" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">业务描述</label>
+                        <textarea class="form-textarea" id="taskDescription" placeholder="请详细描述业务需求..." required></textarea>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">免费发布</button>
+                        <button type="button" class="btn btn-secondary" onclick="clearTaskForm()">清空</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 数据上传改为付费上传 -->
+            <div class="workspace-card" style="margin-bottom: 24px;">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <div>
+                        <h3 class="card-title">付费数据上传</h3>
+                        <p class="card-subtitle">上传机构业务数据，支付上传费用</p>
+                    </div>
+                </div>
+                
+                <form id="dataUploadForm">
+                    <div class="form-group">
+                        <label class="form-label">数据类型</label>
+                        <select class="form-select" id="dataType" required>
+                            <option value="">选择数据类型</option>
+                            <option value="客户信息">客户信息</option>
+                            <option value="案件数据">案件数据</option>
+                            <option value="合同模板">合同模板</option>
+                            <option value="法律文书">法律文书</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">数据描述</label>
+                        <input type="text" class="form-input" id="dataDescription" placeholder="请简要描述数据内容" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">文件上传</label>
+                        <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+                            <div class="upload-icon">📁</div>
+                            <div class="upload-text">点击选择文件或拖拽文件到此处</div>
+                            <div class="upload-hint">支持 Excel、CSV、PDF、Word 格式</div>
+                        </div>
+                        <input type="file" id="fileInput" style="display: none;" accept=".xlsx,.xls,.csv,.pdf,.doc,.docx" multiple>
+                    </div>
+
+                    <!-- 支付方式选择 -->
+                    <div class="form-group">
+                        <label class="form-label">支付方式</label>
+                        <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="radio" name="paymentMethod" value="wechat" checked>
+                                <span>💬 微信支付</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="radio" name="paymentMethod" value="alipay">
+                                <span>💰 支付宝</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="radio" name="paymentMethod" value="balance">
+                                <span>💳 余额支付</span>
+                            </label>
+                        </div>
+                        <div style="color: var(--text-secondary); font-size: 12px;">
+                            上传费用：¥50.00 | 当前余额：<span id="currentBalance">¥0.00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">支付并上传数据</button>
+                        <button type="button" class="btn btn-secondary" onclick="clearDataForm()">清空</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 我的任务列表（去掉刷新按钮） -->
+            <div class="task-list">
+                <div class="task-list-header">
+                    <h3 class="task-list-title">我的任务</h3>
+                </div>
+                <div id="taskListBody">
+                    <!-- 示例任务 -->
+                    <div class="task-item">
+                        <div class="task-info">
+                            <div>
+                                <div class="task-title">债务催收律师函</div>
+                                <div class="task-details">发布时间：2024-01-15 | 类型：个人业务</div>
+                            </div>
+                            <span class="task-status status-processing">处理中</span>
+                        </div>
+                    </div>
+                    <div class="task-item">
+                        <div class="task-info">
+                            <div>
+                                <div class="task-title">合同审查服务</div>
+                                <div class="task-details">发布时间：2024-01-14 | 类型：个人业务</div>
+                            </div>
+                            <span class="task-status status-completed">已完成</span>
+                        </div>
+                    </div>
+                    <div class="task-item">
+                        <div class="task-info">
+                            <div>
+                                <div class="task-title">法律咨询服务</div>
+                                <div class="task-details">发布时间：2024-01-13 | 类型：个人业务</div>
+                            </div>
+                            <span class="task-status status-pending">待处理</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 提现管理标签页 -->
+        <div id="withdrawal" class="tab-content">
+            <!-- 钱包信息 -->
+            <div class="wallet-info" style="margin-bottom: 24px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                    <div style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">可提现余额</div>
+                        <div style="color: var(--text-primary); font-size: 24px; font-weight: 600;" id="availableBalance">¥2,580.00</div>
+                    </div>
+                    <div style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">冻结金额</div>
+                        <div style="color: var(--text-primary); font-size: 24px; font-weight: 600;" id="frozenAmount">¥380.00</div>
+                    </div>
+                    <div style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">本月提现</div>
+                        <div style="color: var(--text-primary); font-size: 24px; font-weight: 600;" id="monthlyWithdrawal">¥1,200.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 提现申请表单 -->
+            <div style="background: var(--glass-bg); padding: 24px; border-radius: 12px; border: 1px solid var(--glass-border); margin-bottom: 24px;">
+                <h3 style="color: var(--text-primary); margin-bottom: 20px;">申请提现</h3>
+                <form id="withdrawalForm">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                        <div>
+                            <label style="display: block; color: var(--text-primary); margin-bottom: 6px;">提现金额</label>
+                            <input type="number" id="withdrawalAmount" placeholder="请输入提现金额" style="width: 100%; padding: 12px; border: 1px solid var(--glass-border); border-radius: 8px; background: rgba(255,255,255,0.05); color: var(--text-primary);" required>
+                        </div>
+                        <div>
+                            <label style="display: block; color: var(--text-primary); margin-bottom: 6px;">提现方式</label>
+                            <select id="withdrawalMethod" style="width: 100%; padding: 12px; border: 1px solid var(--glass-border); border-radius: 8px; background: rgba(255,255,255,0.05); color: var(--text-primary);" required>
+                                <option value="">选择提现方式</option>
+                                <option value="bank">银行卡</option>
+                                <option value="alipay">支付宝</option>
+                                <option value="wechat">微信</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                        <div>
+                            <label style="display: block; color: var(--text-primary); margin-bottom: 6px;">收款账户</label>
+                            <input type="text" id="withdrawalAccount" placeholder="请输入收款账户" style="width: 100%; padding: 12px; border: 1px solid var(--glass-border); border-radius: 8px; background: rgba(255,255,255,0.05); color: var(--text-primary);" required>
+                        </div>
+                        <div>
+                            <label style="display: block; color: var(--text-primary); margin-bottom: 6px;">收款人姓名</label>
+                            <input type="text" id="withdrawalName" placeholder="请输入收款人姓名" style="width: 100%; padding: 12px; border: 1px solid var(--glass-border); border-radius: 8px; background: rgba(255,255,255,0.05); color: var(--text-primary);" required>
+                        </div>
+                    </div>
+                    <button type="submit" style="background: var(--gradient-primary); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 500;">申请提现</button>
+                </form>
+            </div>
+
+            <!-- 提现记录 -->
+            <div style="background: var(--glass-bg); padding: 24px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                <h3 style="color: var(--text-primary); margin-bottom: 20px;">提现记录</h3>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid var(--glass-border);">
+                                <th style="padding: 12px; text-align: left; color: var(--text-secondary); font-size: 12px;">申请时间</th>
+                                <th style="padding: 12px; text-align: left; color: var(--text-secondary); font-size: 12px;">金额</th>
+                                <th style="padding: 12px; text-align: left; color: var(--text-secondary); font-size: 12px;">方式</th>
+                                <th style="padding: 12px; text-align: left; color: var(--text-secondary); font-size: 12px;">状态</th>
+                                <th style="padding: 12px; text-align: left; color: var(--text-secondary); font-size: 12px;">到账时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <td style="padding: 12px; color: var(--text-primary); font-size: 14px;">2024-01-10</td>
+                                <td style="padding: 12px; color: var(--text-primary); font-size: 14px;">¥1,200.00</td>
+                                <td style="padding: 12px; color: var(--text-primary); font-size: 14px;">支付宝</td>
+                                <td style="padding: 12px;"><span style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 4px 8px; border-radius: 8px; font-size: 11px;">已完成</span></td>
+                                <td style="padding: 12px; color: var(--text-primary); font-size: 14px;">2024-01-11</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <td style="padding: 12px; color: var(--text-primary); font-size: 14px;">2024-01-05</td>
+                                <td style="padding: 12px; color: var(--text-primary); font-size: 14px;">¥800.00</td>
+                                <td style="padding: 12px; color: var(--text-primary); font-size: 14px;">银行卡</td>
+                                <td style="padding: 12px;"><span style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; padding: 4px 8px; border-radius: 8px; font-size: 11px;">处理中</span></td>
+                                <td style="padding: 12px; color: var(--text-secondary); font-size: 14px;">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
+        // 标签页切换函数
+        function switchTab(tabName) {
+            // 隐藏所有标签页内容
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 移除所有标签页按钮的active类
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 显示选中的标签页内容
+            const selectedTab = document.getElementById(tabName);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+            
+            // 激活对应的标签页按钮
+            const activeTab = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
+            if (activeTab) {
+                activeTab.classList.add('active');
+            }
+        }
+
+        // 退出登录
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('authToken');
+                window.location.href = '/auth';
+            }
+        }
         // 退出登录
         function logout() {
             if (confirm('确定要退出登录吗？')) {
@@ -639,10 +1030,35 @@
             document.getElementById('dataUploadForm').reset();
         }
 
-        // 刷新任务列表
-        function refreshTasks() {
-            // 这里可以添加从服务器获取任务列表的逻辑
-            console.log('刷新任务列表');
+        // 支付处理函数
+        function processPayment(paymentMethod, amount) {
+            return new Promise((resolve, reject) => {
+                if (paymentMethod === 'balance') {
+                    // 余额支付
+                    const currentBalance = parseFloat(document.getElementById('availableBalance').textContent.replace('¥', '').replace(',', ''));
+                    if (currentBalance >= amount) {
+                        // 扣除余额
+                        const newBalance = currentBalance - amount;
+                        document.getElementById('availableBalance').textContent = `¥${newBalance.toLocaleString()}.00`;
+                        document.getElementById('currentBalance').textContent = `¥${newBalance.toLocaleString()}.00`;
+                        resolve({ success: true, message: '余额支付成功' });
+                    } else {
+                        reject({ success: false, message: '余额不足' });
+                    }
+                } else if (paymentMethod === 'wechat') {
+                    // 微信支付（模拟）
+                    setTimeout(() => {
+                        resolve({ success: true, message: '微信支付成功' });
+                    }, 1000);
+                } else if (paymentMethod === 'alipay') {
+                    // 支付宝支付（模拟）
+                    setTimeout(() => {
+                        resolve({ success: true, message: '支付宝支付成功' });
+                    }, 1000);
+                } else {
+                    reject({ success: false, message: '不支持的支付方式' });
+                }
+            });
         }
 
         // 任务发布表单提交
@@ -675,40 +1091,49 @@
             }
         });
 
-        // 数据上传表单提交
+        // 数据上传表单提交（付费上传）
         document.getElementById('dataUploadForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const formData = new FormData();
-            formData.append('type', document.getElementById('dataType').value);
-            formData.append('description', document.getElementById('dataDescription').value);
-            formData.append('expectedEarnings', document.getElementById('expectedEarnings').value);
-            
-            const files = document.getElementById('fileInput').files;
-            for (let i = 0; i < files.length; i++) {
-                formData.append('files', files[i]);
-            }
+            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+            const uploadFee = 50; // 上传费用50元
             
             try {
+                // 先处理支付
+                await processPayment(paymentMethod, uploadFee);
+                
+                // 支付成功后上传数据
+                const formData = new FormData();
+                formData.append('type', document.getElementById('dataType').value);
+                formData.append('description', document.getElementById('dataDescription').value);
+                formData.append('paymentMethod', paymentMethod);
+                formData.append('uploadFee', uploadFee);
+                
+                const files = document.getElementById('fileInput').files;
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('files', files[i]);
+                }
+                
                 if (apiClient.isAuthenticated()) {
                     await apiClient.uploadData(formData);
-                    alert('数据上传成功！');
+                    alert('支付成功，数据上传完成！');
                     clearDataForm();
                     await loadStats();
                 } else {
-                    console.log('演示模式 - 上传数据:', {
+                    console.log('演示模式 - 付费上传数据:', {
                         type: document.getElementById('dataType').value,
                         description: document.getElementById('dataDescription').value,
-                        expectedEarnings: document.getElementById('expectedEarnings').value,
+                        paymentMethod: paymentMethod,
+                        uploadFee: uploadFee,
                         files: files.length
                     });
-                    alert('数据上传成功！（演示模式）');
+                    alert('支付成功，数据上传完成！（演示模式）');
                     clearDataForm();
                     updateStats();
                 }
             } catch (error) {
-                console.error('上传数据失败:', error);
-                alert('上传数据失败，请稍后重试');
+                console.error('支付或上传失败:', error);
+                alert(error.message || '支付或上传失败，请稍后重试');
             }
         });
 
@@ -779,6 +1204,9 @@
                 document.getElementById('uploadedData').textContent = stats.uploaded_data || 3;
                 document.getElementById('totalEarnings').textContent = '¥' + (stats.total_earnings || 2580).toLocaleString();
                 document.getElementById('monthlyEarnings').textContent = '¥' + (stats.monthly_earnings || 680).toLocaleString();
+                
+                // 更新余额信息
+                document.getElementById('currentBalance').textContent = '¥' + (stats.total_earnings || 2580).toLocaleString() + '.00';
             } catch (error) {
                 console.error('获取销售统计数据失败:', error);
                 // 使用默认数据
@@ -786,8 +1214,45 @@
                 document.getElementById('uploadedData').textContent = '3';
                 document.getElementById('totalEarnings').textContent = '¥2,580';
                 document.getElementById('monthlyEarnings').textContent = '¥680';
+                document.getElementById('currentBalance').textContent = '¥2,580.00';
             }
         }
+
+        // 提现申请表单处理
+        document.addEventListener('DOMContentLoaded', function() {
+            const withdrawalForm = document.getElementById('withdrawalForm');
+            if (withdrawalForm) {
+                withdrawalForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const amount = parseFloat(document.getElementById('withdrawalAmount').value);
+                    const method = document.getElementById('withdrawalMethod').value;
+                    const account = document.getElementById('withdrawalAccount').value;
+                    const name = document.getElementById('withdrawalName').value;
+                    
+                    if (!amount || !method || !account || !name) {
+                        alert('请填写完整的提现信息');
+                        return;
+                    }
+                    
+                    const availableBalance = parseFloat(document.getElementById('availableBalance').textContent.replace('¥', '').replace(',', ''));
+                    if (amount > availableBalance) {
+                        alert('提现金额不能超过可提现余额');
+                        return;
+                    }
+                    
+                    // 模拟提现申请
+                    alert('提现申请已提交，预计1-3个工作日到账');
+                    
+                    // 更新余额
+                    const newBalance = availableBalance - amount;
+                    document.getElementById('availableBalance').textContent = `¥${newBalance.toLocaleString()}.00`;
+                    
+                    // 清空表单
+                    withdrawalForm.reset();
+                });
+            }
+        });
 
         // 加载任务列表
         async function loadTasks() {

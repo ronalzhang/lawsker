@@ -488,18 +488,44 @@
         /* 响应式设计 */
         @media (max-width: 768px) {
             .navbar-content {
-                flex-direction: column;
-                gap: 16px;
+                flex-direction: row;
+                gap: 8px;
             }
             
             .nav-menu {
-                flex-wrap: wrap;
-                gap: 16px;
+                flex-wrap: nowrap;
+                gap: 12px;
+                font-size: 14px;
+            }
+            
+            .nav-link {
+                padding: 6px 0;
+                white-space: nowrap;
+            }
+            
+            .user-info {
+                gap: 8px;
+            }
+            
+            .user-name {
+                display: none;
             }
             
             .stats-grid {
-                grid-template-columns: 1fr;
-                gap: 16px;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+            
+            .stat-card {
+                padding: 16px;
+            }
+            
+            .stat-value {
+                font-size: 20px;
+            }
+            
+            .stat-label {
+                font-size: 12px;
             }
             
             .quick-actions {
@@ -543,6 +569,30 @@
             .cases-table th,
             .cases-table td {
                 padding: 8px 12px;
+            }
+            
+            .navbar-content {
+                padding: 0 8px;
+            }
+            
+            .nav-menu {
+                gap: 8px;
+                font-size: 13px;
+            }
+            
+            .logo {
+                font-size: 16px;
+            }
+            
+            .user-avatar {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+            }
+            
+            .logout-btn {
+                padding: 6px 12px;
+                font-size: 12px;
             }
         }
 
