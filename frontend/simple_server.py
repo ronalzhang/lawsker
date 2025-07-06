@@ -46,11 +46,16 @@ def main():
     PORT = 6060
     
     # 切换到正确的目录
-    os.chdir('/root/lawsker/frontend')
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(script_dir)
     
-    with socketserver.TCPServer(("", PORT), CustomHTTPRequestHandler) as httpd:
-        print(f"Lawsker frontend server running on port {PORT}")
-        httpd.serve_forever()
+    try:
+        with socketserver.TCPServer(("", PORT), CustomHTTPRequestHandler) as httpd:
+            print(f"Lawsker frontend server running on port {PORT}")
+            httpd.serve_forever()
+    except OSError as e:
+        print(f"Error starting server: {e}")
+        exit(1)
 
 if __name__ == "__main__":
     main() 
