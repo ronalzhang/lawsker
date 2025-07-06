@@ -539,60 +539,150 @@
                 align-items: flex-start;
             }
             
-            .cases-table {
-                font-size: 12px;
-            }
-            
-            .cases-table th,
-            .cases-table td {
-                padding: 12px 16px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .main-container {
-                padding: 16px 12px 32px;
-            }
-            
-            .content-section {
-                padding: 24px 16px;
-            }
-            
-            .cases-header {
-                padding: 16px;
-            }
-            
+            /* 优化案件表格窄屏显示 */
             .cases-table {
                 font-size: 11px;
             }
             
             .cases-table th,
             .cases-table td {
-                padding: 8px 12px;
+                padding: 8px 6px;
+                vertical-align: top;
             }
             
-            .navbar-content {
-                padding: 0 8px;
+            .cases-table th {
+                font-size: 10px;
             }
             
-            .nav-menu {
+            /* 案件编号缩略显示 */
+            .cases-table td:nth-child(1) {
+                font-size: 10px;
+                max-width: 80px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            
+            /* 客户名称缩略显示 */
+            .cases-table td:nth-child(2) {
+                max-width: 90px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            
+            /* 案件类型换行显示 */
+            .cases-table td:nth-child(3) {
+                white-space: normal;
+                line-height: 1.2;
+                max-width: 60px;
+            }
+            
+            /* 状态不换行 */
+            .cases-table td:nth-child(4) {
+                white-space: nowrap;
+            }
+            
+            /* 创建时间换行显示 */
+            .cases-table td:nth-child(5) {
+                white-space: normal;
+                line-height: 1.2;
+                font-size: 10px;
+                max-width: 70px;
+            }
+            
+            /* 截止时间换行显示 */
+            .cases-table td:nth-child(6) {
+                white-space: normal;
+                line-height: 1.2;
+                font-size: 10px;
+                max-width: 70px;
+            }
+            
+            /* 金额不换行 */
+            .cases-table td:nth-child(7) {
+                white-space: nowrap;
+                font-weight: 600;
+            }
+            
+            .case-status {
+                padding: 2px 6px;
+                font-size: 9px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
                 gap: 8px;
-                font-size: 13px;
             }
             
-            .logo {
-                font-size: 16px;
+            .stat-card {
+                padding: 12px;
             }
             
-            .user-avatar {
-                width: 28px;
-                height: 28px;
-                font-size: 12px;
+            .stat-value {
+                font-size: 18px;
             }
             
-            .logout-btn {
-                padding: 6px 12px;
-                font-size: 12px;
+            /* 更紧凑的案件表格 */
+            .cases-table {
+                font-size: 10px;
+            }
+            
+            .cases-table th,
+            .cases-table td {
+                padding: 6px 4px;
+            }
+            
+            .cases-table th {
+                font-size: 9px;
+            }
+            
+            /* 提现记录表格优化 */
+            .withdrawal-table {
+                font-size: 11px;
+            }
+            
+            .withdrawal-table th,
+            .withdrawal-table td {
+                padding: 8px 6px;
+            }
+            
+            .withdrawal-table th {
+                font-size: 10px;
+            }
+            
+            /* 申请时间换行显示 */
+            .withdrawal-table td:nth-child(1) {
+                white-space: normal;
+                line-height: 1.2;
+                font-size: 10px;
+                max-width: 80px;
+            }
+            
+            /* 金额不换行 */
+            .withdrawal-table td:nth-child(2) {
+                white-space: nowrap;
+                font-weight: 600;
+            }
+            
+            /* 方式不换行 */
+            .withdrawal-table td:nth-child(3) {
+                white-space: nowrap;
+            }
+            
+            /* 状态不换行 */
+            .withdrawal-table td:nth-child(4) {
+                white-space: nowrap;
+            }
+            
+            /* 到账时间换行显示 */
+            .withdrawal-table td:nth-child(5) {
+                white-space: normal;
+                line-height: 1.2;
+                font-size: 10px;
+                max-width: 80px;
             }
         }
 
@@ -894,7 +984,7 @@
                 </h3>
                 
                 <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse;">
+                    <table class="withdrawal-table" style="width: 100%; border-collapse: collapse;">
                         <thead>
                             <tr style="border-bottom: 1px solid var(--glass-border);">
                                 <th style="text-align: left; padding: 12px; color: var(--text-secondary); font-weight: 500;">申请时间</th>
@@ -906,18 +996,18 @@
                         </thead>
                         <tbody>
                             <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                <td style="padding: 12px; color: var(--text-primary);">2024-01-15 14:30</td>
-                                <td style="padding: 12px; color: var(--text-primary);">¥5,000.00</td>
+                                <td style="padding: 12px; color: var(--text-primary);">2024-01-15<br>14:30</td>
+                                <td style="padding: 12px; color: var(--text-primary); font-weight: 600;">¥5,000.00</td>
                                 <td style="padding: 12px; color: var(--text-primary);">银行卡</td>
                                 <td style="padding: 12px;"><span style="background: rgba(76, 175, 80, 0.2); color: #4caf50; padding: 4px 8px; border-radius: 4px; font-size: 12px;">已到账</span></td>
-                                <td style="padding: 12px; color: var(--text-primary);">2024-01-15 14:32</td>
+                                <td style="padding: 12px; color: var(--text-primary);">2024-01-15<br>14:32</td>
                             </tr>
                             <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                <td style="padding: 12px; color: var(--text-primary);">2024-01-10 09:15</td>
-                                <td style="padding: 12px; color: var(--text-primary);">¥3,500.00</td>
+                                <td style="padding: 12px; color: var(--text-primary);">2024-01-10<br>09:15</td>
+                                <td style="padding: 12px; color: var(--text-primary); font-weight: 600;">¥3,500.00</td>
                                 <td style="padding: 12px; color: var(--text-primary);">支付宝</td>
                                 <td style="padding: 12px;"><span style="background: rgba(76, 175, 80, 0.2); color: #4caf50; padding: 4px 8px; border-radius: 4px; font-size: 12px;">已到账</span></td>
-                                <td style="padding: 12px; color: var(--text-primary);">2024-01-10 09:16</td>
+                                <td style="padding: 12px; color: var(--text-primary);">2024-01-10<br>09:16</td>
                             </tr>
                         </tbody>
                     </table>
