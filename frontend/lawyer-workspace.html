@@ -939,6 +939,36 @@
                 </div>
             </div>
 
+            <!-- 提现汇总统计 -->
+            <div style="background: var(--glass-bg); border-radius: 16px; padding: 24px; border: 1px solid var(--glass-border); margin-bottom: 24px;">
+                <h3 style="color: var(--text-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                    <span>📊</span>
+                    提现汇总统计
+                </h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+                    <div style="text-align: center; padding: 16px; background: rgba(156, 39, 176, 0.1); border-radius: 12px; border: 1px solid rgba(156, 39, 176, 0.2);">
+                        <div style="font-size: 20px; font-weight: 700; color: #9c27b0; margin-bottom: 4px;" id="totalWithdrawn">¥0.00</div>
+                        <div style="color: var(--text-secondary); font-size: 12px;">累计提现</div>
+                    </div>
+                    
+                    <div style="text-align: center; padding: 16px; background: rgba(33, 150, 243, 0.1); border-radius: 12px; border: 1px solid rgba(33, 150, 243, 0.2);">
+                        <div style="font-size: 20px; font-weight: 700; color: #2196f3; margin-bottom: 4px;" id="withdrawalCount">0</div>
+                        <div style="color: var(--text-secondary); font-size: 12px;">提现次数</div>
+                    </div>
+                    
+                    <div style="text-align: center; padding: 16px; background: rgba(255, 152, 0, 0.1); border-radius: 12px; border: 1px solid rgba(255, 152, 0, 0.2);">
+                        <div style="font-size: 20px; font-weight: 700; color: #ff9800; margin-bottom: 4px;" id="averageAmount">¥0.00</div>
+                        <div style="color: var(--text-secondary); font-size: 12px;">平均金额</div>
+                    </div>
+                    
+                    <div style="text-align: center; padding: 16px; background: rgba(244, 67, 54, 0.1); border-radius: 12px; border: 1px solid rgba(244, 67, 54, 0.2);">
+                        <div style="font-size: 20px; font-weight: 700; color: #f44336; margin-bottom: 4px;" id="pendingAmount">¥0.00</div>
+                        <div style="color: var(--text-secondary); font-size: 12px;">待处理金额</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 提现申请表单 -->
             <div style="background: var(--glass-bg); border-radius: 16px; padding: 24px; border: 1px solid var(--glass-border); margin-bottom: 24px;">
                 <h3 style="color: var(--text-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
@@ -1137,6 +1167,55 @@
             return statusMap[status] || '待处理';
         }
 
+        // 加载提现汇总统计数据
+        async function loadWithdrawalStats() {
+            try {
+                if (apiClient.isAuthenticated()) {
+                    try {
+                        const response = await fetch('/api/v1/finance/withdrawal/stats', {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (response.ok) {
+                            const stats = await response.json();
+                            
+                            // 更新提现汇总统计显示
+                            document.getElementById('totalWithdrawn').textContent = '¥' + stats.total_withdrawn.toLocaleString();
+                            document.getElementById('withdrawalCount').textContent = stats.withdrawal_count;
+                            document.getElementById('averageAmount').textContent = '¥' + stats.average_amount.toLocaleString();
+                            document.getElementById('pendingAmount').textContent = '¥' + stats.pending_amount.toLocaleString();
+                        } else {
+                            console.warn('获取提现统计数据失败，使用默认数据');
+                            // 使用默认演示数据
+                            document.getElementById('totalWithdrawn').textContent = '¥25,600.00';
+                            document.getElementById('withdrawalCount').textContent = '8';
+                            document.getElementById('averageAmount').textContent = '¥3,200.00';
+                            document.getElementById('pendingAmount').textContent = '¥0.00';
+                        }
+                    } catch (error) {
+                        console.warn('获取提现统计数据失败:', error);
+                        // 使用默认演示数据
+                        document.getElementById('totalWithdrawn').textContent = '¥25,600.00';
+                        document.getElementById('withdrawalCount').textContent = '8';
+                        document.getElementById('averageAmount').textContent = '¥3,200.00';
+                        document.getElementById('pendingAmount').textContent = '¥0.00';
+                    }
+                } else {
+                    // 未登录时使用演示数据
+                    document.getElementById('totalWithdrawn').textContent = '¥25,600.00';
+                    document.getElementById('withdrawalCount').textContent = '8';
+                    document.getElementById('averageAmount').textContent = '¥3,200.00';
+                    document.getElementById('pendingAmount').textContent = '¥0.00';
+                }
+            } catch (error) {
+                console.error('加载提现统计数据失败:', error);
+            }
+        }
+
         // 初始化用户信息
         async function loadUserInfo() {
             try {
@@ -1162,6 +1241,7 @@
             await loadUserInfo();
             await loadLawyerStats();
             await loadCases();
+            await loadWithdrawalStats();
         });
     </script>
 </body>

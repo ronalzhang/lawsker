@@ -688,6 +688,65 @@ class WithdrawalService:
         # 这里简化处理
         return True, "验证通过"
 
+    async def get_withdrawal_stats(self, user_id: UUID, db: Session) -> Dict[str, Any]:
+        """获取用户提现汇总统计数据"""
+        try:
+            from sqlalchemy import func
+            from datetime import datetime, timedelta
+            
+            # 从钱包表获取累计提现金额
+            wallet = db.query(Wallet).filter(Wallet.user_id == user_id).first()
+            total_withdrawn = float(wallet.total_withdrawn) if wallet else 0.0
+            
+            # 查询所有提现记录统计
+            all_withdrawals = db.query(WithdrawalRequest).filter(
+                WithdrawalRequest.user_id == user_id
+            ).all()
+            
+            # 总提现次数
+            withdrawal_count = len(all_withdrawals)
+            
+            # 本月统计
+            now = datetime.now()
+            month_start = datetime(now.year, now.month, 1)
+            monthly_withdrawals = [w for w in all_withdrawals if w.created_at >= month_start]
+            monthly_withdrawn = sum(float(w.actual_amount) for w in monthly_withdrawals if w.status == WithdrawalStatus.COMPLETED)
+            monthly_count = len(monthly_withdrawals)
+            
+            # 平均提现金额
+            completed_withdrawals = [w for w in all_withdrawals if w.status == WithdrawalStatus.COMPLETED]
+            average_amount = (
+                sum(float(w.actual_amount) for w in completed_withdrawals) / len(completed_withdrawals)
+                if completed_withdrawals else 0.0
+            )
+            
+            # 待处理统计
+            pending_withdrawals = [w for w in all_withdrawals if w.status in [
+                WithdrawalStatus.PENDING, WithdrawalStatus.APPROVED, WithdrawalStatus.PROCESSING
+            ]]
+            pending_amount = sum(float(w.amount) for w in pending_withdrawals)
+            pending_count = len(pending_withdrawals)
+            
+            # 已完成统计
+            completed_amount = sum(float(w.actual_amount) for w in completed_withdrawals)
+            completed_count = len(completed_withdrawals)
+            
+            return {
+                "total_withdrawn": total_withdrawn,
+                "withdrawal_count": withdrawal_count,
+                "monthly_withdrawn": monthly_withdrawn,
+                "monthly_count": monthly_count,
+                "average_amount": round(average_amount, 2),
+                "pending_amount": pending_amount,
+                "pending_count": pending_count,
+                "completed_amount": completed_amount,
+                "completed_count": completed_count
+            }
+            
+        except Exception as e:
+            logger.error(f"获取提现统计数据失败: {str(e)}")
+            raise WithdrawalError(f"获取提现统计数据失败: {str(e)}")
+
 
 # 服务实例工厂函数
 def create_wechat_pay_service(config_service: SystemConfigService) -> WeChatPayService:

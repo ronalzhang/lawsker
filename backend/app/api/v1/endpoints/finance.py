@@ -39,10 +39,10 @@ class PaymentRequest(BaseModel):
 
 
 class PaymentResponse(BaseModel):
-    success: bool
-    out_trade_no: str
-    qr_code: str
-    message: str
+    order_id: str
+    amount: float
+    qr_code_url: str
+    expires_at: str
 
 
 class PaymentCallbackRequest(BaseModel):
@@ -88,6 +88,17 @@ class CommissionListResponse(BaseModel):
     page: int
     page_size: int
     total_pages: int
+
+
+class CommissionSplitResponse(BaseModel):
+    id: str
+    transaction_id: str
+    user_id: str
+    user_name: str
+    role: str
+    amount: float
+    status: str
+    paid_at: Optional[str]
 
 
 class WithdrawalCreateRequest(BaseModel):
@@ -139,6 +150,19 @@ class WithdrawalListResponse(BaseModel):
     pages: int
 
 
+class WithdrawalStatsResponse(BaseModel):
+    """提现汇总统计响应"""
+    total_withdrawn: float          # 累计提现金额
+    withdrawal_count: int           # 提现次数
+    monthly_withdrawn: float        # 本月提现金额
+    monthly_count: int              # 本月提现次数
+    average_amount: float           # 平均提现金额
+    pending_amount: float           # 待处理金额
+    pending_count: int              # 待处理笔数
+    completed_amount: float         # 已完成金额
+    completed_count: int            # 已完成笔数
+
+
 class WithdrawalApprovalRequest(BaseModel):
     """提现审批请求"""
     admin_notes: Optional[str] = Field(None, description="管理员备注")
@@ -152,15 +176,11 @@ class WithdrawalRejectionRequest(BaseModel):
 class TransactionResponse(BaseModel):
     id: str
     case_id: str
-    case_number: str
     amount: float
     transaction_type: str
     status: str
-    payment_gateway: Optional[str]
-    gateway_txn_id: Optional[str]
     description: Optional[str]
-    created_at: datetime
-    completed_at: Optional[datetime]
+    created_at: str
 
 
 class TransactionListResponse(BaseModel):
@@ -197,10 +217,10 @@ async def create_payment(
             )
             
             return PaymentResponse(
-                success=True,
-                out_trade_no=result["order_no"],
-                qr_code=result["qr_code"],
-                message="支付订单创建成功"
+                order_id=result["order_no"],
+                amount=float(result["amount"]),
+                qr_code_url=result["qr_code"],
+                expires_at=result["expires_at"]
             )
             
         finally:
@@ -442,15 +462,11 @@ async def get_transactions(
             items.append(TransactionResponse(
                 id=str(transaction.id),
                 case_id=str(transaction.case_id),
-                case_number=transaction.case.case_number if transaction.case else "未知",  # type: ignore
                 amount=float(transaction.amount),  # type: ignore
                 transaction_type=transaction.transaction_type.value,  # type: ignore
                 status=transaction.status.value,  # type: ignore
-                payment_gateway=transaction.payment_gateway,  # type: ignore
-                gateway_txn_id=transaction.gateway_txn_id,  # type: ignore
                 description=transaction.description,  # type: ignore
-                created_at=transaction.created_at,  # type: ignore
-                completed_at=transaction.completed_at  # type: ignore
+                created_at=transaction.created_at.isoformat()
             ))
         
         return TransactionListResponse(
@@ -881,4 +897,46 @@ async def get_finance_config(
         raise HTTPException(
             status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"获取财务配置失败: {str(e)}"
+        )
+
+
+@router.get("/withdrawal/stats", response_model=WithdrawalStatsResponse)
+async def get_withdrawal_stats(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    config_service: SystemConfigService = Depends(get_config_service)
+):
+    """获取提现汇总统计数据"""
+    
+    try:
+        withdrawal_service = WithdrawalService(config_service)
+        
+        # 使用同步数据库会话
+        sync_session = SyncSessionLocal()
+        
+        try:
+            stats = await withdrawal_service.get_withdrawal_stats(
+                user_id=UUID(str(current_user.id)),
+                db=sync_session
+            )
+            
+            return WithdrawalStatsResponse(
+                total_withdrawn=stats["total_withdrawn"],
+                withdrawal_count=stats["withdrawal_count"],
+                monthly_withdrawn=stats["monthly_withdrawn"],
+                monthly_count=stats["monthly_count"],
+                average_amount=stats["average_amount"],
+                pending_amount=stats["pending_amount"],
+                pending_count=stats["pending_count"],
+                completed_amount=stats["completed_amount"],
+                completed_count=stats["completed_count"]
+            )
+            
+        finally:
+            sync_session.close()
+            
+    except Exception as e:
+        raise HTTPException(
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="获取提现汇总统计数据失败"
         ) 
