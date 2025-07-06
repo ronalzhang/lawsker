@@ -9,6 +9,7 @@ from app.models.case import Case, Client, CaseLog, Insurance
 from app.models.finance import Transaction, CommissionSplit, Wallet
 from app.models.lawyer_letter import LawyerLetterOrder, LawyerLetterTemplate, LetterSendRecord
 from app.models.lawyer_review import DocumentReviewTask, DocumentReviewLog, LawyerWorkload, ReviewStatus
+from app.models.statistics import SystemStatistics, UserActivityLog, DataUploadRecord, TaskPublishRecord
 
 __all__ = [
     # 用户相关模型
@@ -44,4 +45,10 @@ __all__ = [
     "DocumentReviewLog",
     "LawyerWorkload",
     "ReviewStatus",
+    
+    # 统计和日志模型
+    "SystemStatistics",
+    "UserActivityLog",
+    "DataUploadRecord",
+    "TaskPublishRecord",
 ] 
