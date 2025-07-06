@@ -21,8 +21,11 @@ const routeHandler = (filePath) => {
 
 // 定义所有路由
 app.get('/user', routeHandler('user-workspace.html'));
+app.get('/user/:userId', routeHandler('user-workspace.html'));
 app.get('/legal', routeHandler('lawyer-workspace.html'));
+app.get('/legal/:lawyerId', routeHandler('lawyer-workspace.html'));
 app.get('/institution', routeHandler('institution-workspace.html'));
+app.get('/institution/:institutionId', routeHandler('institution-workspace.html'));
 app.get('/calculator', routeHandler('earnings-calculator.html'));
 app.get('/earnings-calculator', routeHandler('earnings-calculator.html'));
 app.get('/withdraw', routeHandler('withdrawal.html'));

@@ -1421,12 +1421,57 @@
 
         // 初始化页面
         document.addEventListener('DOMContentLoaded', async function() {
+            // 获取URL中的律师ID
+            const lawyerId = getLawyerIdFromUrl();
+            if (lawyerId) {
+                console.log('当前律师ID:', lawyerId);
+                // 根据律师ID个性化显示
+                await loadLawyerSpecificData(lawyerId);
+            }
+            
             await loadUserInfo();
             await loadLawyerStats();
             await loadCases();
             await loadWithdrawalStats();
             updateConfirmedCount();
         });
+
+        // 从URL获取律师ID
+        function getLawyerIdFromUrl() {
+            const path = window.location.pathname;
+            const matches = path.match(/^\/legal\/([^\/]+)$/);
+            return matches ? matches[1] : null;
+        }
+
+        // 根据律师ID加载个性化数据
+        async function loadLawyerSpecificData(lawyerId) {
+            try {
+                // 更新页面标题显示律师ID
+                const pageTitle = document.querySelector('.page-title');
+                if (pageTitle) {
+                    pageTitle.textContent = `律师工作台 - 律师${lawyerId}`;
+                }
+                
+                // 更新导航栏用户信息
+                const userName = document.querySelector('.user-name');
+                if (userName) {
+                    userName.textContent = `律师${lawyerId}`;
+                }
+                
+                const userAvatar = document.querySelector('.user-avatar');
+                if (userAvatar) {
+                    userAvatar.textContent = lawyerId.charAt(0).toUpperCase();
+                }
+                
+                // 这里可以根据律师ID从API获取个性化数据
+                // const lawyerData = await apiClient.getLawyerData(lawyerId);
+                // 暂时使用模拟数据
+                console.log(`已为律师 ${lawyerId} 加载个性化数据`);
+                
+            } catch (error) {
+                console.error('加载律师个性化数据失败:', error);
+            }
+        }
     </script>
 </body>
 </html>
