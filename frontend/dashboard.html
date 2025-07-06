@@ -156,7 +156,7 @@
     <!-- 导航栏 -->
     <nav class="navbar">
         <div class="navbar-content">
-            <a href="dashboard.html" class="logo">Lawsker</a>
+            <a href="index.html" class="logo">Lawsker</a>
             <div class="nav-menu">
                 <a href="index.html" class="nav-link">首页</a>
                 <a href="dashboard.html" class="nav-link active">仪表盘</a>
@@ -310,9 +310,9 @@
         // 加载用户信息
         function loadUserInfo() {
             const token = localStorage.getItem('authToken');
+            // 演示模式：如果没有token，设置一个默认token
             if (!token) {
-                window.location.href = 'login.html';
-                return;
+                localStorage.setItem('authToken', 'demo-token');
             }
 
             // 模拟用户信息

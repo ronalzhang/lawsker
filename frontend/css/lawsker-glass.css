@@ -91,12 +91,7 @@ body::before {
     text-decoration: none;
 }
 
-.logo::before {
-    content: '⚡';
-    font-size: 18px;
-    filter: drop-shadow(0 0 8px rgba(122, 160, 255, 0.5));
-    -webkit-text-fill-color: initial;
-}
+
 
 /* 主容器 */
 .main-container {
