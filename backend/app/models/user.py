@@ -152,6 +152,11 @@ class LawyerQualification(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False)
     
+    # 律师基本信息（从律师证上识别）
+    lawyer_name = Column(String(100), nullable=False)    # 律师姓名
+    gender = Column(String(10), nullable=True)           # 性别
+    id_card_number = Column(String(18), nullable=True, index=True)  # 身份证号
+    
     # 执业证书信息
     license_number = Column(String(50), unique=True, nullable=False, index=True)  # 执业证书编号
     license_authority = Column(String(100), nullable=False)  # 发证机关
@@ -166,12 +171,18 @@ class LawyerQualification(Base):
     # 专业信息
     practice_areas = Column(JSONB, nullable=True)        # 执业领域JSON数组
     lawyer_level = Column(SQLEnum(LawyerLevel), default=LawyerLevel.JUNIOR, nullable=False)
-    years_of_practice = Column(Integer, default=0)       # 执业年限
+    years_of_practice = Column(Integer, default=0)       # 执业年限（从发证日期计算）
     specializations = Column(JSONB, nullable=True)       # 专业特长JSON数组
+    
+    # 认证文件信息
+    license_image_url = Column(String(500), nullable=True)  # 律师证图片URL
+    license_image_metadata = Column(JSONB, nullable=True)   # 图片元数据（AI识别结果）
+    certification_documents = Column(JSONB, nullable=True)  # 其他认证文件JSON
     
     # 认证信息
     qualification_status = Column(SQLEnum(QualificationStatus), default=QualificationStatus.DRAFT, nullable=False)
-    certification_documents = Column(JSONB, nullable=True)  # 认证文件JSON
+    ai_verification_score = Column(Integer, default=0)    # AI验证置信度（0-100）
+    ai_extraction_result = Column(JSONB, nullable=True)   # AI提取结果JSON
     reviewer_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # 审核人ID
     review_notes = Column(Text, nullable=True)            # 审核备注
     reviewed_at = Column(DateTime(timezone=True), nullable=True)  # 审核时间

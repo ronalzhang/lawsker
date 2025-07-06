@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>律师认证 - 律思客</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/lawsker-glass.css" rel="stylesheet">
+    <style>
+        .certification-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 0 15px;
+        }
+        
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: #6c757d;
+            font-weight: bold;
+        }
+        
+        .step.active .step-circle {
+            background: #007bff;
+            color: white;
+        }
+        
+        .step.completed .step-circle {
+            background: #28a745;
+            color: white;
+        }
+        
+        .upload-area {
+            border: 2px dashed #007bff;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(0, 123, 255, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: #0056b3;
+            background: rgba(0, 123, 255, 0.1);
+        }
+        
+        .upload-area.dragover {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+        
+        .preview-image {
+            max-width: 300px;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .extraction-result {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .confidence-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .confidence-high { background: #d4edda; color: #155724; }
+        .confidence-medium { background: #fff3cd; color: #856404; }
+        .confidence-low { background: #f8d7da; color: #721c24; }
+        
+        .info-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .ai-tips {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .form-section {
+            display: none;
+        }
+        
+        .form-section.active {
+            display: block;
+        }
+        
+        .field-status {
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        
+        .field-valid { color: #28a745; }
+        .field-invalid { color: #dc3545; }
+        .field-extracted { color: #007bff; }
+    </style>
+</head>
+<body>
+    <div class="certification-container">
+        <!-- 步骤指示器 -->
+        <div class="step-indicator">
+            <div class="step active" id="step1">
+                <div class="step-circle">1</div>
+                <span>上传律师证</span>
+            </div>
+            <div class="step" id="step2">
+                <div class="step-circle">2</div>
+                <span>AI识别</span>
+            </div>
+            <div class="step" id="step3">
+                <div class="step-circle">3</div>
+                <span>信息确认</span>
+            </div>
+            <div class="step" id="step4">
+                <div class="step-circle">4</div>
+                <span>提交认证</span>
+            </div>
+        </div>
+
+        <!-- AI功能介绍 -->
+        <div class="ai-tips">
+            <h5><i class="fas fa-robot"></i> AI智能识别功能</h5>
+            <p class="mb-2">我们的AI系统可以自动识别律师证上的关键信息，包括：</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <ul class="mb-0">
+                        <li>执业证号</li>
+                        <li>律师姓名</li>
+                        <li>性别</li>
+                        <li>身份证号</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="mb-0">
+                        <li>发证机关</li>
+                        <li>发证日期</li>
+                        <li>律师事务所</li>
+                        <li>执业年限（自动计算）</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="mt-2 mb-0"><small><i class="fas fa-info-circle"></i> 请确保律师证图片清晰，避免反光和阴影</small></p>
+        </div>
+
+        <!-- 第一步：上传律师证 -->
+        <div class="form-section active" id="section1">
+            <div class="info-card">
+                <h4><i class="fas fa-upload"></i> 上传律师执业证书</h4>
+                
+                <div class="upload-area" id="uploadArea">
+                    <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                    <h5>点击或拖拽上传律师证图片</h5>
+                    <p class="text-muted">支持 JPG、PNG、BMP 格式，文件大小不超过 10MB</p>
+                    <input type="file" id="licenseFile" accept="image/*" style="display: none;">
+                    <button type="button" class="btn btn-primary" onclick="document.getElementById('licenseFile').click()">
+                        选择文件
+                    </button>
+                </div>
+                
+                <div id="imagePreview" class="text-center mt-3" style="display: none;">
+                    <img id="previewImg" class="preview-image" alt="律师证预览">
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-success" id="analyzeBtn">
+                            <i class="fas fa-magic"></i> 开始AI识别
+                        </button>
+                        <button type="button" class="btn btn-secondary ms-2" onclick="resetUpload()">
+                            重新上传
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="loading-spinner" id="loadingSpinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">AI识别中...</span>
+                    </div>
+                    <p class="mt-2">AI正在识别律师证信息，请稍候...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第二步：AI识别结果 -->
+        <div class="form-section" id="section2">
+            <div class="info-card">
+                <h4><i class="fas fa-brain"></i> AI识别结果</h4>
+                
+                <div id="extractionResult" class="extraction-result">
+                    <!-- AI识别结果将在这里显示 -->
+                </div>
+                
+                <div class="text-center mt-3">
+                    <button type="button" class="btn btn-primary" id="confirmExtractionBtn">
+                        确认识别结果
+                    </button>
+                    <button type="button" class="btn btn-secondary ms-2" onclick="goToStep(1)">
+                        重新识别
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第三步：信息确认和补充 -->
+        <div class="form-section" id="section3">
+            <div class="info-card">
+                <h4><i class="fas fa-edit"></i> 确认并完善信息</h4>
+                <p class="text-muted">请核对AI识别的信息，并补充或修正不准确的内容</p>
+                
+                <form id="certificationForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    律师姓名 <span class="text-danger">*</span>
+                                    <span class="field-status" id="nameStatus"></span>
+                                </label>
+                                <input type="text" class="form-control" id="lawyerName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    性别
+                                    <span class="field-status" id="genderStatus"></span>
+                                </label>
+                                <select class="form-select" id="gender">
+                                    <option value="">请选择</option>
+                                    <option value="男">男</option>
+                                    <option value="女">女</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    执业证号 <span class="text-danger">*</span>
+                                    <span class="field-status" id="licenseStatus"></span>
+                                </label>
+                                <input type="text" class="form-control" id="licenseNumber" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    身份证号
+                                    <span class="field-status" id="idCardStatus"></span>
+                                </label>
+                                <input type="text" class="form-control" id="idCardNumber">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    发证机关 <span class="text-danger">*</span>
+                                    <span class="field-status" id="authorityStatus"></span>
+                                </label>
+                                <input type="text" class="form-control" id="licenseAuthority" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    发证日期 <span class="text-danger">*</span>
+                                    <span class="field-status" id="dateStatus"></span>
+                                </label>
+                                <input type="date" class="form-control" id="issueDate" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">
+                            律师事务所 <span class="text-danger">*</span>
+                            <span class="field-status" id="firmStatus"></span>
+                        </label>
+                        <input type="text" class="form-control" id="lawFirm" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">执业年限</label>
+                                <input type="number" class="form-control" id="yearsOfPractice" readonly>
+                                <small class="text-muted">根据发证日期自动计算</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">AI识别置信度</label>
+                                <div>
+                                    <span id="confidenceBadge" class="confidence-badge">--</span>
+                                    <span id="confidenceScore" class="ms-2">-- 分</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">执业领域</label>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="民商事诉讼" id="area1">
+                                    <label class="form-check-label" for="area1">民商事诉讼</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="债权债务" id="area2">
+                                    <label class="form-check-label" for="area2">债权债务</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="合同纠纷" id="area3">
+                                    <label class="form-check-label" for="area3">合同纠纷</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="公司法务" id="area4">
+                                    <label class="form-check-label" for="area4">公司法务</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="知识产权" id="area5">
+                                    <label class="form-check-label" for="area5">知识产权</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="劳动争议" id="area6">
+                                    <label class="form-check-label" for="area6">劳动争议</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="房地产" id="area7">
+                                    <label class="form-check-label" for="area7">房地产</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="刑事辩护" id="area8">
+                                    <label class="form-check-label" for="area8">刑事辩护</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="其他" id="area9">
+                                    <label class="form-check-label" for="area9">其他</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="text-center mt-4">
+                    <button type="button" class="btn btn-primary" id="submitCertificationBtn">
+                        <i class="fas fa-paper-plane"></i> 提交认证申请
+                    </button>
+                    <button type="button" class="btn btn-secondary ms-2" onclick="goToStep(2)">
+                        返回上一步
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第四步：提交成功 -->
+        <div class="form-section" id="section4">
+            <div class="info-card text-center">
+                <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                <h4>认证申请提交成功！</h4>
+                <p class="text-muted">您的律师认证申请已提交，我们将在1-3个工作日内完成审核。</p>
+                
+                <div class="alert alert-info mt-4">
+                    <h6><i class="fas fa-info-circle"></i> 后续流程</h6>
+                    <ul class="text-start mb-0">
+                        <li>管理员将审核您提交的认证信息</li>
+                        <li>如需补充材料，我们会通过邮件联系您</li>
+                        <li>审核通过后，您将获得律师权限</li>
+                        <li>可以开始接收和处理案件</li>
+                    </ul>
+                </div>
+                
+                <div class="mt-4">
+                    <a href="dashboard.html" class="btn btn-primary">
+                        <i class="fas fa-home"></i> 返回首页
+                    </a>
+                    <a href="lawyer-workspace.html" class="btn btn-outline-primary ms-2">
+                        <i class="fas fa-briefcase"></i> 律师工作台
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api-client.js"></script>
+    <script>
+        let currentStep = 1;
+        let extractedData = null;
+        let uploadedFile = null;
+
+        // 初始化事件监听
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEventListeners();
+        });
+
+        function initializeEventListeners() {
+            // 文件上传事件
+            const licenseFile = document.getElementById('licenseFile');
+            const uploadArea = document.getElementById('uploadArea');
+            
+            licenseFile.addEventListener('change', handleFileSelect);
+            
+            // 拖拽上传
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]);
+                }
+            });
+            
+            // AI识别按钮
+            document.getElementById('analyzeBtn').addEventListener('click', performAIAnalysis);
+            
+            // 确认识别结果按钮
+            document.getElementById('confirmExtractionBtn').addEventListener('click', function() {
+                goToStep(3);
+            });
+            
+            // 提交认证按钮
+            document.getElementById('submitCertificationBtn').addEventListener('click', submitCertification);
+            
+            // 表单字段变化监听
+            const formFields = ['lawyerName', 'licenseNumber', 'licenseAuthority', 'issueDate', 'lawFirm'];
+            formFields.forEach(fieldId => {
+                document.getElementById(fieldId).addEventListener('input', updateFieldStatus);
+            });
+            
+            // 发证日期变化时计算执业年限
+            document.getElementById('issueDate').addEventListener('change', calculateYearsOfPractice);
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+
+        function handleFile(file) {
+            // 验证文件类型
+            if (!file.type.startsWith('image/')) {
+                alert('请选择图片文件');
+                return;
+            }
+            
+            // 验证文件大小 (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('文件大小不能超过10MB');
+                return;
+            }
+            
+            uploadedFile = file;
+            
+            // 显示预览
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('imagePreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function resetUpload() {
+            document.getElementById('licenseFile').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+            uploadedFile = null;
+        }
+
+        async function performAIAnalysis() {
+            if (!uploadedFile) {
+                alert('请先上传律师证图片');
+                return;
+            }
+            
+            // 显示加载状态
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('analyzeBtn').disabled = true;
+            
+            try {
+                // 创建FormData
+                const formData = new FormData();
+                formData.append('license_image', uploadedFile);
+                
+                // 调用AI识别API
+                const response = await fetch('/api/v1/lawyer-verification/extract-license-info', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    extractedData = result.data;
+                    displayExtractionResult(result.data);
+                    goToStep(2);
+                } else {
+                    alert('AI识别失败：' + result.message);
+                }
+                
+            } catch (error) {
+                console.error('AI识别错误:', error);
+                alert('AI识别过程中发生错误，请重试');
+            } finally {
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('analyzeBtn').disabled = false;
+            }
+        }
+
+        function displayExtractionResult(data) {
+            const extractionResult = data.extraction_result;
+            const extracted = extractionResult.extracted_info;
+            const validation = extractionResult.validation_result;
+            const confidence = extractionResult.confidence_score;
+            
+            let html = `
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6><i class="fas fa-robot"></i> AI识别信息</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>姓名:</strong> ${extracted.name || '未识别'}</p>
+                                <p><strong>性别:</strong> ${extracted.gender || '未识别'}</p>
+                                <p><strong>执业证号:</strong> ${extracted.license_number || '未识别'}</p>
+                                <p><strong>身份证号:</strong> ${extracted.id_card || '未识别'}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>发证机关:</strong> ${extracted.authority || '未识别'}</p>
+                                <p><strong>发证日期:</strong> ${extracted.issue_date || '未识别'}</p>
+                                <p><strong>律师事务所:</strong> ${extracted.law_firm || '未识别'}</p>
+                                <p><strong>执业年限:</strong> ${extracted.years_of_practice || 0} 年</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="fas fa-chart-line"></i> 识别质量</h6>
+                        <p><strong>置信度:</strong> 
+                            <span class="confidence-badge ${getConfidenceClass(confidence)}">${getConfidenceText(confidence)}</span>
+                            <span class="ms-2">${confidence} 分</span>
+                        </p>
+                        <p><strong>有效字段:</strong> ${validation.valid_fields.length} 个</p>
+                        <p><strong>无效字段:</strong> ${validation.invalid_fields.length} 个</p>
+                        ${validation.warnings.length > 0 ? `<p><strong>警告:</strong><br><small class="text-warning">${validation.warnings.join('<br>')}</small></p>` : ''}
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <h6><i class="fas fa-lightbulb"></i> 建议</h6>
+                    <ul class="mb-0">
+                        ${data.suggestions.next_steps.map(step => `<li>${step}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+            
+            document.getElementById('extractionResult').innerHTML = html;
+            
+            // 填充表单数据
+            fillFormWithExtractedData(extracted);
+        }
+
+        function fillFormWithExtractedData(extracted) {
+            // 填充基本信息
+            if (extracted.name) {
+                document.getElementById('lawyerName').value = extracted.name;
+                updateFieldStatus('lawyerName', 'extracted');
+            }
+            
+            if (extracted.gender) {
+                document.getElementById('gender').value = extracted.gender;
+                updateFieldStatus('gender', 'extracted');
+            }
+            
+            if (extracted.license_number) {
+                document.getElementById('licenseNumber').value = extracted.license_number;
+                updateFieldStatus('licenseNumber', 'extracted');
+            }
+            
+            if (extracted.id_card) {
+                document.getElementById('idCardNumber').value = extracted.id_card;
+                updateFieldStatus('idCardNumber', 'extracted');
+            }
+            
+            if (extracted.authority) {
+                document.getElementById('licenseAuthority').value = extracted.authority;
+                updateFieldStatus('licenseAuthority', 'extracted');
+            }
+            
+            if (extracted.issue_date) {
+                document.getElementById('issueDate').value = extracted.issue_date;
+                updateFieldStatus('issueDate', 'extracted');
+                calculateYearsOfPractice();
+            }
+            
+            if (extracted.law_firm) {
+                document.getElementById('lawFirm').value = extracted.law_firm;
+                updateFieldStatus('lawFirm', 'extracted');
+            }
+            
+            // 显示置信度
+            const confidence = extractedData.extraction_result.confidence_score;
+            document.getElementById('confidenceBadge').className = `confidence-badge ${getConfidenceClass(confidence)}`;
+            document.getElementById('confidenceBadge').textContent = getConfidenceText(confidence);
+            document.getElementById('confidenceScore').textContent = `${confidence} 分`;
+        }
+
+        function getConfidenceClass(score) {
+            if (score >= 80) return 'confidence-high';
+            if (score >= 60) return 'confidence-medium';
+            return 'confidence-low';
+        }
+
+        function getConfidenceText(score) {
+            if (score >= 80) return '高';
+            if (score >= 60) return '中';
+            return '低';
+        }
+
+        function updateFieldStatus(fieldId, status = 'manual') {
+            const statusElement = document.getElementById(fieldId.replace(/([A-Z])/g, '$1').toLowerCase() + 'Status');
+            if (statusElement) {
+                if (status === 'extracted') {
+                    statusElement.innerHTML = '<i class="fas fa-robot field-extracted"></i> AI识别';
+                    statusElement.className = 'field-status field-extracted';
+                } else {
+                    statusElement.innerHTML = '<i class="fas fa-user field-valid"></i> 手动输入';
+                    statusElement.className = 'field-status field-valid';
+                }
+            }
+        }
+
+        function calculateYearsOfPractice() {
+            const issueDate = document.getElementById('issueDate').value;
+            if (issueDate) {
+                const issue = new Date(issueDate);
+                const now = new Date();
+                const years = Math.floor((now - issue) / (365.25 * 24 * 60 * 60 * 1000));
+                document.getElementById('yearsOfPractice').value = Math.max(0, years);
+            }
+        }
+
+        async function submitCertification() {
+            // 验证必填字段
+            const requiredFields = ['lawyerName', 'licenseNumber', 'licenseAuthority', 'issueDate', 'lawFirm'];
+            let isValid = true;
+            
+            for (const fieldId of requiredFields) {
+                const field = document.getElementById(fieldId);
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            }
+            
+            if (!isValid) {
+                alert('请填写所有必填字段');
+                return;
+            }
+            
+            // 收集执业领域
+            const practiceAreas = [];
+            for (let i = 1; i <= 9; i++) {
+                const checkbox = document.getElementById(`area${i}`);
+                if (checkbox.checked) {
+                    practiceAreas.push(checkbox.value);
+                }
+            }
+            
+            // 构建提交数据
+            const certificationData = {
+                user_id: 'current_user_id', // 实际应用中从登录状态获取
+                extracted_info: {
+                    name: document.getElementById('lawyerName').value,
+                    gender: document.getElementById('gender').value,
+                    license_number: document.getElementById('licenseNumber').value,
+                    id_card: document.getElementById('idCardNumber').value,
+                    authority: document.getElementById('licenseAuthority').value,
+                    issue_date: document.getElementById('issueDate').value,
+                    law_firm: document.getElementById('lawFirm').value
+                },
+                additional_info: {
+                    practice_areas: practiceAreas,
+                    confidence_score: extractedData ? extractedData.extraction_result.confidence_score : 0,
+                    years_of_practice: parseInt(document.getElementById('yearsOfPractice').value) || 0
+                }
+            };
+            
+            try {
+                const response = await fetch('/api/v1/lawyer-verification/submit-certification', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(certificationData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    goToStep(4);
+                } else {
+                    alert('提交认证申请失败：' + result.message);
+                }
+                
+            } catch (error) {
+                console.error('提交认证申请错误:', error);
+                alert('提交过程中发生错误，请重试');
+            }
+        }
+
+        function goToStep(step) {
+            // 隐藏所有步骤
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`section${i}`).classList.remove('active');
+                document.getElementById(`step${i}`).classList.remove('active', 'completed');
+            }
+            
+            // 显示当前步骤
+            document.getElementById(`section${step}`).classList.add('active');
+            document.getElementById(`step${step}`).classList.add('active');
+            
+            // 标记已完成的步骤
+            for (let i = 1; i < step; i++) {
+                document.getElementById(`step${i}`).classList.add('completed');
+            }
+            
+            currentStep = step;
+        }
+    </script>
+</body>
+</html> 

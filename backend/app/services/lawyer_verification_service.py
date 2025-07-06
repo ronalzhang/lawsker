@@ -1,6 +1,7 @@
 import re
 import requests
-from datetime import datetime
+import uuid
+from datetime import datetime, date
 from typing import Dict, Any, Optional
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -272,4 +273,49 @@ class LawyerVerificationService:
                 '确认律师姓名与证件一致',
                 '联系客服获取人工审核',
                 '准备相关证明材料'
-            ] 
+            ]
+    
+    def create_lawyer_qualification(self, user_id: str, extracted_info: Dict[str, Any], additional_info: Dict[str, Any]) -> Dict[str, Any]:
+        """创建律师资质记录"""
+        try:
+            # 解析发证日期
+            license_issued_date = None
+            if 'issue_date' in extracted_info and extracted_info['issue_date']:
+                try:
+                    license_issued_date = datetime.strptime(extracted_info['issue_date'], '%Y-%m-%d').date()
+                except ValueError:
+                    pass
+            
+            # 计算执业年限
+            years_of_practice = 0
+            if license_issued_date:
+                years_of_practice = (date.today() - license_issued_date).days // 365
+            
+            # 构建资质数据
+            qualification_data = {
+                'id': uuid.uuid4(),
+                'user_id': uuid.UUID(user_id),
+                'lawyer_name': extracted_info.get('name', ''),
+                'gender': extracted_info.get('gender', ''),
+                'id_card_number': extracted_info.get('id_card', ''),
+                'license_number': extracted_info.get('license_number', ''),
+                'license_authority': extracted_info.get('authority', ''),
+                'license_issued_date': license_issued_date,
+                'law_firm_name': extracted_info.get('law_firm', ''),
+                'years_of_practice': years_of_practice,
+                'ai_verification_score': additional_info.get('confidence_score', 0),
+                'ai_extraction_result': extracted_info,
+                'practice_areas': additional_info.get('practice_areas', []),
+                'specializations': additional_info.get('specializations', []),
+                'license_image_url': additional_info.get('license_image_url', ''),
+                'license_image_metadata': additional_info.get('license_image_metadata', {}),
+                'qualification_status': 'submitted'  # 提交状态
+            }
+            
+            return qualification_data
+            
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"创建律师资质记录失败: {str(e)}"
+            ) 
