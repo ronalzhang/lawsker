@@ -398,6 +398,71 @@ class AIDocumentService:
         
         return "\n   ".join(plans)
 
+    def _get_legal_basis_by_type(self, debt_type: str, amount: float) -> str:
+        """根据债务类型和金额获取法律依据"""
+        legal_basis = {
+            "loan": "《民法典》第六百七十一条（借款合同）、第六百七十六条（还款义务）",
+            "contract": "《民法典》第五百七十七条（违约责任）、第五百八十四条（损失赔偿）",
+            "service": "《民法典》第五百零九条（合同履行）、第五百七十八条（预期违约）",
+            "rent": "《民法典》第七百二十一条（租金支付）、第七百二十二条（逾期责任）",
+            "default": "《民法典》第一百一十八条（债权保护）、第一百一十九条（债务履行）"
+        }
+        
+        base_law = legal_basis.get(debt_type, legal_basis["default"])
+        
+        # 大额债务补充相关法条
+        if amount >= 100000:
+            base_law += "、《民事诉讼法》第二百三十六条（强制执行）"
+        
+        return base_law
+
+    def _get_jurisdiction_info(self, debtor_location: Optional[str] = None) -> Dict[str, str]:
+        """获取管辖法院信息"""
+        if not debtor_location:
+            return {
+                "court": "有管辖权的人民法院",
+                "procedure": "根据《民事诉讼法》相关规定"
+            }
+        
+        # 简化的地域匹配逻辑
+        location_mapping = {
+            "北京": "北京市人民法院",
+            "上海": "上海市人民法院", 
+            "广州": "广州市人民法院",
+            "深圳": "深圳市人民法院",
+            "杭州": "杭州市人民法院",
+            "南京": "南京市人民法院"
+        }
+        
+        court = location_mapping.get(debtor_location, f"{debtor_location}人民法院")
+        
+        return {
+            "court": court,
+            "procedure": "根据《民事诉讼法》第二十一条（一般地域管辖）规定"
+        }
+
+    def _get_tone_prompt_enhancement(self, tone: str) -> Dict[str, str]:
+        """获取语气增强提示"""
+        tone_enhancements = {
+            "friendly_reminder": {
+                "style": "采用温和友善的语气，强调合作解决问题的态度",
+                "phrases": "建议使用'希望'、'请您'、'我们理解'等词汇",
+                "approach": "以协商和理解为主，避免过于强硬的表述"
+            },
+            "formal_notice": {
+                "style": "使用正式严肃的法律语言，保持专业性和权威性",
+                "phrases": "使用'特此通知'、'依法要求'、'法律责任'等正式用词",
+                "approach": "条理清晰，逻辑严密，体现法律文书的严肃性"
+            },
+            "stern_warning": {
+                "style": "采用严厉警告的语气，强调法律后果的严重性",
+                "phrases": "使用'严正警告'、'立即停止'、'承担法律后果'等强硬用词",
+                "approach": "明确指出违法性质，强调不合作的严重后果"
+            }
+        }
+        
+        return tone_enhancements.get(tone, tone_enhancements["formal_notice"])
+
     def _get_collection_letter_prompt(self, case_info: Dict[str, Any], tone: str, additional_requirements: str) -> str:
         """催收律师函提示词 - 专业优化版本"""
         tone_mapping = {
@@ -411,6 +476,16 @@ class AIDocumentService:
         
         # 根据债务金额智能推荐分期方案
         installment_plan = self._generate_installment_plan(debt_amount)
+        
+        # 获取法律依据
+        debt_type = case_info.get('debt_type', 'default')
+        legal_basis = self._get_legal_basis_by_type(debt_type, debt_amount)
+        
+        # 获取管辖信息
+        jurisdiction = self._get_jurisdiction_info(case_info.get('debtor_location'))
+        
+        # 获取语气增强提示
+        tone_enhancement = self._get_tone_prompt_enhancement(tone)
         
         return f"""
 你是一位资深执业律师，专精债务催收和分期还款协商。请根据以下信息生成一份专业、有效、符合法律规范的催收律师函。
@@ -426,6 +501,13 @@ class AIDocumentService:
 逾期天数：{case_info.get('overdue_days', '')}天
 
 【语气要求】：{tone_desc}
+【语气指导】：{tone_enhancement['style']}
+【用词建议】：{tone_enhancement['phrases']}
+【表达方式】：{tone_enhancement['approach']}
+
+【法律依据】：{legal_basis}
+【管辖法院】：{jurisdiction['court']}
+【程序依据】：{jurisdiction['procedure']}
 
 【核心要求】
 1. 必须提供3-4种分期还款方案供债务人选择：

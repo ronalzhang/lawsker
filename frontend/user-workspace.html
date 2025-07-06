@@ -762,7 +762,26 @@
                     
                     <div class="form-group">
                         <label class="form-label">预期律师费（元）</label>
-                        <input type="number" class="form-input" id="expectedLawyerFee" placeholder="请输入整数金额，如：500" min="1" step="1" required>
+                        <div class="fee-input-container" style="position: relative;">
+                            <input type="number" class="form-input" id="expectedLawyerFee" placeholder="请输入整数金额，如：500" min="1" step="1" required 
+                                   oninput="updateFeePreview(this.value)" onchange="updateFeePreview(this.value)">
+                            
+                            <!-- 快捷金额选择 -->
+                            <div class="fee-suggestions" style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+                                <button type="button" class="fee-btn" onclick="setFee(300)" style="padding: 4px 12px; border: 1px solid var(--glass-border); border-radius: 6px; background: rgba(255,255,255,0.05); color: var(--text-primary); font-size: 12px; cursor: pointer;">¥300</button>
+                                <button type="button" class="fee-btn" onclick="setFee(500)" style="padding: 4px 12px; border: 1px solid var(--glass-border); border-radius: 6px; background: rgba(255,255,255,0.05); color: var(--text-primary); font-size: 12px; cursor: pointer;">¥500</button>
+                                <button type="button" class="fee-btn" onclick="setFee(800)" style="padding: 4px 12px; border: 1px solid var(--glass-border); border-radius: 6px; background: rgba(255,255,255,0.05); color: var(--text-primary); font-size: 12px; cursor: pointer;">¥800</button>
+                                <button type="button" class="fee-btn" onclick="setFee(1000)" style="padding: 4px 12px; border: 1px solid var(--glass-border); border-radius: 6px; background: rgba(255,255,255,0.05); color: var(--text-primary); font-size: 12px; cursor: pointer;">¥1000</button>
+                                <button type="button" class="fee-btn" onclick="setFee(1500)" style="padding: 4px 12px; border: 1px solid var(--glass-border); border-radius: 6px; background: rgba(255,255,255,0.05); color: var(--text-primary); font-size: 12px; cursor: pointer;">¥1500</button>
+                                <button type="button" class="fee-btn" onclick="setFee(2000)" style="padding: 4px 12px; border: 1px solid var(--glass-border); border-radius: 6px; background: rgba(255,255,255,0.05); color: var(--text-primary); font-size: 12px; cursor: pointer;">¥2000</button>
+                            </div>
+                            
+                            <!-- 实时预览 -->
+                            <div class="fee-preview" id="feePreview" style="margin-top: 8px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid var(--glass-border); display: none;">
+                                <div class="preview-text" style="color: var(--text-primary); font-weight: 600; margin-bottom: 4px;"></div>
+                                <div class="market-hint" style="color: var(--text-secondary); font-size: 12px;"></div>
+                            </div>
+                        </div>
                         <div style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;">
                             💡 只能输入大于0的整数，律师主要根据此金额来决定是否接单
                         </div>
@@ -1533,12 +1552,137 @@
             }
         }
 
+        // 律师费快捷设置函数
+        function setFee(amount) {
+            const feeInput = document.getElementById('expectedLawyerFee');
+            feeInput.value = amount;
+            updateFeePreview(amount);
+            
+            // 添加选中效果
+            document.querySelectorAll('.fee-btn').forEach(btn => {
+                btn.style.background = 'rgba(255,255,255,0.05)';
+                btn.style.borderColor = 'var(--glass-border)';
+            });
+            
+            event.target.style.background = 'rgba(74, 144, 226, 0.2)';
+            event.target.style.borderColor = '#4a90e2';
+        }
+
+        // 律师费实时预览更新
+        function updateFeePreview(amount) {
+            const preview = document.getElementById('feePreview');
+            const previewText = preview.querySelector('.preview-text');
+            const marketHint = preview.querySelector('.market-hint');
+            
+            if (!amount || amount <= 0) {
+                preview.style.display = 'none';
+                return;
+            }
+            
+            const numAmount = parseFloat(amount);
+            
+            // 显示格式化金额
+            previewText.textContent = `显示金额：¥${numAmount.toFixed(2)}`;
+            
+            // 根据金额提供市场建议
+            const marketAdvice = getMarketHint(numAmount);
+            marketHint.textContent = marketAdvice;
+            
+            preview.style.display = 'block';
+        }
+
+        // 获取市场价格建议
+        function getMarketHint(amount) {
+            if (amount < 300) {
+                return '💡 金额偏低，可能难以吸引优质律师';
+            } else if (amount >= 300 && amount <= 500) {
+                return '✅ 适合简单法律咨询和文书服务';
+            } else if (amount >= 500 && amount <= 1000) {
+                return '✅ 适合一般债务催收和律师函服务';
+            } else if (amount >= 1000 && amount <= 2000) {
+                return '✅ 适合复杂案件和专业法律服务';
+            } else if (amount >= 2000 && amount <= 5000) {
+                return '✅ 适合重大案件和长期法律服务';
+            } else {
+                return '💰 高端服务，适合复杂重大案件';
+            }
+        }
+
+        // 律师费市场价格获取（模拟API调用）
+        async function getMarketRates(caseType, debtAmount) {
+            // 这里可以调用真实的API获取市场价格
+            const marketRates = {
+                '债务催收': {
+                    small: { min: 300, max: 800, range: '0-1万' },
+                    medium: { min: 800, max: 2000, range: '1-5万' },
+                    large: { min: 2000, max: 5000, range: '5-20万' },
+                    xlarge: { min: 5000, max: 15000, range: '20万以上' }
+                },
+                '律师函': {
+                    small: { min: 200, max: 500, range: '0-5万' },
+                    medium: { min: 500, max: 1200, range: '5-20万' },
+                    large: { min: 1200, max: 3000, range: '20万以上' }
+                },
+                '合同审查': {
+                    small: { min: 500, max: 1500, range: '0-10万' },
+                    medium: { min: 1500, max: 4000, range: '10万以上' }
+                },
+                '法律咨询': {
+                    all: { min: 300, max: 1000, range: '不限金额' }
+                }
+            };
+            
+            return marketRates[caseType] || marketRates['法律咨询'];
+        }
+
+        // 根据任务类型自动推荐律师费
+        function autoSuggestFee() {
+            const taskType = document.getElementById('taskType').value;
+            const debtAmount = parseFloat(document.getElementById('debtAmount')?.value || 0);
+            
+            if (!taskType) return;
+            
+            // 根据任务类型和债务金额推荐律师费
+            let suggestedFee = 500; // 默认值
+            
+            switch(taskType) {
+                case '债务催收':
+                    if (debtAmount <= 10000) suggestedFee = 500;
+                    else if (debtAmount <= 50000) suggestedFee = 1200;
+                    else if (debtAmount <= 200000) suggestedFee = 3000;
+                    else suggestedFee = 8000;
+                    break;
+                case '律师函':
+                    if (debtAmount <= 50000) suggestedFee = 300;
+                    else if (debtAmount <= 200000) suggestedFee = 800;
+                    else suggestedFee = 1500;
+                    break;
+                case '合同审查':
+                    suggestedFee = 800;
+                    break;
+                case '法律咨询':
+                    suggestedFee = 400;
+                    break;
+                default:
+                    suggestedFee = 500;
+            }
+            
+            // 自动设置推荐金额
+            setFee(suggestedFee);
+        }
+
         // 页面初始化
         document.addEventListener('DOMContentLoaded', async function() {
             await loadStats();
             await loadTasks();
             await loadSalesWithdrawalStats();
             updateUserLevel();
+            
+            // 监听任务类型变化，自动推荐律师费
+            const taskTypeSelect = document.getElementById('taskType');
+            if (taskTypeSelect) {
+                taskTypeSelect.addEventListener('change', autoSuggestFee);
+            }
         });
     </script>
 </body>
