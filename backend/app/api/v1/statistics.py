@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
 
 from app.core.database import get_db
-from app.core.auth import get_current_user
+from app.core.deps import get_current_user
 from app.models.user import User
 from app.models.case import Case, CaseStatus
 from app.models.finance import Transaction, CommissionSplit
@@ -25,20 +25,20 @@ router = APIRouter()
 @router.get("/dashboard")
 async def get_dashboard_stats(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: Dict[str, Any] = Depends(get_current_user)
 ) -> Dict[str, Any]:
     """获取仪表盘统计数据"""
     
-    user_role = current_user.role
-    user_id = current_user.id
+    user_role = current_user.get("role")
+    user_id = UUID(current_user.get("id")) if current_user.get("id") else None
     
     if user_role == "admin":
         return await _get_admin_dashboard_stats(db)
-    elif user_role == "lawyer":
+    elif user_role == "lawyer" and user_id:
         return await _get_lawyer_dashboard_stats(db, user_id)
-    elif user_role == "sales":
+    elif user_role == "sales" and user_id:
         return await _get_sales_dashboard_stats(db, user_id)
-    elif user_role == "institution":
+    elif user_role == "institution" and user_id:
         return await _get_institution_dashboard_stats(db, user_id)
     else:
         return await _get_general_dashboard_stats(db)
@@ -296,15 +296,17 @@ async def _get_general_dashboard_stats(db: AsyncSession) -> Dict[str, Any]:
 async def get_recent_activities(
     limit: int = Query(10, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: Dict[str, Any] = Depends(get_current_user)
 ) -> List[Dict[str, Any]]:
     """获取最近活动"""
     
     # 管理员可以看到所有活动，其他用户只能看到自己的活动
     query = select(UserActivityLog).order_by(UserActivityLog.created_at.desc()).limit(limit)
     
-    if current_user.role != "admin":
-        query = query.where(UserActivityLog.user_id == current_user.id)
+    if current_user.get("role") != "admin":
+        user_id = UUID(current_user.get("id")) if current_user.get("id") else None
+        if user_id:
+            query = query.where(UserActivityLog.user_id == user_id)
     
     result = await db.execute(query)
     activities = result.scalars().all()
@@ -329,12 +331,16 @@ async def log_user_activity(
     resource_id: Optional[UUID] = None,
     details: Optional[Dict[str, Any]] = None,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: Dict[str, Any] = Depends(get_current_user)
 ) -> Dict[str, Any]:
     """记录用户活动"""
     
+    user_id = UUID(current_user.get("id")) if current_user.get("id") else None
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Invalid user ID")
+    
     activity = UserActivityLog(
-        user_id=current_user.id,
+        user_id=user_id,
         action=action,
         resource_type=resource_type,
         resource_id=resource_id,
