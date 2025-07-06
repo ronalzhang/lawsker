@@ -2,876 +2,932 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f1424">
     <title>机构管理端 - Lawsker 律思客</title>
     <style>
         :root {
-            --primary-color: #7c3aed;
-            --secondary-color: #059669;
-            --danger-color: #dc2626;
-            --warning-color: #f59e0b;
-            --success-color: #10b981;
-            --bg-primary: #f8fafc;
-            --bg-card: #ffffff;
-            --text-primary: #1f2937;
-            --text-secondary: #6b7280;
-            --border-color: #e5e7eb;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --glass-bg: rgba(22, 28, 48, 0.75);
+            --glass-border: rgba(122, 160, 255, 0.25);
+            --glass-shadow: rgba(0, 0, 0, 0.3);
+            --blur-radius: 25px;
+            --border-radius: 20px;
+            --text-primary: #f0f4ff;
+            --text-secondary: #a8b2d1;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-success: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            --gradient-warning: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            --gradient-danger: linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%);
+            --gradient-info: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            --app-padding: 16px;
+            --safe-area-top: env(safe-area-inset-top, 0px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
-            font-family: 'Microsoft YaHei', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', sans-serif;
-            background: var(--bg-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f1424 0%, #1a1d35 50%, #0f1424 100%);
             color: var(--text-primary);
-            line-height: 1.6;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding-top: var(--safe-area-top);
+            padding-bottom: var(--safe-area-bottom);
         }
 
-        .navbar {
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border-color);
-            padding: 1rem 0;
-            position: sticky;
+        /* 背景效果 */
+        body::before {
+            content: '';
+            position: fixed;
             top: 0;
-            z-index: 1000;
-            box-shadow: var(--shadow);
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(122, 160, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(122, 160, 255, 0.08) 0%, transparent 50%);
+            z-index: -1;
         }
 
-        .nav-container {
+        /* 导航栏 */
+        .navbar {
+            position: fixed;
+            top: var(--safe-area-top);
+            left: 0;
+            right: 0;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-radius));
+            -webkit-backdrop-filter: blur(var(--blur-radius));
+            border-bottom: 1px solid var(--glass-border);
+            padding: 16px var(--app-padding);
+            z-index: 100;
+            box-shadow: 0 8px 32px var(--glass-shadow);
+        }
+
+        .navbar-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             max-width: 1200px;
             margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 2rem;
         }
 
         .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-
-        .nav-links {
+            font-size: 20px;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             display: flex;
-            gap: 2rem;
+            align-items: center;
+            gap: 8px;
         }
 
-        .nav-links a {
-            text-decoration: none;
+        .logo::before {
+            content: '🏢';
+            font-size: 18px;
+            -webkit-text-fill-color: initial;
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .nav-link {
             color: var(--text-secondary);
+            text-decoration: none;
             font-weight: 500;
-            transition: color 0.3s;
+            transition: all 0.3s ease;
+            padding: 8px 0;
+            position: relative;
         }
 
-        .nav-links a:hover,
-        .nav-links a.active {
-            color: var(--primary-color);
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--gradient-primary);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--text-primary);
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
         }
 
         .user-info {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 12px;
         }
 
         .user-avatar {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            background: var(--primary-color);
+            background: var(--gradient-primary);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 14px;
         }
 
+        .logout-btn {
+            background: var(--gradient-danger);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(253, 121, 168, 0.4);
+        }
+
+        /* 主内容区 */
         .main-container {
+            margin-top: calc(var(--safe-area-top) + 70px);
+            padding: 24px var(--app-padding) 40px;
             max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .dashboard-header {
-            margin-bottom: 2rem;
+        /* 页面头部 */
+        .page-header {
+            margin-bottom: 32px;
         }
 
-        .dashboard-title {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            color: var(--text-primary);
+        .page-title {
+            font-size: clamp(24px, 6vw, 32px);
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
         }
 
-        .dashboard-subtitle {
+        .page-subtitle {
             color: var(--text-secondary);
+            font-size: 14px;
         }
 
+        /* 统计卡片网格 */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            gap: 20px;
+            margin-bottom: 32px;
         }
 
         .stat-card {
-            background: var(--bg-card);
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            transition: transform 0.3s;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-radius));
+            -webkit-backdrop-filter: blur(var(--blur-radius));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: 0 8px 32px var(--glass-shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
         }
 
         .stat-card:hover {
-            transform: translateY(-2px);
+            transform: translateY(-4px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .stat-card:hover::before {
+            transform: scaleX(1);
         }
 
         .stat-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 16px;
         }
 
         .stat-icon {
             width: 48px;
             height: 48px;
-            border-radius: 10px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 20px;
             color: white;
         }
 
+        .stat-icon.success {
+            background: var(--gradient-success);
+        }
+
+        .stat-icon.primary {
+            background: var(--gradient-primary);
+        }
+
+        .stat-icon.warning {
+            background: var(--gradient-warning);
+            color: #78350f;
+        }
+
+        .stat-icon.danger {
+            background: var(--gradient-danger);
+        }
+
+        .stat-icon.info {
+            background: var(--gradient-info);
+            color: #0f766e;
+        }
+
         .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
+            font-size: 28px;
+            font-weight: 700;
             color: var(--text-primary);
+            margin-bottom: 4px;
         }
 
         .stat-label {
             color: var(--text-secondary);
-            font-size: 0.9rem;
+            font-size: 14px;
+            margin-bottom: 8px;
         }
 
         .stat-trend {
-            font-size: 0.8rem;
+            font-size: 12px;
             font-weight: 500;
+            padding: 4px 8px;
+            border-radius: 8px;
+            display: inline-block;
         }
 
-        .stat-trend.up {
-            color: var(--success-color);
+        .trend-up {
+            background: rgba(132, 250, 176, 0.2);
+            color: #84fab0;
         }
 
+        .trend-down {
+            background: rgba(253, 121, 168, 0.2);
+            color: #fd79a8;
+        }
+
+        /* 内容网格 */
         .content-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
         }
 
-        .card {
-            background: var(--bg-card);
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            overflow: hidden;
+        .content-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-radius));
+            -webkit-backdrop-filter: blur(var(--blur-radius));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: 0 8px 32px var(--glass-shadow);
+            transition: all 0.3s ease;
         }
 
-        .card-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
+        .content-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+        }
+
+        .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 20px;
         }
 
-        .card-title {
-            font-size: 1.25rem;
+        .section-title {
+            font-size: 18px;
             font-weight: 600;
             color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .card-body {
-            padding: 1.5rem;
+        .section-actions {
+            display: flex;
+            gap: 8px;
         }
 
-        .case-list {
-            max-height: 400px;
-            overflow-y: auto;
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
         }
 
-        .case-item {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-            transition: background-color 0.3s;
+        .action-btn:hover {
+            background: var(--gradient-primary);
+            color: white;
         }
 
-        .case-item:hover {
-            background: var(--bg-primary);
+        .action-btn.primary {
+            background: var(--gradient-primary);
+            color: white;
         }
 
-        .case-item:last-child {
+        /* 数据表格 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-table th {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td {
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .data-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* 状态标签 */
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-active {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .status-suspended {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        /* 侧边栏部件 */
+        .sidebar-widget {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-radius));
+            -webkit-backdrop-filter: blur(var(--blur-radius));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: 0 8px 32px var(--glass-shadow);
+            margin-bottom: 20px;
+        }
+
+        .widget-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .widget-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .widget-item:last-child {
             border-bottom: none;
         }
 
-        .case-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .case-title {
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .case-status {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-
-        .case-status.pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .case-status.processing {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .case-status.completed {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .case-details {
-            display: flex;
-            justify-content: space-between;
+        .widget-label {
             color: var(--text-secondary);
-            font-size: 0.9rem;
+            font-size: 14px;
         }
 
-        .case-amount {
-            font-weight: 600;
-            color: var(--primary-color);
-        }
-
-        .btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 6px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-primary {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #6d28d9;
-        }
-
-        .btn-secondary {
-            background: var(--bg-primary);
+        .widget-value {
             color: var(--text-primary);
-            border: 1px solid var(--border-color);
+            font-weight: 600;
         }
 
-        .btn-secondary:hover {
-            background: #e5e7eb;
-        }
-
-        .btn-success {
-            background: var(--success-color);
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #059669;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .batch-upload {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            color: white;
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            text-align: center;
-            box-shadow: var(--shadow);
-        }
-
-        .upload-title {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .upload-desc {
-            margin-bottom: 1.5rem;
-            opacity: 0.9;
-        }
-
-        .upload-area {
+        .progress-bar {
+            width: 100%;
+            height: 8px;
             background: rgba(255, 255, 255, 0.1);
-            border: 2px dashed rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-            padding: 2rem;
-            margin-bottom: 1rem;
-            cursor: pointer;
-            transition: all 0.3s;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
         }
 
-        .upload-area:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.5);
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            transition: width 0.3s ease;
         }
 
-        .upload-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        .upload-text {
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .upload-subtext {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-
-        .file-input {
-            display: none;
-        }
-
-        .logout-btn {
-            background: var(--danger-color);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background-color 0.3s;
-        }
-
-        .logout-btn:hover {
-            background: #b91c1c;
-        }
-
-        .process-flow {
+        /* 快速操作按钮 */
+        .quick-actions {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
         }
 
-        .flow-step {
-            background: var(--bg-card);
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: var(--shadow);
+        .quick-action-btn {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-radius));
+            -webkit-backdrop-filter: blur(var(--blur-radius));
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 16px;
+            color: var(--text-primary);
+            text-decoration: none;
             text-align: center;
-            position: relative;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
         }
 
-        .flow-step::after {
-            content: '→';
-            position: absolute;
-            right: -1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 1.5rem;
-            color: var(--text-secondary);
+        .quick-action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         }
 
-        .flow-step:last-child::after {
-            display: none;
+        .quick-action-icon {
+            font-size: 20px;
         }
 
-        .flow-icon {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
-
-        .flow-title {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .flow-desc {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
+        /* 响应式设计 */
         @media (max-width: 768px) {
-            .nav-container {
+            .navbar-content {
                 flex-direction: column;
-                gap: 1rem;
+                gap: 16px;
             }
-
-            .nav-links {
-                gap: 1rem;
+            
+            .nav-menu {
+                flex-wrap: wrap;
+                gap: 16px;
             }
-
-            .main-container {
-                padding: 1rem;
-            }
-
+            
             .stats-grid {
                 grid-template-columns: 1fr;
+                gap: 16px;
             }
-
+            
             .content-grid {
                 grid-template-columns: 1fr;
+                gap: 16px;
             }
+            
+            .data-table {
+                font-size: 12px;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 8px 12px;
+            }
+        }
 
-            .process-flow {
+        @media (max-width: 480px) {
+            .main-container {
+                padding: 16px 12px 32px;
+            }
+            
+            .content-section {
+                padding: 16px;
+            }
+            
+            .quick-actions {
                 grid-template-columns: 1fr;
             }
+        }
 
-            .flow-step::after {
-                content: '↓';
-                right: 50%;
-                bottom: -1rem;
-                top: auto;
-                transform: translateX(50%);
-            }
+        /* 性能优化 */
+        .stat-card,
+        .content-section,
+        .quick-action-btn {
+            will-change: transform;
         }
     </style>
 </head>
 <body>
+    <!-- 导航栏 -->
     <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">Lawsker 律思客</div>
-            <div class="nav-links">
-                <a href="#" class="active">工作台</a>
-                <a href="#batch">批量上传</a>
-                <a href="#cases">案件管理</a>
-                <a href="#reports">数据报告</a>
-            </div>
-            <div class="user-info">
-                <span id="userName">机构管理员</span>
-                <div class="user-avatar" id="userAvatar">机</div>
-                <button class="logout-btn" onclick="logout()">退出</button>
+        <div class="navbar-content">
+            <div class="logo">机构管理端</div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link">仪表盘</a>
+                <a href="institution-workspace.html" class="nav-link active">机构管理</a>
+                <a href="admin-config.html" class="nav-link">系统配置</a>
+                <div class="user-info">
+                    <span class="user-name" id="userName">管理员</span>
+                    <div class="user-avatar" id="userAvatar">管</div>
+                    <button class="logout-btn" onclick="logout()">退出</button>
+                </div>
             </div>
         </div>
     </nav>
 
+    <!-- 主容器 -->
     <div class="main-container">
-        <div class="dashboard-header">
-            <h1 class="dashboard-title">机构管理端</h1>
-            <p class="dashboard-subtitle">批量上传债务数据、管理催收案件、追踪处理进度</p>
+        <!-- 页面标题 -->
+        <div class="page-header">
+            <h1 class="page-title">机构管理端</h1>
+            <p class="page-subtitle">律师事务所管理、业务监控、财务统计一体化平台</p>
         </div>
 
-        <div class="batch-upload">
-            <h3 class="upload-title">📊 批量债务数据上传</h3>
-            <p class="upload-desc">支持Excel、CSV格式，一次性上传多个债务案件</p>
-            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-                <div class="upload-icon">📁</div>
-                <div class="upload-text">点击选择文件或拖拽文件到此处</div>
-                <div class="upload-subtext">支持 .xlsx, .csv 格式，最大10MB</div>
-            </div>
-            <input type="file" id="fileInput" class="file-input" accept=".xlsx,.csv" onchange="handleFileUpload(event)">
-            <div class="action-buttons">
-                <button class="btn btn-primary" onclick="downloadTemplate()">下载模板</button>
-                <button class="btn btn-secondary" onclick="viewUploadHistory()">上传历史</button>
-            </div>
-        </div>
-
+        <!-- 统计卡片 -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-header">
-                    <div class="stat-icon" style="background: var(--primary-color);">📋</div>
-                    <div class="stat-trend up">↗ +28%</div>
+                    <div class="stat-icon success">👥</div>
                 </div>
-                <div class="stat-value" id="totalCases">1,250</div>
-                <div class="stat-label">总案件数</div>
+                <div class="stat-value">28</div>
+                <div class="stat-label">注册律师</div>
+                <div class="stat-trend trend-up">↗ +3 本月</div>
             </div>
-
+            
             <div class="stat-card">
                 <div class="stat-header">
-                    <div class="stat-icon" style="background: var(--secondary-color);">⏳</div>
-                    <div class="stat-trend up">↗ +12%</div>
+                    <div class="stat-icon primary">📊</div>
                 </div>
-                <div class="stat-value" id="processingCases">186</div>
-                <div class="stat-label">处理中</div>
+                <div class="stat-value">156</div>
+                <div class="stat-label">活跃案件</div>
+                <div class="stat-trend trend-up">↗ +12 本周</div>
             </div>
-
+            
             <div class="stat-card">
                 <div class="stat-header">
-                    <div class="stat-icon" style="background: var(--success-color);">✅</div>
-                    <div class="stat-trend up">↗ +35%</div>
+                    <div class="stat-icon warning">💰</div>
                 </div>
-                <div class="stat-value" id="completedCases">890</div>
-                <div class="stat-label">已完成</div>
+                <div class="stat-value">¥285,600</div>
+                <div class="stat-label">本月收入</div>
+                <div class="stat-trend trend-up">↗ +25.8%</div>
             </div>
-
+            
             <div class="stat-card">
                 <div class="stat-header">
-                    <div class="stat-icon" style="background: var(--warning-color);">💰</div>
-                    <div class="stat-trend up">↗ +45%</div>
+                    <div class="stat-icon info">📈</div>
                 </div>
-                <div class="stat-value" id="recoveredAmount">¥4.2M</div>
-                <div class="stat-label">已催收金额</div>
+                <div class="stat-value">92%</div>
+                <div class="stat-label">业务完成率</div>
+                <div class="stat-trend trend-up">↗ +3.2%</div>
             </div>
         </div>
 
-        <div class="process-flow">
-            <div class="flow-step">
-                <div class="flow-icon">📁</div>
-                <div class="flow-title">数据上传</div>
-                <div class="flow-desc">批量上传债务数据文件</div>
-            </div>
-            <div class="flow-step">
-                <div class="flow-icon">🔍</div>
-                <div class="flow-title">数据验证</div>
-                <div class="flow-desc">系统自动验证数据格式</div>
-            </div>
-            <div class="flow-step">
-                <div class="flow-icon">👥</div>
-                <div class="flow-title">分配律师</div>
-                <div class="flow-desc">智能匹配合适的律师</div>
-            </div>
-            <div class="flow-step">
-                <div class="flow-icon">📧</div>
-                <div class="flow-title">催收执行</div>
-                <div class="flow-desc">律师执行催收任务</div>
-            </div>
-            <div class="flow-step">
-                <div class="flow-icon">📊</div>
-                <div class="flow-title">结果反馈</div>
-                <div class="flow-desc">生成详细处理报告</div>
-            </div>
-        </div>
-
+        <!-- 内容网格 -->
         <div class="content-grid">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">最近上传案件</h3>
-                    <button class="btn btn-primary" onclick="viewAllCases()">
-                        查看全部
-                    </button>
+            <!-- 律师管理 -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <span>👨‍⚖️</span>
+                        律师管理
+                    </h3>
+                    <div class="section-actions">
+                        <button class="action-btn">导出</button>
+                        <button class="action-btn primary">新增律师</button>
+                    </div>
                 </div>
-                <div class="case-list" id="caseList">
-                    <!-- 案件列表将在这里动态生成 -->
-                </div>
+                
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>律师姓名</th>
+                            <th>执业证号</th>
+                            <th>专业领域</th>
+                            <th>案件数量</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>张三</td>
+                            <td>11010201810001</td>
+                            <td>债权债务</td>
+                            <td>15</td>
+                            <td><span class="status-badge status-active">正常</span></td>
+                            <td>
+                                <button class="action-btn">编辑</button>
+                                <button class="action-btn">查看</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>李四</td>
+                            <td>11010201810002</td>
+                            <td>合同纠纷</td>
+                            <td>22</td>
+                            <td><span class="status-badge status-active">正常</span></td>
+                            <td>
+                                <button class="action-btn">编辑</button>
+                                <button class="action-btn">查看</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>王五</td>
+                            <td>11010201810003</td>
+                            <td>公司法务</td>
+                            <td>8</td>
+                            <td><span class="status-badge status-pending">审核中</span></td>
+                            <td>
+                                <button class="action-btn">编辑</button>
+                                <button class="action-btn">查看</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>赵六</td>
+                            <td>11010201810004</td>
+                            <td>刑事辩护</td>
+                            <td>12</td>
+                            <td><span class="status-badge status-suspended">暂停</span></td>
+                            <td>
+                                <button class="action-btn">编辑</button>
+                                <button class="action-btn">查看</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">处理进度统计</h3>
-                    <button class="btn btn-secondary" onclick="exportReport()">
-                        导出报告
-                    </button>
+            <!-- 侧边栏 -->
+            <div>
+                <!-- 业务统计 -->
+                <div class="sidebar-widget">
+                    <h4 class="widget-title">
+                        <span>📊</span>
+                        业务统计
+                    </h4>
+                    <div class="widget-item">
+                        <span class="widget-label">今日新增案件</span>
+                        <span class="widget-value">8</span>
+                    </div>
+                    <div class="widget-item">
+                        <span class="widget-label">待处理案件</span>
+                        <span class="widget-value">23</span>
+                    </div>
+                    <div class="widget-item">
+                        <span class="widget-label">本月完成</span>
+                        <span class="widget-value">145</span>
+                    </div>
+                    <div class="widget-item">
+                        <span class="widget-label">客户满意度</span>
+                        <span class="widget-value">95%</span>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="progress-stats">
-                        <div class="progress-item">
-                            <div class="progress-label">等待分配 (174)</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 14%; background: #f59e0b;"></div>
-                            </div>
-                        </div>
-                        <div class="progress-item">
-                            <div class="progress-label">催收中 (186)</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 15%; background: #3b82f6;"></div>
-                            </div>
-                        </div>
-                        <div class="progress-item">
-                            <div class="progress-label">已完成 (890)</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 71%; background: #10b981;"></div>
-                            </div>
-                        </div>
+
+                <!-- 收入分析 -->
+                <div class="sidebar-widget">
+                    <h4 class="widget-title">
+                        <span>💰</span>
+                        收入分析
+                    </h4>
+                    <div class="widget-item">
+                        <span class="widget-label">平台收入</span>
+                        <span class="widget-value">¥142,800</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 65%"></div>
+                    </div>
+                    <div class="widget-item">
+                        <span class="widget-label">律师分成</span>
+                        <span class="widget-value">¥85,680</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 35%"></div>
+                    </div>
+                    <div class="widget-item">
+                        <span class="widget-label">销售分成</span>
+                        <span class="widget-value">¥57,120</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 25%"></div>
+                    </div>
+                </div>
+
+                <!-- 快速操作 -->
+                <div class="sidebar-widget">
+                    <h4 class="widget-title">
+                        <span>⚡</span>
+                        快速操作
+                    </h4>
+                    <div class="quick-actions">
+                        <a href="#" class="quick-action-btn">
+                            <div class="quick-action-icon">👤</div>
+                            <div>新增律师</div>
+                        </a>
+                        <a href="#" class="quick-action-btn">
+                            <div class="quick-action-icon">📊</div>
+                            <div>业务报表</div>
+                        </a>
+                        <a href="#" class="quick-action-btn">
+                            <div class="quick-action-icon">💳</div>
+                            <div>财务管理</div>
+                        </a>
+                        <a href="#" class="quick-action-btn">
+                            <div class="quick-action-icon">⚙️</div>
+                            <div>系统设置</div>
+                        </a>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- 案件管理 -->
+        <div class="content-section">
+            <div class="section-header">
+                <h3 class="section-title">
+                    <span>📋</span>
+                    案件管理
+                </h3>
+                <div class="section-actions">
+                    <button class="action-btn">筛选</button>
+                    <button class="action-btn">导出</button>
+                    <button class="action-btn primary">新建案件</button>
+                </div>
+            </div>
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>案件编号</th>
+                        <th>案件类型</th>
+                        <th>委托人</th>
+                        <th>承办律师</th>
+                        <th>案件金额</th>
+                        <th>状态</th>
+                        <th>创建时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>#LA2024001</td>
+                        <td>债务催收</td>
+                        <td>北京科技有限公司</td>
+                        <td>张三</td>
+                        <td>¥50,000</td>
+                        <td><span class="status-badge status-active">进行中</span></td>
+                        <td>2024-01-15</td>
+                        <td>
+                            <button class="action-btn">查看</button>
+                            <button class="action-btn">编辑</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>#LA2024002</td>
+                        <td>合同纠纷</td>
+                        <td>李四贸易公司</td>
+                        <td>李四</td>
+                        <td>¥120,000</td>
+                        <td><span class="status-badge status-pending">待处理</span></td>
+                        <td>2024-01-14</td>
+                        <td>
+                            <button class="action-btn">查看</button>
+                            <button class="action-btn">编辑</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>#LA2024003</td>
+                        <td>律师函</td>
+                        <td>王五</td>
+                        <td>王五</td>
+                        <td>¥30</td>
+                        <td><span class="status-badge status-active">已完成</span></td>
+                        <td>2024-01-13</td>
+                        <td>
+                            <button class="action-btn">查看</button>
+                            <button class="action-btn">编辑</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>#LA2024004</td>
+                        <td>公司法务</td>
+                        <td>赵六企业</td>
+                        <td>赵六</td>
+                        <td>¥80,000</td>
+                        <td><span class="status-badge status-suspended">暂停</span></td>
+                        <td>2024-01-12</td>
+                        <td>
+                            <button class="action-btn">查看</button>
+                            <button class="action-btn">编辑</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
     <script>
-        // 模拟案件数据
-        const mockCases = [
-            {
-                id: 1,
-                batchId: "BATCH001",
-                debtorName: "北京XX科技有限公司",
-                debtAmount: 150000,
-                overdueDays: 75,
-                status: "processing",
-                assignedLawyer: "张律师",
-                uploadDate: "2025-01-15"
-            },
-            {
-                id: 2,
-                batchId: "BATCH001",
-                debtorName: "上海XX贸易公司",
-                debtAmount: 89000,
-                overdueDays: 45,
-                status: "completed",
-                assignedLawyer: "李律师",
-                uploadDate: "2025-01-15"
-            },
-            {
-                id: 3,
-                batchId: "BATCH002",
-                debtorName: "深圳XX投资公司",
-                debtAmount: 200000,
-                overdueDays: 60,
-                status: "pending",
-                assignedLawyer: "待分配",
-                uploadDate: "2025-01-16"
-            },
-            {
-                id: 4,
-                batchId: "BATCH002",
-                debtorName: "广州XX制造公司",
-                debtAmount: 75000,
-                overdueDays: 30,
-                status: "processing",
-                assignedLawyer: "王律师",
-                uploadDate: "2025-01-16"
-            }
-        ];
-
-        // 初始化页面
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAuth();
-            loadCases();
-            loadUserInfo();
-            initProgressBars();
-        });
-
-        // 检查登录状态
-        function checkAuth() {
-            const token = localStorage.getItem('token');
-            const userRole = localStorage.getItem('userRole');
-            
-            if (!token || userRole !== 'institution') {
-                window.location.href = 'login.html';
-                return;
-            }
-        }
-
-        // 加载用户信息
-        function loadUserInfo() {
-            const username = localStorage.getItem('username');
-            if (username) {
-                document.getElementById('userName').textContent = username;
-                document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
-            }
-        }
-
-        // 加载案件列表
-        function loadCases() {
-            const caseList = document.getElementById('caseList');
-            caseList.innerHTML = '';
-
-            mockCases.forEach(caseItem => {
-                const caseElement = createCaseElement(caseItem);
-                caseList.appendChild(caseElement);
-            });
-        }
-
-        // 创建案件元素
-        function createCaseElement(caseItem) {
-            const caseElement = document.createElement('div');
-            caseElement.className = 'case-item';
-            caseElement.innerHTML = `
-                <div class="case-header">
-                    <div class="case-title">${caseItem.debtorName}</div>
-                    <div class="case-status ${caseItem.status}">
-                        ${getStatusText(caseItem.status)}
-                    </div>
-                </div>
-                <div class="case-details">
-                    <span>金额：<span class="case-amount">¥${caseItem.debtAmount.toLocaleString()}</span></span>
-                    <span>逾期：${caseItem.overdueDays}天</span>
-                </div>
-                <div class="case-details">
-                    <span>批次：${caseItem.batchId}</span>
-                    <span>律师：${caseItem.assignedLawyer}</span>
-                    <span>上传：${caseItem.uploadDate}</span>
-                </div>
-                <div class="action-buttons">
-                    <button class="btn btn-primary" onclick="viewCaseProgress(${caseItem.id})">查看进度</button>
-                    <button class="btn btn-secondary" onclick="viewCaseDetails(${caseItem.id})">查看详情</button>
-                </div>
-            `;
-            return caseElement;
-        }
-
-        // 获取状态文本
-        function getStatusText(status) {
-            const statusMap = {
-                'pending': '待分配',
-                'processing': '处理中',
-                'completed': '已完成'
-            };
-            return statusMap[status] || status;
-        }
-
-        // 初始化进度条
-        function initProgressBars() {
-            const progressItems = document.querySelectorAll('.progress-item');
-            progressItems.forEach(item => {
-                const progressBar = item.querySelector('.progress-fill');
-                const width = progressBar.style.width;
-                progressBar.style.width = '0%';
-                
-                setTimeout(() => {
-                    progressBar.style.width = width;
-                    progressBar.style.transition = 'width 1s ease-in-out';
-                }, 500);
-            });
-        }
-
-        // 处理文件上传
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const fileSize = (file.size / 1024 / 1024).toFixed(2);
-                const fileType = file.name.split('.').pop().toLowerCase();
-                
-                if (fileSize > 10) {
-                    alert('文件大小不能超过10MB！');
-                    return;
-                }
-                
-                if (!['xlsx', 'csv'].includes(fileType)) {
-                    alert('只支持Excel (.xlsx) 和CSV格式文件！');
-                    return;
-                }
-                
-                // 模拟上传进度
-                alert(`文件 "${file.name}" (${fileSize}MB) 上传成功！\n\n包含数据：\n- 债务案件：156条\n- 验证通过：150条\n- 数据异常：6条\n\n系统正在自动分配律师...`);
-                
-                // 刷新页面数据
-                setTimeout(() => {
-                    loadCases();
-                    updateStats();
-                }, 1000);
-            }
-        }
-
-        // 下载模板
-        function downloadTemplate() {
-            alert('数据模板下载功能开发中！\n\n模板将包含以下字段：\n- 债务人姓名\n- 联系电话\n- 债务金额\n- 逾期天数\n- 债务描述\n- 债权人信息');
-        }
-
-        // 查看上传历史
-        function viewUploadHistory() {
-            alert('上传历史功能开发中！');
-        }
-
-        // 查看案件进度
-        function viewCaseProgress(caseId) {
-            const caseItem = mockCases.find(c => c.id === caseId);
-            if (caseItem) {
-                alert(`案件进度详情：\n\n债务人：${caseItem.debtorName}\n金额：¥${caseItem.debtAmount.toLocaleString()}\n状态：${getStatusText(caseItem.status)}\n分配律师：${caseItem.assignedLawyer}\n\n处理进度：\n✅ 数据上传完成\n✅ 数据验证通过\n${caseItem.status !== 'pending' ? '✅ 律师分配完成' : '⏳ 等待分配律师'}\n${caseItem.status === 'completed' ? '✅ 催收完成' : '⏳ 催收进行中'}`);
-            }
-        }
-
-        // 查看案件详情
-        function viewCaseDetails(caseId) {
-            const caseItem = mockCases.find(c => c.id === caseId);
-            if (caseItem) {
-                alert(`案件详情：\n债务人：${caseItem.debtorName}\n金额：¥${caseItem.debtAmount.toLocaleString()}\n逾期：${caseItem.overdueDays}天\n状态：${getStatusText(caseItem.status)}\n批次：${caseItem.batchId}\n上传日期：${caseItem.uploadDate}`);
-            }
-        }
-
-        // 查看全部案件
-        function viewAllCases() {
-            alert('案件列表页面开发中！');
-        }
-
-        // 导出报告
-        function exportReport() {
-            alert('报告导出功能开发中！');
-        }
-
-        // 更新统计数据
-        function updateStats() {
-            // 模拟统计数据更新
-            const totalCases = document.getElementById('totalCases');
-            const processingCases = document.getElementById('processingCases');
-            const completedCases = document.getElementById('completedCases');
-            const recoveredAmount = document.getElementById('recoveredAmount');
-            
-            // 添加动画效果
-            totalCases.style.color = '#10b981';
-            setTimeout(() => {
-                totalCases.style.color = '#1f2937';
-            }, 2000);
-        }
-
         // 退出登录
         function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('userRole');
-            localStorage.removeItem('username');
-            window.location.href = 'login.html';
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('authToken');
+                window.location.href = 'login.html';
+            }
         }
 
-        // 添加进度条样式
-        const progressStyle = document.createElement('style');
-        progressStyle.textContent = `
-            .progress-stats {
-                display: flex;
-                flex-direction: column;
-                gap: 1rem;
-            }
-            
-            .progress-item {
-                display: flex;
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-            
-            .progress-label {
-                font-weight: 500;
-                color: var(--text-primary);
-            }
-            
-            .progress-bar {
-                width: 100%;
-                height: 8px;
-                background: #f3f4f6;
-                border-radius: 4px;
-                overflow: hidden;
-            }
-            
-            .progress-fill {
-                height: 100%;
-                border-radius: 4px;
-                transition: width 0.3s ease;
-            }
-        `;
-        document.head.appendChild(progressStyle);
+        // 初始化用户信息
+        document.addEventListener('DOMContentLoaded', function() {
+            const userName = localStorage.getItem('userName') || '管理员';
+            document.getElementById('userName').textContent = userName;
+            document.getElementById('userAvatar').textContent = userName.charAt(0);
+        });
+
+        // 表格行点击事件
+        document.querySelectorAll('.data-table tbody tr').forEach(row => {
+            row.addEventListener('click', function(e) {
+                if (e.target.tagName !== 'BUTTON') {
+                    console.log('点击行:', this);
+                    // 可以在这里添加行点击处理逻辑
+                }
+            });
+        });
     </script>
 </body>
 </html>

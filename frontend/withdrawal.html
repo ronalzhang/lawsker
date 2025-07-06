@@ -2,95 +2,303 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>提现管理 - Lawsker法务平台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f1424">
+    <title>提现管理 - Lawsker 律思客</title>
     <style>
+        :root {
+            --glass-bg: rgba(22, 28, 48, 0.75);
+            --glass-border: rgba(122, 160, 255, 0.25);
+            --glass-shadow: rgba(0, 0, 0, 0.3);
+            --blur-radius: 25px;
+            --border-radius: 20px;
+            --text-primary: #f0f4ff;
+            --text-secondary: #a8b2d1;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-success: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            --gradient-warning: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            --gradient-danger: linear-gradient(135deg, #fd79a8 0%, #fdcb6e 100%);
+            --gradient-info: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            --app-padding: 16px;
+            --safe-area-top: env(safe-area-inset-top, 0px);
+            --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f1424 0%, #1a1d35 50%, #0f1424 100%);
+            color: var(--text-primary);
             min-height: 100vh;
+            position: relative;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding-top: var(--safe-area-top);
+            padding-bottom: var(--safe-area-bottom);
         }
 
-        .container {
-            min-height: 100vh;
-            padding: 20px;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-        }
-
-        .withdrawal-panel {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 40px;
+        /* 背景效果 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(122, 160, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(122, 160, 255, 0.08) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            position: fixed;
+            top: var(--safe-area-top);
+            left: 0;
+            right: 0;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-radius));
+            -webkit-backdrop-filter: blur(var(--blur-radius));
+            border-bottom: 1px solid var(--glass-border);
+            padding: 16px var(--app-padding);
+            z-index: 100;
+            box-shadow: 0 8px 32px var(--glass-shadow);
+        }
+
+        .navbar-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             max-width: 1200px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin: 0 auto;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .header h1 {
-            color: #2d3748;
-            font-size: 2.5rem;
+        .logo {
+            font-size: 20px;
             font-weight: 700;
-            margin-bottom: 10px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: var(--gradient-primary);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .header p {
-            color: #64748b;
-            font-size: 1.1rem;
+        .logo::before {
+            content: '💰';
+            font-size: 18px;
+            -webkit-text-fill-color: initial;
         }
 
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 8px 0;
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--gradient-primary);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--text-primary);
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: var(--gradient-danger);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(253, 121, 168, 0.4);
+        }
+
+        /* 主内容区 */
+        .main-container {
+            margin-top: calc(var(--safe-area-top) + 70px);
+            padding: 24px var(--app-padding) 40px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* 页面头部 */
+        .page-header {
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .page-title {
+            font-size: clamp(24px, 6vw, 32px);
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* 钱包信息卡片 */
+        .wallet-info {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-radius));
+            -webkit-backdrop-filter: blur(var(--blur-radius));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 32px;
+            box-shadow: 0 8px 32px var(--glass-shadow);
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wallet-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-success);
+        }
+
+        .wallet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+        }
+
+        .wallet-item {
+            text-align: center;
+        }
+
+        .wallet-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .wallet-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .wallet-value.large {
+            font-size: 32px;
+            background: var(--gradient-success);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* 标签页 */
         .tabs {
             display: flex;
-            border-bottom: 2px solid #e2e8f0;
-            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 32px;
+            border: 1px solid var(--glass-border);
         }
 
         .tab {
             flex: 1;
-            padding: 15px 20px;
-            background: none;
+            padding: 12px 20px;
             border: none;
-            cursor: pointer;
-            font-size: 1rem;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 14px;
             font-weight: 600;
-            color: #64748b;
+            border-radius: 8px;
+            cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
+            font-family: inherit;
         }
 
         .tab.active {
-            color: #667eea;
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(122, 160, 255, 0.3);
         }
 
-        .tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            border-radius: 1px;
+        .tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
         }
 
+        /* 标签页内容 */
         .tab-content {
             display: none;
         }
@@ -99,840 +307,637 @@
             display: block;
         }
 
-        .wallet-info {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .wallet-item {
-            text-align: center;
-        }
-
-        .wallet-item .label {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            margin-bottom: 5px;
-        }
-
-        .wallet-item .value {
-            font-size: 1.8rem;
-            font-weight: 700;
+        /* 表单区域 */
+        .form-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-radius));
+            -webkit-backdrop-filter: blur(var(--blur-radius));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 32px;
+            box-shadow: 0 8px 32px var(--glass-shadow);
+            margin-bottom: 32px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
-        .form-group label {
+        .form-label {
             display: block;
             margin-bottom: 8px;
-            color: #2d3748;
+            color: var(--text-primary);
             font-weight: 600;
+            font-size: 14px;
         }
 
-        .form-group input, .form-group select {
+        .form-input,
+        .form-select {
             width: 100%;
             padding: 12px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-            background: white;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: inherit;
         }
 
-        .form-group input:focus, .form-group select:focus {
+        .form-input:focus,
+        .form-select:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: rgba(122, 160, 255, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 0 3px rgba(122, 160, 255, 0.1);
         }
 
+        .form-input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+
+        /* 按钮样式 */
         .btn {
             padding: 12px 24px;
             border: none;
-            border-radius: 10px;
-            font-size: 1rem;
+            border-radius: 12px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
-            display: inline-block;
-            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: var(--gradient-primary);
             color: white;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-secondary {
-            background: #e2e8f0;
-            color: #64748b;
+            box-shadow: 0 8px 25px rgba(122, 160, 255, 0.4);
         }
 
         .btn-success {
-            background: #10b981;
+            background: var(--gradient-success);
             color: white;
         }
 
-        .btn-danger {
-            background: #ef4444;
-            color: white;
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(132, 250, 176, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--text-primary);
+        }
+
+        /* 数据表格 */
+        .table-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-radius));
+            -webkit-backdrop-filter: blur(var(--blur-radius));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 8px 32px var(--glass-shadow);
+        }
+
+        .table-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
         }
 
         .withdrawal-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
         .withdrawal-table th,
         .withdrawal-table td {
-            padding: 15px;
+            padding: 16px 24px;
             text-align: left;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .withdrawal-table th {
-            background: #f8fafc;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
             font-weight: 600;
-            color: #2d3748;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
+        .withdrawal-table td {
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .withdrawal-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* 状态标签 */
         .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .status-pending {
-            background: #fef3c7;
-            color: #d97706;
-        }
-
-        .status-approved {
-            background: #dcfce7;
-            color: #16a34a;
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
         }
 
         .status-processing {
-            background: #dbeafe;
-            color: #2563eb;
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
         }
 
         .status-completed {
-            background: #d1fae5;
-            color: #059669;
-        }
-
-        .status-rejected {
-            background: #fee2e2;
-            color: #dc2626;
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
         }
 
         .status-failed {
-            background: #fecaca;
-            color: #b91c1c;
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
         }
 
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-content {
-            background: white;
-            margin: 5% auto;
-            padding: 30px;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .close:hover {
-            color: #667eea;
-        }
-
-        .alert {
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
-
-        .alert-success {
-            background: #dcfce7;
-            color: #16a34a;
-            border: 1px solid #bbf7d0;
-        }
-
-        .alert-error {
-            background: #fee2e2;
-            color: #dc2626;
-            border: 1px solid #fecaca;
-        }
-
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 30px;
-            gap: 10px;
-        }
-
-        .pagination button {
-            padding: 8px 16px;
-            border: 1px solid #e2e8f0;
-            background: white;
+        /* 操作按钮 */
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
             border-radius: 8px;
+            font-size: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-family: inherit;
+            margin-right: 8px;
         }
 
-        .pagination button:hover {
-            background: #f8fafc;
-        }
-
-        .pagination button.active {
-            background: #667eea;
+        .action-btn:hover {
+            background: var(--gradient-primary);
             color: white;
-            border-color: #667eea;
         }
 
-        .pagination button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        /* 提醒信息 */
+        .alert {
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border: 1px solid;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
+        .alert-info {
+            background: rgba(168, 237, 234, 0.1);
+            border-color: rgba(168, 237, 234, 0.3);
+            color: #a8edea;
+        }
+
+        .alert-warning {
+            background: rgba(255, 236, 210, 0.1);
+            border-color: rgba(255, 236, 210, 0.3);
+            color: #ffecd2;
+        }
+
+        /* 响应式设计 */
         @media (max-width: 768px) {
-            .container {
-                padding: 10px;
+            .navbar-content {
+                flex-direction: column;
+                gap: 16px;
             }
             
-            .withdrawal-panel {
-                padding: 20px;
+            .nav-menu {
+                flex-wrap: wrap;
+                gap: 16px;
             }
             
-            .wallet-info {
+            .wallet-grid {
                 grid-template-columns: 1fr;
+                gap: 16px;
             }
             
             .tabs {
                 flex-direction: column;
+                gap: 4px;
             }
             
             .withdrawal-table {
-                font-size: 0.9rem;
+                font-size: 12px;
             }
             
             .withdrawal-table th,
             .withdrawal-table td {
-                padding: 10px;
+                padding: 12px 16px;
             }
+        }
+
+        @media (max-width: 480px) {
+            .main-container {
+                padding: 16px 12px 32px;
+            }
+            
+            .form-section {
+                padding: 24px 16px;
+            }
+            
+            .table-header {
+                padding: 16px;
+            }
+            
+            .withdrawal-table th,
+            .withdrawal-table td {
+                padding: 8px 12px;
+            }
+        }
+
+        /* 性能优化 */
+        .form-section,
+        .table-section,
+        .btn {
+            will-change: transform;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="withdrawal-panel">
-            <div class="header">
-                <h1>💰 提现管理</h1>
-                <p>管理您的钱包余额和提现申请</p>
-            </div>
-
-            <!-- 钱包信息 -->
-            <div class="wallet-info" id="walletInfo">
-                <div class="wallet-item">
-                    <div class="label">账户余额</div>
-                    <div class="value" id="totalBalance">¥0.00</div>
-                </div>
-                <div class="wallet-item">
-                    <div class="label">可提现余额</div>
-                    <div class="value" id="withdrawableBalance">¥0.00</div>
-                </div>
-                <div class="wallet-item">
-                    <div class="label">冻结金额</div>
-                    <div class="value" id="frozenBalance">¥0.00</div>
-                </div>
-                <div class="wallet-item">
-                    <div class="label">累计收入</div>
-                    <div class="value" id="totalEarned">¥0.00</div>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="logo">提现管理</div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link">仪表盘</a>
+                <a href="withdrawal.html" class="nav-link active">提现管理</a>
+                <a href="earnings-calculator.html" class="nav-link">收益计算</a>
+                <div class="user-info">
+                    <span class="user-name" id="userName">用户</span>
+                    <div class="user-avatar" id="userAvatar">用</div>
+                    <button class="logout-btn" onclick="logout()">退出</button>
                 </div>
             </div>
+        </div>
+    </nav>
 
-            <!-- 标签页 -->
-            <div class="tabs">
-                <button class="tab active" onclick="switchTab('apply')">申请提现</button>
-                <button class="tab" onclick="switchTab('history')">提现记录</button>
-                <button class="tab" onclick="switchTab('admin')" id="adminTab" style="display: none;">管理审核</button>
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 页面标题 -->
+        <div class="page-header">
+            <h1 class="page-title">提现管理</h1>
+            <p class="page-subtitle">账户余额管理，快速安全的提现服务</p>
+        </div>
+
+        <!-- 钱包信息 -->
+        <div class="wallet-info">
+            <div class="wallet-grid">
+                <div class="wallet-item">
+                    <div class="wallet-label">可提现余额</div>
+                    <div class="wallet-value large" id="availableBalance">¥12,580.00</div>
+                </div>
+                <div class="wallet-item">
+                    <div class="wallet-label">冻结金额</div>
+                    <div class="wallet-value" id="frozenAmount">¥2,150.00</div>
+                </div>
+                <div class="wallet-item">
+                    <div class="wallet-label">本月提现</div>
+                    <div class="wallet-value" id="monthlyWithdrawal">¥8,500.00</div>
+                </div>
+                <div class="wallet-item">
+                    <div class="wallet-label">总收入</div>
+                    <div class="wallet-value" id="totalEarnings">¥48,750.00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 标签页 -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('withdraw')">申请提现</button>
+            <button class="tab" onclick="switchTab('history')">提现记录</button>
+            <button class="tab" onclick="switchTab('settings')">提现设置</button>
+        </div>
+
+        <!-- 申请提现 -->
+        <div id="withdraw" class="tab-content active">
+            <div class="alert alert-info">
+                <span>ℹ️</span>
+                <div>
+                    <strong>提现说明：</strong>
+                    工作日提现申请将在1-3个工作日内处理，周末及节假日顺延。最低提现金额100元，单日最高提现50,000元。
+                </div>
             </div>
 
-            <!-- 申请提现 -->
-            <div id="apply" class="tab-content active">
+            <div class="form-section">
+                <h3 style="color: var(--text-primary); margin-bottom: 24px; display: flex; align-items: center; gap: 8px;">
+                    <span>💳</span>
+                    提现申请
+                </h3>
+
                 <form id="withdrawalForm">
                     <div class="form-group">
-                        <label for="amount">提现金额</label>
-                        <input type="number" id="amount" name="amount" step="0.01" min="10" max="50000" required placeholder="请输入提现金额">
-                        <small style="color: #64748b;">最低提现金额：¥10，最高单次提现：¥50000</small>
+                        <label class="form-label" for="withdrawAmount">提现金额</label>
+                        <input type="number" 
+                               id="withdrawAmount" 
+                               class="form-input" 
+                               placeholder="请输入提现金额" 
+                               min="100" 
+                               max="50000" 
+                               step="0.01">
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                            最低提现金额：¥100，最高：¥50,000
+                        </div>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label for="bankName">开户银行</label>
-                        <select id="bankName" name="bankName" required>
-                            <option value="">请选择银行</option>
-                            <option value="中国工商银行">中国工商银行</option>
-                            <option value="中国建设银行">中国建设银行</option>
-                            <option value="中国农业银行">中国农业银行</option>
-                            <option value="中国银行">中国银行</option>
-                            <option value="交通银行">交通银行</option>
-                            <option value="招商银行">招商银行</option>
-                            <option value="中信银行">中信银行</option>
-                            <option value="光大银行">光大银行</option>
-                            <option value="民生银行">民生银行</option>
-                            <option value="平安银行">平安银行</option>
+                        <label class="form-label" for="withdrawMethod">提现方式</label>
+                        <select id="withdrawMethod" class="form-select">
+                            <option value="bank">银行卡转账</option>
+                            <option value="alipay">支付宝</option>
+                            <option value="wechat">微信支付</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label for="bankAccount">银行账户</label>
-                        <input type="text" id="bankAccount" name="bankAccount" required placeholder="请输入银行卡号">
+                        <label class="form-label" for="bankAccount">收款账户</label>
+                        <input type="text" 
+                               id="bankAccount" 
+                               class="form-input" 
+                               placeholder="请输入银行卡号或支付宝账号">
                     </div>
-                    
+
                     <div class="form-group">
-                        <label for="accountHolder">账户姓名</label>
-                        <input type="text" id="accountHolder" name="accountHolder" required placeholder="请输入账户持有人姓名">
+                        <label class="form-label" for="accountName">收款人姓名</label>
+                        <input type="text" 
+                               id="accountName" 
+                               class="form-input" 
+                               placeholder="请输入收款人真实姓名">
                     </div>
-                    
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">提交申请</button>
+
+                    <div class="form-group">
+                        <label class="form-label" for="withdrawReason">提现说明</label>
+                        <input type="text" 
+                               id="withdrawReason" 
+                               class="form-input" 
+                               placeholder="请输入提现用途说明（可选）">
+                    </div>
+
+                    <div style="display: flex; gap: 16px; justify-content: flex-end;">
+                        <button type="button" class="btn btn-secondary">取消</button>
+                        <button type="submit" class="btn btn-success">
+                            <span>💸</span>
+                            提交申请
+                        </button>
+                    </div>
                 </form>
             </div>
+        </div>
 
-            <!-- 提现记录 -->
-            <div id="history" class="tab-content">
-                <div style="margin-bottom: 20px;">
-                    <select id="statusFilter" onchange="loadWithdrawalHistory()">
-                        <option value="">全部状态</option>
-                        <option value="pending">待审核</option>
-                        <option value="approved">已批准</option>
-                        <option value="processing">处理中</option>
-                        <option value="completed">已完成</option>
-                        <option value="rejected">已拒绝</option>
-                        <option value="failed">失败</option>
-                    </select>
+        <!-- 提现记录 -->
+        <div id="history" class="tab-content">
+            <div class="table-section">
+                <div class="table-header">
+                    <h3 class="table-title">提现记录</h3>
+                    <div>
+                        <button class="btn btn-secondary">导出记录</button>
+                    </div>
                 </div>
                 
-                <table class="withdrawal-table" id="historyTable">
+                <table class="withdrawal-table">
                     <thead>
                         <tr>
-                            <th>申请单号</th>
-                            <th>申请金额</th>
+                            <th>申请时间</th>
+                            <th>提现金额</th>
                             <th>手续费</th>
                             <th>实际到账</th>
-                            <th>开户银行</th>
+                            <th>提现方式</th>
                             <th>状态</th>
-                            <th>申请时间</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyTableBody">
-                        <!-- 动态加载 -->
-                    </tbody>
-                </table>
-                
-                <div class="pagination" id="historyPagination">
-                    <!-- 动态生成分页 -->
-                </div>
-            </div>
-
-            <!-- 管理审核 -->
-            <div id="admin" class="tab-content">
-                <div style="margin-bottom: 20px;">
-                    <select id="adminStatusFilter" onchange="loadAdminWithdrawals()">
-                        <option value="">全部状态</option>
-                        <option value="pending">待审核</option>
-                        <option value="approved">已批准</option>
-                        <option value="processing">处理中</option>
-                        <option value="completed">已完成</option>
-                        <option value="rejected">已拒绝</option>
-                    </select>
-                </div>
-                
-                <table class="withdrawal-table" id="adminTable">
-                    <thead>
-                        <tr>
-                            <th>用户</th>
-                            <th>申请单号</th>
-                            <th>金额</th>
-                            <th>银行信息</th>
-                            <th>风险评分</th>
-                            <th>状态</th>
-                            <th>申请时间</th>
+                            <th>完成时间</th>
                             <th>操作</th>
                         </tr>
                     </thead>
-                    <tbody id="adminTableBody">
-                        <!-- 动态加载 -->
+                    <tbody>
+                        <tr>
+                            <td>2024-01-15 14:30</td>
+                            <td>¥5,000.00</td>
+                            <td>¥5.00</td>
+                            <td>¥4,995.00</td>
+                            <td>银行卡</td>
+                            <td><span class="status-badge status-completed">已完成</span></td>
+                            <td>2024-01-16 10:25</td>
+                            <td>
+                                <button class="action-btn">查看</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2024-01-12 09:15</td>
+                            <td>¥3,500.00</td>
+                            <td>¥3.50</td>
+                            <td>¥3,496.50</td>
+                            <td>支付宝</td>
+                            <td><span class="status-badge status-processing">处理中</span></td>
+                            <td>-</td>
+                            <td>
+                                <button class="action-btn">查看</button>
+                                <button class="action-btn">撤销</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2024-01-10 16:20</td>
+                            <td>¥2,000.00</td>
+                            <td>¥2.00</td>
+                            <td>¥1,998.00</td>
+                            <td>微信支付</td>
+                            <td><span class="status-badge status-pending">等待审核</span></td>
+                            <td>-</td>
+                            <td>
+                                <button class="action-btn">查看</button>
+                                <button class="action-btn">撤销</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2024-01-08 11:45</td>
+                            <td>¥1,200.00</td>
+                            <td>¥1.20</td>
+                            <td>¥1,198.80</td>
+                            <td>银行卡</td>
+                            <td><span class="status-badge status-failed">审核失败</span></td>
+                            <td>-</td>
+                            <td>
+                                <button class="action-btn">查看</button>
+                                <button class="action-btn">重新申请</button>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
-                
-                <div class="pagination" id="adminPagination">
-                    <!-- 动态生成分页 -->
+            </div>
+        </div>
+
+        <!-- 提现设置 -->
+        <div id="settings" class="tab-content">
+            <div class="alert alert-warning">
+                <span>⚠️</span>
+                <div>
+                    <strong>安全提醒：</strong>
+                    修改提现设置需要进行身份验证，请确保您的手机号和邮箱信息是最新的。
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 style="color: var(--text-primary); margin-bottom: 24px; display: flex; align-items: center; gap: 8px;">
+                    <span>⚙️</span>
+                    提现设置
+                </h3>
+
+                <div class="form-group">
+                    <label class="form-label">默认提现方式</label>
+                    <select class="form-select">
+                        <option value="bank">银行卡转账</option>
+                        <option value="alipay">支付宝</option>
+                        <option value="wechat">微信支付</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">默认提现账户</label>
+                    <input type="text" class="form-input" value="**** **** **** 1234" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">自动提现</label>
+                    <select class="form-select">
+                        <option value="manual">手动提现</option>
+                        <option value="weekly">每周自动提现</option>
+                        <option value="monthly">每月自动提现</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">自动提现阈值</label>
+                    <input type="number" class="form-input" placeholder="达到此金额自动提现" value="10000">
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                        当账户余额达到此金额时自动发起提现申请
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 32px;">
+                    <button type="button" class="btn btn-secondary">重置</button>
+                    <button type="button" class="btn btn-primary">
+                        <span>💾</span>
+                        保存设置
+                    </button>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- 审核模态框 -->
-    <div id="reviewModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3 id="reviewModalTitle">审核提现申请</h3>
-            <div id="reviewDetails"></div>
-            <div class="form-group">
-                <label for="adminNotes">审核备注</label>
-                <textarea id="adminNotes" rows="3" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; resize: vertical;" placeholder="请填写审核意见"></textarea>
-            </div>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button id="approveBtn" class="btn btn-success" style="flex: 1;">批准</button>
-                <button id="rejectBtn" class="btn btn-danger" style="flex: 1;">拒绝</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 全局消息提示 -->
-    <div id="messageContainer" style="position: fixed; top: 20px; right: 20px; z-index: 2000;"></div>
 
     <script>
-        // 全局变量
-        let currentUser = null;
-        let walletInfo = null;
-        let currentPage = 1;
-        let currentAdminPage = 1;
-        let currentWithdrawalId = null;
-
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            loadCurrentUser();
-            loadWalletInfo();
-            loadWithdrawalHistory();
-            
-            // 绑定事件
-            document.getElementById('withdrawalForm').addEventListener('submit', handleWithdrawalSubmit);
-            document.getElementsByClassName('close')[0].addEventListener('click', closeModal);
-            document.getElementById('approveBtn').addEventListener('click', () => handleReview(true));
-            document.getElementById('rejectBtn').addEventListener('click', () => handleReview(false));
-        });
-
-        // 获取当前用户信息
-        async function loadCurrentUser() {
-            try {
-                const token = localStorage.getItem('access_token');
-                if (!token) {
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                const response = await fetch('/api/v1/auth/current-user', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (response.ok) {
-                    currentUser = await response.json();
-                    
-                    // 如果是管理员，显示管理审核标签
-                    if (currentUser.is_superuser) {
-                        document.getElementById('adminTab').style.display = 'block';
-                    }
-                } else {
-                    throw new Error('获取用户信息失败');
-                }
-            } catch (error) {
-                console.error('获取用户信息失败:', error);
-                showMessage('获取用户信息失败', 'error');
-            }
-        }
-
-        // 加载钱包信息
-        async function loadWalletInfo() {
-            try {
-                const token = localStorage.getItem('access_token');
-                const response = await fetch('/api/v1/finance/wallet', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (response.ok) {
-                    walletInfo = await response.json();
-                    
-                    document.getElementById('totalBalance').textContent = `¥${walletInfo.balance.toFixed(2)}`;
-                    document.getElementById('withdrawableBalance').textContent = `¥${walletInfo.withdrawable_balance.toFixed(2)}`;
-                    document.getElementById('frozenBalance').textContent = `¥${walletInfo.frozen_balance.toFixed(2)}`;
-                    document.getElementById('totalEarned').textContent = `¥${walletInfo.total_earned.toFixed(2)}`;
-                } else {
-                    throw new Error('获取钱包信息失败');
-                }
-            } catch (error) {
-                console.error('获取钱包信息失败:', error);
-                showMessage('获取钱包信息失败', 'error');
-            }
-        }
-
-        // 处理提现申请提交
-        async function handleWithdrawalSubmit(event) {
-            event.preventDefault();
-            
-            const formData = new FormData(event.target);
-            const withdrawalData = {
-                amount: parseFloat(formData.get('amount')),
-                bank_account: formData.get('bankAccount'),
-                bank_name: formData.get('bankName'),
-                account_holder: formData.get('accountHolder')
-            };
-
-            // 验证提现金额
-            if (withdrawalData.amount > walletInfo.withdrawable_balance) {
-                showMessage('提现金额超过可提现余额', 'error');
-                return;
-            }
-
-            try {
-                const token = localStorage.getItem('access_token');
-                const response = await fetch('/api/v1/finance/withdrawal/create', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(withdrawalData)
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    showMessage('提现申请提交成功', 'success');
-                    
-                    // 重置表单并刷新数据
-                    event.target.reset();
-                    loadWalletInfo();
-                    loadWithdrawalHistory();
-                    
-                    // 切换到提现记录标签
-                    switchTab('history');
-                } else {
-                    const error = await response.json();
-                    showMessage(error.detail || '提现申请失败', 'error');
-                }
-            } catch (error) {
-                console.error('提现申请失败:', error);
-                showMessage('提现申请失败', 'error');
-            }
-        }
-
-        // 加载提现记录
-        async function loadWithdrawalHistory(page = 1) {
-            try {
-                const token = localStorage.getItem('access_token');
-                const status = document.getElementById('statusFilter').value;
-                const url = new URL('/api/v1/finance/withdrawal/list', window.location.origin);
-                url.searchParams.set('page', page);
-                url.searchParams.set('size', '10');
-                if (status) url.searchParams.set('status', status);
-
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    renderWithdrawalHistory(result.items);
-                    renderPagination(result, 'historyPagination', loadWithdrawalHistory);
-                    currentPage = page;
-                } else {
-                    throw new Error('获取提现记录失败');
-                }
-            } catch (error) {
-                console.error('获取提现记录失败:', error);
-                showMessage('获取提现记录失败', 'error');
-            }
-        }
-
-        // 渲染提现记录表格
-        function renderWithdrawalHistory(items) {
-            const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = '';
-
-            items.forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.request_number}</td>
-                    <td>¥${item.amount.toFixed(2)}</td>
-                    <td>¥${item.fee.toFixed(2)}</td>
-                    <td>¥${item.actual_amount.toFixed(2)}</td>
-                    <td>${item.bank_name}</td>
-                    <td><span class="status-badge status-${item.status}">${getStatusText(item.status)}</span></td>
-                    <td>${new Date(item.created_at).toLocaleString()}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // 加载管理员审核列表
-        async function loadAdminWithdrawals(page = 1) {
-            if (!currentUser || !currentUser.is_superuser) return;
-            
-            try {
-                const token = localStorage.getItem('access_token');
-                const status = document.getElementById('adminStatusFilter').value;
-                const url = new URL('/api/v1/finance/withdrawal/admin/list', window.location.origin);
-                url.searchParams.set('page', page);
-                url.searchParams.set('size', '10');
-                if (status) url.searchParams.set('status', status);
-
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    renderAdminWithdrawals(result.items);
-                    renderPagination(result, 'adminPagination', loadAdminWithdrawals);
-                    currentAdminPage = page;
-                } else {
-                    throw new Error('获取审核列表失败');
-                }
-            } catch (error) {
-                console.error('获取审核列表失败:', error);
-                showMessage('获取审核列表失败', 'error');
-            }
-        }
-
-        // 渲染管理员审核表格
-        function renderAdminWithdrawals(items) {
-            const tbody = document.getElementById('adminTableBody');
-            tbody.innerHTML = '';
-
-            items.forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.user_name}</td>
-                    <td>${item.request_number}</td>
-                    <td>¥${item.amount.toFixed(2)}</td>
-                    <td>${item.bank_name}<br/>${item.account_holder}</td>
-                    <td>${item.risk_score ? item.risk_score.toFixed(1) : 'N/A'}</td>
-                    <td><span class="status-badge status-${item.status}">${getStatusText(item.status)}</span></td>
-                    <td>${new Date(item.created_at).toLocaleString()}</td>
-                    <td>
-                        ${item.status === 'pending' ? 
-                            `<button class="btn btn-secondary" onclick="openReviewModal('${item.id}', ${JSON.stringify(item).replace(/"/g, '&quot;')})">审核</button>` : 
-                            '-'
-                        }
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // 打开审核模态框
-        function openReviewModal(withdrawalId, itemData) {
-            currentWithdrawalId = withdrawalId;
-            const item = typeof itemData === 'string' ? JSON.parse(itemData.replace(/&quot;/g, '"')) : itemData;
-            
-            document.getElementById('reviewDetails').innerHTML = `
-                <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                    <strong>申请信息：</strong><br/>
-                    用户：${item.user_name}<br/>
-                    金额：¥${item.amount.toFixed(2)}<br/>
-                    银行：${item.bank_name}<br/>
-                    账户：${item.account_holder}<br/>
-                    风险评分：${item.risk_score ? item.risk_score.toFixed(1) : 'N/A'}
-                </div>
-            `;
-            
-            document.getElementById('adminNotes').value = '';
-            document.getElementById('reviewModal').style.display = 'block';
-        }
-
-        // 关闭模态框
-        function closeModal() {
-            document.getElementById('reviewModal').style.display = 'none';
-            currentWithdrawalId = null;
-        }
-
-        // 处理审核操作
-        async function handleReview(approve) {
-            if (!currentWithdrawalId) return;
-            
-            const notes = document.getElementById('adminNotes').value;
-            if (!approve && !notes.trim()) {
-                showMessage('拒绝提现需要填写拒绝原因', 'error');
-                return;
-            }
-            
-            try {
-                const token = localStorage.getItem('access_token');
-                const endpoint = approve ? 'approve' : 'reject';
-                const response = await fetch(`/api/v1/finance/withdrawal/admin/${currentWithdrawalId}/${endpoint}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        admin_notes: notes || undefined
-                    })
-                });
-
-                if (response.ok) {
-                    showMessage(`提现申请已${approve ? '批准' : '拒绝'}`, 'success');
-                    closeModal();
-                    loadAdminWithdrawals(currentAdminPage);
-                } else {
-                    const error = await response.json();
-                    showMessage(error.detail || '操作失败', 'error');
-                }
-            } catch (error) {
-                console.error('审核操作失败:', error);
-                showMessage('审核操作失败', 'error');
-            }
-        }
-
-        // 切换标签页
+        // 标签页切换
         function switchTab(tabName) {
-            // 隐藏所有标签内容
+            // 隐藏所有标签页内容
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });
             
-            // 移除所有标签的active类
+            // 移除所有标签的激活状态
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
             
-            // 显示选中的标签内容
+            // 显示选中的标签页内容
             document.getElementById(tabName).classList.add('active');
             
-            // 为选中的标签添加active类
+            // 激活选中的标签
             event.target.classList.add('active');
-            
-            // 加载对应数据
-            if (tabName === 'history') {
-                loadWithdrawalHistory();
-            } else if (tabName === 'admin') {
-                loadAdminWithdrawals();
-            }
         }
 
-        // 渲染分页
-        function renderPagination(result, containerId, loadFunction) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
+        // 提现表单提交
+        document.getElementById('withdrawalForm').addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            if (result.pages <= 1) return;
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const method = document.getElementById('withdrawMethod').value;
+            const account = document.getElementById('bankAccount').value;
+            const name = document.getElementById('accountName').value;
             
-            // 上一页
-            const prevBtn = document.createElement('button');
-            prevBtn.textContent = '上一页';
-            prevBtn.disabled = result.page <= 1;
-            prevBtn.onclick = () => loadFunction(result.page - 1);
-            container.appendChild(prevBtn);
-            
-            // 页码
-            for (let i = 1; i <= result.pages; i++) {
-                if (i === result.page || i === 1 || i === result.pages || Math.abs(i - result.page) <= 1) {
-                    const pageBtn = document.createElement('button');
-                    pageBtn.textContent = i;
-                    pageBtn.className = i === result.page ? 'active' : '';
-                    pageBtn.onclick = () => loadFunction(i);
-                    container.appendChild(pageBtn);
-                } else if (i === result.page - 2 || i === result.page + 2) {
-                    const dots = document.createElement('span');
-                    dots.textContent = '...';
-                    container.appendChild(dots);
-                }
+            if (!amount || amount < 100 || amount > 50000) {
+                alert('请输入有效的提现金额（100-50000元）');
+                return;
             }
             
-            // 下一页
-            const nextBtn = document.createElement('button');
-            nextBtn.textContent = '下一页';
-            nextBtn.disabled = result.page >= result.pages;
-            nextBtn.onclick = () => loadFunction(result.page + 1);
-            container.appendChild(nextBtn);
-        }
+            if (!account || !name) {
+                alert('请填写完整的收款信息');
+                return;
+            }
+            
+            // 这里可以添加实际的提现申请逻辑
+            alert(`提现申请提交成功！\n金额：¥${amount.toFixed(2)}\n方式：${getMethodText(method)}\n预计1-3个工作日内到账`);
+            
+            // 重置表单
+            this.reset();
+        });
 
-        // 获取状态文本
-        function getStatusText(status) {
-            const statusMap = {
-                'pending': '待审核',
-                'approved': '已批准',
-                'processing': '处理中',
-                'completed': '已完成',
-                'rejected': '已拒绝',
-                'failed': '失败',
-                'cancelled': '已取消'
+        // 获取提现方式文本
+        function getMethodText(method) {
+            const methods = {
+                'bank': '银行卡转账',
+                'alipay': '支付宝',
+                'wechat': '微信支付'
             };
-            return statusMap[status] || status;
+            return methods[method] || method;
         }
 
-        // 显示消息
-        function showMessage(message, type = 'info') {
-            const container = document.getElementById('messageContainer');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `alert alert-${type}`;
-            messageDiv.textContent = message;
-            messageDiv.style.marginBottom = '10px';
-            
-            container.appendChild(messageDiv);
-            
-            // 3秒后自动移除
-            setTimeout(() => {
-                container.removeChild(messageDiv);
-            }, 3000);
-        }
-
-        // 点击模态框外部关闭
-        window.onclick = function(event) {
-            const modal = document.getElementById('reviewModal');
-            if (event.target === modal) {
-                closeModal();
+        // 退出登录
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('authToken');
+                window.location.href = 'login.html';
             }
         }
+
+        // 初始化用户信息
+        document.addEventListener('DOMContentLoaded', function() {
+            const userName = localStorage.getItem('userName') || '用户';
+            document.getElementById('userName').textContent = userName;
+            document.getElementById('userAvatar').textContent = userName.charAt(0);
+        });
+
+        // 模拟实时余额更新
+        function updateBalance() {
+            const availableBalance = document.getElementById('availableBalance');
+            // 这里可以从API获取实际余额
+            // availableBalance.textContent = '¥' + newBalance.toFixed(2);
+        }
+
+        // 每30秒更新一次余额
+        setInterval(updateBalance, 30000);
     </script>
 </body>
 </html> 
