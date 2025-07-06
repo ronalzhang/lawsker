@@ -432,6 +432,20 @@
                 grid-template-columns: 1fr 1fr;
             }
             
+            /* 销售工作台提现统计 - 2x2布局 */
+            .sales-withdrawal-stats-grid {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 12px;
+            }
+            
+            .sales-withdrawal-stats-grid > div {
+                padding: 12px !important;
+            }
+            
+            .sales-withdrawal-stats-grid [id*="sales"] {
+                font-size: 16px !important;
+            }
+            
             .tabs {
                 gap: 2px;
                 overflow-x: auto;
@@ -783,118 +797,11 @@
 
         <!-- 任务管理标签页 -->
         <div id="tasks" class="tab-content">
-            <!-- 任务发布改为免费发布个人业务 -->
-            <div class="workspace-card" style="margin-bottom: 24px;">
-                <div class="card-header">
-                    <div class="card-icon">⚖️</div>
-                    <div>
-                        <h3 class="card-title">免费发布个人业务</h3>
-                        <p class="card-subtitle">快速发布个人法律服务需求</p>
-                    </div>
-                </div>
-                
-                <form id="taskForm">
-                    <div class="form-group">
-                        <label class="form-label">业务类型</label>
-                        <select class="form-select" id="taskType" required>
-                            <option value="">选择业务类型</option>
-                            <option value="律师函">律师函</option>
-                            <option value="债务催收">债务催收</option>
-                            <option value="合同审查">合同审查</option>
-                            <option value="法律咨询">法律咨询</option>
-                            <option value="诉讼代理">诉讼代理</option>
-                            <option value="其他">其他</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">业务标题</label>
-                        <input type="text" class="form-input" id="taskTitle" placeholder="请输入业务标题" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">业务描述</label>
-                        <textarea class="form-textarea" id="taskDescription" placeholder="请详细描述业务需求..." required></textarea>
-                    </div>
-                    
-                    <div class="btn-group">
-                        <button type="submit" class="btn btn-primary">免费发布</button>
-                        <button type="button" class="btn btn-secondary" onclick="clearTaskForm()">清空</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- 数据上传改为付费上传 -->
-            <div class="workspace-card" style="margin-bottom: 24px;">
-                <div class="card-header">
-                    <div class="card-icon">📊</div>
-                    <div>
-                        <h3 class="card-title">付费数据上传</h3>
-                        <p class="card-subtitle">上传机构业务数据，支付上传费用</p>
-                    </div>
-                </div>
-                
-                <form id="dataUploadForm">
-                    <div class="form-group">
-                        <label class="form-label">数据类型</label>
-                        <select class="form-select" id="dataType" required>
-                            <option value="">选择数据类型</option>
-                            <option value="客户信息">客户信息</option>
-                            <option value="案件数据">案件数据</option>
-                            <option value="合同模板">合同模板</option>
-                            <option value="法律文书">法律文书</option>
-                            <option value="其他">其他</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">数据描述</label>
-                        <input type="text" class="form-input" id="dataDescription" placeholder="请简要描述数据内容" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">文件上传</label>
-                        <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
-                            <div class="upload-icon">📁</div>
-                            <div class="upload-text">点击选择文件或拖拽文件到此处</div>
-                            <div class="upload-hint">支持 Excel、CSV、PDF、Word 格式</div>
-                        </div>
-                        <input type="file" id="fileInput" style="display: none;" accept=".xlsx,.xls,.csv,.pdf,.doc,.docx" multiple>
-                    </div>
-
-                    <!-- 支付方式选择 -->
-                    <div class="form-group">
-                        <label class="form-label">支付方式</label>
-                        <div style="display: flex; gap: 12px; margin-bottom: 12px;">
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="radio" name="paymentMethod" value="wechat" checked>
-                                <span>💬 微信支付</span>
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="radio" name="paymentMethod" value="alipay">
-                                <span>💰 支付宝</span>
-                            </label>
-                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                                <input type="radio" name="paymentMethod" value="balance">
-                                <span>💳 余额支付</span>
-                            </label>
-                        </div>
-                        <div style="color: var(--text-secondary); font-size: 12px;">
-                            上传费用：¥50.00 | 当前余额：<span id="currentBalance">¥0.00</span>
-                        </div>
-                    </div>
-                    
-                    <div class="btn-group">
-                        <button type="submit" class="btn btn-primary">支付并上传数据</button>
-                        <button type="button" class="btn btn-secondary" onclick="clearDataForm()">清空</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- 我的任务列表（去掉刷新按钮） -->
-            <div class="task-list">
+            <!-- 我的任务列表 -->
+            <div class="task-list" style="margin-bottom: 32px;">
                 <div class="task-list-header">
                     <h3 class="task-list-title">我的任务</h3>
+                    <button class="btn btn-secondary" onclick="refreshTasks()">刷新</button>
                 </div>
                 <div id="taskListBody">
                     <!-- 示例任务 -->
@@ -902,7 +809,7 @@
                         <div class="task-info">
                             <div>
                                 <div class="task-title">债务催收律师函</div>
-                                <div class="task-details">发布时间：2024-01-15 | 类型：个人业务</div>
+                                <div class="task-details">发布时间：2024-01-15 | 预算：¥500</div>
                             </div>
                             <span class="task-status status-processing">处理中</span>
                         </div>
@@ -911,7 +818,7 @@
                         <div class="task-info">
                             <div>
                                 <div class="task-title">合同审查服务</div>
-                                <div class="task-details">发布时间：2024-01-14 | 类型：个人业务</div>
+                                <div class="task-details">发布时间：2024-01-14 | 预算：¥800</div>
                             </div>
                             <span class="task-status status-completed">已完成</span>
                         </div>
@@ -920,10 +827,56 @@
                         <div class="task-info">
                             <div>
                                 <div class="task-title">法律咨询服务</div>
-                                <div class="task-details">发布时间：2024-01-13 | 类型：个人业务</div>
+                                <div class="task-details">发布时间：2024-01-13 | 预算：¥300</div>
                             </div>
                             <span class="task-status status-pending">待处理</span>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 收益统计 -->
+            <div class="earnings-summary">
+                <h3 class="earnings-title">收益统计</h3>
+                <div class="earnings-grid">
+                    <div class="earnings-item">
+                        <div class="earnings-value">¥2,580</div>
+                        <div class="earnings-label">总收益</div>
+                    </div>
+                    <div class="earnings-item">
+                        <div class="earnings-value">¥680</div>
+                        <div class="earnings-label">本月收益</div>
+                    </div>
+                    <div class="earnings-item">
+                        <div class="earnings-value">¥150</div>
+                        <div class="earnings-label">今日收益</div>
+                    </div>
+                    <div class="earnings-item">
+                        <div class="earnings-value">8</div>
+                        <div class="earnings-label">完成任务</div>
+                    </div>
+                </div>
+                
+                <!-- 收益趋势图表 -->
+                <div class="earnings-chart">
+                    <h4 class="chart-title">本月收益趋势</h4>
+                    <div class="chart-container">
+                        <div class="chart-bar" style="height: 40%;" data-value="¥120"></div>
+                        <div class="chart-bar" style="height: 60%;" data-value="¥180"></div>
+                        <div class="chart-bar" style="height: 80%;" data-value="¥240"></div>
+                        <div class="chart-bar" style="height: 30%;" data-value="¥90"></div>
+                        <div class="chart-bar" style="height: 70%;" data-value="¥210"></div>
+                        <div class="chart-bar" style="height: 50%;" data-value="¥150"></div>
+                        <div class="chart-bar" style="height: 90%;" data-value="¥270"></div>
+                    </div>
+                    <div class="chart-labels">
+                        <span>周一</span>
+                        <span>周二</span>
+                        <span>周三</span>
+                        <span>周四</span>
+                        <span>周五</span>
+                        <span>周六</span>
+                        <span>周日</span>
                     </div>
                 </div>
             </div>
@@ -956,24 +909,24 @@
                     提现汇总统计
                 </h3>
                 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
-                    <div style="text-align: center; padding: 16px; background: rgba(156, 39, 176, 0.1); border-radius: 12px; border: 1px solid rgba(156, 39, 176, 0.2);">
-                        <div style="font-size: 20px; font-weight: 700; color: #9c27b0; margin-bottom: 4px;" id="salesTotalWithdrawn">¥0.00</div>
+                <div class="sales-withdrawal-stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+                    <div style="text-align: center; padding: 16px; background: var(--glass-bg); border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div style="font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;" id="salesTotalWithdrawn">¥0.00</div>
                         <div style="color: var(--text-secondary); font-size: 12px;">累计提现</div>
                     </div>
                     
-                    <div style="text-align: center; padding: 16px; background: rgba(33, 150, 243, 0.1); border-radius: 12px; border: 1px solid rgba(33, 150, 243, 0.2);">
-                        <div style="font-size: 20px; font-weight: 700; color: #2196f3; margin-bottom: 4px;" id="salesWithdrawalCount">0</div>
+                    <div style="text-align: center; padding: 16px; background: var(--glass-bg); border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div style="font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;" id="salesWithdrawalCount">0</div>
                         <div style="color: var(--text-secondary); font-size: 12px;">提现次数</div>
                     </div>
                     
-                    <div style="text-align: center; padding: 16px; background: rgba(255, 152, 0, 0.1); border-radius: 12px; border: 1px solid rgba(255, 152, 0, 0.2);">
-                        <div style="font-size: 20px; font-weight: 700; color: #ff9800; margin-bottom: 4px;" id="salesAverageAmount">¥0.00</div>
+                    <div style="text-align: center; padding: 16px; background: var(--glass-bg); border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div style="font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;" id="salesAverageAmount">¥0.00</div>
                         <div style="color: var(--text-secondary); font-size: 12px;">平均金额</div>
                     </div>
                     
-                    <div style="text-align: center; padding: 16px; background: rgba(244, 67, 54, 0.1); border-radius: 12px; border: 1px solid rgba(244, 67, 54, 0.2);">
-                        <div style="font-size: 20px; font-weight: 700; color: #f44336; margin-bottom: 4px;" id="salesPendingAmount">¥0.00</div>
+                    <div style="text-align: center; padding: 16px; background: var(--glass-bg); border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div style="font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;" id="salesPendingAmount">¥0.00</div>
                         <div style="color: var(--text-secondary); font-size: 12px;">待处理金额</div>
                     </div>
                 </div>
