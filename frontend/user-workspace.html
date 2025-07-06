@@ -384,44 +384,7 @@
             color: var(--text-secondary);
         }
 
-        /* 标签页样式 */
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 24px;
-            border-bottom: 1px solid var(--glass-border);
-            padding-bottom: 16px;
-        }
-
-        .tab {
-            background: transparent;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .tab:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-primary);
-        }
-
-        .tab.active {
-            background: var(--gradient-primary);
-            color: white;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
+        /* 标签页样式 - 删除重复定义 */
 
         /* 响应式设计 */
         @media (max-width: 768px) {
@@ -703,7 +666,7 @@
             </a>
             <div class="nav-menu">
                 <a href="/user" class="nav-link active">用户工作台</a>
-                <a href="/earnings-calculator" class="nav-link">收益计算</a>
+                <a href="/calculator" class="nav-link">收益计算</a>
                 <div class="user-info">
                     <span class="user-name">律客用户</span>
                     <div class="user-avatar">用</div>

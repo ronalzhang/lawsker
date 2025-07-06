@@ -639,8 +639,8 @@
                     // 根据角色跳转到对应工作台
                     setTimeout(() => {
                         const workspaceMap = {
-                            'lawyer': 'lawyer-workspace.html',
-                            'sales': 'user-workspace.html'
+                            'lawyer': '/legal',
+                            'sales': '/user'
                         };
                         window.location.href = workspaceMap[selectedRole] || '/';
                     }, 1000);
@@ -820,10 +820,10 @@
             const role = localStorage.getItem('userRole');
             if (role) {
                 const workspaceMap = {
-                    'lawyer': 'lawyer-workspace.html',
-                    'sales': 'user-workspace.html',
-                    'institution': 'institution-workspace.html',
-                    'admin': 'admin-config.html'
+                    'lawyer': '/legal',
+                    'sales': '/user',
+                    'institution': '/institution',
+                    'admin': '/admin'
                 };
                 window.location.href = workspaceMap[role] || '/console';
             }
