@@ -10,21 +10,153 @@
     <link rel="stylesheet" href="css/lawsker-glass.css">
     <style>
         /* 页面特定样式 */
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .workspace-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-radius));
+            -webkit-backdrop-filter: blur(var(--blur-radius));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            box-shadow: 0 8px 32px var(--glass-shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .workspace-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .workspace-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .workspace-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: var(--gradient-primary);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .card-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 16px;
             margin-bottom: 24px;
         }
 
-        .content-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            margin-top: 24px;
-        }
-
-        .sales-stat {
+        .stat-card {
             background: var(--glass-bg);
             backdrop-filter: blur(var(--blur-radius));
             -webkit-backdrop-filter: blur(var(--blur-radius));
@@ -32,80 +164,61 @@
             border-radius: var(--border-radius);
             padding: 20px;
             box-shadow: 0 8px 32px var(--glass-shadow);
-            transition: transform 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            text-align: center;
         }
 
-        .sales-stat::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--gradient-success);
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-
-        .sales-stat:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
-        }
-
-        .sales-stat:hover::before {
-            transform: scaleX(1);
-        }
-
-        .stat-trend {
-            font-size: 12px;
-            font-weight: 500;
-            padding: 4px 8px;
-            border-radius: 8px;
-            margin-top: 8px;
-            display: inline-block;
-        }
-
-        .trend-up {
-            background: rgba(132, 250, 176, 0.2);
-            color: #84fab0;
-        }
-
-        .trend-down {
-            background: rgba(253, 121, 168, 0.2);
-            color: #fd79a8;
-        }
-
-        .quick-actions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .quick-action-btn {
-            background: var(--glass-bg);
-            backdrop-filter: blur(var(--blur-radius));
-            -webkit-backdrop-filter: blur(var(--blur-radius));
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            padding: 16px;
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
             color: var(--text-primary);
-            text-decoration: none;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .file-upload-area {
+            border: 2px dashed var(--glass-border);
+            border-radius: 8px;
+            padding: 40px 20px;
             text-align: center;
             transition: all 0.3s ease;
-            font-size: 14px;
-            font-weight: 500;
             cursor: pointer;
+            margin-bottom: 16px;
         }
 
-        .quick-action-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-2px);
+        .file-upload-area:hover {
+            border-color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.05);
         }
 
-        .leads-table {
+        .file-upload-area.dragover {
+            border-color: var(--primary-color);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+
+        .upload-text {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .upload-hint {
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .task-list {
             background: var(--glass-bg);
             backdrop-filter: blur(var(--blur-radius));
             -webkit-backdrop-filter: blur(var(--blur-radius));
@@ -115,7 +228,7 @@
             box-shadow: 0 8px 32px var(--glass-shadow);
         }
 
-        .leads-header {
+        .task-list-header {
             padding: 20px;
             border-bottom: 1px solid var(--glass-border);
             display: flex;
@@ -123,48 +236,44 @@
             align-items: center;
         }
 
-        .leads-title {
+        .task-list-title {
             font-size: 18px;
             font-weight: 600;
             color: var(--text-primary);
         }
 
-        .leads-body {
-            padding: 0;
-        }
-
-        .lead-item {
+        .task-item {
             padding: 16px 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             transition: background 0.3s ease;
         }
 
-        .lead-item:hover {
+        .task-item:hover {
             background: rgba(255, 255, 255, 0.05);
         }
 
-        .lead-item:last-child {
+        .task-item:last-child {
             border-bottom: none;
         }
 
-        .lead-info {
+        .task-info {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .lead-name {
+        .task-title {
             font-weight: 600;
             color: var(--text-primary);
             margin-bottom: 4px;
         }
 
-        .lead-details {
+        .task-details {
             font-size: 12px;
             color: var(--text-secondary);
         }
 
-        .lead-status {
+        .task-status {
             padding: 4px 8px;
             border-radius: 8px;
             font-size: 11px;
@@ -173,27 +282,22 @@
             letter-spacing: 0.5px;
         }
 
-        .status-new {
-            background: rgba(59, 130, 246, 0.2);
-            color: #3b82f6;
-        }
-
-        .status-contacted {
+        .status-pending {
             background: rgba(245, 158, 11, 0.2);
             color: #f59e0b;
         }
 
-        .status-qualified {
+        .status-processing {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+
+        .status-completed {
             background: rgba(16, 185, 129, 0.2);
             color: #10b981;
         }
 
-        .status-closed {
-            background: rgba(139, 92, 246, 0.2);
-            color: #8b5cf6;
-        }
-
-        .sidebar-widget {
+        .earnings-summary {
             background: var(--glass-bg);
             backdrop-filter: blur(var(--blur-radius));
             -webkit-backdrop-filter: blur(var(--blur-radius));
@@ -201,63 +305,53 @@
             border-radius: var(--border-radius);
             padding: 20px;
             box-shadow: 0 8px 32px var(--glass-shadow);
-            margin-bottom: 20px;
+            margin-top: 24px;
         }
 
-        .widget-title {
-            font-size: 16px;
+        .earnings-title {
+            font-size: 18px;
             font-weight: 600;
             color: var(--text-primary);
             margin-bottom: 16px;
         }
 
-        .target-progress {
-            margin-bottom: 16px;
+        .earnings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
         }
 
-        .progress-label {
-            display: flex;
-            justify-content: space-between;
+        .earnings-item {
+            text-align: center;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .earnings-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .earnings-label {
             font-size: 12px;
             color: var(--text-secondary);
-            margin-bottom: 8px;
         }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--gradient-success);
-            transition: width 0.3s ease;
-        }
-
-        /* 特定图标颜色 */
-        .icon-green { color: #10b981; }
-        .icon-blue { color: #3b82f6; }
-        .icon-purple { color: #8b5cf6; }
-        .icon-orange { color: #f59e0b; }
 
         /* 响应式设计 */
         @media (max-width: 768px) {
-            .content-grid {
+            .workspace-grid {
                 grid-template-columns: 1fr;
-                gap: 16px;
             }
             
-            .quick-actions {
+            .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
-        }
-
-        @media (max-width: 480px) {
-            .quick-actions {
-                grid-template-columns: 1fr;
+            
+            .earnings-grid {
+                grid-template-columns: 1fr 1fr;
             }
         }
     </style>
@@ -266,17 +360,16 @@
     <!-- 导航栏 -->
     <nav class="navbar">
         <div class="navbar-content">
-            <a href="index.html" class="logo">
-                Lawsker
-            </a>
+            <a href="index.html" class="logo">Lawsker</a>
             <div class="nav-menu">
                 <a href="dashboard.html" class="nav-link">仪表盘</a>
                 <a href="sales-workspace.html" class="nav-link active">销售工作台</a>
                 <a href="lawyer-workspace.html" class="nav-link">律师工作台</a>
-                <a href="institution-workspace.html" class="nav-link">机构工作台</a>
-            <div class="user-info">
-                <span class="user-name">销售顾问</span>
-                <div class="user-avatar">销</div>
+                <a href="earnings-calculator.html" class="nav-link">收益计算</a>
+                <a href="withdrawal.html" class="nav-link">提现管理</a>
+                <div class="user-info">
+                    <span class="user-name">销售顾问</span>
+                    <div class="user-avatar">销</div>
                     <button class="logout-btn" onclick="logout()">退出</button>
                 </div>
             </div>
@@ -288,250 +381,308 @@
         <!-- 页面标题 -->
         <div class="page-header">
             <h1 class="page-title">销售工作台</h1>
-            <p class="page-subtitle">管理客户关系，跟进销售机会，达成业绩目标</p>
-        </div>
-
-        <!-- 快速操作 -->
-        <div class="quick-actions">
-            <button class="quick-action-btn" onclick="createNewLead()">
-                📋 新建客户
-            </button>
-            <button class="quick-action-btn" onclick="scheduleFollowUp()">
-                📅 安排跟进
-            </button>
-            <button class="quick-action-btn" onclick="generateReport()">
-                📊 生成报告
-            </button>
-            <button class="quick-action-btn" onclick="viewCommissions()">
-                💰 查看佣金
-            </button>
+            <p class="page-subtitle">发布任务、上传数据、管理收益 - 一站式业务管理平台</p>
         </div>
 
         <!-- 统计卡片 -->
         <div class="stats-grid">
-            <div class="sales-stat">
-                <div class="stat-header">
-                    <div class="stat-icon icon-green">🎯</div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalTasks">0</div>
+                <div class="stat-label">发布任务</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="uploadedData">0</div>
+                <div class="stat-label">上传数据</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalEarnings">¥0</div>
+                <div class="stat-label">总收益</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="monthlyEarnings">¥0</div>
+                <div class="stat-label">本月收益</div>
+            </div>
+        </div>
+
+        <!-- 主要功能区域 -->
+        <div class="workspace-grid">
+            <!-- 任务发布 -->
+            <div class="workspace-card">
+                <div class="card-header">
+                    <div class="card-icon">⚖️</div>
                     <div>
-                        <div class="stat-value">85%</div>
-                        <div class="stat-label">月度目标完成率</div>
-                        <div class="stat-trend trend-up">↗ +12%</div>
+                        <h3 class="card-title">任务发布</h3>
+                        <p class="card-subtitle">快速发布单个法律服务任务</p>
                     </div>
                 </div>
+                
+                <form id="taskForm">
+                    <div class="form-group">
+                        <label class="form-label">任务类型</label>
+                        <select class="form-select" id="taskType" required>
+                            <option value="">选择任务类型</option>
+                            <option value="律师函">律师函</option>
+                            <option value="债务催收">债务催收</option>
+                            <option value="合同审查">合同审查</option>
+                            <option value="法律咨询">法律咨询</option>
+                            <option value="诉讼代理">诉讼代理</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">任务标题</label>
+                        <input type="text" class="form-input" id="taskTitle" placeholder="请输入任务标题" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">任务描述</label>
+                        <textarea class="form-textarea" id="taskDescription" placeholder="请详细描述任务需求..." required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">预算金额</label>
+                        <input type="number" class="form-input" id="taskBudget" placeholder="请输入预算金额" min="1" required>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">发布任务</button>
+                        <button type="button" class="btn btn-secondary" onclick="clearTaskForm()">清空</button>
+                    </div>
+                </form>
             </div>
 
-            <div class="sales-stat">
-                <div class="stat-header">
-                    <div class="stat-icon icon-blue">👥</div>
+            <!-- 数据上传 -->
+            <div class="workspace-card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
                     <div>
-                        <div class="stat-value">24</div>
-                        <div class="stat-label">本月新客户</div>
-                        <div class="stat-trend trend-up">↗ +8</div>
+                        <h3 class="card-title">数据上传</h3>
+                        <p class="card-subtitle">上传机构业务数据，获得相应收益</p>
                     </div>
                 </div>
+                
+                <form id="dataUploadForm">
+                    <div class="form-group">
+                        <label class="form-label">数据类型</label>
+                        <select class="form-select" id="dataType" required>
+                            <option value="">选择数据类型</option>
+                            <option value="客户信息">客户信息</option>
+                            <option value="案件数据">案件数据</option>
+                            <option value="合同模板">合同模板</option>
+                            <option value="法律文书">法律文书</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">数据描述</label>
+                        <input type="text" class="form-input" id="dataDescription" placeholder="请简要描述数据内容" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">文件上传</label>
+                        <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+                            <div class="upload-icon">📁</div>
+                            <div class="upload-text">点击选择文件或拖拽文件到此处</div>
+                            <div class="upload-hint">支持 Excel、CSV、PDF、Word 格式</div>
+                        </div>
+                        <input type="file" id="fileInput" style="display: none;" accept=".xlsx,.xls,.csv,.pdf,.doc,.docx" multiple>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">预期收益</label>
+                        <input type="number" class="form-input" id="expectedEarnings" placeholder="请输入预期收益金额" min="1" required>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">上传数据</button>
+                        <button type="button" class="btn btn-secondary" onclick="clearDataForm()">清空</button>
+                    </div>
+                </form>
             </div>
+        </div>
 
-            <div class="sales-stat">
-                <div class="stat-header">
-                    <div class="stat-icon icon-purple">💼</div>
-                    <div>
-                        <div class="stat-value">16</div>
-                        <div class="stat-label">活跃机会</div>
-                        <div class="stat-trend trend-up">↗ +3</div>
+        <!-- 任务列表 -->
+        <div class="task-list">
+            <div class="task-list-header">
+                <h3 class="task-list-title">我的任务</h3>
+                <button class="btn btn-secondary" onclick="refreshTasks()">刷新</button>
+            </div>
+            <div id="taskListBody">
+                <!-- 示例任务 -->
+                <div class="task-item">
+                    <div class="task-info">
+                        <div>
+                            <div class="task-title">债务催收律师函</div>
+                            <div class="task-details">发布时间：2024-01-15 | 预算：¥500</div>
+                        </div>
+                        <span class="task-status status-processing">处理中</span>
                     </div>
                 </div>
-            </div>
-
-            <div class="sales-stat">
-                <div class="stat-header">
-                    <div class="stat-icon icon-orange">💰</div>
-                    <div>
-                        <div class="stat-value">¥48,500</div>
-                        <div class="stat-label">本月收入</div>
-                        <div class="stat-trend trend-up">↗ +15%</div>
+                <div class="task-item">
+                    <div class="task-info">
+                        <div>
+                            <div class="task-title">合同审查服务</div>
+                            <div class="task-details">发布时间：2024-01-14 | 预算：¥800</div>
+                        </div>
+                        <span class="task-status status-completed">已完成</span>
+                    </div>
+                </div>
+                <div class="task-item">
+                    <div class="task-info">
+                        <div>
+                            <div class="task-title">法律咨询服务</div>
+                            <div class="task-details">发布时间：2024-01-13 | 预算：¥300</div>
+                        </div>
+                        <span class="task-status status-pending">待处理</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 内容网格 -->
-        <div class="content-grid">
-            <!-- 客户线索列表 -->
-            <div class="leads-table">
-                <div class="leads-header">
-                    <h3 class="leads-title">最新客户线索</h3>
-                    <button class="btn btn-primary" onclick="refreshLeads()">🔄 刷新</button>
+        <!-- 收益统计 -->
+        <div class="earnings-summary">
+            <h3 class="earnings-title">收益统计</h3>
+            <div class="earnings-grid">
+                <div class="earnings-item">
+                    <div class="earnings-value">¥2,580</div>
+                    <div class="earnings-label">总收益</div>
                 </div>
-                <div class="leads-body">
-                    <div class="lead-item">
-                        <div class="lead-info">
-                            <div>
-                                <div class="lead-name">张先生</div>
-                                <div class="lead-details">企业法律顾问 · 北京 · 刚刚联系</div>
-                            </div>
-                            <span class="lead-status status-new">新客户</span>
-                        </div>
-                    </div>
-                    
-                    <div class="lead-item">
-                        <div class="lead-info">
-                            <div>
-                                <div class="lead-name">李女士</div>
-                                <div class="lead-details">合同纠纷 · 上海 · 2小时前</div>
-                            </div>
-                            <span class="lead-status status-contacted">已联系</span>
-                        </div>
-                    </div>
-                    
-                    <div class="lead-item">
-                        <div class="lead-info">
-                            <div>
-                                <div class="lead-name">王总</div>
-                                <div class="lead-details">债务催收 · 深圳 · 昨天</div>
-                            </div>
-                            <span class="lead-status status-qualified">已确认</span>
-                        </div>
-                    </div>
-                    
-                    <div class="lead-item">
-                        <div class="lead-info">
-                            <div>
-                                <div class="lead-name">陈经理</div>
-                                <div class="lead-details">知识产权 · 广州 · 2天前</div>
-                            </div>
-                            <span class="lead-status status-closed">已成交</span>
-                        </div>
-                    </div>
+                <div class="earnings-item">
+                    <div class="earnings-value">¥680</div>
+                    <div class="earnings-label">本月收益</div>
                 </div>
-            </div>
-
-            <!-- 侧边栏 -->
-            <div>
-                <!-- 目标进度 -->
-                <div class="sidebar-widget">
-                    <h3 class="widget-title">月度目标</h3>
-                    <div class="target-progress">
-                        <div class="progress-label">
-                            <span>新客户目标</span>
-                            <span>24/30</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 80%"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="target-progress">
-                        <div class="progress-label">
-                            <span>收入目标</span>
-                            <span>¥48.5K/¥60K</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 81%"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="target-progress">
-                        <div class="progress-label">
-                            <span>跟进率</span>
-                            <span>95%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 95%"></div>
-                        </div>
-                    </div>
+                <div class="earnings-item">
+                    <div class="earnings-value">¥1,200</div>
+                    <div class="earnings-label">任务收益</div>
                 </div>
-
-                <!-- 今日任务 -->
-                <div class="sidebar-widget">
-                    <h3 class="widget-title">今日任务</h3>
-                    <div style="color: var(--text-secondary); font-size: 14px; line-height: 1.6;">
-                        • 回访张先生的企业需求<br>
-                        • 准备李女士的合同方案<br>
-                        • 跟进王总的付款进度<br>
-                        • 整理本周销售报告
-                    </div>
-                </div>
-
-                <!-- 团队排名 -->
-                <div class="sidebar-widget">
-                    <h3 class="widget-title">团队排名</h3>
-                    <div style="color: var(--text-secondary); font-size: 14px; line-height: 1.8;">
-                        🥇 张销售 - ¥68.2K<br>
-                        🥈 <strong style="color: var(--text-primary);">你</strong> - ¥48.5K<br>
-                        🥉 李销售 - ¥42.1K<br>
-                        4. 王销售 - ¥38.7K<br>
-                        5. 陈销售 - ¥35.9K
-                    </div>
+                <div class="earnings-item">
+                    <div class="earnings-value">¥1,380</div>
+                    <div class="earnings-label">数据收益</div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // 创建新客户
-        function createNewLead() {
-            // 这里可以打开一个模态框或跳转到新客户页面
-            alert('新客户创建功能');
-        }
-
-        // 安排跟进
-        function scheduleFollowUp() {
-            alert('跟进安排功能');
-        }
-
-        // 生成报告
-        function generateReport() {
-            alert('报告生成功能');
-        }
-
-        // 查看佣金
-        function viewCommissions() {
-            alert('佣金查看功能');
-        }
-
-        // 刷新线索
-        function refreshLeads() {
-            // 模拟刷新动画
-            const btn = event.target;
-            btn.style.opacity = '0.6';
-            btn.style.pointerEvents = 'none';
-            
-            setTimeout(() => {
-                btn.style.opacity = '1';
-                btn.style.pointerEvents = 'auto';
-                alert('线索已刷新');
-            }, 1000);
-        }
-
         // 退出登录
         function logout() {
             if (confirm('确定要退出登录吗？')) {
-                // 在实际应用中，这里会清除token并重定向
-                console.log('用户退出登录');
+                localStorage.removeItem('authToken');
                 window.location.href = 'login.html';
             }
         }
 
-        // 页面初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('销售工作台已加载');
+        // 清空任务表单
+        function clearTaskForm() {
+            document.getElementById('taskForm').reset();
+        }
+
+        // 清空数据表单
+        function clearDataForm() {
+            document.getElementById('dataUploadForm').reset();
+        }
+
+        // 刷新任务列表
+        function refreshTasks() {
+            // 这里可以添加从服务器获取任务列表的逻辑
+            console.log('刷新任务列表');
+        }
+
+        // 任务发布表单提交
+        document.getElementById('taskForm').addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            // 可以在这里加载真实的销售数据
-            loadSalesData();
+            const formData = {
+                type: document.getElementById('taskType').value,
+                title: document.getElementById('taskTitle').value,
+                description: document.getElementById('taskDescription').value,
+                budget: document.getElementById('taskBudget').value
+            };
+            
+            console.log('发布任务:', formData);
+            alert('任务发布成功！');
+            clearTaskForm();
+            
+            // 更新统计数据
+            updateStats();
         });
 
-        // 加载销售数据
-        function loadSalesData() {
-            // 模拟数据加载
-            console.log('正在加载销售数据...');
+        // 数据上传表单提交
+        document.getElementById('dataUploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            // 这里可以调用API获取真实数据
-            // fetch('/api/v1/sales/dashboard')
-            //     .then(response => response.json())
-            //     .then(data => {
-            //         // 更新页面数据
-            //     });
+            const formData = {
+                type: document.getElementById('dataType').value,
+                description: document.getElementById('dataDescription').value,
+                expectedEarnings: document.getElementById('expectedEarnings').value,
+                files: document.getElementById('fileInput').files
+            };
+            
+            console.log('上传数据:', formData);
+            alert('数据上传成功！');
+            clearDataForm();
+            
+            // 更新统计数据
+            updateStats();
+        });
+
+        // 文件拖拽上传
+        const fileUploadArea = document.querySelector('.file-upload-area');
+        const fileInput = document.getElementById('fileInput');
+
+        fileUploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+
+        fileUploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        });
+
+        fileUploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            fileInput.files = files;
+            
+            // 显示文件信息
+            if (files.length > 0) {
+                const fileNames = Array.from(files).map(file => file.name).join(', ');
+                document.querySelector('.upload-text').textContent = `已选择 ${files.length} 个文件: ${fileNames}`;
+            }
+        });
+
+        // 文件选择处理
+        fileInput.addEventListener('change', function() {
+            const files = this.files;
+            if (files.length > 0) {
+                const fileNames = Array.from(files).map(file => file.name).join(', ');
+                document.querySelector('.upload-text').textContent = `已选择 ${files.length} 个文件: ${fileNames}`;
+            }
+        });
+
+        // 更新统计数据
+        function updateStats() {
+            // 模拟统计数据更新
+            const totalTasks = parseInt(document.getElementById('totalTasks').textContent) + 1;
+            const uploadedData = parseInt(document.getElementById('uploadedData').textContent) + 1;
+            
+            document.getElementById('totalTasks').textContent = totalTasks;
+            document.getElementById('uploadedData').textContent = uploadedData;
         }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化统计数据
+            document.getElementById('totalTasks').textContent = '5';
+            document.getElementById('uploadedData').textContent = '3';
+            document.getElementById('totalEarnings').textContent = '¥2,580';
+            document.getElementById('monthlyEarnings').textContent = '¥680';
+        });
     </script>
 </body>
 </html>

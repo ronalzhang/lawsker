@@ -373,7 +373,7 @@
 
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 24px;
         }
 
@@ -565,33 +565,58 @@
         }
 
         /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+            
+            .workspace-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+        }
+
         @media (max-width: 768px) {
+            .navbar {
+                padding: 12px var(--app-padding);
+            }
+            
             .navbar-content {
                 flex-direction: column;
                 gap: 16px;
             }
             
             .nav-menu {
-                flex-wrap: wrap;
-                gap: 16px;
+                flex-direction: column;
+                gap: 12px;
+                width: 100%;
+                text-align: center;
             }
             
             .auth-buttons {
-                flex-wrap: wrap;
+                flex-direction: column;
                 gap: 8px;
+                width: 100%;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 200px;
+                margin: 0 auto;
             }
             
             .hero-section {
-                padding: 60px var(--app-padding) 40px;
+                padding: 80px var(--app-padding) 40px;
             }
             
             .features-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
                 gap: 16px;
             }
             
             .workspace-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
                 gap: 16px;
             }
             
@@ -608,16 +633,64 @@
 
         @media (max-width: 480px) {
             .navbar {
-                padding: 12px var(--app-padding);
+                padding: 10px var(--app-padding);
+            }
+            
+            .navbar-content {
+                gap: 12px;
+            }
+            
+            .nav-menu {
+                gap: 8px;
+            }
+            
+            .logo {
+                font-size: 20px;
             }
             
             .hero-section {
-                padding: 40px var(--app-padding) 32px;
+                padding: 60px var(--app-padding) 32px;
             }
             
             .features-section,
             .workspace-section {
                 padding: 40px var(--app-padding);
+            }
+            
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .workspace-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .feature-card {
+                padding: 16px;
+            }
+            
+            .workspace-card {
+                padding: 20px 16px;
+            }
+            
+            .feature-icon,
+            .workspace-icon {
+                font-size: 36px;
+                margin-bottom: 12px;
+            }
+            
+            .feature-title,
+            .workspace-name {
+                font-size: 16px;
+                margin-bottom: 8px;
+            }
+            
+            .feature-description,
+            .workspace-description {
+                font-size: 13px;
+                line-height: 1.4;
             }
             
             .footer {
