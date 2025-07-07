@@ -406,6 +406,608 @@
 - `case_logs` - 案件日志表
 - `lawyer_workloads` - 律师工作负荷表
 
+### **新增统计分析数据表** 🆕 (管理后台支持)
+
+#### **访问统计分析表**
+- `access_logs` - 访问日志记录表
+- `daily_statistics` - 日统计汇总表
+- `user_activities` - 用户活动轨迹表
+- `ip_statistics` - IP访问统计表
+- `page_analytics` - 页面访问分析表
+
+#### **业绩排行分析表**
+- `lawyer_performance_stats` - 律师业绩统计表
+- `user_performance_stats` - 用户业绩统计表
+- `ranking_snapshots` - 排行榜快照表
+- `performance_history` - 历史业绩记录表
+
+#### **系统监控运维表**
+- `system_logs` - 系统运行日志表
+- `backup_records` - 数据备份记录表
+- `system_metrics` - 系统监控指标表
+- `alert_records` - 系统预警记录表
+- `maintenance_logs` - 运维操作日志表
+
+#### **统计汇总表**
+- `statistics_summary` - 多维度统计汇总表
+- `dashboard_cache` - 仪表盘数据缓存表
+- `report_schedules` - 定时报表配置表
+
+---
+
+## 📋 **详细数据库表结构设计** 🆕
+
+### **访问统计分析表结构**
+
+#### `access_logs` - 访问日志记录表
+```sql
+CREATE TABLE access_logs (
+    id BIGSERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    session_id VARCHAR(64),
+    ip_address INET NOT NULL,
+    user_agent TEXT,
+    referer TEXT,
+    request_path VARCHAR(500) NOT NULL,
+    request_method VARCHAR(10) DEFAULT 'GET',
+    status_code INTEGER DEFAULT 200,
+    response_time INTEGER, -- 响应时间(毫秒)
+    device_type VARCHAR(20), -- mobile/desktop/tablet
+    browser VARCHAR(50),
+    os VARCHAR(50),
+    country VARCHAR(50),
+    region VARCHAR(50),
+    city VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_access_logs_user_id (user_id),
+    INDEX idx_access_logs_ip (ip_address),
+    INDEX idx_access_logs_created_at (created_at),
+    INDEX idx_access_logs_path (request_path)
+);
+```
+
+#### `daily_statistics` - 日统计汇总表
+```sql
+CREATE TABLE daily_statistics (
+    id SERIAL PRIMARY KEY,
+    stat_date DATE UNIQUE NOT NULL,
+    total_pv INTEGER DEFAULT 0,
+    total_uv INTEGER DEFAULT 0,
+    unique_ips INTEGER DEFAULT 0,
+    new_users INTEGER DEFAULT 0,
+    new_lawyers INTEGER DEFAULT 0,
+    new_cases INTEGER DEFAULT 0,
+    total_revenue DECIMAL(15,2) DEFAULT 0,
+    mobile_visits INTEGER DEFAULT 0,
+    desktop_visits INTEGER DEFAULT 0,
+    avg_response_time INTEGER DEFAULT 0,
+    bounce_rate DECIMAL(5,2) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_daily_statistics_date (stat_date)
+);
+```
+
+#### `ip_statistics` - IP访问统计表
+```sql
+CREATE TABLE ip_statistics (
+    id SERIAL PRIMARY KEY,
+    ip_address INET NOT NULL,
+    first_visit TIMESTAMP NOT NULL,
+    last_visit TIMESTAMP NOT NULL,
+    visit_count INTEGER DEFAULT 1,
+    total_page_views INTEGER DEFAULT 1,
+    country VARCHAR(50),
+    region VARCHAR(50),
+    city VARCHAR(100),
+    is_suspicious BOOLEAN DEFAULT FALSE,
+    risk_score INTEGER DEFAULT 0, -- 0-100风险评分
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_ip (ip_address),
+    INDEX idx_ip_statistics_country (country),
+    INDEX idx_ip_statistics_suspicious (is_suspicious)
+);
+```
+
+### **业绩排行分析表结构**
+
+#### `lawyer_performance_stats` - 律师业绩统计表
+```sql
+CREATE TABLE lawyer_performance_stats (
+    id SERIAL PRIMARY KEY,
+    lawyer_id INTEGER NOT NULL REFERENCES users(id),
+    stat_period ENUM('daily', 'weekly', 'monthly', 'yearly') NOT NULL,
+    stat_date DATE NOT NULL,
+    cases_handled INTEGER DEFAULT 0,
+    cases_completed INTEGER DEFAULT 0,
+    cases_success INTEGER DEFAULT 0,
+    total_revenue DECIMAL(15,2) DEFAULT 0,
+    avg_case_duration DECIMAL(8,2) DEFAULT 0, -- 平均案件处理天数
+    client_satisfaction DECIMAL(3,2) DEFAULT 0, -- 客户满意度(0-5)
+    response_rate DECIMAL(5,2) DEFAULT 0, -- 响应率百分比
+    completion_rate DECIMAL(5,2) DEFAULT 0, -- 完成率百分比
+    ai_usage_count INTEGER DEFAULT 0, -- AI工具使用次数
+    ranking_score DECIMAL(10,2) DEFAULT 0, -- 综合排名分数
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_lawyer_period (lawyer_id, stat_period, stat_date),
+    INDEX idx_lawyer_performance_period (stat_period, stat_date),
+    INDEX idx_lawyer_performance_ranking (ranking_score DESC)
+);
+```
+
+#### `user_performance_stats` - 用户业绩统计表
+```sql
+CREATE TABLE user_performance_stats (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    stat_period ENUM('daily', 'weekly', 'monthly', 'yearly') NOT NULL,
+    stat_date DATE NOT NULL,
+    tasks_published INTEGER DEFAULT 0,
+    total_consumption DECIMAL(15,2) DEFAULT 0,
+    referral_count INTEGER DEFAULT 0,
+    current_level INTEGER DEFAULT 1, -- 用户等级 1-10
+    level_points INTEGER DEFAULT 0,
+    active_days INTEGER DEFAULT 0,
+    avg_task_value DECIMAL(10,2) DEFAULT 0,
+    return_rate DECIMAL(5,2) DEFAULT 0, -- 复购率
+    ranking_score DECIMAL(10,2) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_user_period (user_id, stat_period, stat_date),
+    INDEX idx_user_performance_period (stat_period, stat_date),
+    INDEX idx_user_performance_level (current_level),
+    INDEX idx_user_performance_ranking (ranking_score DESC)
+);
+```
+
+### **系统监控运维表结构**
+
+#### `system_metrics` - 系统监控指标表
+```sql
+CREATE TABLE system_metrics (
+    id BIGSERIAL PRIMARY KEY,
+    metric_type VARCHAR(50) NOT NULL, -- cpu, memory, disk, network, etc.
+    metric_name VARCHAR(100) NOT NULL,
+    metric_value DECIMAL(10,4) NOT NULL,
+    metric_unit VARCHAR(20), -- %, MB, GB, ms, etc.
+    host_name VARCHAR(100),
+    service_name VARCHAR(50),
+    threshold_warning DECIMAL(10,4),
+    threshold_critical DECIMAL(10,4),
+    is_alert BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_system_metrics_type (metric_type),
+    INDEX idx_system_metrics_time (created_at),
+    INDEX idx_system_metrics_alert (is_alert, created_at)
+);
+```
+
+#### `system_logs` - 系统运行日志表
+```sql
+CREATE TABLE system_logs (
+    id BIGSERIAL PRIMARY KEY,
+    log_level ENUM('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL') NOT NULL,
+    log_source VARCHAR(50) NOT NULL, -- backend, frontend, database, etc.
+    log_category VARCHAR(50), -- auth, payment, ai, etc.
+    log_message TEXT NOT NULL,
+    log_details JSON,
+    user_id INTEGER REFERENCES users(id),
+    ip_address INET,
+    request_id VARCHAR(64),
+    stack_trace TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_system_logs_level (log_level),
+    INDEX idx_system_logs_source (log_source),
+    INDEX idx_system_logs_time (created_at),
+    INDEX idx_system_logs_user (user_id)
+);
+```
+
+#### `backup_records` - 数据备份记录表
+```sql
+CREATE TABLE backup_records (
+    id SERIAL PRIMARY KEY,
+    backup_type ENUM('full', 'incremental', 'manual') NOT NULL,
+    backup_status ENUM('running', 'completed', 'failed') NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_size BIGINT, -- 字节
+    file_path VARCHAR(500),
+    backup_duration INTEGER, -- 备份耗时(秒)
+    error_message TEXT,
+    created_by INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMP,
+    INDEX idx_backup_records_status (backup_status),
+    INDEX idx_backup_records_time (created_at)
+);
+```
+
+### **统计汇总表结构**
+
+#### `statistics_summary` - 多维度统计汇总表
+```sql
+CREATE TABLE statistics_summary (
+    id SERIAL PRIMARY KEY,
+    summary_type VARCHAR(50) NOT NULL, -- dashboard, users, lawyers, revenue, etc.
+    summary_period ENUM('hourly', 'daily', 'weekly', 'monthly') NOT NULL,
+    summary_date DATETIME NOT NULL,
+    summary_data JSON NOT NULL, -- 存储汇总数据的JSON
+    cache_key VARCHAR(100), -- 缓存键
+    expires_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_summary (summary_type, summary_period, summary_date),
+    INDEX idx_statistics_summary_type (summary_type),
+    INDEX idx_statistics_summary_expires (expires_at)
+);
+```
+
+#### `dashboard_cache` - 仪表盘数据缓存表
+```sql
+CREATE TABLE dashboard_cache (
+    id SERIAL PRIMARY KEY,
+    cache_key VARCHAR(100) NOT NULL UNIQUE,
+    cache_data JSON NOT NULL,
+    cache_type VARCHAR(50) NOT NULL, -- overview, charts, rankings, etc.
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_dashboard_cache_type (cache_type),
+    INDEX idx_dashboard_cache_expires (expires_at)
+);
+```
+
+---
+
+## 🔌 **管理后台API接口设计** 🆕
+
+### **数据概览仪表盘API**
+
+#### 获取仪表盘概览数据
+```http
+GET /api/v1/admin/dashboard/overview
+Authorization: Bearer {token}
+
+Response:
+{
+    "code": 200,
+    "data": {
+        "totalUsers": 2348,
+        "totalLawyers": 186,
+        "totalRevenue": 1245000,
+        "todayVisitors": 1567,
+        "trends": {
+            "userGrowth": 12.5,
+            "lawyerGrowth": 8.3,
+            "revenueGrowth": 23.1,
+            "visitorGrowth": 5.7
+        }
+    }
+}
+```
+
+#### 获取图表数据
+```http
+GET /api/v1/admin/dashboard/charts?period=30d&type=user_growth
+Authorization: Bearer {token}
+
+Response:
+{
+    "code": 200,
+    "data": {
+        "chartType": "line",
+        "period": "30d",
+        "labels": ["2024-01-01", "2024-01-02", ...],
+        "datasets": [
+            {
+                "label": "用户增长",
+                "data": [45, 52, 38, 67, ...]
+            }
+        ]
+    }
+}
+```
+
+### **用户管理API**
+
+#### 获取用户统计数据
+```http
+GET /api/v1/admin/users/statistics?period=monthly
+Authorization: Bearer {token}
+
+Response:
+{
+    "code": 200,
+    "data": {
+        "lawyers": {
+            "total": 186,
+            "newThisMonth": 23,
+            "certificationRate": 87.6,
+            "activeRate": 64.2
+        },
+        "users": {
+            "total": 2162,
+            "newThisMonth": 298,
+            "payingRate": 45.3,
+            "retentionRate": 78.5
+        },
+        "institutions": {
+            "total": 47,
+            "newThisMonth": 5,
+            "cooperationRate": 91.5,
+            "avgMonthlyConsumption": 15200
+        }
+    }
+}
+```
+
+#### 获取律师审核列表
+```http
+GET /api/v1/admin/lawyers/audits?status=pending&page=1&limit=20
+Authorization: Bearer {token}
+
+Response:
+{
+    "code": 200,
+    "data": {
+        "items": [
+            {
+                "id": 1,
+                "name": "张三",
+                "licenseNumber": "11010120220001",
+                "lawFirm": "北京某某律师事务所",
+                "status": "pending",
+                "submitTime": "2024-01-15T10:30:00Z",
+                "aiConfidence": 85,
+                "documents": [
+                    {
+                        "type": "license",
+                        "url": "/uploads/licenses/123.jpg"
+                    }
+                ]
+            }
+        ],
+        "total": 3,
+        "page": 1,
+        "pages": 1
+    }
+}
+```
+
+#### 审核律师申请
+```http
+POST /api/v1/admin/lawyers/audits/{id}/approve
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+    "remarks": "资质齐全，通过审核"
+}
+
+Response:
+{
+    "code": 200,
+    "message": "审核通过成功"
+}
+```
+
+### **访问分析API**
+
+#### 获取访问分析概览
+```http
+GET /api/v1/admin/analytics/overview?date=2024-01-15
+Authorization: Bearer {token}
+
+Response:
+{
+    "code": 200,
+    "data": {
+        "todayPV": 15672,
+        "todayUV": 4523,
+        "uniqueIPs": 3891,
+        "mobileRate": 67.8,
+        "trends": {
+            "pvGrowth": 8.3,
+            "uvGrowth": 12.1,
+            "ipGrowth": 15.7,
+            "mobileGrowth": 2.3
+        }
+    }
+}
+```
+
+#### 获取访问趋势数据
+```http
+GET /api/v1/admin/analytics/trends?period=7d&metric=pv
+Authorization: Bearer {token}
+
+Response:
+{
+    "code": 200,
+    "data": {
+        "labels": ["01-09", "01-10", "01-11", "01-12", "01-13", "01-14", "01-15"],
+        "datasets": [
+            {
+                "label": "页面访问量",
+                "data": [12543, 13876, 11234, 15432, 14567, 16234, 15672]
+            }
+        ]
+    }
+}
+```
+
+#### 获取IP分析数据
+```http
+GET /api/v1/admin/analytics/ips?page=1&limit=50&suspicious=false
+Authorization: Bearer {token}
+
+Response:
+{
+    "code": 200,
+    "data": {
+        "summary": {
+            "repeatIPs": 892,
+            "singleVisitIPs": 2999,
+            "suspiciousIPs": 12
+        },
+        "items": [
+            {
+                "ip": "192.168.1.100",
+                "country": "中国",
+                "region": "北京",
+                "city": "北京",
+                "visitCount": 15,
+                "firstVisit": "2024-01-10T08:30:00Z",
+                "lastVisit": "2024-01-15T14:20:00Z",
+                "isSuspicious": false,
+                "riskScore": 20
+            }
+        ]
+    }
+}
+```
+
+### **业绩排行API**
+
+#### 获取律师排行榜
+```http
+GET /api/v1/admin/rankings/lawyers?type=cases&period=monthly&page=1&limit=20
+Authorization: Bearer {token}
+
+Response:
+{
+    "code": 200,
+    "data": {
+        "items": [
+            {
+                "rank": 1,
+                "lawyerId": 1001,
+                "name": "张律师",
+                "region": "北京",
+                "casesHandled": 45,
+                "totalRevenue": 125000,
+                "clientRating": 4.8,
+                "completionRate": 95.5
+            }
+        ],
+        "total": 186,
+        "page": 1,
+        "pages": 10
+    }
+}
+```
+
+#### 获取用户排行榜
+```http
+GET /api/v1/admin/rankings/users?type=consumption&period=monthly&page=1&limit=20
+Authorization: Bearer {token}
+
+Response:
+{
+    "code": 200,
+    "data": {
+        "items": [
+            {
+                "rank": 1,
+                "userId": 2001,
+                "name": "李总",
+                "level": 8,
+                "tasksPublished": 125,
+                "totalConsumption": 85000,
+                "referralCount": 15
+            }
+        ],
+        "total": 2162,
+        "page": 1,
+        "pages": 109
+    }
+}
+```
+
+### **运维工具API**
+
+#### 获取系统监控指标
+```http
+GET /api/v1/admin/operations/metrics?latest=true
+Authorization: Bearer {token}
+
+Response:
+{
+    "code": 200,
+    "data": {
+        "cpu": {
+            "value": 15.5,
+            "unit": "%",
+            "status": "normal"
+        },
+        "memory": {
+            "value": 48.2,
+            "unit": "%", 
+            "status": "normal"
+        },
+        "disk": {
+            "value": 32.1,
+            "unit": "%",
+            "status": "normal"
+        },
+        "activeUsers": 23
+    }
+}
+```
+
+#### 获取系统日志
+```http
+GET /api/v1/admin/operations/logs?level=error&source=backend&page=1&limit=50
+Authorization: Bearer {token}
+
+Response:
+{
+    "code": 200,
+    "data": {
+        "items": [
+            {
+                "id": 12345,
+                "level": "error",
+                "source": "backend",
+                "category": "database",
+                "message": "数据库连接超时",
+                "createdAt": "2024-01-15T10:30:15Z",
+                "details": {
+                    "error": "connection timeout after 30s"
+                }
+            }
+        ],
+        "total": 245,
+        "page": 1,
+        "pages": 5
+    }
+}
+```
+
+#### 创建数据备份
+```http
+POST /api/v1/admin/operations/backup
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+    "type": "manual",
+    "description": "手动备份"
+}
+
+Response:
+{
+    "code": 200,
+    "data": {
+        "backupId": 123,
+        "status": "running",
+        "message": "备份任务已创建"
+    }
+}
+```
+
 ---
 
 ## 🔧 **部署配置详情**
@@ -443,12 +1045,14 @@ SSL证书：自签名 (365天有效期)
 | 收益计算器 | 100% | 100% | 100% |
 | 权限管理 | 100% | 100% | 100% |
 | 品牌系统 | 100% | 100% | 100% |
-| **基础管理后台** | 90% | 80% | 85% |
-| **访问数据分析** | 0% | 0% | 0% |
-| **用户统计分析** | 0% | 0% | 0% |
-| **业绩排行系统** | 0% | 0% | 0% |
+| **基础管理后台** | 95% | 100% | 97.5% |
+| **访问数据分析** | 100% | 0% | 50% |
+| **用户统计分析** | 100% | 0% | 50% |
+| **业绩排行系统** | 100% | 0% | 50% |
+| **数据库设计增强** | 100% | 0% | 50% |
+| **API接口设计** | 100% | 0% | 50% |
 | 机构工作台 | 75% | 0% | 37.5% |
-| **总体完成度** | **85%** | **74%** | **79.5%** |
+| **总体完成度** | **95%** | **45%** | **70%** |
 
 ---
 
