@@ -7,9 +7,9 @@ import logging
 from typing import Optional, List
 from uuid import UUID, uuid4
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, or_
 from pydantic import BaseModel, Field
 
 from app.core.database import get_db
@@ -429,4 +429,81 @@ async def convert_anonymous_task(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"任务转换失败: {str(e)}"
+        )
+
+
+@router.get("/", response_model=List[dict])
+async def get_tasks(
+    user_type: Optional[str] = Query(None, description="用户类型过滤: sales, lawyer, institution"),
+    limit: int = Query(20, ge=1, le=100, description="返回任务数量"),
+    offset: int = Query(0, ge=0, description="偏移量"),
+    status_filter: Optional[str] = Query(None, description="状态过滤"),
+    db: AsyncSession = Depends(get_db)
+) -> List[dict]:
+    """
+    获取任务列表
+    支持按用户类型过滤
+    """
+    try:
+        # 构建查询条件
+        query = select(DocumentReviewTask)
+        
+        # 根据用户类型过滤
+        if user_type == "sales":
+            # 销售相关任务 - 获取匿名任务或销售创建的任务
+            query = query.where(
+                or_(
+                    DocumentReviewTask.creator_id.is_(None),  # 匿名任务
+                    DocumentReviewTask.ai_metadata.has_key("sales_related")  # 销售相关任务
+                )
+            )
+        elif user_type == "lawyer":
+            # 律师相关任务 - 分配给律师的任务
+            query = query.where(DocumentReviewTask.lawyer_id.is_not(None))
+        elif user_type == "institution":
+            # 机构相关任务
+            query = query.where(DocumentReviewTask.ai_metadata.has_key("institution_related"))
+        
+        # 状态过滤
+        if status_filter:
+            if status_filter == "pending":
+                query = query.where(DocumentReviewTask.status == ReviewStatus.PENDING)
+            elif status_filter == "in_progress":
+                query = query.where(DocumentReviewTask.status == ReviewStatus.IN_PROGRESS)
+            elif status_filter == "completed":
+                query = query.where(DocumentReviewTask.status == ReviewStatus.COMPLETED)
+        
+        # 添加排序和限制
+        query = query.order_by(DocumentReviewTask.created_at.desc())
+        query = query.limit(limit).offset(offset)
+        
+        # 执行查询
+        result = await db.execute(query)
+        tasks = result.scalars().all()
+        
+        # 转换为响应格式
+        task_list = []
+        for task in tasks:
+            task_data = {
+                "id": str(task.id),
+                "task_number": task.task_number,
+                "document_type": task.document_type,
+                "status": task.status.value,
+                "priority": task.priority,
+                "created_at": task.created_at.isoformat(),
+                "updated_at": task.updated_at.isoformat() if task.updated_at else None,
+                "lawyer_id": str(task.lawyer_id) if task.lawyer_id else None,
+                "creator_id": str(task.creator_id) if task.creator_id else None,
+                "estimated_completion": task.estimated_completion.isoformat() if task.estimated_completion else None,
+                "ai_metadata": task.ai_metadata or {}
+            }
+            task_list.append(task_data)
+        
+        return task_list
+        
+    except Exception as e:
+        logger.error(f"获取任务列表失败: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"获取任务列表失败: {str(e)}"
         ) 
