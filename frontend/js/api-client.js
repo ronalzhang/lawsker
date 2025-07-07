@@ -109,7 +109,7 @@ class ApiClient {
      * 获取用户信息
      */
     async getUserInfo() {
-        return this.get('/users/me');
+        return this.get('/auth/me');
     }
 
     /**

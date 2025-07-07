@@ -1937,18 +1937,18 @@
                     return true;
                 }
                 
-                // 映射律师ID到用户名
+                // 映射律师ID到真实测试用户
                 const lawyerCredentials = {
-                    '001': { username: 'lawyer1', password: 'demo123' },
-                    '002': { username: 'lawyer2', password: 'demo123' },
-                    '003': { username: 'lawyer3', password: 'demo123' },
-                    '004': { username: 'lawyer4', password: 'demo123' },
-                    '005': { username: 'lawyer5', password: 'demo123' },
-                    '006': { username: 'lawyer1', password: 'demo123' }, // 重用律师1
-                    '007': { username: 'lawyer2', password: 'demo123' }, // 重用律师2
-                    '008': { username: 'lawyer3', password: 'demo123' }, // 重用律师3
-                    '009': { username: 'lawyer4', password: 'demo123' }, // 重用律师4
-                    '010': { username: 'lawyer5', password: 'demo123' }  // 重用律师5
+                    '001': { username: 'lawyer1', password: 'demo123', role: 'lawyer' },
+                    '002': { username: 'lawyer2', password: 'demo123', role: 'lawyer' },
+                    '003': { username: 'lawyer3', password: 'demo123', role: 'lawyer' },
+                    '004': { username: 'lawyer4', password: 'demo123', role: 'lawyer' },
+                    '005': { username: 'lawyer5', password: 'demo123', role: 'lawyer' },
+                    '006': { username: 'lawyer1', password: 'demo123', role: 'lawyer' }, // 重用律师1
+                    '007': { username: 'lawyer2', password: 'demo123', role: 'lawyer' }, // 重用律师2
+                    '008': { username: 'lawyer3', password: 'demo123', role: 'lawyer' }, // 重用律师3
+                    '009': { username: 'lawyer4', password: 'demo123', role: 'lawyer' }, // 重用律师4
+                    '010': { username: 'lawyer5', password: 'demo123', role: 'lawyer' }  // 重用律师5
                 };
                 
                 const credentials = lawyerCredentials[lawyerId];
