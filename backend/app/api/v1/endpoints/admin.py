@@ -481,16 +481,16 @@ async def get_real_overview(
         today_visitors_query = text("""
         SELECT COUNT(*) as today_visitors 
         FROM access_logs 
-        WHERE DATE(access_time) = CURRENT_DATE
+        WHERE DATE(created_at) = CURRENT_DATE
         """)
         today_visitors_result = await db.execute(today_visitors_query)
         today_visitors = today_visitors_result.scalar() or 0
         
-        # 获取总收入（从finance_records表）
+        # 获取总收入（从transactions表）
         revenue_query = text("""
         SELECT COALESCE(SUM(amount), 0) as total_revenue 
-        FROM finance_records 
-        WHERE transaction_type = 'income' AND status = 'completed'
+        FROM transactions 
+        WHERE transaction_type = 'PAYMENT' AND status = 'COMPLETED'
         """)
         revenue_result = await db.execute(revenue_query)
         total_revenue = revenue_result.scalar() or 0.0
