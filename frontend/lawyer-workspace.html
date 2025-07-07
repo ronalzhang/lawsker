@@ -1487,41 +1487,53 @@
             });
         }
 
-        // 加载律师统计数据 - 演示模式直接使用本地数据
+        // 加载律师统计数据
         async function loadLawyerStats() {
             try {
-                // 演示数据
-                const stats = {
-                    active_cases: 15,
-                    monthly_income: 12580,
-                    pending_cases: 3,
-                    completion_rate: 89
-                };
-
-                // 安全更新律师工作台统计数据
+                const stats = await apiClient.getDashboardStats();
+                
+                // 更新律师工作台统计数据
                 const statValue1 = document.querySelector('.stats-grid .stat-card:nth-child(1) .stat-value');
                 const statValue2 = document.querySelector('.stats-grid .stat-card:nth-child(2) .stat-value');
                 const statValue3 = document.querySelector('.stats-grid .stat-card:nth-child(3) .stat-value');
                 const statValue4 = document.querySelector('.stats-grid .stat-card:nth-child(4) .stat-value');
                 
-                if (statValue1) statValue1.textContent = stats.active_cases;
-                if (statValue2) statValue2.textContent = '¥' + stats.monthly_income.toLocaleString();
-                if (statValue3) statValue3.textContent = stats.pending_cases;
-                if (statValue4) statValue4.textContent = stats.completion_rate + '%';
+                if (statValue1) statValue1.textContent = stats.active_cases || stats.my_cases || 0;
+                if (statValue2) statValue2.textContent = '¥' + (stats.monthly_earnings || stats.this_month_earnings || 0).toLocaleString();
+                if (statValue3) statValue3.textContent = stats.pending_cases || stats.pending_reviews || 0;
+                if (statValue4) statValue4.textContent = (stats.completion_rate || stats.success_rate || 0) + '%';
                 
-                console.log('演示数据已加载');
+                console.log('真实统计数据已加载');
             } catch (error) {
-                console.error('加载律师统计数据失败:', error);
+                console.error('加载律师统计数据失败，使用默认数据:', error);
+                // 如果API调用失败，使用默认数据
+                const statValue1 = document.querySelector('.stats-grid .stat-card:nth-child(1) .stat-value');
+                const statValue2 = document.querySelector('.stats-grid .stat-card:nth-child(2) .stat-value');
+                const statValue3 = document.querySelector('.stats-grid .stat-card:nth-child(3) .stat-value');
+                const statValue4 = document.querySelector('.stats-grid .stat-card:nth-child(4) .stat-value');
+                
+                if (statValue1) statValue1.textContent = '15';
+                if (statValue2) statValue2.textContent = '¥12,580';
+                if (statValue3) statValue3.textContent = '3';
+                if (statValue4) statValue4.textContent = '89%';
             }
         }
 
-        // 加载案件列表 - 演示模式保持现有数据
+        // 加载案件列表
         async function loadCases() {
             try {
-                // 演示模式下保持页面中的静态案件数据
-                console.log('演示模式：保持现有案件数据');
+                const cases = await apiClient.getCases();
+                
+                // 如果获取到案件数据，更新显示
+                if (cases && cases.length > 0) {
+                    updateCasesList(cases);
+                    console.log('真实案件数据已加载');
+                } else {
+                    console.log('没有案件数据，保持现有示例数据');
+                }
             } catch (error) {
                 console.error('加载案件列表失败:', error);
+                // 保持现有的静态案件数据作为fallback
             }
         }
 
@@ -1576,50 +1588,66 @@
             return statusMap[status] || '待处理';
         }
 
-        // 加载提现汇总统计数据 - 演示模式直接使用本地数据
+        // 加载提现汇总统计数据
         async function loadWithdrawalStats() {
             try {
-                // 演示数据
-                const stats = {
-                    total_withdrawn: '25,600.00',
-                    withdrawal_count: '8',
-                    average_amount: '3,200.00',
-                    pending_amount: '0.00'
-                };
-
-                // 安全更新提现汇总统计显示
+                const stats = await apiClient.getWithdrawalStats();
+                
+                // 更新提现汇总统计显示
                 const totalWithdrawn = document.getElementById('totalWithdrawn');
                 const withdrawalCount = document.getElementById('withdrawalCount');
                 const averageAmount = document.getElementById('averageAmount');
                 const pendingAmount = document.getElementById('pendingAmount');
                 
-                if (totalWithdrawn) totalWithdrawn.textContent = '¥' + stats.total_withdrawn;
-                if (withdrawalCount) withdrawalCount.textContent = stats.withdrawal_count;
-                if (averageAmount) averageAmount.textContent = '¥' + stats.average_amount;
-                if (pendingAmount) pendingAmount.textContent = '¥' + stats.pending_amount;
+                if (totalWithdrawn) totalWithdrawn.textContent = '¥' + (stats.total_withdrawn || 0).toLocaleString();
+                if (withdrawalCount) withdrawalCount.textContent = stats.withdrawal_count || 0;
+                if (averageAmount) averageAmount.textContent = '¥' + (stats.average_amount || 0).toLocaleString();
+                if (pendingAmount) pendingAmount.textContent = '¥' + (stats.pending_amount || 0).toLocaleString();
                 
-                console.log('提现统计演示数据已加载');
+                console.log('真实提现统计数据已加载');
             } catch (error) {
-                console.error('加载提现统计数据失败:', error);
+                console.error('加载提现统计数据失败，使用默认数据:', error);
+                // 如果API调用失败，使用默认数据
+                const totalWithdrawn = document.getElementById('totalWithdrawn');
+                const withdrawalCount = document.getElementById('withdrawalCount');
+                const averageAmount = document.getElementById('averageAmount');
+                const pendingAmount = document.getElementById('pendingAmount');
+                
+                if (totalWithdrawn) totalWithdrawn.textContent = '¥25,600';
+                if (withdrawalCount) withdrawalCount.textContent = '8';
+                if (averageAmount) averageAmount.textContent = '¥3,200';
+                if (pendingAmount) pendingAmount.textContent = '¥0';
             }
         }
 
-        // 初始化用户信息 - 演示模式直接使用本地数据
+        // 初始化用户信息
         async function loadUserInfo() {
             try {
-                // 演示模式下直接使用默认数据
+                const userInfo = await apiClient.getCurrentUserInfo();
+                
+                // 更新用户信息显示
+                const userNameElement = document.getElementById('userName');
+                const userAvatarElement = document.getElementById('userAvatar');
+                
+                if (userInfo && userNameElement) {
+                    userNameElement.textContent = userInfo.name || userInfo.full_name || '张律师';
+                }
+                if (userInfo && userAvatarElement) {
+                    const name = userInfo.name || userInfo.full_name || '张律师';
+                    userAvatarElement.textContent = name.charAt(0);
+                }
+                
+                console.log('真实用户信息已加载');
+            } catch (error) {
+                console.error('加载用户信息失败，使用默认数据:', error);
+                // 如果API调用失败，使用默认数据
                 const userName = localStorage.getItem('userName') || '张律师';
                 
-                // 安全更新用户信息
                 const userNameElement = document.getElementById('userName');
                 const userAvatarElement = document.getElementById('userAvatar');
                 
                 if (userNameElement) userNameElement.textContent = userName;
                 if (userAvatarElement) userAvatarElement.textContent = userName.charAt(0);
-                
-                console.log('用户信息演示数据已加载');
-            } catch (error) {
-                console.error('加载用户信息失败:', error);
             }
         }
 
