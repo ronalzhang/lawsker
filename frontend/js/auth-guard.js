@@ -25,11 +25,13 @@ class AuthGuard {
         const currentPath = window.location.pathname;
         const isPublicRoute = this.isPublicRoute(currentPath);
         const isDemoRoute = this.isDemoRoute(currentPath);
+        const isAdminProRoute = currentPath === '/admin-pro' || currentPath === '/admin-pro.html' || currentPath.startsWith('/admin-pro/');
         
         console.log('检查页面访问权限:', {
             path: currentPath,
             isPublic: isPublicRoute,
             isDemo: isDemoRoute,
+            isAdminPro: isAdminProRoute,
             hasToken: !!this.token
         });
 
@@ -42,6 +44,12 @@ class AuthGuard {
         // 公共路由不需要认证
         if (isPublicRoute) {
             return true;
+        }
+
+        // Admin-pro路由特殊处理 - 不需要JWT认证，直接进行密码验证
+        if (isAdminProRoute) {
+            console.log('Admin-pro路由，进行密码验证');
+            return this.checkAdminAccess();
         }
 
         // 需要认证的路由
@@ -138,6 +146,11 @@ class AuthGuard {
 
     // 检查路由权限
     hasRoutePermission(path) {
+        // Admin-pro路由特殊处理 - 在checkPageAccess中已经处理
+        if (path === '/admin-pro' || path === '/admin-pro.html' || path.startsWith('/admin-pro/')) {
+            return true; // checkPageAccess已经验证过了
+        }
+
         if (!this.userInfo.role) return false;
 
         const userRole = this.userInfo.role;
@@ -162,11 +175,6 @@ class AuthGuard {
         if (path.startsWith('/institution/')) {
             const pathInstitutionId = path.split('/institution/')[1];
             return userRole === 'institution' && pathInstitutionId === userId;
-        }
-
-        // 管理后台特殊处理 - 使用简单密码验证
-        if (path === '/admin-pro' || path.startsWith('/admin-pro')) {
-            return this.checkAdminAccess();
         }
 
         // 其他需要登录的页面
