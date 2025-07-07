@@ -114,7 +114,7 @@ async def get_test_dashboard_overview(db: AsyncSession = Depends(get_db)):
             yesterday_query = """
             SELECT 
                 (SELECT COUNT(*) FROM users WHERE DATE(created_at) = CURRENT_DATE - INTERVAL '1 day') as yesterday_new_users,
-                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE status = 'completed' AND DATE(created_at) = CURRENT_DATE - INTERVAL '1 day') as yesterday_revenue,
+                (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE status = 'COMPLETED' AND DATE(created_at) = CURRENT_DATE - INTERVAL '1 day') as yesterday_revenue,
                 (SELECT COALESCE(total_pv, 0) FROM daily_statistics WHERE stat_date = CURRENT_DATE - INTERVAL '1 day') as yesterday_visitors
             """
             
@@ -256,7 +256,7 @@ async def get_dashboard_overview(
             (SELECT COUNT(*) FROM users WHERE user_type = 'lawyer') as total_lawyers,
             (SELECT COUNT(*) FROM users WHERE user_type = 'user') as total_users,
             (SELECT COUNT(*) FROM users WHERE created_at >= DATE_TRUNC('month', CURRENT_DATE)) as month_new_users,
-            (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE status = 'completed' AND created_at >= CURRENT_DATE) as today_revenue,
+            (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE status = 'COMPLETED' AND created_at >= CURRENT_DATE) as today_revenue,
             (SELECT COALESCE(total_pv, 0) FROM daily_statistics WHERE stat_date = CURRENT_DATE) as today_visitors,
             (SELECT COALESCE(total_uv, 0) FROM daily_statistics WHERE stat_date = CURRENT_DATE) as today_unique_visitors
         """
