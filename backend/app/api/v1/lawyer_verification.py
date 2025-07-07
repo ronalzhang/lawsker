@@ -45,8 +45,7 @@ class LawyerVerificationResponse(BaseModel):
 
 @router.post("/extract-license-info", response_model=LawyerVerificationResponse)
 async def extract_license_info(
-    license_image: UploadFile = File(..., description="律师证图片"),
-    db: Session = Depends(get_db)
+    license_image: UploadFile = File(..., description="律师证图片")
 ):
     """
     AI识别律师证信息
@@ -100,8 +99,7 @@ async def extract_license_info(
 
 @router.post("/batch-extract", response_model=LawyerVerificationResponse)
 async def batch_extract_license_info(
-    license_images: List[UploadFile] = File(..., description="多个律师证图片"),
-    db: Session = Depends(get_db)
+    license_images: List[UploadFile] = File(..., description="多个律师证图片")
 ):
     """
     批量AI识别律师证信息
