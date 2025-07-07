@@ -154,15 +154,39 @@ async def submit_lawyer_certification(
         from sqlalchemy import select
         service = LawyerVerificationService()
         
-        # 验证用户是否存在
-        user_query = select(User).where(User.id == request.user_id)
-        user_result = await db.execute(user_query)
-        user = user_result.scalar_one_or_none()
+        # 验证用户是否存在（演示模式可以跳过用户验证）
+        is_demo_mode = (request.user_id.startswith('lawyer-') and 
+                       ('-demo' in request.user_id or request.user_id.count('-') >= 2))
         
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="用户不存在"
+        if not is_demo_mode:
+            user_query = select(User).where(User.id == request.user_id)
+            user_result = await db.execute(user_query)
+            user = user_result.scalar_one_or_none()
+            
+            if not user:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="用户不存在"
+                )
+        else:
+            # 演示模式：不验证用户存在性
+            print(f"演示模式认证，用户ID: {request.user_id}")
+            user = None
+        
+        # 演示模式直接返回成功信息
+        if is_demo_mode:
+            return LawyerVerificationResponse(
+                success=True,
+                message="律师认证申请提交成功（演示模式）",
+                data={
+                    "qualification_id": f"demo-{request.user_id}",
+                    "status": "pending",
+                    "next_steps": [
+                        "认证申请已提交（演示模式）",
+                        "演示模式不会真正保存数据",
+                        "实际使用时请登录真实账户"
+                    ]
+                }
             )
         
         # 检查是否已有认证记录

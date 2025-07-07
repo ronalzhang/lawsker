@@ -945,6 +945,8 @@
                 // 优先从URL参数获取（从律师工作台跳转过来）
                 const urlParams = new URLSearchParams(window.location.search);
                 userId = urlParams.get('userId');
+                const lawyerId = urlParams.get('lawyerId');
+                const fromWorkspace = urlParams.get('from') === 'workspace';
                 
                 // 如果URL参数没有，从本地存储获取
                 if (!userId) {
@@ -952,9 +954,27 @@
                     userId = userInfo.id || userInfo.user_id;
                 }
                 
+                // 如果还是没有，但是有lawyerId，说明是演示模式
+                if (!userId && lawyerId) {
+                    // 为演示模式生成用户ID
+                    userId = `lawyer-${lawyerId}-demo`;
+                    console.log('演示模式，生成临时用户ID:', userId);
+                    
+                    // 保存演示用户信息
+                    const demoUserInfo = {
+                        id: userId,
+                        user_id: userId,
+                        name: `律师${lawyerId}`,
+                        lawyer_name: `律师${lawyerId}`,
+                        role: 'lawyer',
+                        lawyer_id: lawyerId,
+                        is_demo: true
+                    };
+                    localStorage.setItem('userInfo', JSON.stringify(demoUserInfo));
+                }
+                
                 if (!userId) {
                     // 提供更友好的错误信息
-                    const fromWorkspace = urlParams.get('from') === 'workspace';
                     if (fromWorkspace) {
                         alert('无法获取用户信息，请重新从律师工作台进入认证页面');
                     } else {

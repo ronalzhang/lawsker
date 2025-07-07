@@ -1808,11 +1808,41 @@
 
         function lawyerCertification() {
             // 获取当前用户信息
-            const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-            const userId = userInfo.id || userInfo.user_id;
+            let userId = null;
+            
+            // 首先尝试从localStorage获取真实用户ID
+            try {
+                const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+                userId = userInfo.id || userInfo.user_id;
+            } catch (e) {
+                console.warn('无法获取用户信息:', e);
+            }
+            
+            // 如果没有真实用户ID，使用URL中的律师ID
+            if (!userId) {
+                const lawyerId = getLawyerIdFromUrl();
+                if (lawyerId) {
+                    // 为演示模式生成一个UUID格式的用户ID
+                    userId = `lawyer-${lawyerId}-${Date.now().toString().slice(-8)}`;
+                    
+                    // 创建演示用户信息并保存到localStorage
+                    const demoUserInfo = {
+                        id: userId,
+                        user_id: userId,
+                        name: getLawyerNameFromDemo(lawyerId) || `律师${lawyerId}`,
+                        lawyer_name: getLawyerNameFromDemo(lawyerId) || `律师${lawyerId}`,
+                        role: 'lawyer',
+                        lawyer_id: lawyerId,
+                        is_demo: true
+                    };
+                    
+                    localStorage.setItem('userInfo', JSON.stringify(demoUserInfo));
+                    console.log('为演示模式创建临时用户信息:', demoUserInfo);
+                }
+            }
             
             if (!userId) {
-                alert('请先登录后再进行律师认证');
+                alert('无法获取律师信息，请检查访问链接是否正确');
                 return;
             }
             
@@ -1820,6 +1850,12 @@
             const url = new URL('/lawyer-certification.html', window.location.origin);
             url.searchParams.set('userId', userId);
             url.searchParams.set('from', 'workspace');
+            
+            // 如果是演示模式，也传递律师ID
+            const lawyerId = getLawyerIdFromUrl();
+            if (lawyerId) {
+                url.searchParams.set('lawyerId', lawyerId);
+            }
             
             window.open(url.toString(), '_blank');
         }
