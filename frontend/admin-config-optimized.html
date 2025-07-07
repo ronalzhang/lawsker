@@ -550,6 +550,119 @@
             will-change: transform;
         }
 
+        /* 标签页样式 */
+        .admin-tabs {
+            display: flex;
+            background: rgba(22, 28, 48, 0.75);
+            border-radius: var(--radius);
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+            gap: 0.5rem;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            color: var(--text-secondary, #a0a6b8);
+            border: none;
+            border-radius: calc(var(--radius) - 2px);
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .tab-btn:hover {
+            background: rgba(122, 160, 255, 0.1);
+            color: var(--text-primary, #f0f4ff);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 新组件通用样式 */
+        .overview-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .overview-card {
+            background: rgba(22, 28, 48, 0.75);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(122, 160, 255, 0.25);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: var(--transition);
+        }
+
+        .overview-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(122, 160, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .card-info {
+            flex: 1;
+        }
+
+        .card-value {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--text-primary, #f0f4ff);
+            margin-bottom: 0.25rem;
+        }
+
+        .card-label {
+            color: var(--text-secondary, #a0a6b8);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-change {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .card-change.positive {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
     </style>
 </head>
 <body>
@@ -577,29 +690,475 @@
     <div class="main-container">
         <!-- 页面标题 -->
         <div class="page-header">
-            <h1 class="page-title">系统配置管理</h1>
-            <p class="page-subtitle">统一管理AI服务、支付配置、业务规则等系统参数</p>
+            <h1 class="page-title">Lawsker 管理后台</h1>
+            <p class="page-subtitle">数据分析、用户管理、系统配置一体化管理平台</p>
         </div>
 
-        <!-- 快速操作 -->
-        <div class="quick-actions">
-            <h2 class="actions-title">快速操作</h2>
-            <div class="actions-grid">
-                <button class="btn btn-success btn-sm" onclick="initializeConfigs()">
-                    <span class="loading" id="initLoading" style="display: none;"></span>
-                    初始化配置
-                </button>
-                <button class="btn btn-secondary btn-sm" onclick="exportConfigs()">
-                    导出配置
-                </button>
-                <button class="btn btn-secondary btn-sm" onclick="testConnections()">
-                    测试连接
-                </button>
-                <button class="btn btn-secondary btn-sm" onclick="reloadConfigs()">
-                    重载配置
-                </button>
+        <!-- 导航标签页 -->
+        <div class="admin-tabs">
+            <button class="tab-btn active" onclick="switchTab('dashboard')">📊 数据概览</button>
+            <button class="tab-btn" onclick="switchTab('users')">👥 用户管理</button>
+            <button class="tab-btn" onclick="switchTab('analytics')">📈 访问分析</button>
+            <button class="tab-btn" onclick="switchTab('rankings')">🏆 业绩排行</button>
+            <button class="tab-btn" onclick="switchTab('config')">⚙️ 系统配置</button>
+            <button class="tab-btn" onclick="switchTab('operations')">🔧 运维工具</button>
+        </div>
+
+        <!-- 标签页内容 -->
+        
+        <!-- 📊 数据概览仪表盘 -->
+        <div class="tab-content active" id="dashboard-tab">
+            <!-- 实时数据卡片区域 -->
+            <div class="dashboard-overview">
+                <div class="overview-cards">
+                    <div class="overview-card">
+                        <div class="card-icon">👥</div>
+                        <div class="card-info">
+                            <div class="card-value" id="totalUsers">2,348</div>
+                            <div class="card-label">总用户数</div>
+                            <div class="card-change positive">+12.5%</div>
+                        </div>
+                    </div>
+                    <div class="overview-card">
+                        <div class="card-icon">👨‍⚖️</div>
+                        <div class="card-info">
+                            <div class="card-value" id="totalLawyers">186</div>
+                            <div class="card-label">认证律师</div>
+                            <div class="card-change positive">+8.3%</div>
+                        </div>
+                    </div>
+                    <div class="overview-card">
+                        <div class="card-icon">💰</div>
+                        <div class="card-info">
+                            <div class="card-value" id="totalRevenue">¥1,245K</div>
+                            <div class="card-label">平台收入</div>
+                            <div class="card-change positive">+23.1%</div>
+                        </div>
+                    </div>
+                    <div class="overview-card">
+                        <div class="card-icon">📊</div>
+                        <div class="card-info">
+                            <div class="card-value" id="todayVisitors">1,567</div>
+                            <div class="card-label">今日访问</div>
+                            <div class="card-change positive">+5.7%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 关键指标趋势图 -->
+            <div class="dashboard-charts">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>用户增长趋势</h3>
+                        <div class="chart-controls">
+                            <select class="form-input" id="chartPeriod">
+                                <option value="7d">近7天</option>
+                                <option value="30d" selected>近30天</option>
+                                <option value="90d">近90天</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-content" id="userGrowthChart" style="height: 300px; background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        用户增长图表区域 (ECharts)
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>收入分析</h3>
+                    </div>
+                    <div class="chart-content" id="revenueChart" style="height: 300px; background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        收入分析图表区域 (ECharts)
+                    </div>
+                </div>
+            </div>
+
+            <!-- 预警通知中心 -->
+            <div class="alert-center">
+                <h3>系统预警</h3>
+                <div class="alert-list">
+                    <div class="alert-item warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div class="alert-content">
+                            <div class="alert-title">服务器负载较高</div>
+                            <div class="alert-time">5分钟前</div>
+                        </div>
+                    </div>
+                    <div class="alert-item info">
+                        <i class="fas fa-info-circle"></i>
+                        <div class="alert-content">
+                            <div class="alert-title">3名律师待审核</div>
+                            <div class="alert-time">10分钟前</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- 👥 用户管理分析 -->
+        <div class="tab-content" id="users-tab">
+            <!-- 用户注册统计 -->
+            <div class="user-stats-section">
+                <h3>用户注册统计</h3>
+                <div class="user-type-cards">
+                    <div class="user-type-card">
+                        <div class="user-type-header">
+                            <div class="user-type-icon">👨‍⚖️</div>
+                            <div class="user-type-title">律师用户</div>
+                        </div>
+                        <div class="user-type-stats">
+                            <div class="stat-row">
+                                <span>总注册数</span>
+                                <span class="stat-value">186</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>本月新增</span>
+                                <span class="stat-value positive">+23</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>认证率</span>
+                                <span class="stat-value">87.6%</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>活跃率</span>
+                                <span class="stat-value">64.2%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="user-type-card">
+                        <div class="user-type-header">
+                            <div class="user-type-icon">👤</div>
+                            <div class="user-type-title">律客用户</div>
+                        </div>
+                        <div class="user-type-stats">
+                            <div class="stat-row">
+                                <span>总注册数</span>
+                                <span class="stat-value">2,162</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>本月新增</span>
+                                <span class="stat-value positive">+298</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>付费用户</span>
+                                <span class="stat-value">45.3%</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>7日留存</span>
+                                <span class="stat-value">78.5%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="user-type-card">
+                        <div class="user-type-header">
+                            <div class="user-type-icon">🏢</div>
+                            <div class="user-type-title">机构用户</div>
+                        </div>
+                        <div class="user-type-stats">
+                            <div class="stat-row">
+                                <span>总注册数</span>
+                                <span class="stat-value">47</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>本月新增</span>
+                                <span class="stat-value positive">+5</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>合作率</span>
+                                <span class="stat-value">91.5%</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>月均消费</span>
+                                <span class="stat-value">¥15.2K</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 用户活跃度分析 -->
+            <div class="user-activity-section">
+                <div class="section-header">
+                    <h3>用户活跃度分析</h3>
+                    <div class="section-controls">
+                        <select class="form-input" id="activityPeriod">
+                            <option value="daily">日活跃</option>
+                            <option value="weekly">周活跃</option>
+                            <option value="monthly" selected>月活跃</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="activity-charts">
+                    <div class="chart-container">
+                        <div class="chart-content" id="userActivityChart" style="height: 250px; background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            用户活跃度图表区域
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 律师认证管理 -->
+            <div class="lawyer-certification-section">
+                <div class="section-header">
+                    <h3>律师认证管理</h3>
+                    <div class="section-controls">
+                        <span class="badge warning">待审核: <span id="pendingCount">3</span></span>
+                        <button class="btn btn-primary btn-sm" onclick="refreshLawyerAudits()">刷新列表</button>
+                    </div>
+                </div>
+                <div class="certification-list" id="lawyerAuditList">
+                    <!-- 律师审核列表将动态加载 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 📈 访问数据分析 -->
+        <div class="tab-content" id="analytics-tab">
+            <div class="analytics-overview">
+                <h3>访问数据总览</h3>
+                <div class="analytics-cards">
+                    <div class="analytics-card">
+                        <div class="analytics-icon">🌐</div>
+                        <div class="analytics-info">
+                            <div class="analytics-value">15,672</div>
+                            <div class="analytics-label">今日PV</div>
+                            <div class="analytics-trend positive">+8.3%</div>
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="analytics-icon">👁️</div>
+                        <div class="analytics-info">
+                            <div class="analytics-value">4,523</div>
+                            <div class="analytics-label">今日UV</div>
+                            <div class="analytics-trend positive">+12.1%</div>
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="analytics-icon">🌍</div>
+                        <div class="analytics-info">
+                            <div class="analytics-value">3,891</div>
+                            <div class="analytics-label">独立IP</div>
+                            <div class="analytics-trend positive">+15.7%</div>
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <div class="analytics-icon">📱</div>
+                        <div class="analytics-info">
+                            <div class="analytics-value">67.8%</div>
+                            <div class="analytics-label">移动端占比</div>
+                            <div class="analytics-trend positive">+2.3%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 访问趋势图 -->
+            <div class="analytics-charts">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>访问量趋势</h3>
+                        <div class="chart-controls">
+                            <button class="btn btn-sm btn-secondary" onclick="setAnalyticsPeriod('hour')">小时</button>
+                            <button class="btn btn-sm btn-primary" onclick="setAnalyticsPeriod('day')">日</button>
+                            <button class="btn btn-sm btn-secondary" onclick="setAnalyticsPeriod('week')">周</button>
+                            <button class="btn btn-sm btn-secondary" onclick="setAnalyticsPeriod('month')">月</button>
+                        </div>
+                    </div>
+                    <div class="chart-content" id="visitTrendChart" style="height: 350px; background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        访问趋势图表区域 (ECharts)
+                    </div>
+                </div>
+            </div>
+
+            <!-- IP分析和地域分布 -->
+            <div class="analytics-details">
+                <div class="detail-section">
+                    <h4>IP访问分析</h4>
+                    <div class="ip-analysis">
+                        <div class="ip-stat">
+                            <span>重复访问IP</span>
+                            <span class="stat-value">892</span>
+                        </div>
+                        <div class="ip-stat">
+                            <span>单次访问IP</span>
+                            <span class="stat-value">2,999</span>
+                        </div>
+                        <div class="ip-stat">
+                            <span>可疑IP</span>
+                            <span class="stat-value warning">12</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>地域分布 Top 10</h4>
+                    <div class="region-list">
+                        <div class="region-item">
+                            <span>北京</span>
+                            <div class="region-bar">
+                                <div class="region-fill" style="width: 85%"></div>
+                                <span class="region-value">2,134</span>
+                            </div>
+                        </div>
+                        <div class="region-item">
+                            <span>上海</span>
+                            <div class="region-bar">
+                                <div class="region-fill" style="width: 72%"></div>
+                                <span class="region-value">1,823</span>
+                            </div>
+                        </div>
+                        <div class="region-item">
+                            <span>广东</span>
+                            <div class="region-bar">
+                                <div class="region-fill" style="width: 68%"></div>
+                                <span class="region-value">1,687</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🏆 业绩排行中心 -->
+        <div class="tab-content" id="rankings-tab">
+            <!-- 律师业绩排行 -->
+            <div class="ranking-section">
+                <h3>律师业绩排行榜</h3>
+                <div class="ranking-controls">
+                    <select class="form-input" id="lawyerRankingType">
+                        <option value="cases">案件处理数</option>
+                        <option value="revenue">累计收益</option>
+                        <option value="rating">客户评分</option>
+                        <option value="efficiency">处理效率</option>
+                    </select>
+                    <select class="form-input" id="lawyerRankingPeriod">
+                        <option value="month" selected>本月</option>
+                        <option value="quarter">本季度</option>
+                        <option value="year">本年度</option>
+                        <option value="all">全部</option>
+                    </select>
+                </div>
+                <div class="ranking-table">
+                    <table class="ranking-list" id="lawyerRankingTable">
+                        <thead>
+                            <tr>
+                                <th>排名</th>
+                                <th>律师</th>
+                                <th>处理案件</th>
+                                <th>累计收益</th>
+                                <th>客户评分</th>
+                                <th>地区</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- 律师排行数据将动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 用户业绩排行 -->
+            <div class="ranking-section">
+                <h3>律客用户排行榜</h3>
+                <div class="ranking-controls">
+                    <select class="form-input" id="userRankingType">
+                        <option value="tasks">发布任务数</option>
+                        <option value="consumption">消费金额</option>
+                        <option value="level">用户等级</option>
+                        <option value="referral">推荐用户数</option>
+                    </select>
+                    <select class="form-input" id="userRankingPeriod">
+                        <option value="month" selected>本月</option>
+                        <option value="quarter">本季度</option>
+                        <option value="year">本年度</option>
+                    </select>
+                </div>
+                <div class="ranking-table">
+                    <table class="ranking-list" id="userRankingTable">
+                        <thead>
+                            <tr>
+                                <th>排名</th>
+                                <th>用户</th>
+                                <th>等级</th>
+                                <th>发布任务</th>
+                                <th>消费金额</th>
+                                <th>推荐用户</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- 用户排行数据将动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 平台整体数据汇总 -->
+            <div class="platform-summary">
+                <h3>平台整体数据汇总</h3>
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <div class="summary-title">财务数据</div>
+                        <div class="summary-stats">
+                            <div class="summary-item">
+                                <span>当日交易额</span>
+                                <span class="summary-value">¥45,678</span>
+                            </div>
+                            <div class="summary-item">
+                                <span>当月收入</span>
+                                <span class="summary-value">¥1,234,567</span>
+                            </div>
+                            <div class="summary-item">
+                                <span>待分账金额</span>
+                                <span class="summary-value">¥23,456</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-card">
+                        <div class="summary-title">业务数据</div>
+                        <div class="summary-stats">
+                            <div class="summary-item">
+                                <span>进行中案件</span>
+                                <span class="summary-value">156</span>
+                            </div>
+                            <div class="summary-item">
+                                <span>待处理订单</span>
+                                <span class="summary-value">23</span>
+                            </div>
+                            <div class="summary-item">
+                                <span>系统响应时间</span>
+                                <span class="summary-value">245ms</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ⚙️ 系统配置管理 -->
+        <div class="tab-content" id="config-tab">
+            <!-- 快速操作 -->
+            <div class="quick-actions">
+                <h3>快速操作</h3>
+                <div class="actions-grid">
+                    <button class="btn btn-success btn-sm" onclick="initializeConfigs()">
+                        <span class="loading" id="initLoading" style="display: none;"></span>
+                        初始化配置
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="exportConfigs()">
+                        导出配置
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="testConnections()">
+                        测试连接
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="reloadConfigs()">
+                        重载配置
+                    </button>
+                </div>
+            </div>
 
         <!-- 律师审核管理 -->
         <div class="config-card">
@@ -726,8 +1285,8 @@
             </div>
         </div>
 
-        <!-- 配置网格 -->
-        <div class="config-grid">
+            <!-- 配置网格 -->
+            <div class="config-grid">
             <!-- AI服务配置 -->
             <div class="config-card">
                 <div class="card-header">
@@ -1045,6 +1604,158 @@
                     <button class="btn btn-secondary" onclick="generateNewKeys()">
                         重新生成密钥
                     </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🔧 运维工具中心 -->
+        <div class="tab-content" id="operations-tab">
+            <!-- 系统监控 -->
+            <div class="operations-section">
+                <h3>系统监控</h3>
+                <div class="monitoring-cards">
+                    <div class="monitor-card">
+                        <div class="monitor-icon">💻</div>
+                        <div class="monitor-info">
+                            <div class="monitor-label">CPU使用率</div>
+                            <div class="monitor-value" id="cpuUsage">--</div>
+                        </div>
+                    </div>
+                    <div class="monitor-card">
+                        <div class="monitor-icon">🧠</div>
+                        <div class="monitor-info">
+                            <div class="monitor-label">内存使用率</div>
+                            <div class="monitor-value" id="memoryUsage">--</div>
+                        </div>
+                    </div>
+                    <div class="monitor-card">
+                        <div class="monitor-icon">💾</div>
+                        <div class="monitor-info">
+                            <div class="monitor-label">磁盘使用率</div>
+                            <div class="monitor-value" id="diskUsage">--</div>
+                        </div>
+                    </div>
+                    <div class="monitor-card">
+                        <div class="monitor-icon">👥</div>
+                        <div class="monitor-info">
+                            <div class="monitor-label">在线用户</div>
+                            <div class="monitor-value" id="activeUsers">--</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据库管理 -->
+            <div class="operations-section">
+                <h3>数据库管理</h3>
+                <div class="database-tools">
+                    <div class="db-tool-card">
+                        <div class="db-tool-header">
+                            <h4>数据备份</h4>
+                            <button class="btn btn-primary btn-sm" onclick="createBackup()">
+                                创建备份
+                            </button>
+                        </div>
+                        <div class="db-tool-content">
+                            <div class="backup-list">
+                                <div class="backup-item">
+                                    <span>backup_2024-01-15_10-30.sql</span>
+                                    <span class="backup-size">245MB</span>
+                                    <div class="backup-actions">
+                                        <button class="btn btn-sm btn-secondary" onclick="downloadBackup('backup_2024-01-15_10-30.sql')">下载</button>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteBackup('backup_2024-01-15_10-30.sql')">删除</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="db-tool-card">
+                        <div class="db-tool-header">
+                            <h4>数据清理</h4>
+                            <button class="btn btn-warning btn-sm" onclick="cleanupDatabase()">
+                                清理数据
+                            </button>
+                        </div>
+                        <div class="db-tool-content">
+                            <div class="cleanup-options">
+                                <label><input type="checkbox" checked> 清理过期日志 (7天前)</label>
+                                <label><input type="checkbox"> 清理临时文件</label>
+                                <label><input type="checkbox"> 压缩数据表</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 系统日志 -->
+            <div class="operations-section">
+                <h3>系统日志</h3>
+                <div class="log-viewer">
+                    <div class="log-controls">
+                        <select class="form-input" id="logType">
+                            <option value="error">错误日志</option>
+                            <option value="access">访问日志</option>
+                            <option value="system">系统日志</option>
+                            <option value="payment">支付日志</option>
+                        </select>
+                        <select class="form-input" id="logLevel">
+                            <option value="all">所有级别</option>
+                            <option value="error">错误</option>
+                            <option value="warning">警告</option>
+                            <option value="info">信息</option>
+                        </select>
+                        <button class="btn btn-secondary btn-sm" onclick="refreshLogs()">刷新</button>
+                        <button class="btn btn-secondary btn-sm" onclick="exportLogs()">导出</button>
+                    </div>
+                    <div class="log-content" id="logContent">
+                        <div class="log-entry error">
+                            <span class="log-time">2024-01-15 10:30:15</span>
+                            <span class="log-level">ERROR</span>
+                            <span class="log-message">数据库连接超时，尝试重连...</span>
+                        </div>
+                        <div class="log-entry warning">
+                            <span class="log-time">2024-01-15 10:29:42</span>
+                            <span class="log-level">WARNING</span>
+                            <span class="log-message">磁盘空间使用率超过80%</span>
+                        </div>
+                        <div class="log-entry info">
+                            <span class="log-time">2024-01-15 10:28:33</span>
+                            <span class="log-level">INFO</span>
+                            <span class="log-message">用户登录：张三律师</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 系统维护 -->
+            <div class="operations-section">
+                <h3>系统维护</h3>
+                <div class="maintenance-tools">
+                    <div class="maintenance-card">
+                        <div class="maintenance-icon">🔄</div>
+                        <div class="maintenance-info">
+                            <h4>重启服务</h4>
+                            <p>重启前端和后端服务</p>
+                        </div>
+                        <button class="btn btn-warning" onclick="restartServices()">重启</button>
+                    </div>
+                    <div class="maintenance-card">
+                        <div class="maintenance-icon">🧹</div>
+                        <div class="maintenance-info">
+                            <h4>清理缓存</h4>
+                            <p>清理系统缓存和临时文件</p>
+                        </div>
+                        <button class="btn btn-secondary" onclick="clearCache()">清理</button>
+                    </div>
+                    <div class="maintenance-card">
+                        <div class="maintenance-icon">🔐</div>
+                        <div class="maintenance-info">
+                            <h4>更新密钥</h4>
+                            <p>生成新的安全密钥</p>
+                        </div>
+                        <button class="btn btn-danger" onclick="generateNewKeys()">更新</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1436,6 +2147,212 @@
             }, 1500);
         }
 
+        // 标签页切换功能
+        function switchTab(tabName) {
+            // 隐藏所有标签页内容
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 移除所有按钮的激活状态
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 显示选中的标签页
+            const selectedTab = document.getElementById(`${tabName}-tab`);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+            
+            // 激活对应的按钮
+            const selectedBtn = event.target;
+            selectedBtn.classList.add('active');
+            
+            // 根据不同标签页加载相应数据
+            switch(tabName) {
+                case 'dashboard':
+                    loadDashboardData();
+                    break;
+                case 'users':
+                    refreshLawyerAudits();
+                    break;
+                case 'analytics':
+                    loadAnalyticsData();
+                    break;
+                case 'rankings':
+                    loadRankingsData();
+                    break;
+                case 'config':
+                    // 配置页面不需要特殊加载
+                    break;
+                case 'operations':
+                    loadSystemStats();
+                    loadOperationsData();
+                    break;
+            }
+        }
+
+        // 加载仪表盘数据
+        function loadDashboardData() {
+            // 更新实时数据
+            const stats = {
+                totalUsers: Math.floor(Math.random() * 1000) + 2000,
+                totalLawyers: Math.floor(Math.random() * 50) + 150,
+                totalRevenue: Math.floor(Math.random() * 500) + 1000,
+                todayVisitors: Math.floor(Math.random() * 500) + 1200
+            };
+            
+            Object.keys(stats).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) {
+                    element.textContent = key === 'totalRevenue' ? `¥${stats[key]}K` : stats[key];
+                }
+            });
+        }
+
+        // 加载访问分析数据
+        function loadAnalyticsData() {
+            showNotification('正在加载访问分析数据...', 'info');
+            setTimeout(() => {
+                showNotification('访问分析数据加载完成', 'success');
+            }, 1000);
+        }
+
+        // 加载业绩排行数据
+        function loadRankingsData() {
+            showNotification('正在加载业绩排行数据...', 'info');
+            setTimeout(() => {
+                showNotification('业绩排行数据加载完成', 'success');
+            }, 1000);
+        }
+
+        // 加载运维数据
+        function loadOperationsData() {
+            // 刷新日志
+            refreshLogs();
+            
+            // 加载原管理功能数据
+            refreshLawyerAudits();
+            refreshAccessLogs();
+            loadSystemStats();
+            
+            // 模拟系统监控数据
+            setTimeout(() => {
+                const cpuUsage = Math.floor(Math.random() * 40) + 10;
+                const memoryUsage = Math.floor(Math.random() * 30) + 40;
+                const diskUsage = Math.floor(Math.random() * 20) + 20;
+                const activeUsers = Math.floor(Math.random() * 50) + 10;
+                
+                document.getElementById('cpuUsage').textContent = cpuUsage + '%';
+                document.getElementById('memoryUsage').textContent = memoryUsage + '%';
+                document.getElementById('diskUsage').textContent = diskUsage + '%';
+                document.getElementById('activeUsers').textContent = activeUsers;
+            }, 500);
+        }
+
+        // 运维工具函数
+        function createBackup() {
+            if (confirm('确定要创建数据库备份吗？这可能需要几分钟时间。')) {
+                showNotification('正在创建数据库备份...', 'info');
+                setTimeout(() => {
+                    showNotification('数据库备份创建完成', 'success');
+                }, 3000);
+            }
+        }
+
+        function downloadBackup(filename) {
+            showNotification(`正在下载备份文件: ${filename}`, 'info');
+            setTimeout(() => {
+                showNotification('备份文件下载完成', 'success');
+            }, 1000);
+        }
+
+        function deleteBackup(filename) {
+            if (confirm(`确定要删除备份文件 ${filename} 吗？此操作不可撤销。`)) {
+                showNotification('正在删除备份文件...', 'info');
+                setTimeout(() => {
+                    showNotification('备份文件已删除', 'success');
+                }, 500);
+            }
+        }
+
+        function cleanupDatabase() {
+            const checkedOptions = document.querySelectorAll('.cleanup-options input[type="checkbox"]:checked');
+            if (checkedOptions.length === 0) {
+                showNotification('请至少选择一个清理选项', 'warning');
+                return;
+            }
+            
+            if (confirm('确定要执行数据库清理吗？此操作不可撤销。')) {
+                showNotification('正在执行数据库清理...', 'info');
+                setTimeout(() => {
+                    showNotification('数据库清理完成', 'success');
+                }, 2000);
+            }
+        }
+
+        function refreshLogs() {
+            const logContent = document.getElementById('logContent');
+            if (logContent) {
+                logContent.innerHTML = `
+                    <div class="log-entry error">
+                        <span class="log-time">${new Date().toLocaleString()}</span>
+                        <span class="log-level">ERROR</span>
+                        <span class="log-message">模拟错误日志条目</span>
+                    </div>
+                    <div class="log-entry warning">
+                        <span class="log-time">${new Date().toLocaleString()}</span>
+                        <span class="log-level">WARNING</span>
+                        <span class="log-message">模拟警告日志条目</span>
+                    </div>
+                    <div class="log-entry info">
+                        <span class="log-time">${new Date().toLocaleString()}</span>
+                        <span class="log-level">INFO</span>
+                        <span class="log-message">模拟信息日志条目</span>
+                    </div>
+                `;
+            }
+        }
+
+        function exportLogs() {
+            showNotification('正在导出日志文件...', 'info');
+            setTimeout(() => {
+                showNotification('日志文件导出完成', 'success');
+            }, 1500);
+        }
+
+        function restartServices() {
+            if (confirm('确定要重启所有服务吗？这将暂时中断系统访问。')) {
+                showNotification('正在重启服务...', 'info');
+                setTimeout(() => {
+                    showNotification('服务重启完成', 'success');
+                }, 3000);
+            }
+        }
+
+        function clearCache() {
+            showNotification('正在清理系统缓存...', 'info');
+            setTimeout(() => {
+                showNotification('系统缓存清理完成', 'success');
+            }, 1500);
+        }
+
+        // 访问分析工具函数
+        function setAnalyticsPeriod(period) {
+            // 移除所有按钮的active状态
+            document.querySelectorAll('.chart-controls .btn').forEach(btn => {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-secondary');
+            });
+            
+            // 激活选中的按钮
+            event.target.classList.add('btn-primary');
+            event.target.classList.remove('btn-secondary');
+            
+            showNotification(`正在加载${period === 'hour' ? '小时' : period === 'day' ? '日' : period === 'week' ? '周' : '月'}级别数据...`, 'info');
+        }
+
         // 性能优化：使用 requestAnimationFrame 优化滚动
         let ticking = false;
         function onScroll() {
@@ -1460,10 +2377,8 @@
             // 优化事件监听器
             window.addEventListener('scroll', onScroll, { passive: true });
             
-            // 初始化管理功能
-            refreshLawyerAudits();
-            refreshAccessLogs();
-            loadSystemStats();
+            // 默认加载仪表盘数据
+            loadDashboardData();
             
             // 初始化完成提示
             setTimeout(() => {
