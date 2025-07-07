@@ -14,6 +14,8 @@ import io
 import logging
 from fastapi import HTTPException, UploadFile
 
+# PIL/Pillow 图像处理相关配置已简化，避免版本兼容性问题
+
 logger = logging.getLogger(__name__)
 
 class AIDocumentOCRService:
@@ -144,7 +146,8 @@ class AIDocumentOCRService:
             # 调整图片大小（如果太大）
             max_size = (2048, 2048)
             if image.size[0] > max_size[0] or image.size[1] > max_size[1]:
-                image.thumbnail(max_size, Image.Resampling.LANCZOS)
+                # 使用默认重采样方法，避免版本兼容性问题
+                image.thumbnail(max_size)
             
             # 转换为RGB格式
             if image.mode != 'RGB':
