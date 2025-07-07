@@ -1311,34 +1311,41 @@
         // 加载统计数据
         async function loadStats() {
             try {
-                let stats;
-                if (apiClient.isAuthenticated()) {
-                    try {
-                        stats = await apiClient.getDashboardStats();
-                    } catch (error) {
-                        console.warn('获取销售统计数据失败，使用演示数据:', error);
-                        stats = await apiClient.getDemoData();
-                    }
-                } else {
-                    stats = await apiClient.getDemoData();
-                }
+                // 使用本地演示数据，不再调用API
+                const stats = {
+                    published_tasks: 5,
+                    uploaded_data: 3,
+                    total_earnings: 2580,
+                    monthly_earnings: 680
+                };
 
                 // 更新销售工作台统计数据
-                document.getElementById('totalTasks').textContent = stats.published_tasks || 5;
-                document.getElementById('uploadedData').textContent = stats.uploaded_data || 3;
-                document.getElementById('totalEarnings').textContent = '¥' + (stats.total_earnings || 2580).toLocaleString();
-                document.getElementById('monthlyEarnings').textContent = '¥' + (stats.monthly_earnings || 680).toLocaleString();
+                const totalTasksEl = document.getElementById('totalTasks');
+                const uploadedDataEl = document.getElementById('uploadedData');
+                const totalEarningsEl = document.getElementById('totalEarnings');
+                const monthlyEarningsEl = document.getElementById('monthlyEarnings');
+                const currentBalanceEl = document.getElementById('currentBalance');
+
+                if (totalTasksEl) totalTasksEl.textContent = stats.published_tasks;
+                if (uploadedDataEl) uploadedDataEl.textContent = stats.uploaded_data;
+                if (totalEarningsEl) totalEarningsEl.textContent = '¥' + stats.total_earnings.toLocaleString();
+                if (monthlyEarningsEl) monthlyEarningsEl.textContent = '¥' + stats.monthly_earnings.toLocaleString();
+                if (currentBalanceEl) currentBalanceEl.textContent = '¥' + stats.total_earnings.toLocaleString() + '.00';
                 
-                // 更新余额信息
-                document.getElementById('currentBalance').textContent = '¥' + (stats.total_earnings || 2580).toLocaleString() + '.00';
             } catch (error) {
                 console.error('获取销售统计数据失败:', error);
                 // 使用默认数据
-                document.getElementById('totalTasks').textContent = '5';
-                document.getElementById('uploadedData').textContent = '3';
-                document.getElementById('totalEarnings').textContent = '¥2,580';
-                document.getElementById('monthlyEarnings').textContent = '¥680';
-                document.getElementById('currentBalance').textContent = '¥2,580.00';
+                const totalTasksEl = document.getElementById('totalTasks');
+                const uploadedDataEl = document.getElementById('uploadedData');
+                const totalEarningsEl = document.getElementById('totalEarnings');
+                const monthlyEarningsEl = document.getElementById('monthlyEarnings');
+                const currentBalanceEl = document.getElementById('currentBalance');
+
+                if (totalTasksEl) totalTasksEl.textContent = '5';
+                if (uploadedDataEl) uploadedDataEl.textContent = '3';
+                if (totalEarningsEl) totalEarningsEl.textContent = '¥2,580';
+                if (monthlyEarningsEl) monthlyEarningsEl.textContent = '¥680';
+                if (currentBalanceEl) currentBalanceEl.textContent = '¥2,580.00';
             }
         }
 
@@ -1381,10 +1388,9 @@
         // 加载任务列表
         async function loadTasks() {
             try {
-                if (apiClient.isAuthenticated()) {
-                    const tasks = await apiClient.getTasks({ user_type: 'sales' });
-                    updateTaskList(tasks);
-                }
+                // 使用本地演示数据，不再调用API
+                console.log('保留现有的示例任务数据');
+                // 保持现有的静态示例数据不变
             } catch (error) {
                 console.error('获取任务列表失败:', error);
             }
@@ -1439,49 +1445,37 @@
         // 加载销售工作台提现汇总统计数据
         async function loadSalesWithdrawalStats() {
             try {
-                if (apiClient.isAuthenticated()) {
-                    try {
-                        const response = await fetch('/api/v1/finance/withdrawal/stats', {
-                            method: 'GET',
-                            headers: {
-                                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-                                'Content-Type': 'application/json'
-                            }
-                        });
+                // 使用本地演示数据，不再调用API
+                const stats = {
+                    total_withdrawn: 8600,
+                    withdrawal_count: 4,
+                    average_amount: 2150,
+                    pending_amount: 0
+                };
+                
+                // 更新销售工作台提现汇总统计显示，添加null-safety检查
+                const salesTotalWithdrawnEl = document.getElementById('salesTotalWithdrawn');
+                const salesWithdrawalCountEl = document.getElementById('salesWithdrawalCount');
+                const salesAverageAmountEl = document.getElementById('salesAverageAmount');
+                const salesPendingAmountEl = document.getElementById('salesPendingAmount');
 
-                        if (response.ok) {
-                            const stats = await response.json();
-                            
-                            // 更新销售工作台提现汇总统计显示
-                            document.getElementById('salesTotalWithdrawn').textContent = '¥' + stats.total_withdrawn.toLocaleString();
-                            document.getElementById('salesWithdrawalCount').textContent = stats.withdrawal_count;
-                            document.getElementById('salesAverageAmount').textContent = '¥' + stats.average_amount.toLocaleString();
-                            document.getElementById('salesPendingAmount').textContent = '¥' + stats.pending_amount.toLocaleString();
-                        } else {
-                            console.warn('获取销售提现统计数据失败，使用默认数据');
-                            // 使用默认演示数据
-                            document.getElementById('salesTotalWithdrawn').textContent = '¥8,600.00';
-                            document.getElementById('salesWithdrawalCount').textContent = '4';
-                            document.getElementById('salesAverageAmount').textContent = '¥2,150.00';
-                            document.getElementById('salesPendingAmount').textContent = '¥0.00';
-                        }
-                    } catch (error) {
-                        console.warn('获取销售提现统计数据失败:', error);
-                        // 使用默认演示数据
-                        document.getElementById('salesTotalWithdrawn').textContent = '¥8,600.00';
-                        document.getElementById('salesWithdrawalCount').textContent = '4';
-                        document.getElementById('salesAverageAmount').textContent = '¥2,150.00';
-                        document.getElementById('salesPendingAmount').textContent = '¥0.00';
-                    }
-                } else {
-                    // 未登录时使用演示数据
-                    document.getElementById('salesTotalWithdrawn').textContent = '¥8,600.00';
-                    document.getElementById('salesWithdrawalCount').textContent = '4';
-                    document.getElementById('salesAverageAmount').textContent = '¥2,150.00';
-                    document.getElementById('salesPendingAmount').textContent = '¥0.00';
-                }
+                if (salesTotalWithdrawnEl) salesTotalWithdrawnEl.textContent = '¥' + stats.total_withdrawn.toLocaleString() + '.00';
+                if (salesWithdrawalCountEl) salesWithdrawalCountEl.textContent = stats.withdrawal_count;
+                if (salesAverageAmountEl) salesAverageAmountEl.textContent = '¥' + stats.average_amount.toLocaleString() + '.00';
+                if (salesPendingAmountEl) salesPendingAmountEl.textContent = '¥' + stats.pending_amount.toLocaleString() + '.00';
+
             } catch (error) {
                 console.error('加载销售提现统计数据失败:', error);
+                // 使用默认演示数据
+                const salesTotalWithdrawnEl = document.getElementById('salesTotalWithdrawn');
+                const salesWithdrawalCountEl = document.getElementById('salesWithdrawalCount');
+                const salesAverageAmountEl = document.getElementById('salesAverageAmount');
+                const salesPendingAmountEl = document.getElementById('salesPendingAmount');
+
+                if (salesTotalWithdrawnEl) salesTotalWithdrawnEl.textContent = '¥8,600.00';
+                if (salesWithdrawalCountEl) salesWithdrawalCountEl.textContent = '4';
+                if (salesAverageAmountEl) salesAverageAmountEl.textContent = '¥2,150.00';
+                if (salesPendingAmountEl) salesPendingAmountEl.textContent = '¥0.00';
             }
         }
 
@@ -1512,51 +1506,20 @@
         // 更新用户等级显示
         async function updateUserLevel() {
             try {
-                if (apiClient.isAuthenticated()) {
-                    // 尝试从API获取用户业务数据
-                    const response = await fetch('/api/v1/users/stats', {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
+                // 使用本地演示数据，不再调用API
+                const totalBusiness = 1250; // 示例业务量
+                const totalEarnings = 12580; // 示例总收入
 
-                    let totalBusiness = 1250; // 默认示例数据
-                    let totalEarnings = 12580; // 默认示例数据
-
-                    if (response.ok) {
-                        const stats = await response.json();
-                        totalBusiness = stats.total_business || totalBusiness;
-                        totalEarnings = stats.total_earnings || totalEarnings;
-                    } else {
-                        console.warn('获取用户统计数据失败，使用默认数据');
-                    }
-
-                    const userLevel = calculateUserLevel(totalBusiness, totalEarnings);
-                    
-                    const levelElement = document.getElementById('userLevel');
-                    const levelIcon = document.querySelector('.user-level-badge .level-icon');
-                    
-                    if (levelElement) {
-                        levelElement.textContent = userLevel.name;
-                    }
-                    if (levelIcon) {
-                        levelIcon.textContent = userLevel.icon;
-                    }
-                } else {
-                    // 未登录时显示默认等级
-                    const userLevel = calculateUserLevel(0, 0);
-                    
-                    const levelElement = document.getElementById('userLevel');
-                    const levelIcon = document.querySelector('.user-level-badge .level-icon');
-                    
-                    if (levelElement) {
-                        levelElement.textContent = userLevel.name;
-                    }
-                    if (levelIcon) {
-                        levelIcon.textContent = userLevel.icon;
-                    }
+                const userLevel = calculateUserLevel(totalBusiness, totalEarnings);
+                
+                const levelElement = document.getElementById('userLevel');
+                const levelIcon = document.querySelector('.user-level-badge .level-icon');
+                
+                if (levelElement) {
+                    levelElement.textContent = userLevel.name;
+                }
+                if (levelIcon) {
+                    levelIcon.textContent = userLevel.icon;
                 }
             } catch (error) {
                 console.error('更新用户等级失败:', error);
@@ -1646,6 +1609,11 @@
         function refreshTaskFeedback() {
             const taskUpdates = JSON.parse(localStorage.getItem('taskUpdates') || '[]');
             const taskFeedbackBody = document.getElementById('taskFeedbackBody');
+            
+            if (!taskFeedbackBody) {
+                console.warn('taskFeedbackBody元素不存在');
+                return;
+            }
             
             if (taskUpdates.length === 0) {
                 taskFeedbackBody.innerHTML = `
