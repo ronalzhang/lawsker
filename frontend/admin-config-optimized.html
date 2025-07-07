@@ -2388,8 +2388,8 @@
         // 加载仪表盘数据
         async function loadDashboardData() {
             try {
-                // 使用测试API端点，不需要身份验证
-                const response = await fetch('http://156.227.235.192:8000/api/v1/admin/test/overview', {
+                // 使用真实数据API端点，不需要身份验证
+                const response = await fetch('http://156.227.235.192:8000/api/v1/admin/real-overview', {
                     headers: {
                         'Content-Type': 'application/json'
                     }
@@ -2397,21 +2397,36 @@
                 
                 if (response.ok) {
                     const result = await response.json();
-                    const data = result.data;
                     
-                    // 更新统计卡片
-                    updateStatCard('totalUsers', data.totalUsers || 0);
-                    updateStatCard('totalLawyers', data.totalLawyers || 0);
-                    updateStatCard('totalRevenue', data.totalRevenue || 0, 'currency');
-                    updateStatCard('todayVisitors', data.todayVisitors || 0);
-                    
-                    // 更新趋势指示器
-                    updateTrendIndicator('userTrend', data.trends?.userGrowth || 0);
-                    updateTrendIndicator('lawyerTrend', data.trends?.lawyerGrowth || 0);
-                    updateTrendIndicator('revenueTrend', data.trends?.revenueGrowth || 0);
-                    updateTrendIndicator('visitorTrend', data.trends?.visitorGrowth || 0);
-                    
-                    showNotification('仪表盘数据加载完成', 'success');
+                    // 检查返回的状态码
+                    if (result.code === 200) {
+                        const data = result.data;
+                        
+                        // 更新统计卡片
+                        updateStatCard('totalUsers', data.totalUsers || 0);
+                        updateStatCard('totalLawyers', data.totalLawyers || 0);
+                        updateStatCard('totalRevenue', data.totalRevenue || 0, 'currency');
+                        updateStatCard('todayVisitors', data.todayVisitors || 0);
+                        
+                        // 更新趋势指示器
+                        updateTrendIndicator('userTrend', data.trends?.userGrowth || 0);
+                        updateTrendIndicator('lawyerTrend', data.trends?.lawyerGrowth || 0);
+                        updateTrendIndicator('revenueTrend', data.trends?.revenueGrowth || 0);
+                        updateTrendIndicator('visitorTrend', data.trends?.visitorGrowth || 0);
+                        
+                        // 显示数据源信息
+                        if (data.dataSource === 'database') {
+                            showNotification('实时数据库数据加载完成', 'success');
+                        } else {
+                            showNotification('使用备用数据', 'warning');
+                        }
+                    } else {
+                        // API返回错误
+                        console.error('API返回错误:', result.code, result.data?.error);
+                        showNotification(`数据加载失败: ${result.data?.error || '未知错误'}`, 'error');
+                        // 使用备用数据
+                        loadFallbackDashboardData();
+                    }
                     
                 } else {
                     console.error('获取概览数据失败:', response.status);
