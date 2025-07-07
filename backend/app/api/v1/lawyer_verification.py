@@ -51,11 +51,7 @@ async def extract_license_info(
     AI识别律师证信息
     """
     try:
-        print(f"[DEBUG] Starting extract_license_info")
-        print(f"[DEBUG] License image: {license_image.filename}, content_type: {license_image.content_type}")
-        
         ocr_service = AIDocumentOCRService()
-        print(f"[DEBUG] AIDocumentOCRService created successfully")
         
         # 验证文件类型
         if not license_image.content_type or not license_image.content_type.startswith('image/'):
@@ -64,12 +60,8 @@ async def extract_license_info(
                 detail="请上传图片文件"
             )
         
-        print(f"[DEBUG] File type validation passed")
-        
         # 提取律师证信息
-        print(f"[DEBUG] Starting OCR extraction")
         extraction_result = await ocr_service.extract_lawyer_license_info(license_image)
-        print(f"[DEBUG] OCR extraction completed: {extraction_result.get('success', False)}")
         
         if extraction_result['success']:
             # 获取提取模板供前端参考
@@ -100,9 +92,6 @@ async def extract_license_info(
             )
             
     except Exception as e:
-        import traceback
-        error_msg = f"处理失败: {str(e)}\n{traceback.format_exc()}"
-        print(f"[ERROR] extract_license_info: {error_msg}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"处理失败: {str(e)}"
