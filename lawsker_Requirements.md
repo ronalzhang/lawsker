@@ -25,11 +25,11 @@
 - **机构工作台**: 前端界面未实现 (完成度: 0%)
 
 ### **✅ 新完成模块 (2024年12月)**
-- **用户认证系统**: 后端API + 前端登录界面完整 (完成度: 100%)
+- **用户认证系统**: JWT Token认证 + 权限控制 + 路由保护 (完成度: 100%)
 - **律师工作台**: 标签页式界面，包含提现管理 (完成度: 100%)
 - **用户工作台**: 标签页式界面，包含提现管理 (完成度: 100%)
 - **收益计算器**: 前端界面已实现 (完成度: 100%)
-- **权限管理系统**: 角色分离，导航权限控制 (完成度: 100%)
+- **权限管理系统**: 基于角色的访问控制(RBAC) (完成度: 100%)
 - **品牌视觉系统**: Logo设计，浏览器图标 (完成度: 100%)
 
 ---
@@ -297,3 +297,129 @@ SSL证书：自签名 (365天有效期)
 ---
 
 **下一步重点：前端业务工作台开发** 🎯 
+
+## 🔐 **用户认证和权限控制系统** ✅ 已完成
+
+### **认证架构设计**
+- **认证方式**: JWT Token + localStorage存储
+- **权限控制**: 基于用户角色的访问控制(RBAC)
+- **会话管理**: 客户端Token + 服务端Redis缓存
+- **安全机制**: Token过期检查 + 路由权限验证
+
+### **认证脚本实现** ✅ 已完成
+**核心文件**: `frontend/js/auth-guard.js` (ASCII编码)
+- **加载时机**: DOM加载完成后立即执行
+- **权限检查**: 页面访问前进行Token验证
+- **重定向逻辑**: 未认证用户自动跳转到登录页面
+- **角色验证**: 根据用户角色控制页面访问权限
+
+### **页面访问控制策略**
+
+#### **公共页面（无需认证）**
+- `/` - 首页
+- `/index.html` - 首页
+- `/login.html` - 登录页面
+- `/login` - 登录页面
+- `/anonymous-task.html` - 匿名任务页面
+- `/anonymous-task` - 匿名任务页面
+
+#### **演示页面（无需认证）**
+- `/legal` - 律师工作台演示
+- `/user` - 用户工作台演示
+- `/legal/` - 律师工作台演示
+- `/user/` - 用户工作台演示
+
+#### **个人工作台（需要认证+角色匹配）**
+- `/legal/001` - 律师1的工作台 → 需要lawyer1账号
+- `/legal/002` - 律师2的工作台 → 需要lawyer2账号
+- `/legal/003-010` - 其他律师工作台 → 需要对应律师账号
+- `/user/001` - 用户1的工作台 → 需要user1账号
+- `/user/002` - 用户2的工作台 → 需要user2账号
+- `/user/003-010` - 其他用户工作台 → 需要对应用户账号
+
+#### **系统功能页面（需要认证）**
+- `/console` - 数据仪表盘
+- `/withdraw` - 提现管理
+- `/admin` - 管理后台
+- `/dashboard` - 仪表盘
+- `/calculator` - 收益计算器
+
+#### **特殊权限页面**
+- `/admin-pro` - 高级管理后台（密码验证：123abc74531） ✅ 已验证
+  - **密码验证机制**: 弹出prompt密码输入框
+  - **会话保持**: 30分钟内有效（sessionStorage存储）
+  - **验证逻辑**: checkAdminAccess()方法处理
+  - **安全特性**: 密码错误时显示警告，取消验证返回false
+- `/admin-config.html` - 系统配置（管理员权限）
+
+### **用户角色映射系统**
+
+#### **律师ID映射**
+```javascript
+const lawyerMapping = {
+    '001': 'lawyer1', '002': 'lawyer2', '003': 'lawyer3',
+    '004': 'lawyer4', '005': 'lawyer5', '006': 'lawyer1',
+    '007': 'lawyer2', '008': 'lawyer3', '009': 'lawyer4',
+    '010': 'lawyer5'
+};
+```
+
+#### **用户ID映射**
+```javascript
+const userMapping = {
+    '001': 'user1', '002': 'user2', '003': 'user3',
+    '004': 'user4', '005': 'user5', '006': 'user1',
+    '007': 'user2', '008': 'user3', '009': 'user4',
+    '010': 'user5'
+};
+```
+
+### **权限验证流程**
+1. **Token检查**: 验证localStorage中的authToken有效性
+2. **角色验证**: 检查用户角色是否匹配页面要求
+3. **权限匹配**: 验证用户是否有权限访问特定工作台
+4. **重定向处理**: 未通过验证的用户重定向到登录页面
+
+### **认证集成状态**
+**已集成auth-guard.js的页面**:
+- ✅ `lawyer-workspace.html` - 律师工作台
+- ✅ `user-workspace.html` - 用户工作台  
+- ✅ `admin-config-optimized.html` - 管理员配置
+- ✅ `institution-workspace.html` - 机构工作台
+- ✅ `dashboard.html` - 数据仪表盘
+- ✅ `withdrawal.html` - 提现管理
+
+**Express.js路由配置**:
+```javascript
+// 演示路由（无需认证）
+app.get('/legal', routeHandler('lawyer-workspace.html'));
+app.get('/user', routeHandler('user-workspace.html'));
+
+// 个人工作台（需要认证）
+app.get('/legal/:lawyerId', routeHandler('lawyer-workspace.html'));
+app.get('/user/:userId', routeHandler('user-workspace.html'));
+
+// 系统功能页面（需要认证）
+app.get('/console', routeHandler('dashboard.html'));
+app.get('/withdraw', routeHandler('withdrawal.html'));
+```
+
+### **验证测试结果** ✅
+- ✅ 未认证用户访问`/legal/001` → 重定向到登录页面
+- ✅ 未认证用户访问`/user/001` → 重定向到登录页面
+- ✅ 未认证用户访问`/console` → 重定向到登录页面
+- ✅ 未认证用户访问`/withdraw` → 重定向到登录页面
+- ✅ 未认证用户访问`/admin` → 重定向到登录页面
+- ✅ **密码验证页面`/admin-pro` → 显示管理后台界面** ✅
+- ✅ 演示页面`/legal`和`/user` → 正常访问
+- ✅ 公共页面`/`和`/index.html` → 正常访问
+
+### **技术实现细节**
+- **编码问题解决**: 使用ASCII编码避免中文字符导致的JavaScript解析错误
+- **缓存处理**: 通过时间戳参数(?v=1735536900)绕过浏览器缓存
+- **DOM就绪检查**: 确保在DOM加载完成后再执行认证逻辑
+- **即时隐藏**: 未通过认证的页面立即隐藏内容，防止信息泄露
+
+---
+
+## 💼 **核心业务模块** 
