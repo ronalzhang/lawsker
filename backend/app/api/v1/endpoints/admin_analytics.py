@@ -81,7 +81,7 @@ async def get_test_dashboard_overview(db: AsyncSession = Depends(get_db)):
              JOIN roles r ON ur.role_id = r.id 
              WHERE r.name IN ('user', 'client')) as total_users,
             (SELECT COUNT(*) FROM users WHERE created_at >= DATE_TRUNC('month', CURRENT_DATE)) as month_new_users,
-            (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE status = 'completed' AND created_at >= CURRENT_DATE) as today_revenue,
+            (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE status = 'COMPLETED' AND created_at >= CURRENT_DATE) as today_revenue,
             (SELECT COALESCE(total_pv, 0) FROM daily_statistics WHERE stat_date = CURRENT_DATE) as today_visitors,
             (SELECT COALESCE(total_uv, 0) FROM daily_statistics WHERE stat_date = CURRENT_DATE) as today_unique_visitors
         """
@@ -268,7 +268,7 @@ async def get_dashboard_overview(
         yesterday_query = """
         SELECT 
             (SELECT COUNT(*) FROM users WHERE DATE(created_at) = CURRENT_DATE - INTERVAL '1 day') as yesterday_new_users,
-            (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE status = 'completed' AND DATE(created_at) = CURRENT_DATE - INTERVAL '1 day') as yesterday_revenue,
+            (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE status = 'COMPLETED' AND DATE(created_at) = CURRENT_DATE - INTERVAL '1 day') as yesterday_revenue,
             (SELECT COALESCE(total_pv, 0) FROM daily_statistics WHERE stat_date = CURRENT_DATE - INTERVAL '1 day') as yesterday_visitors
         """
         
@@ -337,7 +337,7 @@ async def get_dashboard_charts(
                 DATE(created_at) as date,
                 COALESCE(SUM(amount), 0) as count
             FROM transactions 
-            WHERE status = 'completed' 
+            WHERE status = 'COMPLETED' 
             AND created_at >= CURRENT_DATE - INTERVAL '%s days'
             GROUP BY DATE(created_at)
             ORDER BY date
@@ -411,7 +411,7 @@ async def get_user_statistics(
             -- 普通用户统计
             (SELECT COUNT(*) FROM users WHERE user_type = 'user') as total_users,
             (SELECT COUNT(*) FROM users WHERE user_type = 'user' AND created_at >= CURRENT_DATE - INTERVAL '{interval}') as new_users,
-            (SELECT COUNT(DISTINCT user_id) FROM transactions WHERE status = 'completed') as paying_users,
+            (SELECT COUNT(DISTINCT user_id) FROM transactions WHERE status = 'COMPLETED') as paying_users,
             (SELECT COUNT(*) FROM users WHERE user_type = 'user' AND last_login >= CURRENT_DATE - INTERVAL '7 days') as active_users,
             
             -- 机构统计
