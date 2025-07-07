@@ -681,7 +681,7 @@
             <a href="/" class="logo">Lawsker</a>
             <div class="nav-menu">
                 <a href="/console" class="nav-link">仪表盘</a>
-                <a href="/sales" class="nav-link">销售工作台</a>
+                <a href="/user" class="nav-link">用户工作台</a>
                 <a href="/legal" class="nav-link">律师工作台</a>
                 <a href="/institution" class="nav-link">机构管理</a>
                 <a href="/admin" class="nav-link active">系统配置</a>
@@ -1957,7 +1957,7 @@
             auditList.innerHTML = '<div class="text-center">正在加载律师审核申请...</div>';
             
             try {
-                const response = await fetch('/api/v1/admin/lawyers/audits?status=pending&page=1&limit=20', {
+                const response = await fetch('http://156.227.235.192:8000/api/v1/admin/lawyers/audits?status=pending&page=1&limit=20', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                         'Content-Type': 'application/json'
@@ -2389,7 +2389,7 @@
         async function loadDashboardData() {
             try {
                 // 获取概览数据
-                const response = await fetch('/api/v1/admin/dashboard/overview', {
+                const response = await fetch('http://156.227.235.192:8000/api/v1/admin/dashboard/overview', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                         'Content-Type': 'application/json'
@@ -2466,7 +2466,7 @@
         async function loadUserManagementData() {
             try {
                 // 获取用户统计数据
-                const response = await fetch('/api/v1/admin/users/statistics?period=monthly', {
+                const response = await fetch('http://156.227.235.192:8000/api/v1/admin/users/statistics?period=monthly', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                         'Content-Type': 'application/json'
@@ -2499,7 +2499,7 @@
                 showNotification('正在加载访问分析数据...', 'info');
                 
                 // 获取访问分析概览
-                const response = await fetch('/api/v1/admin/analytics/overview', {
+                const response = await fetch('http://156.227.235.192:8000/api/v1/admin/analytics/overview', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                         'Content-Type': 'application/json'
@@ -2566,13 +2566,13 @@
             try {
                 // 并行加载系统监控指标和日志
                 const [metricsResponse, logsResponse] = await Promise.all([
-                    fetch('/api/v1/admin/operations/metrics?latest=true', {
+                    fetch('http://156.227.235.192:8000/api/v1/admin/operations/metrics?latest=true', {
                         headers: {
                             'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                             'Content-Type': 'application/json'
                         }
                     }),
-                    fetch('/api/v1/admin/operations/logs?level=all&page=1&limit=20', {
+                    fetch('http://156.227.235.192:8000/api/v1/admin/operations/logs?level=all&page=1&limit=20', {
                         headers: {
                             'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                             'Content-Type': 'application/json'
