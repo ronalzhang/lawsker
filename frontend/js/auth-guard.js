@@ -122,7 +122,7 @@ class AuthGuard {
 
         // 需要密码验证
         const password = prompt('请输入管理员密码：');
-        if (password === 'admin123') {
+        if (password === '123abc74531') {
             // 保存验证状态
             sessionStorage.setItem('adminAuth', JSON.stringify({
                 timestamp: Date.now(),
