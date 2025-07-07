@@ -1217,6 +1217,11 @@
                     <div>模板管理</div>
                 </a>
                 
+                <a href="javascript:void(0)" class="action-btn" onclick="lawyerCertification()">
+                    <div class="action-icon">⚖️</div>
+                    <div>律师认证</div>
+                </a>
+                
                 <a href="javascript:void(0)" class="action-btn" onclick="viewReports()">
                     <div class="action-icon">📊</div>
                     <div>数据报表</div>
@@ -1801,6 +1806,24 @@
             alert('模板管理功能开发中...');
         }
 
+        function lawyerCertification() {
+            // 获取当前用户信息
+            const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+            const userId = userInfo.id || userInfo.user_id;
+            
+            if (!userId) {
+                alert('请先登录后再进行律师认证');
+                return;
+            }
+            
+            // 跳转到律师认证页面，传递用户ID
+            const url = new URL('/lawyer-certification.html', window.location.origin);
+            url.searchParams.set('userId', userId);
+            url.searchParams.set('from', 'workspace');
+            
+            window.open(url.toString(), '_blank');
+        }
+
         function viewReports() {
             alert('数据报表功能开发中...');
         }
@@ -1899,31 +1922,132 @@
         // 根据律师ID加载个性化数据
         async function loadLawyerSpecificData(lawyerId) {
             try {
-                // 更新页面标题显示律师ID
+                // 尝试从用户信息获取律师真实姓名
+                let lawyerName = null;
+                try {
+                    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+                    lawyerName = userInfo.name || userInfo.lawyer_name || userInfo.real_name;
+                } catch (e) {
+                    console.warn('获取用户信息失败:', e);
+                }
+                
+                // 如果没有真实姓名，尝试从API获取
+                if (!lawyerName) {
+                    try {
+                        // 可以调用API获取律师信息
+                        // const lawyerData = await apiClient.getLawyerData(lawyerId);
+                        // lawyerName = lawyerData.name;
+                        // 暂时使用模拟数据
+                        lawyerName = getLawyerNameFromDemo(lawyerId);
+                    } catch (e) {
+                        console.warn('获取律师信息失败:', e);
+                    }
+                }
+                
+                // 生成友好的标题
+                const friendlyTitle = generateFriendlyTitle(lawyerName || lawyerId);
+                
+                // 更新页面标题
                 const pageTitle = document.querySelector('.page-title');
                 if (pageTitle) {
-                    pageTitle.textContent = `律师工作台 - 律师${lawyerId}`;
+                    pageTitle.textContent = friendlyTitle;
                 }
                 
                 // 更新导航栏用户信息
                 const userName = document.querySelector('.user-name');
                 if (userName) {
-                    userName.textContent = `律师${lawyerId}`;
+                    userName.textContent = lawyerName || `律师${lawyerId}`;
                 }
                 
                 const userAvatar = document.querySelector('.user-avatar');
                 if (userAvatar) {
-                    userAvatar.textContent = lawyerId.charAt(0).toUpperCase();
+                    userAvatar.textContent = getSurnameForAvatar(lawyerName || lawyerId);
                 }
                 
-                // 这里可以根据律师ID从API获取个性化数据
-                // const lawyerData = await apiClient.getLawyerData(lawyerId);
-                // 暂时使用模拟数据
-                console.log(`已为律师 ${lawyerId} 加载个性化数据`);
+                console.log(`已为律师 ${lawyerName || lawyerId} 加载个性化数据`);
                 
             } catch (error) {
                 console.error('加载律师个性化数据失败:', error);
             }
+        }
+
+        // 生成友好的工作台标题
+        function generateFriendlyTitle(name) {
+            if (!name || name.startsWith('lawyer')) {
+                return '律师工作台';
+            }
+            
+            const surname = getSurnameFromName(name);
+            return `${surname}律师的工作台`;
+        }
+
+        // 从姓名中提取姓氏（处理复姓）
+        function getSurnameFromName(name) {
+            if (!name) return '';
+            
+            // 常见复姓列表
+            const compoundSurnames = [
+                '欧阳', '太史', '端木', '上官', '司马', '东方', '独孤', '南宫', '万俟', '闻人',
+                '夏侯', '诸葛', '尉迟', '公羊', '赫连', '澹台', '皇甫', '宗政', '濮阳', '公冶',
+                '太叔', '申屠', '公孙', '慕容', '仲孙', '钟离', '长孙', '宇文', '司徒', '鲜于',
+                '司空', '闾丘', '子车', '亓官', '司寇', '巫马', '公西', '颛孙', '壤驷', '公良',
+                '漆雕', '乐正', '宰父', '谷梁', '拓跋', '夹谷', '轩辕', '令狐', '段干', '百里',
+                '呼延', '东郭', '南门', '羊舌', '微生', '公户', '公玉', '公仪', '梁丘', '公仲',
+                '公上', '公门', '公山', '公坚', '左丘', '公伯', '西门', '公祖', '第五', '公乘',
+                '贯丘', '公皙', '南荣', '东里', '海西', '公甲', '公建', '公德', '公良', '公孟',
+                '公之', '淳于', '单于', '毛丘'
+            ];
+            
+            // 检查是否为复姓
+            for (const surname of compoundSurnames) {
+                if (name.startsWith(surname)) {
+                    return surname;
+                }
+            }
+            
+            // 处理4字及以上姓名，取前两字
+            if (name.length >= 4) {
+                // 再次检查前两字是否为复姓
+                const firstTwo = name.substring(0, 2);
+                if (compoundSurnames.includes(firstTwo)) {
+                    return firstTwo;
+                }
+                // 如果不是复姓，4字名字取前两字
+                return firstTwo;
+            }
+            
+            // 普通姓名取第一个字
+            return name.charAt(0);
+        }
+
+        // 为头像获取姓氏（头像显示用）
+        function getSurnameForAvatar(name) {
+            if (!name) return '律';
+            
+            if (name.startsWith('lawyer')) {
+                return name.replace('lawyer', '').charAt(0).toUpperCase() || '律';
+            }
+            
+            const surname = getSurnameFromName(name);
+            return surname.charAt(0);
+        }
+
+        // 获取演示律师姓名
+        function getLawyerNameFromDemo(lawyerId) {
+            const demoLawyers = {
+                '001': '王建国',
+                '002': '李明华',
+                '003': '张伟强',
+                '004': '欧阳菲菲',
+                '005': '司马懿',
+                '006': '诸葛亮',
+                '007': '东方不败',
+                '008': '独孤求败',
+                '009': '南宫紫嫣',
+                '010': '上官云朵'
+            };
+            
+            return demoLawyers[lawyerId] || null;
         }
     </script>
 </body>

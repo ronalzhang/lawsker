@@ -942,19 +942,32 @@
             // 获取用户ID
             let userId = null;
             try {
-                const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-                userId = userInfo.id || userInfo.user_id;
+                // 优先从URL参数获取（从律师工作台跳转过来）
+                const urlParams = new URLSearchParams(window.location.search);
+                userId = urlParams.get('userId');
                 
+                // 如果URL参数没有，从本地存储获取
                 if (!userId) {
-                    // 尝试从URL参数获取
-                    const urlParams = new URLSearchParams(window.location.search);
-                    userId = urlParams.get('userId');
+                    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+                    userId = userInfo.id || userInfo.user_id;
                 }
                 
                 if (!userId) {
-                    alert('无法获取用户ID，请重新登录');
+                    // 提供更友好的错误信息
+                    const fromWorkspace = urlParams.get('from') === 'workspace';
+                    if (fromWorkspace) {
+                        alert('无法获取用户信息，请重新从律师工作台进入认证页面');
+                    } else {
+                        alert('请先登录后再进行律师认证');
+                    }
+                    // 如果是从工作台来的，关闭当前页面
+                    if (fromWorkspace) {
+                        window.close();
+                    }
                     return;
                 }
+                
+                console.log('获取到用户ID:', userId);
             } catch (error) {
                 console.error('获取用户信息失败:', error);
                 alert('获取用户信息失败，请重新登录');
@@ -1030,6 +1043,49 @@
             
             currentStep = step;
         }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取并显示用户信息
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('userId');
+            const fromWorkspace = urlParams.get('from') === 'workspace';
+            
+            if (userId) {
+                // 如果是从工作台来的，显示提示信息
+                if (fromWorkspace) {
+                    const headerElement = document.querySelector('.page-header');
+                    if (headerElement) {
+                        const userInfoDiv = document.createElement('div');
+                        userInfoDiv.style.cssText = `
+                            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(124, 58, 237, 0.05) 100%);
+                            border: 1px solid rgba(102, 126, 234, 0.3);
+                            border-radius: 12px;
+                            padding: 16px;
+                            margin-bottom: 24px;
+                            color: var(--text-primary);
+                            font-size: 14px;
+                        `;
+                        userInfoDiv.innerHTML = `
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="font-size: 16px;">👤</span>
+                                <strong>当前认证账户</strong>
+                            </div>
+                            <div style="color: var(--text-secondary);">
+                                用户ID: ${userId}
+                                <br>来源: 律师工作台
+                                <br>请按照步骤完成律师资格认证
+                            </div>
+                        `;
+                        headerElement.appendChild(userInfoDiv);
+                    }
+                }
+                
+                console.log('律师认证页面初始化，用户ID:', userId);
+            } else {
+                console.warn('未获取到用户ID，可能需要用户手动登录');
+            }
+        });
     </script>
 </body>
 </html> 
