@@ -1,143 +1,86 @@
-// Authentication Guard - JWT Token validation and route protection
+// Authentication Guard - ASCII Version
+// Protects pages from unauthorized access
+
 class AuthGuard {
     constructor() {
-        this.token = localStorage.getItem('authToken');
-        this.userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-        // Do not init immediately - wait for DOM
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.init());
-        } else {
-            this.init();
-        }
+        this.init();
     }
 
     init() {
-        // Immediately check page access before any content is displayed
-        const accessAllowed = this.checkPageAccess();
-        if (!accessAllowed) {
-            // Hide page content immediately if access is denied
-            this.hidePageContent();
-            return;
-        }
-        
-        // Listen for storage changes
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'authToken' || e.key === 'userInfo') {
-                this.token = localStorage.getItem('authToken');
-                this.userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-                this.checkPageAccess();
-            }
-        });
-    }
-
-    // Hide page content immediately
-    hidePageContent() {
-        if (document.body) {
-            document.body.style.display = 'none';
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.checkPageAccess());
         } else {
-            document.addEventListener('DOMContentLoaded', () => {
-                document.body.style.display = 'none';
-            });
+            this.checkPageAccess();
         }
     }
 
-    // Check page access permissions
+    // Check if current page requires authentication
     checkPageAccess() {
         const currentPath = window.location.pathname;
-        const isPublicRoute = this.isPublicRoute(currentPath);
-        const isDemoRoute = this.isDemoRoute(currentPath);
-        const isAdminProRoute = currentPath === '/admin-pro' || currentPath === '/admin-pro.html' || currentPath.startsWith('/admin-pro/');
+        console.log('Checking access for:', currentPath);
         
-        console.log('Auth Guard - Checking page access:', {
-            path: currentPath,
-            isPublic: isPublicRoute,
-            isDemo: isDemoRoute,
-            isAdminPro: isAdminProRoute,
-            hasToken: !!this.token
-        });
-
-        // Demo routes do not need authentication
-        if (isDemoRoute) {
-            console.log('Auth Guard - Demo route, allow access');
-            return true;
-        }
-
-        // Public routes do not need authentication
-        if (isPublicRoute) {
-            console.log('Auth Guard - Public route, allow access');
-            return true;
-        }
-
-        // Admin-pro route special handling - no JWT required, direct password verification
-        if (isAdminProRoute) {
-            console.log('Auth Guard - Admin-pro route, password verification');
-            return this.checkAdminAccess();
-        }
-
-        // Routes requiring authentication
-        if (!this.isAuthenticated()) {
-            console.log('Auth Guard - Not authenticated, redirect to login');
-            this.redirectToLogin();
-            return false;
-        }
-
-        // Check user role permissions
-        if (!this.hasRoutePermission(currentPath)) {
-            console.log('Auth Guard - Insufficient permissions, redirect to home');
-            this.redirectToHome();
-            return false;
-        }
-
-        console.log('Auth Guard - Access granted');
-        return true;
-    }
-
-    // Check if it's a public route
-    isPublicRoute(path) {
-        const publicRoutes = [
+        // Public pages that don't require authentication
+        const publicPaths = [
             '/',
             '/index.html',
             '/login.html',
             '/login',
             '/anonymous-task.html',
-            '/anonymous-task'
-        ];
-        return publicRoutes.includes(path) || publicRoutes.includes(path.replace('.html', ''));
-    }
-
-    // Check if it's a demo route
-    isDemoRoute(path) {
-        const demoRoutes = [
-            '/user',
+            '/anonymous-task',
             '/legal',
+            '/user',
+            '/legal/',
             '/user/',
-            '/legal/'
+            '/js/auth-guard.js'
         ];
-        // Only exact match demo routes are allowed, personal pages like /legal/001 need authentication
-        return demoRoutes.includes(path) || demoRoutes.includes(path.replace(/\/$/, ''));
+
+        // Check if it's a public path
+        const isPublicPath = publicPaths.some(path => {
+            if (path === currentPath) return true;
+            if (path.endsWith('/') && currentPath.startsWith(path)) return true;
+            return false;
+        });
+
+        if (isPublicPath) {
+            console.log('Public path detected, allowing access');
+            return;
+        }
+
+        // Check for admin routes (password verification)
+        const isAdminProRoute = currentPath === '/admin-pro' || currentPath === '/admin-pro.html' || currentPath.startsWith('/admin-pro/') || currentPath === '/admin-config-optimized.html';
+        
+        if (isAdminProRoute) {
+            console.log('Admin-pro route detected, checking admin access');
+            if (!this.checkAdminAccess()) {
+                console.log('Admin access denied');
+                return;
+            }
+        } else {
+            // Regular authentication check
+            console.log('Protected route detected, checking authentication');
+            const accessAllowed = this.checkAuthentication();
+            if (!accessAllowed) {
+                console.log('Authentication failed, redirecting to login');
+                const returnUrl = encodeURIComponent(currentPath);
+                window.location.href = `/login.html?returnUrl=${returnUrl}`;
+                return;
+            }
+        }
+
+        console.log('Access granted');
     }
 
-    // Check if user is authenticated
-    isAuthenticated() {
-        if (!this.token) return false;
-        
-        try {
-            const payload = JSON.parse(atob(this.token.split('.')[1]));
-            const now = Math.floor(Date.now() / 1000);
-            
-            // Check if token is expired
-            if (payload.exp && payload.exp < now) {
-                console.log('Auth Guard - Token expired');
-                this.logout();
-                return false;
-            }
-            
-            return true;
-        } catch (error) {
-            console.error('Auth Guard - Token parsing failed:', error);
-            this.logout();
+    // Check user authentication
+    checkAuthentication() {
+        // Check if user is logged in
+        const token = localStorage.getItem('userToken');
+        if (!token) {
             return false;
         }
+
+        // Additional role-based checks can be added here
+        return true;
     }
 
     // Check admin access permissions
@@ -152,200 +95,238 @@ class AuthGuard {
             }
         }
 
-        // Need password verification
-        const password = prompt('Please enter admin password:');
-        if (password === '123abc74531') {
-            // Save verification status
-            sessionStorage.setItem('adminAuth', JSON.stringify({
-                timestamp: Date.now(),
-                verified: true
-            }));
-            return true;
-        } else if (password !== null) {
-            alert('Wrong password!');
-        }
-
+        // Show custom password modal
+        this.showPasswordModal();
         return false;
     }
 
-    // Check route permissions
-    hasRoutePermission(path) {
-        // Admin-pro route special handling - already handled in checkPageAccess
-        if (path === '/admin-pro' || path === '/admin-pro.html' || path.startsWith('/admin-pro/')) {
-            return true; // checkPageAccess already verified
-        }
+    // Show glassmorphism password modal
+    showPasswordModal() {
+        // Hide page content immediately
+        document.body.style.visibility = 'hidden';
+        
+        // Create modal overlay
+        const modalOverlay = document.createElement('div');
+        modalOverlay.id = 'admin-password-modal';
+        modalOverlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        `;
 
-        if (!this.userInfo.role) return false;
+        // Create modal container
+        const modalContainer = document.createElement('div');
+        modalContainer.style.cssText = `
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            min-width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        `;
 
-        const userRole = this.userInfo.role;
-        const userId = this.userInfo.id;
+        // Create modal content
+        modalContainer.innerHTML = `
+            <div style="text-align: center; color: white;">
+                <div style="font-size: 48px; margin-bottom: 20px;">🔐</div>
+                <h2 style="margin: 0 0 10px 0; font-size: 24px; font-weight: 600;">管理员验证</h2>
+                <p style="margin: 0 0 30px 0; opacity: 0.8; font-size: 14px;">请输入管理员密码以继续</p>
+                
+                <div style="position: relative; margin-bottom: 30px;">
+                    <input 
+                        type="password" 
+                        id="admin-password-input"
+                        placeholder="请输入密码"
+                        style="
+                            width: 100%;
+                            padding: 15px 20px;
+                            background: rgba(255, 255, 255, 0.1);
+                            border: 1px solid rgba(255, 255, 255, 0.3);
+                            border-radius: 12px;
+                            color: white;
+                            font-size: 16px;
+                            outline: none;
+                            box-sizing: border-box;
+                            transition: all 0.3s ease;
+                        "
+                    />
+                </div>
+                
+                <div style="display: flex; gap: 15px; justify-content: center;">
+                    <button 
+                        id="admin-cancel-btn"
+                        style="
+                            padding: 12px 24px;
+                            background: rgba(255, 255, 255, 0.1);
+                            border: 1px solid rgba(255, 255, 255, 0.3);
+                            border-radius: 8px;
+                            color: white;
+                            font-size: 14px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            min-width: 80px;
+                        "
+                    >取消</button>
+                    <button 
+                        id="admin-confirm-btn"
+                        style="
+                            padding: 12px 24px;
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            border: none;
+                            border-radius: 8px;
+                            color: white;
+                            font-size: 14px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            min-width: 80px;
+                            font-weight: 600;
+                        "
+                    >确认</button>
+                </div>
+                
+                <div id="admin-error-msg" style="
+                    margin-top: 15px;
+                    padding: 10px;
+                    background: rgba(255, 87, 87, 0.1);
+                    border: 1px solid rgba(255, 87, 87, 0.3);
+                    border-radius: 8px;
+                    color: #ff5757;
+                    font-size: 14px;
+                    display: none;
+                ">密码错误，请重试</div>
+            </div>
+        `;
 
-        // Admin can access all routes
-        if (userRole === 'admin') return true;
+        modalOverlay.appendChild(modalContainer);
+        document.body.appendChild(modalOverlay);
 
-        // Users can only access their own workspace
-        if (path.startsWith('/user/')) {
-            const pathUserId = path.split('/user/')[1];
-            if (!pathUserId) return false; // Wrong path format
-            
-            // User ID to username mapping
-            const userMapping = {
-                '001': 'user1',
-                '002': 'user2',
-                '003': 'user3',
-                '004': 'user4',
-                '005': 'user5',
-                '006': 'user1', // Reuse user1
-                '007': 'user2', // Reuse user2
-                '008': 'user3', // Reuse user3
-                '009': 'user4', // Reuse user4
-                '010': 'user5'  // Reuse user5
-            };
-            
-            const expectedUsername = userMapping[pathUserId];
-            const currentUsername = this.userInfo.username || this.userInfo.email?.split('@')[0];
-            
-            console.log('Auth Guard - User permission verification:', {
-                pathUserId,
-                expectedUsername,
-                currentUsername,
-                userRole
-            });
-            
-            return (userRole === 'user' || userRole === 'sales') && currentUsername === expectedUsername;
-        }
+        // Animation in
+        setTimeout(() => {
+            modalOverlay.style.opacity = '1';
+            modalContainer.style.transform = 'translateY(0)';
+        }, 10);
 
-        // Lawyers can only access their own workspace
-        if (path.startsWith('/legal/')) {
-            const pathLawyerId = path.split('/legal/')[1];
-            if (!pathLawyerId) return false; // Wrong path format
-            
-            // Lawyer ID to username mapping
-            const lawyerMapping = {
-                '001': 'lawyer1',
-                '002': 'lawyer2',
-                '003': 'lawyer3',
-                '004': 'lawyer4',
-                '005': 'lawyer5',
-                '006': 'lawyer1', // Reuse lawyer1
-                '007': 'lawyer2', // Reuse lawyer2
-                '008': 'lawyer3', // Reuse lawyer3
-                '009': 'lawyer4', // Reuse lawyer4
-                '010': 'lawyer5'  // Reuse lawyer5
-            };
-            
-            const expectedUsername = lawyerMapping[pathLawyerId];
-            const currentUsername = this.userInfo.username || this.userInfo.email?.split('@')[0];
-            
-            console.log('Auth Guard - Lawyer permission verification:', {
-                pathLawyerId,
-                expectedUsername,
-                currentUsername,
-                userRole
-            });
-            
-            return userRole === 'lawyer' && currentUsername === expectedUsername;
-        }
+        // Add CSS for input focus effects
+        const style = document.createElement('style');
+        style.textContent = `
+            #admin-password-input:focus {
+                border-color: rgba(102, 126, 234, 0.8) !important;
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2) !important;
+            }
+            #admin-cancel-btn:hover {
+                background: rgba(255, 255, 255, 0.2) !important;
+                transform: translateY(-1px) !important;
+            }
+            #admin-confirm-btn:hover {
+                background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important;
+                transform: translateY(-1px) !important;
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4) !important;
+            }
+        `;
+        document.head.appendChild(style);
 
-        // Institution workspace permissions
-        if (path.startsWith('/institution/')) {
-            const pathInstitutionId = path.split('/institution/')[1];
-            return userRole === 'institution' && pathInstitutionId === userId;
-        }
+        // Event handlers
+        const passwordInput = document.getElementById('admin-password-input');
+        const confirmBtn = document.getElementById('admin-confirm-btn');
+        const cancelBtn = document.getElementById('admin-cancel-btn');
+        const errorMsg = document.getElementById('admin-error-msg');
 
-        // Other login required pages
-        const loginRequiredRoutes = [
-            '/dashboard',
-            '/calculator',
-            '/withdrawal',
-            '/admin'
-        ];
-        return loginRequiredRoutes.some(route => path.startsWith(route));
-    }
+        // Focus input
+        setTimeout(() => passwordInput.focus(), 300);
 
-    // Redirect to login page
-    redirectToLogin() {
-        const currentPath = window.location.pathname;
-        const returnUrl = encodeURIComponent(currentPath);
-        console.log('Auth Guard - Redirecting to login with returnUrl:', returnUrl);
-        window.location.href = `/login.html?returnUrl=${returnUrl}`;
-    }
-
-    // Redirect to home page
-    redirectToHome() {
-        console.log('Auth Guard - Redirecting to home page');
-        window.location.href = '/';
-    }
-
-    // Logout
-    logout() {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userInfo');
-        this.token = null;
-        this.userInfo = {};
-        // Trigger logout event
-        window.dispatchEvent(new CustomEvent('authLogout'));
-    }
-
-    // Login
-    login(token, userInfo) {
-        localStorage.setItem('authToken', token);
-        localStorage.setItem('userInfo', JSON.stringify(userInfo));
-        this.token = token;
-        this.userInfo = userInfo;
-        // Trigger login event
-        window.dispatchEvent(new CustomEvent('authLogin', { detail: { userInfo } }));
-    }
-
-    // Get user info
-    getUserInfo() {
-        return this.userInfo;
-    }
-
-    // Get auth header
-    getAuthHeader() {
-        return this.token ? { 'Authorization': `Bearer ${this.token}` } : {};
-    }
-
-    // Generate demo user data
-    generateDemoUserData(type, id) {
-        const demoUsers = {
-            user: {
-                id: id,
-                name: `User${id}`,
-                role: 'user',
-                level: 'Legal Expert',
-                avatar: id.charAt(0).toUpperCase(),
-                stats: {
-                    totalTasks: 5,
-                    uploadedData: 3,
-                    totalEarnings: 2580,
-                    monthlyEarnings: 680
-                }
-            },
-            legal: {
-                id: id,
-                name: `Lawyer${id}`,
-                role: 'lawyer',
-                level: 'Senior Lawyer',
-                avatar: id.charAt(0).toUpperCase(),
-                stats: {
-                    totalCases: 15,
-                    completedCases: 12,
-                    totalEarnings: 25800,
-                    monthlyEarnings: 6800
-                }
+        // Handle verification
+        const verifyPassword = () => {
+            const password = passwordInput.value;
+            if (password === '123abc74531') {
+                // Save verification status
+                sessionStorage.setItem('adminAuth', JSON.stringify({
+                    timestamp: Date.now(),
+                    verified: true
+                }));
+                
+                // Success animation and close
+                modalContainer.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    modalOverlay.style.opacity = '0';
+                    modalContainer.style.transform = 'translateY(-20px)';
+                    setTimeout(() => {
+                        document.body.removeChild(modalOverlay);
+                        document.head.removeChild(style);
+                        // Show page content
+                        document.body.style.visibility = 'visible';
+                    }, 300);
+                }, 200);
+            } else {
+                // Show error
+                errorMsg.style.display = 'block';
+                passwordInput.style.borderColor = 'rgba(255, 87, 87, 0.8)';
+                passwordInput.style.animation = 'shake 0.5s ease-in-out';
+                
+                // Reset error after animation
+                setTimeout(() => {
+                    passwordInput.style.animation = '';
+                    passwordInput.focus();
+                    passwordInput.select();
+                }, 500);
             }
         };
-        return demoUsers[type] || null;
+
+        // Handle cancel
+        const cancelVerification = () => {
+            modalOverlay.style.opacity = '0';
+            modalContainer.style.transform = 'translateY(-20px)';
+            setTimeout(() => {
+                document.body.removeChild(modalOverlay);
+                document.head.removeChild(style);
+                // Redirect to home
+                window.location.href = '/';
+            }, 300);
+        };
+
+        // Event listeners
+        confirmBtn.addEventListener('click', verifyPassword);
+        cancelBtn.addEventListener('click', cancelVerification);
+        passwordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                verifyPassword();
+            } else if (e.key === 'Escape') {
+                cancelVerification();
+            }
+        });
+
+        // Hide error on input
+        passwordInput.addEventListener('input', () => {
+            errorMsg.style.display = 'none';
+            passwordInput.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+        });
+
+        // Add shake animation
+        if (!document.getElementById('shake-animation')) {
+            const shakeStyle = document.createElement('style');
+            shakeStyle.id = 'shake-animation';
+            shakeStyle.textContent = `
+                @keyframes shake {
+                    0%, 20%, 40%, 60%, 80%, 100% { transform: translateX(0); }
+                    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                }
+            `;
+            document.head.appendChild(shakeStyle);
+        }
     }
 }
 
-// Global auth guard instance - Initialize immediately
-console.log('Auth Guard - Initializing...');
-window.authGuard = new AuthGuard();
-
-// Export auth guard class
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = AuthGuard;
-} 
+// Initialize auth guard
+new AuthGuard(); 
