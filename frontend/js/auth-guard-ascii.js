@@ -48,7 +48,7 @@ class AuthGuard {
         }
 
         // Check for admin routes (password verification)
-        const isAdminProRoute = currentPath === '/admin-pro' || currentPath === '/admin-pro.html' || currentPath.startsWith('/admin-pro/') || currentPath === '/admin-config-optimized.html';
+        const isAdminProRoute = this.isAdminProPage(currentPath);
         
         if (isAdminProRoute) {
             console.log('Admin-pro route detected, checking admin access');
@@ -71,6 +71,31 @@ class AuthGuard {
         console.log('Access granted');
     }
 
+    // Check if current page is admin-pro page
+    isAdminProPage(currentPath) {
+        // Check both URL path and file name
+        const adminProPaths = [
+            '/admin-pro',
+            '/admin-pro/',
+            '/admin-pro.html',
+            '/admin-config-optimized.html'
+        ];
+        
+        // Check direct path match
+        if (adminProPaths.includes(currentPath)) {
+            return true;
+        }
+        
+        // Check if URL contains admin-pro parameter or file name
+        if (currentPath.includes('admin-pro') || 
+            currentPath.includes('admin-config-optimized') ||
+            window.location.href.includes('admin-pro')) {
+            return true;
+        }
+        
+        return false;
+    }
+
     // Check user authentication
     checkAuthentication() {
         // Check if user is logged in
@@ -85,17 +110,27 @@ class AuthGuard {
 
     // Check admin access permissions
     checkAdminAccess() {
-        // Check if admin password has been verified
+        // Force clean start - clear any conflicting auth data
+        const currentUrl = window.location.href;
+        
+        // Check if admin password has been verified recently
         const adminAuth = sessionStorage.getItem('adminAuth');
         if (adminAuth) {
-            const authData = JSON.parse(adminAuth);
-            // Check if within 30 minutes
-            if (Date.now() - authData.timestamp < 30 * 60 * 1000) {
-                return true;
+            try {
+                const authData = JSON.parse(adminAuth);
+                // Check if within 30 minutes and for correct page
+                if (Date.now() - authData.timestamp < 30 * 60 * 1000 && authData.page === 'admin-pro') {
+                    console.log('Admin auth found and valid');
+                    return true;
+                }
+            } catch (e) {
+                // Invalid auth data, clear it
+                sessionStorage.removeItem('adminAuth');
             }
         }
 
         // Show custom password modal
+        console.log('No valid admin auth found, showing password modal');
         this.showPasswordModal();
         return false;
     }
@@ -251,10 +286,11 @@ class AuthGuard {
         const verifyPassword = () => {
             const password = passwordInput.value;
             if (password === '123abc74531') {
-                // Save verification status
+                // Save verification status with page identifier
                 sessionStorage.setItem('adminAuth', JSON.stringify({
                     timestamp: Date.now(),
-                    verified: true
+                    verified: true,
+                    page: 'admin-pro'
                 }));
                 
                 // Success animation and close
