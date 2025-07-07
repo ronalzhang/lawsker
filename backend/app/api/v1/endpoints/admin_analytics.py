@@ -68,12 +68,18 @@ class BackupResponse(BaseModel):
 async def get_test_dashboard_overview(db: AsyncSession = Depends(get_db)):
     """测试用仪表盘概览数据（无需认证）"""
     try:
-        # 获取基础统计数据
+        # 获取基础统计数据（修正字段名和表结构）
         overview_query = """
         SELECT 
             (SELECT COUNT(*) FROM users WHERE created_at >= CURRENT_DATE) as today_new_users,
-            (SELECT COUNT(*) FROM users WHERE user_type = 'lawyer') as total_lawyers,
-            (SELECT COUNT(*) FROM users WHERE user_type = 'user') as total_users,
+            (SELECT COUNT(DISTINCT u.id) FROM users u 
+             JOIN user_roles ur ON u.id = ur.user_id 
+             JOIN roles r ON ur.role_id = r.id 
+             WHERE r.name = 'lawyer') as total_lawyers,
+            (SELECT COUNT(DISTINCT u.id) FROM users u 
+             JOIN user_roles ur ON u.id = ur.user_id 
+             JOIN roles r ON ur.role_id = r.id 
+             WHERE r.name IN ('user', 'client')) as total_users,
             (SELECT COUNT(*) FROM users WHERE created_at >= DATE_TRUNC('month', CURRENT_DATE)) as month_new_users,
             (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE status = 'completed' AND created_at >= CURRENT_DATE) as today_revenue,
             (SELECT COALESCE(total_pv, 0) FROM daily_statistics WHERE stat_date = CURRENT_DATE) as today_visitors,
