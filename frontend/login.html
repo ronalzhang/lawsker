@@ -640,11 +640,21 @@
 
                     // 根据角色跳转到对应工作台
                     setTimeout(() => {
-                        const workspaceMap = {
-                            'lawyer': '/legal',
-                            'sales': '/user'
-                        };
-                        window.location.href = workspaceMap[selectedRole] || '/';
+                        // 检查是否有redirect参数
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const redirectUrl = urlParams.get('redirect');
+                        
+                        if (redirectUrl) {
+                            // 如果有redirect参数，直接跳转到目标页面
+                            window.location.href = decodeURIComponent(redirectUrl);
+                        } else {
+                            // 否则使用默认的工作台跳转逻辑
+                            const workspaceMap = {
+                                'lawyer': '/legal',
+                                'sales': '/user'
+                            };
+                            window.location.href = workspaceMap[selectedRole] || '/';
+                        }
                     }, 1000);
                 } else {
                     showMessage(data.detail || '登录失败，请检查用户名、密码和角色', 'error');
@@ -890,6 +900,17 @@
 
         // 继续之前的登录
         function continueLogin() {
+            // 检查是否有redirect参数
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectUrl = urlParams.get('redirect');
+            
+            if (redirectUrl) {
+                // 如果有redirect参数，直接跳转到目标页面
+                window.location.href = decodeURIComponent(redirectUrl);
+                return;
+            }
+            
+            // 否则使用默认的工作台跳转逻辑
             const role = localStorage.getItem('userRole');
             if (role) {
                 const workspaceMap = {
