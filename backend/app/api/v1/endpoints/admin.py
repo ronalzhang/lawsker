@@ -462,7 +462,7 @@ async def get_real_overview(
     try:
         # 获取用户总数
         users_query = text("""
-        SELECT COUNT(*) as total_users FROM users WHERE status = 'active'
+        SELECT COUNT(*) as total_users FROM users WHERE status = 'ACTIVE'
         """)
         users_result = await db.execute(users_query)
         total_users = users_result.scalar() or 0
