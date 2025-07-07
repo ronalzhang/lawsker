@@ -1928,110 +1928,8 @@
             updatePaginationDisplay();
         }
 
-        // 验证用户身份和访问权限
-        async function verifyUserAccess(lawyerId) {
-            try {
-                // 检查是否已经登录
-                if (!apiClient.isAuthenticated()) {
-                    console.log('用户未登录，重定向到登录页面');
-                    redirectToLogin();
-                    return false;
-                }
-                
-                // 获取当前用户信息
-                const userInfo = await apiClient.getCurrentUserInfo();
-                
-                // 映射律师ID到用户标识
-                const lawyerMapping = {
-                    '001': 'lawyer1',
-                    '002': 'lawyer2', 
-                    '003': 'lawyer3',
-                    '004': 'lawyer4',
-                    '005': 'lawyer5',
-                    '006': 'lawyer1', // 重用律师1
-                    '007': 'lawyer2', // 重用律师2
-                    '008': 'lawyer3', // 重用律师3
-                    '009': 'lawyer4', // 重用律师4
-                    '010': 'lawyer5'  // 重用律师5
-                };
-                
-                const expectedUsername = lawyerMapping[lawyerId];
-                if (!expectedUsername) {
-                    console.error('无效的律师ID:', lawyerId);
-                    showAccessDenied('无效的页面地址');
-                    return false;
-                }
-                
-                // 验证用户身份是否匹配
-                const currentUsername = userInfo.username || userInfo.email?.split('@')[0];
-                
-                if (currentUsername !== expectedUsername) {
-                    console.error('用户身份不匹配:', {
-                        current: currentUsername,
-                        expected: expectedUsername,
-                        lawyerId: lawyerId
-                    });
-                    showAccessDenied('您没有权限访问此页面');
-                    return false;
-                }
-                
-                console.log('用户身份验证通过:', currentUsername);
-                return true;
-                
-            } catch (error) {
-                console.error('身份验证失败:', error);
-                showAccessDenied('身份验证失败，请重新登录');
-                return false;
-            }
-        }
-        
-        // 重定向到登录页面
-        function redirectToLogin() {
-            const currentUrl = encodeURIComponent(window.location.pathname);
-            window.location.href = `/login.html?redirect=${currentUrl}`;
-        }
-        
-        // 显示访问拒绝页面
-        function showAccessDenied(message) {
-            document.body.innerHTML = `
-                <div style="
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                    flex-direction: column;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-                ">
-                    <div style="
-                        background: rgba(255, 255, 255, 0.1);
-                        backdrop-filter: blur(20px);
-                        border-radius: 20px;
-                        padding: 40px;
-                        text-align: center;
-                        border: 1px solid rgba(255, 255, 255, 0.2);
-                        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-                    ">
-                        <h1 style="margin: 0 0 20px 0; font-size: 24px; font-weight: 600;">访问被拒绝</h1>
-                        <p style="margin: 0 0 30px 0; opacity: 0.9; font-size: 16px;">${message}</p>
-                        <button onclick="window.location.href='/login.html'" style="
-                            background: linear-gradient(45deg, #667eea, #764ba2);
-                            border: none;
-                            padding: 12px 24px;
-                            border-radius: 8px;
-                            color: white;
-                            font-size: 16px;
-                            font-weight: 500;
-                            cursor: pointer;
-                            transition: transform 0.2s;
-                        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                            返回登录
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
+        // auth-guard.js 已经在页面加载时进行了权限验证
+        // 如果能执行到这里说明权限验证已通过
 
         // 初始化页面
         document.addEventListener('DOMContentLoaded', async function() {
@@ -2040,14 +1938,8 @@
             if (lawyerId) {
                 console.log('当前律师ID:', lawyerId);
                 
-                // 验证用户身份和访问权限
-                const accessGranted = await verifyUserAccess(lawyerId);
-                if (!accessGranted) {
-                    // 如果身份验证失败，verifyUserAccess会处理重定向或显示错误
-                    return;
-                }
-                
-                // 根据律师ID个性化显示
+                // auth-guard.js 已经验证了访问权限
+                // 直接根据律师ID个性化显示
                 await loadLawyerSpecificData(lawyerId);
             }
             

@@ -90,7 +90,8 @@ class AuthGuard {
             '/user/',
             '/legal/'
         ];
-        return demoRoutes.some(route => path.startsWith(route));
+        // 只有精确匹配的演示路由才允许，/legal/001 这样的个人页面需要认证
+        return demoRoutes.includes(path) || demoRoutes.includes(path.replace(/\/$/, ''));
     }
 
     // 检查用户是否已认证
@@ -162,13 +163,65 @@ class AuthGuard {
         // 用户只能访问自己的工作台
         if (path.startsWith('/user/')) {
             const pathUserId = path.split('/user/')[1];
-            return userRole === 'user' && pathUserId === userId;
+            if (!pathUserId) return false; // 路径格式错误
+            
+            // 用户ID到用户名映射（类似律师的映射逻辑）
+            const userMapping = {
+                '001': 'user1',
+                '002': 'user2',
+                '003': 'user3',
+                '004': 'user4',
+                '005': 'user5',
+                '006': 'user1', // 重用用户1
+                '007': 'user2', // 重用用户2
+                '008': 'user3', // 重用用户3
+                '009': 'user4', // 重用用户4
+                '010': 'user5'  // 重用用户5
+            };
+            
+            const expectedUsername = userMapping[pathUserId];
+            const currentUsername = this.userInfo.username || this.userInfo.email?.split('@')[0];
+            
+            console.log('用户权限验证:', {
+                pathUserId,
+                expectedUsername,
+                currentUsername,
+                userRole
+            });
+            
+            return (userRole === 'user' || userRole === 'sales') && currentUsername === expectedUsername;
         }
 
         // 律师只能访问自己的工作台
         if (path.startsWith('/legal/')) {
             const pathLawyerId = path.split('/legal/')[1];
-            return userRole === 'lawyer' && pathLawyerId === userId;
+            if (!pathLawyerId) return false; // 路径格式错误
+            
+            // 律师ID到用户名映射
+            const lawyerMapping = {
+                '001': 'lawyer1',
+                '002': 'lawyer2',
+                '003': 'lawyer3',
+                '004': 'lawyer4',
+                '005': 'lawyer5',
+                '006': 'lawyer1', // 重用律师1
+                '007': 'lawyer2', // 重用律师2
+                '008': 'lawyer3', // 重用律师3
+                '009': 'lawyer4', // 重用律师4
+                '010': 'lawyer5'  // 重用律师5
+            };
+            
+            const expectedUsername = lawyerMapping[pathLawyerId];
+            const currentUsername = this.userInfo.username || this.userInfo.email?.split('@')[0];
+            
+            console.log('律师权限验证:', {
+                pathLawyerId,
+                expectedUsername,
+                currentUsername,
+                userRole
+            });
+            
+            return userRole === 'lawyer' && currentUsername === expectedUsername;
         }
 
         // 机构工作台权限
