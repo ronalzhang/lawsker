@@ -5,6 +5,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
@@ -144,16 +145,20 @@ async def batch_extract_license_info(
 @router.post("/submit-certification", response_model=LawyerVerificationResponse)
 async def submit_lawyer_certification(
     request: LawyerCertificationRequest,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     提交律师认证申请
     """
     try:
+        from sqlalchemy import select
         service = LawyerVerificationService()
         
         # 验证用户是否存在
-        user = db.query(User).filter(User.id == request.user_id).first()
+        user_query = select(User).where(User.id == request.user_id)
+        user_result = await db.execute(user_query)
+        user = user_result.scalar_one_or_none()
+        
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -161,9 +166,11 @@ async def submit_lawyer_certification(
             )
         
         # 检查是否已有认证记录
-        existing_qualification = db.query(LawyerQualification).filter(
+        existing_query = select(LawyerQualification).where(
             LawyerQualification.user_id == request.user_id
-        ).first()
+        )
+        existing_result = await db.execute(existing_query)
+        existing_qualification = existing_result.scalar_one_or_none()
         
         if existing_qualification:
             raise HTTPException(
@@ -181,8 +188,8 @@ async def submit_lawyer_certification(
         # 保存到数据库
         new_qualification = LawyerQualification(**qualification_data)
         db.add(new_qualification)
-        db.commit()
-        db.refresh(new_qualification)
+        await db.commit()
+        await db.refresh(new_qualification)
         
         return LawyerVerificationResponse(
             success=True,
@@ -201,7 +208,7 @@ async def submit_lawyer_certification(
     except HTTPException as e:
         raise e
     except Exception as e:
-        db.rollback()
+        await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"提交认证申请失败: {str(e)}"
@@ -210,15 +217,18 @@ async def submit_lawyer_certification(
 @router.get("/qualification/{user_id}", response_model=LawyerVerificationResponse)
 async def get_lawyer_qualification(
     user_id: str,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     获取律师认证信息
     """
     try:
-        qualification = db.query(LawyerQualification).filter(
+        from sqlalchemy import select
+        qualification_query = select(LawyerQualification).where(
             LawyerQualification.user_id == user_id
-        ).first()
+        )
+        qualification_result = await db.execute(qualification_query)
+        qualification = qualification_result.scalar_one_or_none()
         
         if not qualification:
             return LawyerVerificationResponse(
@@ -313,16 +323,19 @@ async def verify_lawyer(
 @router.get("/check-qualification", response_model=LawyerVerificationResponse)
 async def check_lawyer_qualification(
     license_number: str,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """检查律师资格"""
     try:
+        from sqlalchemy import select
         service = LawyerVerificationService()
         
         # 检查数据库中是否存在该律师证号
-        existing_qualification = db.query(LawyerQualification).filter(
+        existing_query = select(LawyerQualification).where(
             LawyerQualification.license_number == license_number
-        ).first()
+        )
+        existing_result = await db.execute(existing_query)
+        existing_qualification = existing_result.scalar_one_or_none()
         
         if existing_qualification:
             return LawyerVerificationResponse(
