@@ -1928,12 +1928,75 @@
             updatePaginationDisplay();
         }
 
+        // 自动登录律师账户
+        async function autoLoginLawyer(lawyerId) {
+            try {
+                // 检查是否已经登录
+                if (apiClient.isAuthenticated()) {
+                    console.log('用户已经登录');
+                    return true;
+                }
+                
+                // 映射律师ID到用户名
+                const lawyerCredentials = {
+                    '001': { username: 'lawyer1', password: 'demo123' },
+                    '002': { username: 'lawyer2', password: 'demo123' },
+                    '003': { username: 'lawyer3', password: 'demo123' },
+                    '004': { username: 'lawyer4', password: 'demo123' },
+                    '005': { username: 'lawyer5', password: 'demo123' },
+                    '006': { username: 'lawyer1', password: 'demo123' }, // 重用律师1
+                    '007': { username: 'lawyer2', password: 'demo123' }, // 重用律师2
+                    '008': { username: 'lawyer3', password: 'demo123' }, // 重用律师3
+                    '009': { username: 'lawyer4', password: 'demo123' }, // 重用律师4
+                    '010': { username: 'lawyer5', password: 'demo123' }  // 重用律师5
+                };
+                
+                const credentials = lawyerCredentials[lawyerId];
+                if (!credentials) {
+                    console.warn('未找到律师ID对应的认证信息:', lawyerId);
+                    return false;
+                }
+                
+                console.log('正在自动登录律师账户:', credentials.username);
+                
+                // 执行登录
+                const loginResult = await apiClient.login(credentials);
+                
+                if (loginResult.access_token) {
+                    console.log('律师自动登录成功');
+                    
+                    // 保存用户信息
+                    if (loginResult.user) {
+                        localStorage.setItem('userInfo', JSON.stringify(loginResult.user));
+                    }
+                    
+                    return true;
+                } else {
+                    console.error('律师自动登录失败');
+                    return false;
+                }
+                
+            } catch (error) {
+                console.error('律师自动登录异常:', error);
+                return false;
+            }
+        }
+
         // 初始化页面
         document.addEventListener('DOMContentLoaded', async function() {
             // 获取URL中的律师ID
             const lawyerId = getLawyerIdFromUrl();
             if (lawyerId) {
                 console.log('当前律师ID:', lawyerId);
+                
+                // 自动登录对应的律师账户
+                const loginSuccess = await autoLoginLawyer(lawyerId);
+                if (loginSuccess) {
+                    console.log('已自动登录律师账户，可以访问真实数据');
+                } else {
+                    console.warn('自动登录失败，可能会遇到API权限问题');
+                }
+                
                 // 根据律师ID个性化显示
                 await loadLawyerSpecificData(lawyerId);
             }
@@ -1954,6 +2017,8 @@
             const matches = path.match(/^\/legal\/([^\/]+)$/);
             return matches ? matches[1] : null;
         }
+
+
 
         // 根据律师ID加载个性化数据
         async function loadLawyerSpecificData(lawyerId) {

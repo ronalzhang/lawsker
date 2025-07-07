@@ -113,6 +113,13 @@ class ApiClient {
     }
 
     /**
+     * 获取当前用户信息（别名方法）
+     */
+    async getCurrentUserInfo() {
+        return this.getUserInfo();
+    }
+
+    /**
      * 获取案件列表
      */
     async getCases(params = {}) {
@@ -156,6 +163,13 @@ class ApiClient {
      */
     async getWithdrawals() {
         return this.get('/finance/withdrawals');
+    }
+
+    /**
+     * 获取提现统计数据
+     */
+    async getWithdrawalStats() {
+        return this.get('/finance/withdrawal-stats');
     }
 
     /**
