@@ -653,6 +653,12 @@
             if (extracted.name) {
                 document.getElementById('lawyerName').value = extracted.name;
                 updateFieldStatus('lawyerName', 'extracted');
+                
+                // 自动填充真实姓名（如果为空）
+                if (!document.getElementById('fullName').value) {
+                    document.getElementById('fullName').value = extracted.name;
+                    updateFieldStatus('fullName', 'extracted');
+                }
             }
             
             if (extracted.gender) {

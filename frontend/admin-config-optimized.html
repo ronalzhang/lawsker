@@ -200,6 +200,129 @@
             margin-bottom: 0.5rem;
         }
 
+        /* 律师审核管理样式 */
+        .lawyer-audit-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .audit-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .audit-item {
+            border: 1px solid rgba(122, 160, 255, 0.15);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .audit-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .audit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .audit-info {
+            flex: 1;
+        }
+
+        .audit-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .audit-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .audit-status.pending {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+
+        .audit-status.approved {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .audit-status.rejected {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        /* 访问记录管理样式 */
+        .access-log-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .access-logs {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .log-item {
+            border: 1px solid rgba(122, 160, 255, 0.15);
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            font-size: 0.875rem;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.25rem;
+        }
+
+        .log-time {
+            color: var(--text-secondary, #a8b2d1);
+            font-size: 0.75rem;
+        }
+
+        /* 系统监控样式 */
+        .system-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            border: 1px solid rgba(122, 160, 255, 0.15);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary, #a8b2d1);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
         .form-input {
             width: 100%;
             padding: 0.75rem;
@@ -549,6 +672,131 @@
                 </button>
                 <button class="btn btn-secondary btn-sm" onclick="reloadConfigs()">
                     重载配置
+                </button>
+            </div>
+        </div>
+
+        <!-- 律师审核管理 -->
+        <div class="config-card">
+            <div class="card-header">
+                <div class="card-icon">👨‍⚖️</div>
+                <div>
+                    <div class="card-title">律师审核管理</div>
+                    <div class="card-subtitle">审核律师认证申请</div>
+                </div>
+                <div class="status-badge status-warning">
+                    <div class="status-dot"></div>
+                    待审核: <span id="pendingCount">0</span>
+                </div>
+            </div>
+
+            <div class="lawyer-audit-controls">
+                <div class="form-group">
+                    <label class="form-label">审核状态过滤</label>
+                    <select class="form-input" id="auditStatusFilter" onchange="filterLawyerAudits()">
+                        <option value="">全部状态</option>
+                        <option value="pending">待审核</option>
+                        <option value="approved">已通过</option>
+                        <option value="rejected">已拒绝</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-primary" onclick="refreshLawyerAudits()">
+                        <i class="fas fa-sync"></i> 刷新列表
+                    </button>
+                </div>
+            </div>
+
+            <div class="audit-list" id="lawyerAuditList">
+                <!-- 律师审核列表将在这里动态加载 -->
+            </div>
+        </div>
+
+        <!-- 访问记录管理 -->
+        <div class="config-card">
+            <div class="card-header">
+                <div class="card-icon">📊</div>
+                <div>
+                    <div class="card-title">访问记录管理</div>
+                    <div class="card-subtitle">网站访问日志和统计</div>
+                </div>
+                <div class="status-badge status-active">
+                    <div class="status-dot"></div>
+                    今日访问: <span id="todayVisits">0</span>
+                </div>
+            </div>
+
+            <div class="access-log-controls">
+                <div class="form-group">
+                    <label class="form-label">时间范围</label>
+                    <select class="form-input" id="timeRange" onchange="filterAccessLogs()">
+                        <option value="today">今天</option>
+                        <option value="week">本周</option>
+                        <option value="month">本月</option>
+                        <option value="custom">自定义</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">用户类型</label>
+                    <select class="form-input" id="userTypeFilter" onchange="filterAccessLogs()">
+                        <option value="">全部用户</option>
+                        <option value="lawyer">律师</option>
+                        <option value="sales">销售</option>
+                        <option value="institution">机构</option>
+                        <option value="anonymous">匿名</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-primary" onclick="refreshAccessLogs()">
+                        <i class="fas fa-chart-line"></i> 查看统计
+                    </button>
+                </div>
+            </div>
+
+            <div class="access-logs" id="accessLogsList">
+                <!-- 访问记录列表将在这里动态加载 -->
+            </div>
+        </div>
+
+        <!-- 系统监控 -->
+        <div class="config-card">
+            <div class="card-header">
+                <div class="card-icon">🖥️</div>
+                <div>
+                    <div class="card-title">系统监控</div>
+                    <div class="card-subtitle">服务器状态和性能监控</div>
+                </div>
+                <div class="status-badge status-active">
+                    <div class="status-dot"></div>
+                    运行正常
+                </div>
+            </div>
+
+            <div class="system-stats">
+                <div class="stat-item">
+                    <div class="stat-label">CPU使用率</div>
+                    <div class="stat-value" id="cpuUsage">--</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">内存使用率</div>
+                    <div class="stat-value" id="memoryUsage">--</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">磁盘使用率</div>
+                    <div class="stat-value" id="diskUsage">--</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">活跃用户</div>
+                    <div class="stat-value" id="activeUsers">--</div>
+                </div>
+            </div>
+
+            <div class="card-actions">
+                <button class="btn btn-primary" onclick="loadSystemStats()">
+                    <i class="fas fa-sync"></i> 刷新监控
+                </button>
+                <button class="btn btn-secondary" onclick="exportSystemLogs()">
+                    <i class="fas fa-download"></i> 导出日志
                 </button>
             </div>
         </div>
@@ -1059,6 +1307,210 @@
             }
         }
 
+        // 律师审核管理功能
+        function refreshLawyerAudits() {
+            const auditList = document.getElementById('lawyerAuditList');
+            auditList.innerHTML = '<div class="text-center">正在加载律师审核申请...</div>';
+            
+            // 模拟加载数据
+            setTimeout(() => {
+                const mockAudits = [
+                    {
+                        id: 1,
+                        name: '张三',
+                        licenseNumber: '11010120220001',
+                        lawFirm: '北京某某律师事务所',
+                        status: 'pending',
+                        submitTime: '2024-01-15 10:30:00',
+                        confidence: 85
+                    },
+                    {
+                        id: 2,
+                        name: '李四',
+                        licenseNumber: '11010120220002',
+                        lawFirm: '上海某某律师事务所',
+                        status: 'approved',
+                        submitTime: '2024-01-14 14:20:00',
+                        confidence: 92
+                    },
+                    {
+                        id: 3,
+                        name: '王五',
+                        licenseNumber: '11010120220003',
+                        lawFirm: '深圳某某律师事务所',
+                        status: 'rejected',
+                        submitTime: '2024-01-13 09:15:00',
+                        confidence: 45
+                    }
+                ];
+                
+                displayLawyerAudits(mockAudits);
+            }, 500);
+        }
+
+        function displayLawyerAudits(audits) {
+            const auditList = document.getElementById('lawyerAuditList');
+            const pendingCount = audits.filter(audit => audit.status === 'pending').length;
+            document.getElementById('pendingCount').textContent = pendingCount;
+            
+            if (audits.length === 0) {
+                auditList.innerHTML = '<div class="text-center text-muted">暂无律师审核申请</div>';
+                return;
+            }
+            
+            auditList.innerHTML = audits.map(audit => `
+                <div class="audit-item">
+                    <div class="audit-header">
+                        <div class="audit-info">
+                            <strong>${audit.name}</strong>
+                            <span class="ms-2 text-muted">${audit.licenseNumber}</span>
+                        </div>
+                        <span class="audit-status ${audit.status}">
+                            ${audit.status === 'pending' ? '待审核' : 
+                              audit.status === 'approved' ? '已通过' : '已拒绝'}
+                        </span>
+                    </div>
+                    <div class="audit-details">
+                        <div>律师事务所: ${audit.lawFirm}</div>
+                        <div>AI置信度: ${audit.confidence}%</div>
+                        <div>提交时间: ${audit.submitTime}</div>
+                    </div>
+                    <div class="audit-actions mt-2">
+                        ${audit.status === 'pending' ? `
+                            <button class="btn btn-sm btn-success" onclick="approveAudit(${audit.id})">
+                                <i class="fas fa-check"></i> 通过
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="rejectAudit(${audit.id})">
+                                <i class="fas fa-times"></i> 拒绝
+                            </button>
+                        ` : ''}
+                        <button class="btn btn-sm btn-secondary" onclick="viewAuditDetails(${audit.id})">
+                            <i class="fas fa-eye"></i> 详情
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterLawyerAudits() {
+            refreshLawyerAudits(); // 简化版本，直接刷新
+        }
+
+        function approveAudit(auditId) {
+            if (confirm('确定要通过这个律师认证申请吗？')) {
+                showNotification('正在处理审核...', 'info');
+                setTimeout(() => {
+                    showNotification('律师认证申请已通过', 'success');
+                    refreshLawyerAudits();
+                }, 500);
+            }
+        }
+
+        function rejectAudit(auditId) {
+            const reason = prompt('请输入拒绝理由：');
+            if (reason) {
+                showNotification('正在处理审核...', 'info');
+                setTimeout(() => {
+                    showNotification('律师认证申请已拒绝', 'success');
+                    refreshLawyerAudits();
+                }, 500);
+            }
+        }
+
+        function viewAuditDetails(auditId) {
+            alert(`查看律师审核详情 ID: ${auditId}\n\n这里应该显示详细的审核信息，包括：\n- 律师执业证书图片\n- AI识别结果\n- 个人信息\n- 执业历史等`);
+        }
+
+        // 访问记录管理功能
+        function refreshAccessLogs() {
+            const accessLogsList = document.getElementById('accessLogsList');
+            accessLogsList.innerHTML = '<div class="text-center">正在加载访问记录...</div>';
+            
+            setTimeout(() => {
+                const mockLogs = [
+                    {
+                        id: 1,
+                        action: '用户登录',
+                        user: '张三律师',
+                        userType: 'lawyer',
+                        ip: '192.168.1.100',
+                        time: '2024-01-15 10:30:00',
+                        userAgent: 'Chrome 120.0.0.0'
+                    },
+                    {
+                        id: 2,
+                        action: '访问案件列表',
+                        user: '李四销售',
+                        userType: 'sales',
+                        ip: '192.168.1.101',
+                        time: '2024-01-15 10:25:00',
+                        userAgent: 'Firefox 121.0.0.0'
+                    },
+                    {
+                        id: 3,
+                        action: '匿名访问首页',
+                        user: '匿名用户',
+                        userType: 'anonymous',
+                        ip: '192.168.1.102',
+                        time: '2024-01-15 10:20:00',
+                        userAgent: 'Safari 17.0.0.0'
+                    }
+                ];
+                
+                displayAccessLogs(mockLogs);
+            }, 500);
+        }
+
+        function displayAccessLogs(logs) {
+            const accessLogsList = document.getElementById('accessLogsList');
+            const todayVisits = logs.filter(log => log.time.includes('2024-01-15')).length;
+            document.getElementById('todayVisits').textContent = todayVisits;
+            
+            if (logs.length === 0) {
+                accessLogsList.innerHTML = '<div class="text-center text-muted">暂无访问记录</div>';
+                return;
+            }
+            
+            accessLogsList.innerHTML = logs.map(log => `
+                <div class="log-item">
+                    <div class="log-header">
+                        <span><strong>${log.action}</strong> - ${log.user}</span>
+                        <span class="log-time">${log.time}</span>
+                    </div>
+                    <div class="log-details">
+                        IP: ${log.ip} | 用户类型: ${log.userType} | 浏览器: ${log.userAgent}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterAccessLogs() {
+            refreshAccessLogs(); // 简化版本，直接刷新
+        }
+
+        // 系统监控功能
+        function loadSystemStats() {
+            document.getElementById('cpuUsage').textContent = '--';
+            document.getElementById('memoryUsage').textContent = '--';
+            document.getElementById('diskUsage').textContent = '--';
+            document.getElementById('activeUsers').textContent = '--';
+            
+            setTimeout(() => {
+                // 模拟系统状态数据
+                document.getElementById('cpuUsage').textContent = '15%';
+                document.getElementById('memoryUsage').textContent = '48%';
+                document.getElementById('diskUsage').textContent = '32%';
+                document.getElementById('activeUsers').textContent = '23';
+            }, 1000);
+        }
+
+        function exportSystemLogs() {
+            showNotification('正在导出系统日志...', 'info');
+            setTimeout(() => {
+                showNotification('系统日志导出完成', 'success');
+            }, 1500);
+        }
+
         // 性能优化：使用 requestAnimationFrame 优化滚动
         let ticking = false;
         function onScroll() {
@@ -1124,6 +1576,11 @@
             
             // 优化事件监听器
             window.addEventListener('scroll', onScroll, { passive: true });
+            
+            // 初始化管理功能
+            refreshLawyerAudits();
+            refreshAccessLogs();
+            loadSystemStats();
             
             // 初始化完成提示
             setTimeout(() => {

@@ -225,8 +225,8 @@ async def register(
         # 默认租户ID（实际应用中应该根据注册来源确定）
         tenant_id = "ba5a72ab-0ba5-4de6-b6a3-989a4225e258"
         
-        # 如果邮箱为空，使用手机号作为临时邮箱
-        email = user_data.email or f"{user_data.phone}@temp.lawsker.com"
+        # 邮箱可以为空，认证时再填写
+        email = user_data.email or f"{user_data.phone}@pending.auth"
         
         result = await auth_service.register_user(
             email=email,

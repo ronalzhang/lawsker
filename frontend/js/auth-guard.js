@@ -108,6 +108,34 @@ class AuthGuard {
         }
     }
 
+    // 检查管理后台访问权限
+    checkAdminAccess() {
+        // 检查是否已经验证过管理员密码
+        const adminAuth = sessionStorage.getItem('adminAuth');
+        if (adminAuth) {
+            const authData = JSON.parse(adminAuth);
+            // 检查是否在30分钟内
+            if (Date.now() - authData.timestamp < 30 * 60 * 1000) {
+                return true;
+            }
+        }
+
+        // 需要密码验证
+        const password = prompt('请输入管理员密码：');
+        if (password === 'admin123') {
+            // 保存验证状态
+            sessionStorage.setItem('adminAuth', JSON.stringify({
+                timestamp: Date.now(),
+                verified: true
+            }));
+            return true;
+        } else if (password !== null) {
+            alert('密码错误！');
+        }
+
+        return false;
+    }
+
     // 检查路由权限
     hasRoutePermission(path) {
         if (!this.userInfo.role) return false;
@@ -134,6 +162,11 @@ class AuthGuard {
         if (path.startsWith('/institution/')) {
             const pathInstitutionId = path.split('/institution/')[1];
             return userRole === 'institution' && pathInstitutionId === userId;
+        }
+
+        // 管理后台特殊处理 - 使用简单密码验证
+        if (path === '/admin-pro' || path.startsWith('/admin-pro')) {
+            return this.checkAdminAccess();
         }
 
         // 其他需要登录的页面
