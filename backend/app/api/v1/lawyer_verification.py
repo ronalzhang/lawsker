@@ -92,6 +92,9 @@ async def extract_license_info(
             )
             
     except Exception as e:
+        import traceback
+        error_msg = f"处理失败: {str(e)}\n{traceback.format_exc()}"
+        print(f"[ERROR] extract_license_info: {error_msg}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"处理失败: {str(e)}"
