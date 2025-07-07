@@ -10,7 +10,7 @@
 -- 访问日志记录表
 CREATE TABLE IF NOT EXISTS access_logs (
     id BIGSERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
+    user_id UUID REFERENCES users(id),
     session_id VARCHAR(64),
     ip_address INET NOT NULL,
     user_agent TEXT,
@@ -98,7 +98,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_page_analytics_path_date ON page_analytics
 -- 律师业绩统计表
 CREATE TABLE IF NOT EXISTS lawyer_performance_stats (
     id SERIAL PRIMARY KEY,
-    lawyer_id INTEGER NOT NULL REFERENCES users(id),
+    lawyer_id UUID NOT NULL REFERENCES users(id),
     stat_period VARCHAR(20) NOT NULL, -- daily, weekly, monthly, yearly
     stat_date DATE NOT NULL,
     cases_handled INTEGER DEFAULT 0,
@@ -122,7 +122,7 @@ CREATE INDEX IF NOT EXISTS idx_lawyer_performance_ranking ON lawyer_performance_
 -- 用户业绩统计表
 CREATE TABLE IF NOT EXISTS user_performance_stats (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id),
+    user_id UUID NOT NULL REFERENCES users(id),
     stat_period VARCHAR(20) NOT NULL, -- daily, weekly, monthly, yearly
     stat_date DATE NOT NULL,
     tasks_published INTEGER DEFAULT 0,
@@ -186,7 +186,7 @@ CREATE TABLE IF NOT EXISTS system_logs (
     log_category VARCHAR(50), -- auth, payment, ai, etc.
     log_message TEXT NOT NULL,
     log_details JSON,
-    user_id INTEGER REFERENCES users(id),
+    user_id UUID REFERENCES users(id),
     ip_address INET,
     request_id VARCHAR(64),
     stack_trace TEXT,
@@ -208,7 +208,7 @@ CREATE TABLE IF NOT EXISTS backup_records (
     file_path VARCHAR(500),
     backup_duration INTEGER, -- 备份耗时(秒)
     error_message TEXT,
-    created_by INTEGER REFERENCES users(id),
+    created_by UUID REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMP
 );
@@ -226,7 +226,7 @@ CREATE TABLE IF NOT EXISTS alert_records (
     alert_source VARCHAR(50), -- 触发来源
     is_resolved BOOLEAN DEFAULT FALSE,
     resolved_at TIMESTAMP,
-    resolved_by INTEGER REFERENCES users(id),
+    resolved_by UUID REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -279,7 +279,7 @@ CREATE TABLE IF NOT EXISTS report_schedules (
     is_active BOOLEAN DEFAULT TRUE,
     last_run_at TIMESTAMP,
     next_run_at TIMESTAMP,
-    created_by INTEGER REFERENCES users(id),
+    created_by UUID REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
