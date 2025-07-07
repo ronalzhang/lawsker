@@ -1311,14 +1311,8 @@
         // 加载统计数据
         async function loadStats() {
             try {
-                // 使用本地演示数据，不再调用API
-                const stats = {
-                    published_tasks: 5,
-                    uploaded_data: 3,
-                    total_earnings: 2580,
-                    monthly_earnings: 680
-                };
-
+                const stats = await apiClient.getDashboardStats();
+                
                 // 更新销售工作台统计数据
                 const totalTasksEl = document.getElementById('totalTasks');
                 const uploadedDataEl = document.getElementById('uploadedData');
@@ -1326,15 +1320,15 @@
                 const monthlyEarningsEl = document.getElementById('monthlyEarnings');
                 const currentBalanceEl = document.getElementById('currentBalance');
 
-                if (totalTasksEl) totalTasksEl.textContent = stats.published_tasks;
-                if (uploadedDataEl) uploadedDataEl.textContent = stats.uploaded_data;
-                if (totalEarningsEl) totalEarningsEl.textContent = '¥' + stats.total_earnings.toLocaleString();
-                if (monthlyEarningsEl) monthlyEarningsEl.textContent = '¥' + stats.monthly_earnings.toLocaleString();
-                if (currentBalanceEl) currentBalanceEl.textContent = '¥' + stats.total_earnings.toLocaleString() + '.00';
+                if (totalTasksEl) totalTasksEl.textContent = stats.published_tasks || 0;
+                if (uploadedDataEl) uploadedDataEl.textContent = stats.uploaded_data || 0;
+                if (totalEarningsEl) totalEarningsEl.textContent = `¥${stats.total_earnings || 0}`;
+                if (monthlyEarningsEl) monthlyEarningsEl.textContent = `¥${stats.monthly_earnings || 0}`;
+                if (currentBalanceEl) currentBalanceEl.textContent = `¥${stats.current_balance || 0}`;
                 
             } catch (error) {
                 console.error('获取销售统计数据失败:', error);
-                // 使用默认数据
+                // 如果API调用失败，使用默认数据
                 const totalTasksEl = document.getElementById('totalTasks');
                 const uploadedDataEl = document.getElementById('uploadedData');
                 const totalEarningsEl = document.getElementById('totalEarnings');
@@ -1345,7 +1339,7 @@
                 if (uploadedDataEl) uploadedDataEl.textContent = '3';
                 if (totalEarningsEl) totalEarningsEl.textContent = '¥2,580';
                 if (monthlyEarningsEl) monthlyEarningsEl.textContent = '¥680';
-                if (currentBalanceEl) currentBalanceEl.textContent = '¥2,580.00';
+                if (currentBalanceEl) currentBalanceEl.textContent = '¥2,064';
             }
         }
 
@@ -1388,11 +1382,18 @@
         // 加载任务列表
         async function loadTasks() {
             try {
-                // 使用本地演示数据，不再调用API
-                console.log('保留现有的示例任务数据');
-                // 保持现有的静态示例数据不变
+                const tasks = await apiClient.getTasks('sales');
+                
+                // 如果获取到任务数据，显示真实数据
+                if (tasks && tasks.length > 0) {
+                    // 这里可以更新任务列表显示
+                    console.log('获取到销售任务数据:', tasks);
+                    // 根据需要更新UI
+                }
+                
             } catch (error) {
                 console.error('获取任务列表失败:', error);
+                // 保留现有的静态任务数据作为fallback
             }
         }
 
@@ -1442,103 +1443,87 @@
             return statusMap[status] || '待处理';
         }
 
-        // 加载销售工作台提现汇总统计数据
+        // 加载销售工作台提现汇总统计
         async function loadSalesWithdrawalStats() {
             try {
-                // 使用本地演示数据，不再调用API
-                const stats = {
-                    total_withdrawn: 8600,
-                    withdrawal_count: 4,
-                    average_amount: 2150,
-                    pending_amount: 0
-                };
+                const withdrawalStats = await apiClient.getWithdrawalStats();
                 
-                // 更新销售工作台提现汇总统计显示，添加null-safety检查
-                const salesTotalWithdrawnEl = document.getElementById('salesTotalWithdrawn');
-                const salesWithdrawalCountEl = document.getElementById('salesWithdrawalCount');
-                const salesAverageAmountEl = document.getElementById('salesAverageAmount');
-                const salesPendingAmountEl = document.getElementById('salesPendingAmount');
+                const totalWithdrawnEl = document.getElementById('salesTotalWithdrawn');
+                const withdrawalCountEl = document.getElementById('salesWithdrawalCount');
+                const monthlyWithdrawnEl = document.getElementById('monthlyWithdrawn');
+                const pendingWithdrawalEl = document.getElementById('salesPendingAmount');
 
-                if (salesTotalWithdrawnEl) salesTotalWithdrawnEl.textContent = '¥' + stats.total_withdrawn.toLocaleString() + '.00';
-                if (salesWithdrawalCountEl) salesWithdrawalCountEl.textContent = stats.withdrawal_count;
-                if (salesAverageAmountEl) salesAverageAmountEl.textContent = '¥' + stats.average_amount.toLocaleString() + '.00';
-                if (salesPendingAmountEl) salesPendingAmountEl.textContent = '¥' + stats.pending_amount.toLocaleString() + '.00';
-
+                if (totalWithdrawnEl) totalWithdrawnEl.textContent = `¥${withdrawalStats.total_withdrawn || 0}`;
+                if (withdrawalCountEl) withdrawalCountEl.textContent = withdrawalStats.withdrawal_count || 0;
+                if (monthlyWithdrawnEl) monthlyWithdrawnEl.textContent = `¥${withdrawalStats.monthly_withdrawn || 0}`;
+                if (pendingWithdrawalEl) pendingWithdrawalEl.textContent = `¥${withdrawalStats.pending_amount || 0}`;
+                
             } catch (error) {
-                console.error('加载销售提现统计数据失败:', error);
-                // 使用默认演示数据
-                const salesTotalWithdrawnEl = document.getElementById('salesTotalWithdrawn');
-                const salesWithdrawalCountEl = document.getElementById('salesWithdrawalCount');
-                const salesAverageAmountEl = document.getElementById('salesAverageAmount');
-                const salesPendingAmountEl = document.getElementById('salesPendingAmount');
+                console.error('获取销售提现统计数据失败:', error);
+                // 使用默认数据
+                const totalWithdrawnEl = document.getElementById('salesTotalWithdrawn');
+                const withdrawalCountEl = document.getElementById('salesWithdrawalCount');
+                const monthlyWithdrawnEl = document.getElementById('monthlyWithdrawn');
+                const pendingWithdrawalEl = document.getElementById('salesPendingAmount');
 
-                if (salesTotalWithdrawnEl) salesTotalWithdrawnEl.textContent = '¥8,600.00';
-                if (salesWithdrawalCountEl) salesWithdrawalCountEl.textContent = '4';
-                if (salesAverageAmountEl) salesAverageAmountEl.textContent = '¥2,150.00';
-                if (salesPendingAmountEl) salesPendingAmountEl.textContent = '¥0.00';
+                if (totalWithdrawnEl) totalWithdrawnEl.textContent = '¥8,600';
+                if (withdrawalCountEl) withdrawalCountEl.textContent = '4';
+                if (monthlyWithdrawnEl) monthlyWithdrawnEl.textContent = '¥1,200';
+                if (pendingWithdrawalEl) pendingWithdrawalEl.textContent = '¥500';
             }
         }
 
-        // 用户等级计算
-        function calculateUserLevel(totalBusiness, totalEarnings) {
-            const levels = [
-                { name: '律客新手', minBusiness: 0, minEarnings: 0, icon: '🌱' },
-                { name: '律客用户', minBusiness: 100, minEarnings: 1000, icon: '⭐' },
-                { name: '律客达人', minBusiness: 500, minEarnings: 5000, icon: '🌟' },
-                { name: '律客专家', minBusiness: 1000, minEarnings: 15000, icon: '💫' },
-                { name: '律客精英', minBusiness: 2000, minEarnings: 30000, icon: '✨' },
-                { name: '律客初级合伙人', minBusiness: 5000, minEarnings: 80000, icon: '🏆' },
-                { name: '律客中级合伙人', minBusiness: 10000, minEarnings: 200000, icon: '🏅' },
-                { name: '律客高级合伙人', minBusiness: 20000, minEarnings: 500000, icon: '👑' },
-                { name: '律客钻石合伙人', minBusiness: 50000, minEarnings: 1200000, icon: '💎' },
-                { name: '律客至尊合伙人', minBusiness: 100000, minEarnings: 3000000, icon: '🌈' }
-            ];
-            
-            for (let i = levels.length - 1; i >= 0; i--) {
-                const level = levels[i];
-                if (totalBusiness >= level.minBusiness && totalEarnings >= level.minEarnings) {
-                    return level;
-                }
-            }
-            return levels[0]; // 默认返回新手等级
-        }
-
-        // 更新用户等级显示
+        // 更新用户等级
         async function updateUserLevel() {
             try {
-                // 使用本地演示数据，不再调用API
-                const totalBusiness = 1250; // 示例业务量
-                const totalEarnings = 12580; // 示例总收入
-
-                const userLevel = calculateUserLevel(totalBusiness, totalEarnings);
+                const userStats = await apiClient.getUserStats();
                 
-                const levelElement = document.getElementById('userLevel');
-                const levelIcon = document.querySelector('.user-level-badge .level-icon');
+                const userLevelEl = document.getElementById('userLevel');
+                const userLevelBadgeEl = document.querySelector('.user-level-badge');
                 
-                if (levelElement) {
-                    levelElement.textContent = userLevel.name;
+                if (userStats && userLevelEl) {
+                    // 根据真实数据计算用户等级
+                    const businessVolume = userStats.business_volume || 0;
+                    const totalEarnings = userStats.total_earnings || 0;
+                    
+                    let level = 1;
+                    let levelName = '初级销售';
+                    
+                    if (businessVolume >= 5000 && totalEarnings >= 50000) {
+                        level = 5;
+                        levelName = '金牌销售';
+                    } else if (businessVolume >= 3000 && totalEarnings >= 30000) {
+                        level = 4;
+                        levelName = '高级销售';
+                    } else if (businessVolume >= 1500 && totalEarnings >= 15000) {
+                        level = 3;
+                        levelName = '中级销售';
+                    } else if (businessVolume >= 500 && totalEarnings >= 5000) {
+                        level = 2;
+                        levelName = '专业销售';
+                    }
+                    
+                    userLevelEl.textContent = levelName;
+                    
+                    if (userLevelBadgeEl) {
+                        userLevelBadgeEl.textContent = `LV${level}`;
+                        userLevelBadgeEl.className = `user-level-badge level-${level}`;
+                    }
                 }
-                if (levelIcon) {
-                    levelIcon.textContent = userLevel.icon;
-                }
+                
             } catch (error) {
-                console.error('更新用户等级失败:', error);
-                // 错误时使用默认数据
-                const userLevel = calculateUserLevel(1250, 12580);
+                console.error('获取用户统计数据失败:', error);
+                // 使用默认值
+                const userLevelEl = document.getElementById('userLevel');
+                const userLevelBadgeEl = document.querySelector('.user-level-badge');
                 
-                const levelElement = document.getElementById('userLevel');
-                const levelIcon = document.querySelector('.user-level-badge .level-icon');
-                
-                if (levelElement) {
-                    levelElement.textContent = userLevel.name;
-                }
-                if (levelIcon) {
-                    levelIcon.textContent = userLevel.icon;
+                if (userLevelEl) userLevelEl.textContent = '中级销售';
+                if (userLevelBadgeEl) {
+                    userLevelBadgeEl.textContent = 'LV3';
+                    userLevelBadgeEl.className = 'user-level-badge level-3';
                 }
             }
         }
-
-
 
         // 页面初始化
         document.addEventListener('DOMContentLoaded', async function() {
