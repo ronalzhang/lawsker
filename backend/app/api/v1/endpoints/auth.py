@@ -30,12 +30,12 @@ router = APIRouter()
 
 # Pydantic模型
 class UserRegister(BaseModel):
-    email: EmailStr
+    phone: str
     password: str
     role: str
-    full_name: Optional[str] = None
-    phone: str
-    sms_code: str  # 添加短信验证码字段
+    sms_code: str  # 短信验证码
+    email: Optional[EmailStr] = None  # 邮箱改为可选，认证时填写
+    full_name: Optional[str] = None   # 真实姓名改为可选，认证时填写
 
 
 class UserLogin(BaseModel):
@@ -98,10 +98,10 @@ async def send_sms_code(
         else:
             # 如果Redis不可用，使用内存存储（开发环境）
             import app.core.cache as cache
-            cache.memory_cache[cache_key] = {
+            cache.memory_cache.set(cache_key, {
                 "code": code,
                 "expires": datetime.now() + timedelta(minutes=5)
-            }
+            }, expire_seconds=300)
         
         # 构建短信内容
         sms_content = f"【律思客】您的验证码是{code}，5分钟内有效，请勿泄露。"
@@ -167,7 +167,7 @@ async def verify_sms_code(
             redis_client.delete(cache_key)
         else:
             import app.core.cache as cache
-            cache.memory_cache.pop(cache_key, None)
+            cache.memory_cache.delete(cache_key)
         
         return {
             "message": "验证码验证成功",
@@ -220,13 +220,16 @@ async def register(
             redis_client.delete(cache_key)
         else:
             import app.core.cache as cache
-            cache.memory_cache.pop(cache_key, None)
+            cache.memory_cache.delete(cache_key)
         
         # 默认租户ID（实际应用中应该根据注册来源确定）
         tenant_id = "ba5a72ab-0ba5-4de6-b6a3-989a4225e258"
         
+        # 如果邮箱为空，使用手机号作为临时邮箱
+        email = user_data.email or f"{user_data.phone}@temp.lawsker.com"
+        
         result = await auth_service.register_user(
-            email=user_data.email,
+            email=email,
             password=user_data.password,
             role=user_data.role,
             tenant_id=tenant_id,

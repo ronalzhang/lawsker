@@ -497,11 +497,6 @@
             <div id="registerTab" class="tab-content">
                 <form id="registerForm">
                     <div class="form-group">
-                        <label class="form-label">邮箱地址</label>
-                        <input type="email" class="form-input" name="email" placeholder="请输入邮箱地址" required>
-                    </div>
-
-                    <div class="form-group">
                         <label class="form-label">手机号码</label>
                         <input type="tel" class="form-input" name="phone" placeholder="请输入手机号码" required>
                     </div>
@@ -522,11 +517,6 @@
                     <div class="form-group">
                         <label class="form-label">确认密码</label>
                         <input type="password" class="form-input" name="confirmPassword" placeholder="请再次输入密码" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">真实姓名</label>
-                        <input type="text" class="form-input" name="fullName" placeholder="请输入真实姓名" required>
                     </div>
 
                     <div class="form-group">
@@ -673,8 +663,10 @@
             e.preventDefault();
             
             const formData = new FormData(e.target);
+            const phone = formData.get('phone');
             const password = formData.get('password');
             const confirmPassword = formData.get('confirmPassword');
+            const smsCode = formData.get('smsCode');
 
             if (password !== confirmPassword) {
                 showMessage('两次输入的密码不一致', 'error');
@@ -686,16 +678,49 @@
                 return;
             }
 
+            if (!smsCode) {
+                showMessage('请输入短信验证码', 'error');
+                return;
+            }
+
             const submitBtn = e.target.querySelector('.submit-btn');
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="loading-spinner"></span>注册中...';
 
             try {
-                // 这里可以添加注册逻辑
-                showMessage('注册功能正在完善中，请使用演示账号体验', 'error');
+                const response = await fetch('/api/v1/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        phone: phone,
+                        password: password,
+                        role: selectedRole,
+                        sms_code: smsCode
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage('注册成功！请登录', 'success');
+                    
+                    // 切换到登录页面
+                    setTimeout(() => {
+                        switchTab('login');
+                        // 清空注册表单
+                        e.target.reset();
+                        // 清空角色选择
+                        selectedRole = '';
+                        document.querySelectorAll('.role-option').forEach(opt => opt.classList.remove('selected'));
+                    }, 1000);
+                } else {
+                    showMessage(data.detail || '注册失败，请检查信息后重试', 'error');
+                }
             } catch (error) {
                 console.error('注册错误:', error);
-                showMessage('注册失败，请稍后重试', 'error');
+                showMessage('网络错误，请稍后重试', 'error');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '注册';
@@ -703,7 +728,7 @@
         }
 
         // 发送短信验证码
-        function sendSMSCode() {
+        async function sendSMSCode() {
             const phoneInput = document.querySelector('input[name="phone"]');
             const phone = phoneInput.value.trim();
 
@@ -726,10 +751,46 @@
             // 开始倒计时
             startSMSCountdown();
             
-            // 模拟发送短信
-            setTimeout(() => {
-                showMessage('验证码已发送到您的手机，请注意查收', 'success');
-            }, 500);
+            try {
+                const response = await fetch('/api/v1/auth/send-sms-code', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        phone: phone,
+                        code_type: 'register'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage('验证码已发送到您的手机，请注意查收', 'success');
+                    
+                    // 开发环境显示验证码
+                    if (data.debug_code) {
+                        setTimeout(() => {
+                            showMessage(`开发环境验证码: ${data.debug_code}`, 'info');
+                        }, 1000);
+                    }
+                } else {
+                    showMessage(data.detail || '验证码发送失败，请稍后重试', 'error');
+                    // 重置倒计时
+                    smsCountdown = 0;
+                    const btn = document.querySelector('.send-sms-btn');
+                    btn.disabled = false;
+                    btn.textContent = '获取验证码';
+                }
+            } catch (error) {
+                console.error('验证码发送失败:', error);
+                showMessage('网络错误，请稍后重试', 'error');
+                // 重置倒计时
+                smsCountdown = 0;
+                const btn = document.querySelector('.send-sms-btn');
+                btn.disabled = false;
+                btn.textContent = '获取验证码';
+            }
         }
 
         // 短信倒计时

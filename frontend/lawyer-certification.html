@@ -244,6 +244,39 @@
                 <p class="text-muted">请核对AI识别的信息，并补充或修正不准确的内容</p>
                 
                 <form id="certificationForm">
+                    <!-- 用户基本信息 -->
+                    <div class="alert alert-info mb-3">
+                        <h6><i class="fas fa-user"></i> 用户基本信息</h6>
+                        <small>完善您的基本信息，用于账号认证和联系</small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    真实姓名 <span class="text-danger">*</span>
+                                    <span class="field-status" id="fullNameStatus"></span>
+                                </label>
+                                <input type="text" class="form-control" id="fullName" required placeholder="请输入您的真实姓名">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    邮箱地址 <span class="text-danger">*</span>
+                                    <span class="field-status" id="emailStatus"></span>
+                                </label>
+                                <input type="email" class="form-control" id="email" required placeholder="请输入您的邮箱地址">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 律师执业信息 -->
+                    <div class="alert alert-primary mb-3">
+                        <h6><i class="fas fa-balance-scale"></i> 律师执业信息</h6>
+                        <small>请核对AI识别的信息，并补充或修正不准确的内容</small>
+                    </div>
+                    
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
