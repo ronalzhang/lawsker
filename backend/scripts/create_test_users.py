@@ -88,7 +88,6 @@ async def create_test_users():
                     email=user_data["email"],
                     password_hash=password_hash,
                     phone_number=user_data["phone"],
-                    role=user_data["role"],
                     status=UserStatus.ACTIVE
                 )
                 session.add(user)
