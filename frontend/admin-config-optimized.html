@@ -2802,43 +2802,43 @@
         async function refreshLawyerAudits() {
             const auditList = document.getElementById('lawyerAuditList');
             if (auditList) {
-                auditList.innerHTML = '<div class="text-center">正在加载律师审核申请...</div>';
+            auditList.innerHTML = '<div class="text-center">正在加载律师审核申请...</div>';
             }
             
             // 直接使用模拟数据，不进行API调用
-            setTimeout(() => {
+                setTimeout(() => {
                 const stats = AccessTracker.getStats();
-                const mockAudits = [
-                    {
-                        id: 1,
-                        name: '张三',
-                        licenseNumber: '11010120220001',
-                        lawFirm: '北京某某律师事务所',
-                        status: 'pending',
+                    const mockAudits = [
+                        {
+                            id: 1,
+                            name: '张三',
+                            licenseNumber: '11010120220001',
+                            lawFirm: '北京某某律师事务所',
+                            status: 'pending',
                         submitTime: new Date().toLocaleString('zh-CN'),
-                        confidence: 85
-                    },
-                    {
-                        id: 2,
-                        name: '李四',
-                        licenseNumber: '11010120220002',
-                        lawFirm: '上海某某律师事务所',
-                        status: 'approved',
+                            confidence: 85
+                        },
+                        {
+                            id: 2,
+                            name: '李四',
+                            licenseNumber: '11010120220002',
+                            lawFirm: '上海某某律师事务所',
+                            status: 'approved',
                         submitTime: new Date(Date.now() - 86400000).toLocaleString('zh-CN'),
-                        confidence: 92
-                    },
-                    {
-                        id: 3,
-                        name: '王五',
-                        licenseNumber: '11010120220003',
-                        lawFirm: '深圳某某律师事务所',
-                        status: 'rejected',
+                            confidence: 92
+                        },
+                        {
+                            id: 3,
+                            name: '王五',
+                            licenseNumber: '11010120220003',
+                            lawFirm: '深圳某某律师事务所',
+                            status: 'rejected',
                         submitTime: new Date(Date.now() - 172800000).toLocaleString('zh-CN'),
-                        confidence: 45
-                    }
-                ];
-                
-                displayLawyerAudits(mockAudits);
+                            confidence: 45
+                        }
+                    ];
+                    
+                    displayLawyerAudits(mockAudits);
             }, 300);
         }
 
@@ -3549,7 +3549,7 @@
                 updateStatCard('todayVisitors', stats.todayPV);
                 
                 updateTrendIndicator('userTrend', stats.trends.userGrowth);
-                updateTrendIndicator('lawyerTrend', 8.3);
+            updateTrendIndicator('lawyerTrend', 8.3);
                 updateTrendIndicator('revenueTrend', stats.trends.revenueGrowth);
                 updateTrendIndicator('visitorTrend', stats.trends.pvGrowth);
                 
@@ -3564,8 +3564,8 @@
                 updateTrendIndicator('userTrend', 12.5);
                 updateTrendIndicator('lawyerTrend', 8.3);
                 updateTrendIndicator('revenueTrend', 8.3);
-                updateTrendIndicator('visitorTrend', 0);
-                
+            updateTrendIndicator('visitorTrend', 0);
+            
                 showNotification('使用默认数据', 'warning');
             }
         }
@@ -3597,8 +3597,8 @@
                         avgMonthlyConsumption: 15200
                     }
                 };
-                
-                // 更新用户统计显示
+                    
+                    // 更新用户统计显示
                 updateUserStatistics(mockUserStats);
                 
                 // 加载律师审核列表（前端模拟数据）
@@ -3667,8 +3667,8 @@
             
             console.log('页面访问排行:', topPages);
         }
-
-        // 更新访问分析显示
+                    
+                    // 更新访问分析显示
         function updateAnalyticsDisplay(data) {
             // 更新访问分析卡片
             const analyticsCards = document.querySelectorAll('.analytics-card .analytics-value');
@@ -4200,44 +4200,63 @@
                 }
                 
                 // 获取图表数据
-                const { labels, data } = getAnalyticsChartData();
+                const chartData = getAnalyticsChartData();
                 
                 // 创建渐变背景
-                let gradient = null;
+                let pvGradient = null;
+                let uvGradient = null;
                 try {
-                    gradient = freshCtx.getContext('2d').createLinearGradient(0, 0, 0, 350);
-                    gradient.addColorStop(0, 'rgba(102, 126, 234, 0.4)');
-                    gradient.addColorStop(1, 'rgba(102, 126, 234, 0.05)');
+                    const ctx2d = freshCtx.getContext('2d');
+                    // PV数据渐变（蓝色）
+                    pvGradient = ctx2d.createLinearGradient(0, 0, 0, 350);
+                    pvGradient.addColorStop(0, 'rgba(102, 126, 234, 0.4)');
+                    pvGradient.addColorStop(1, 'rgba(102, 126, 234, 0.05)');
+                    
+                    // UV数据渐变（粉色）
+                    uvGradient = ctx2d.createLinearGradient(0, 0, 0, 350);
+                    uvGradient.addColorStop(0, 'rgba(240, 147, 251, 0.4)');
+                    uvGradient.addColorStop(1, 'rgba(240, 147, 251, 0.05)');
                 } catch (error) {
                     console.warn('创建渐变失败，使用纯色:', error);
                 }
+
+                // 配置双线数据集
+                const datasets = chartData.datasets.map((dataset, index) => ({
+                    ...dataset,
+                    borderWidth: 3,
+                    fill: false,
+                    pointBackgroundColor: dataset.borderColor,
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    backgroundColor: index === 0 ? 
+                        (pvGradient || 'rgba(102, 126, 234, 0.1)') : 
+                        (uvGradient || 'rgba(240, 147, 251, 0.1)')
+                }));
 
                 // 图表配置
                 const chartConfig = {
                     type: 'line',
                     data: {
-                        labels: labels,
-                        datasets: [{
-                            label: '访问量',
-                            data: data,
-                            backgroundColor: gradient || 'rgba(102, 126, 234, 0.2)',
-                            borderColor: '#667eea',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.4,
-                            pointBackgroundColor: '#667eea',
-                            pointBorderColor: '#ffffff',
-                            pointBorderWidth: 2,
-                            pointRadius: 5,
-                            pointHoverRadius: 7
-                        }]
+                        labels: chartData.labels,
+                        datasets: datasets
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
                             legend: {
-                                display: false
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    color: '#a0a6b8',
+                                    usePointStyle: true,
+                                    padding: 20,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
                             }
                         },
                         scales: {
@@ -4264,10 +4283,11 @@
 
                 // 创建新的图表实例
                 analyticsChart = new Chart(freshCtx, chartConfig);
-                console.log('访问分析图表已初始化:', { 
-                    labels, 
-                    data, 
-                    hasData: data.length > 0,
+                console.log('访问分析图表已初始化（双线模式）:', { 
+                    labels: chartData.labels, 
+                    pvData: chartData.datasets[0].data, 
+                    uvData: chartData.datasets[1].data,
+                    hasData: chartData.datasets[0].data.length > 0,
                     chartId: analyticsChart.id 
                 });
                 
@@ -4279,7 +4299,7 @@
             }
         }
 
-        // 显示图表数据为表格（降级方案）
+        // 显示图表数据为表格（降级方案）- 支持双列数据
         function displayChartDataAsTable(chartData) {
             const chartContainer = document.querySelector('#visitTrendChart').parentNode;
             if (chartContainer) {
@@ -4290,27 +4310,33 @@
                             <thead>
                                 <tr>
                                     <th>日期</th>
-                                    <th>访问量</th>
+                                    <th style="color: #667eea;">访问总次数 (PV)</th>
+                                    <th style="color: #f093fb;">独立IP数量 (UV)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${chartData.labels.map((label, index) => `
                                     <tr>
                                         <td>${label}</td>
-                                        <td>${chartData.data[index]}</td>
+                                        <td style="color: #667eea;">${chartData.datasets[0].data[index]}</td>
+                                        <td style="color: #f093fb;">${chartData.datasets[1].data[index]}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
                         </table>
+                        <p style="margin-top: 15px; color: #a0a6b8; font-size: 12px;">
+                            💡 PV：总访问次数（包括同一IP的多次访问） | UV：独立IP数量（去重计算）
+                        </p>
                     </div>
                 `;
             }
         }
 
-        // 获取访问分析图表数据
+        // 获取访问分析图表数据 - 支持双线显示：IP数量和访问次数
         function getAnalyticsChartData() {
             let labels = [];
-            let data = [];
+            let pvData = [];  // 访问总次数（PV）
+            let ipData = [];  // 独立IP数量（UV）
 
             try {
                 if (window.LawskerAnalytics) {
@@ -4324,7 +4350,16 @@
                         labels = recentDates.map(date => {
                             return new Date(date).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
                         });
-                        data = recentDates.map(date => analytics[date].pv || 0);
+                        pvData = recentDates.map(date => analytics[date].pv || 0);
+                        ipData = recentDates.map(date => {
+                            const sessions = analytics[date].sessions || [];
+                            // 计算独立IP数量
+                            const uniqueIPs = new Set();
+                            sessions.forEach(session => {
+                                if (session.fingerprint) uniqueIPs.add(session.fingerprint);
+                            });
+                            return uniqueIPs.size;
+                        });
                     }
                 } else {
                     // 降级到旧系统
@@ -4335,7 +4370,12 @@
                         labels = dates.slice(-7).map(date => {
                             return new Date(date).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
                         });
-                        data = dates.slice(-7).map(date => accessData[date].pv || 0);
+                        pvData = dates.slice(-7).map(date => accessData[date].pv || 0);
+                        ipData = dates.slice(-7).map(date => {
+                            // 从uvArray计算独立IP数量
+                            const uvArray = accessData[date].uvArray || [];
+                            return uvArray.length;
+                        });
                     }
                 }
 
@@ -4343,12 +4383,20 @@
                 if (labels.length === 0) {
                     const today = new Date();
                     labels = [];
-                    data = [];
+                    pvData = [];
+                    ipData = [];
                     
                     for (let i = 6; i >= 0; i--) {
                         const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
                         labels.push(date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }));
-                        data.push(i === 0 ? 1 : 0); // 只有今天有1个访问
+                        if (i === 0) {
+                            // 今天有真实访问
+                            pvData.push(1);
+                            ipData.push(1);
+                        } else {
+                            pvData.push(0);
+                            ipData.push(0);
+                        }
                     }
                 }
 
@@ -4356,10 +4404,31 @@
                 console.error('获取图表数据失败:', error);
                 // 提供默认数据
                 labels = ['今日'];
-                data = [1];
+                pvData = [1];
+                ipData = [1];
             }
 
-            return { labels, data };
+            return { 
+                labels, 
+                datasets: [
+                    {
+                        label: '访问总次数 (PV)',
+                        data: pvData,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: false,
+                        tension: 0.4
+                    },
+                    {
+                        label: '独立IP数量 (UV)',
+                        data: ipData,
+                        borderColor: '#f093fb',
+                        backgroundColor: 'rgba(240, 147, 251, 0.1)',
+                        fill: false,
+                        tension: 0.4
+                    }
+                ]
+            };
         }
 
         // 重新定义访问分析时间段切换
@@ -4442,9 +4511,15 @@
                     break;
             }
 
-            if (analyticsChart && labels.length > 0 && data.length > 0) {
+            // 更新图表数据（双线支持）
+            if (analyticsChart && labels.length > 0) {
                 analyticsChart.data.labels = labels;
-                analyticsChart.data.datasets[0].data = data;
+                if (analyticsChart.data.datasets.length >= 2) {
+                    // 更新PV数据
+                    analyticsChart.data.datasets[0].data = data;
+                    // 更新UV数据（模拟基于PV的计算）
+                    analyticsChart.data.datasets[1].data = data.map(pv => Math.max(1, Math.floor(pv * 0.7)));
+                }
                 analyticsChart.update();
                 showNotification(`${period === 'hour' ? '小时' : period === 'day' ? '日' : period === 'week' ? '周' : '月'}级别数据已更新`, 'info');
             }

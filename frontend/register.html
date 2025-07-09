@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f1424">
+    <title>用户注册 - Lawsker 律客</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+    <link rel="stylesheet" href="/css/lawsker-glass.css">
+    <!-- 访问统计系统 -->
+    <script src="/js/access-tracker.js"></script>
+    <style>
+        /* 确保页面背景正确显示 */
+        html, body {
+            background: linear-gradient(135deg, #0f1424 0%, #1a1d35 50%, #0f1424 100%) !important;
+            min-height: 100vh;
+        }
+        
+        /* 确保液体背景效果生效 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(122, 160, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(122, 160, 255, 0.08) 0%, transparent 50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .register-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .register-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-radius));
+            -webkit-backdrop-filter: blur(var(--blur-radius));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            box-shadow: 0 8px 32px var(--glass-shadow);
+            width: 100%;
+            max-width: 480px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .register-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .register-logo {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .register-title {
+            font-size: 28px;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .register-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .register-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-step {
+            display: none;
+        }
+
+        .form-step.active {
+            display: block;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input.error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+        .sms-input-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .sms-input-group .form-input {
+            flex: 1;
+        }
+
+        .sms-btn {
+            padding: 14px 20px;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            background: var(--gradient-primary);
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-width: 120px;
+        }
+
+        .sms-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .sms-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .role-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 12px 0;
+        }
+
+        .role-option {
+            padding: 16px;
+            border: 2px solid var(--glass-border);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .role-option:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .role-option.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .role-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .role-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .role-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: var(--gradient-primary);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+
+        .register-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .register-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .form-error {
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--glass-border);
+            margin: 0 4px;
+            transition: all 0.3s ease;
+        }
+
+        .step-dot.active {
+            background: #667eea;
+            transform: scale(1.2);
+        }
+
+        .register-footer {
+            text-align: center;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .register-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .register-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .success-message {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .success-icon {
+            font-size: 64px;
+            color: #10b981;
+            margin-bottom: 16px;
+        }
+
+        .success-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .success-desc {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .back-btn {
+            padding: 12px 24px;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            background: transparent;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 12px;
+        }
+
+        .back-btn:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .register-card {
+                padding: 24px;
+                margin: 16px;
+            }
+
+            .role-selector {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-card">
+            <div class="register-header">
+                <div class="register-logo">⚖️</div>
+                <h1 class="register-title">加入律客</h1>
+                <p class="register-subtitle">开启专业法律服务之旅</p>
+            </div>
+
+            <!-- 步骤指示器 -->
+            <div class="step-indicator">
+                <div class="step-dot active" data-step="1"></div>
+                <div class="step-dot" data-step="2"></div>
+                <div class="step-dot" data-step="3"></div>
+            </div>
+
+            <form class="register-form" id="registerForm">
+                <!-- 第一步：角色选择 -->
+                <div class="form-step active" id="step1">
+                    <div class="form-group">
+                        <label class="form-label">选择您的身份</label>
+                        <div class="role-selector">
+                            <div class="role-option" data-role="lawyer">
+                                <div class="role-icon">👨‍⚖️</div>
+                                <div class="role-name">执业律师</div>
+                                <div class="role-desc">提供专业法律服务</div>
+                            </div>
+                            <div class="role-option" data-role="sales">
+                                <div class="role-icon">👤</div>
+                                <div class="role-name">律客用户</div>
+                                <div class="role-desc">发布法律服务需求</div>
+                            </div>
+                            <div class="role-option" data-role="institution">
+                                <div class="role-icon">🏢</div>
+                                <div class="role-name">机构用户</div>
+                                <div class="role-desc">批量委托法律服务</div>
+                            </div>
+                        </div>
+                        <div class="form-error" id="roleError"></div>
+                    </div>
+                    <button type="button" class="register-btn" onclick="nextStep()" id="step1Btn" disabled>下一步</button>
+                </div>
+
+                <!-- 第二步：手机验证 -->
+                <div class="form-step" id="step2">
+                    <div class="form-group">
+                        <label class="form-label">手机号码</label>
+                        <input type="tel" class="form-input" id="phone" placeholder="请输入手机号码" maxlength="11">
+                        <div class="form-error" id="phoneError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">短信验证码</label>
+                        <div class="sms-input-group">
+                            <input type="text" class="form-input" id="smsCode" placeholder="请输入验证码" maxlength="6">
+                            <button type="button" class="sms-btn" id="sendSmsBtn" onclick="sendSMS()">发送验证码</button>
+                        </div>
+                        <div class="form-error" id="smsError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="button" class="back-btn" onclick="prevStep()">上一步</button>
+                        <button type="button" class="register-btn" onclick="nextStep()" id="step2Btn" disabled>下一步</button>
+                    </div>
+                </div>
+
+                <!-- 第三步：基本信息 -->
+                <div class="form-step" id="step3">
+                    <div class="form-group">
+                        <label class="form-label">邮箱地址</label>
+                        <input type="email" class="form-input" id="email" placeholder="请输入邮箱地址（可选）">
+                        <div class="form-error" id="emailError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">真实姓名</label>
+                        <input type="text" class="form-input" id="fullName" placeholder="请输入真实姓名（可选）">
+                        <div class="form-error" id="nameError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">登录密码</label>
+                        <input type="password" class="form-input" id="password" placeholder="请输入密码（至少8位）">
+                        <div class="form-error" id="passwordError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">确认密码</label>
+                        <input type="password" class="form-input" id="confirmPassword" placeholder="请再次输入密码">
+                        <div class="form-error" id="confirmPasswordError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="button" class="back-btn" onclick="prevStep()">上一步</button>
+                        <button type="submit" class="register-btn" id="submitBtn">完成注册</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- 注册成功页面 -->
+            <div class="form-step" id="success" style="display: none;">
+                <div class="success-message">
+                    <div class="success-icon">✅</div>
+                    <h2 class="success-title">注册成功！</h2>
+                    <p class="success-desc">欢迎加入律客平台，您可以立即开始使用我们的服务</p>
+                    <button class="register-btn" onclick="goToLogin()">立即登录</button>
+                </div>
+            </div>
+
+            <div class="register-footer">
+                <p>已有账户？<a href="/login.html">立即登录</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        let selectedRole = '';
+        let smsCountdown = 0;
+        let formData = {};
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 角色选择事件
+            document.querySelectorAll('.role-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.role-option').forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedRole = this.dataset.role;
+                    formData.role = selectedRole;
+                    
+                    document.getElementById('step1Btn').disabled = false;
+                    document.getElementById('roleError').textContent = '';
+                });
+            });
+
+            // 输入验证事件
+            document.getElementById('phone').addEventListener('input', validatePhone);
+            document.getElementById('smsCode').addEventListener('input', validateSMS);
+            document.getElementById('password').addEventListener('input', validatePassword);
+            document.getElementById('confirmPassword').addEventListener('input', validateConfirmPassword);
+
+            // 表单提交
+            document.getElementById('registerForm').addEventListener('submit', handleSubmit);
+
+            // 初始化访问统计
+            if (window.AccessTracker) {
+                AccessTracker.init();
+            }
+        });
+
+        // 步骤切换
+        function nextStep() {
+            if (currentStep === 1) {
+                if (!selectedRole) {
+                    document.getElementById('roleError').textContent = '请选择您的身份';
+                    return;
+                }
+            } else if (currentStep === 2) {
+                if (!validateStep2()) return;
+            }
+
+            currentStep++;
+            updateStepUI();
+        }
+
+        function prevStep() {
+            currentStep--;
+            updateStepUI();
+        }
+
+        function updateStepUI() {
+            // 隐藏所有步骤
+            document.querySelectorAll('.form-step').forEach(step => {
+                step.classList.remove('active');
+            });
+
+            // 显示当前步骤
+            document.getElementById(`step${currentStep}`).classList.add('active');
+
+            // 更新步骤指示器
+            document.querySelectorAll('.step-dot').forEach((dot, index) => {
+                if (index < currentStep) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+
+        // 验证函数
+        function validatePhone() {
+            const phone = document.getElementById('phone').value;
+            const phoneError = document.getElementById('phoneError');
+            const phoneRegex = /^1[3-9]\d{9}$/;
+
+            if (!phone) {
+                phoneError.textContent = '请输入手机号码';
+                return false;
+            } else if (!phoneRegex.test(phone)) {
+                phoneError.textContent = '请输入正确的手机号码';
+                return false;
+            } else {
+                phoneError.textContent = '';
+                return true;
+            }
+        }
+
+        function validateSMS() {
+            const smsCode = document.getElementById('smsCode').value;
+            const smsError = document.getElementById('smsError');
+
+            if (!smsCode) {
+                smsError.textContent = '请输入验证码';
+                document.getElementById('step2Btn').disabled = true;
+                return false;
+            } else if (smsCode.length !== 6) {
+                smsError.textContent = '验证码应为6位数字';
+                document.getElementById('step2Btn').disabled = true;
+                return false;
+            } else {
+                smsError.textContent = '';
+                document.getElementById('step2Btn').disabled = false;
+                return true;
+            }
+        }
+
+        function validatePassword() {
+            const password = document.getElementById('password').value;
+            const passwordError = document.getElementById('passwordError');
+
+            if (!password) {
+                passwordError.textContent = '请输入密码';
+                return false;
+            } else if (password.length < 8) {
+                passwordError.textContent = '密码至少需要8位';
+                return false;
+            } else {
+                passwordError.textContent = '';
+                return true;
+            }
+        }
+
+        function validateConfirmPassword() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const confirmPasswordError = document.getElementById('confirmPasswordError');
+
+            if (!confirmPassword) {
+                confirmPasswordError.textContent = '请确认密码';
+                return false;
+            } else if (password !== confirmPassword) {
+                confirmPasswordError.textContent = '两次输入的密码不一致';
+                return false;
+            } else {
+                confirmPasswordError.textContent = '';
+                return true;
+            }
+        }
+
+        function validateStep2() {
+            return validatePhone() && validateSMS();
+        }
+
+        // 发送短信验证码
+        async function sendSMS() {
+            if (!validatePhone()) return;
+
+            const phone = document.getElementById('phone').value;
+            const sendSmsBtn = document.getElementById('sendSmsBtn');
+
+            try {
+                sendSmsBtn.disabled = true;
+                sendSmsBtn.textContent = '发送中...';
+
+                const response = await fetch('/api/v1/auth/send-sms-code', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        phone: phone,
+                        code_type: 'register'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // 开始倒计时
+                    smsCountdown = 60;
+                    const timer = setInterval(() => {
+                        if (smsCountdown > 0) {
+                            sendSmsBtn.textContent = `${smsCountdown}秒后重试`;
+                            smsCountdown--;
+                        } else {
+                            clearInterval(timer);
+                            sendSmsBtn.disabled = false;
+                            sendSmsBtn.textContent = '重新发送';
+                        }
+                    }, 1000);
+
+                    // 开发环境显示验证码
+                    if (result.debug_code) {
+                        alert(`开发环境验证码：${result.debug_code}`);
+                    }
+
+                    showToast('验证码发送成功', 'success');
+                } else {
+                    throw new Error(result.detail || '发送失败');
+                }
+            } catch (error) {
+                console.error('发送验证码失败:', error);
+                showToast(error.message || '发送失败，请稍后重试', 'error');
+                sendSmsBtn.disabled = false;
+                sendSmsBtn.textContent = '发送验证码';
+            }
+        }
+
+        // 提交注册
+        async function handleSubmit(e) {
+            e.preventDefault();
+
+            // 验证所有字段
+            if (!validatePassword() || !validateConfirmPassword()) {
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            
+            try {
+                submitBtn.disabled = true;
+                submitBtn.textContent = '注册中...';
+
+                const registerData = {
+                    phone: document.getElementById('phone').value,
+                    password: document.getElementById('password').value,
+                    role: selectedRole,
+                    sms_code: document.getElementById('smsCode').value,
+                    email: document.getElementById('email').value || null,
+                    full_name: document.getElementById('fullName').value || null
+                };
+
+                const response = await fetch('/api/v1/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(registerData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // 注册成功
+                    document.querySelectorAll('.form-step').forEach(step => {
+                        step.style.display = 'none';
+                    });
+                    document.getElementById('success').style.display = 'block';
+                    
+                    showToast('注册成功！', 'success');
+                } else {
+                    throw new Error(result.detail || '注册失败');
+                }
+            } catch (error) {
+                console.error('注册失败:', error);
+                showToast(error.message || '注册失败，请稍后重试', 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = '完成注册';
+            }
+        }
+
+        // 跳转到登录页面
+        function goToLogin() {
+            window.location.href = '/login.html';
+        }
+
+        // 显示提示信息
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#667eea'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+            `;
+            toast.textContent = message;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+
+        // 添加动画样式
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html> 
