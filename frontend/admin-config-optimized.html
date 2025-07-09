@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#2563eb">
     <title>Lawsker 管理后台 - 系统配置</title>
     <link rel="stylesheet" href="/css/lawsker-glass.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/js/auth-guard-ascii.js?v=1735538500"></script>
     <style>
         /* 现代化CSS变量设计系统 */
@@ -671,6 +672,359 @@
             color: #22c55e;
         }
 
+        .card-change.negative {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        /* 访问分析模块优化 */
+        .analytics-overview {
+            margin-bottom: 2rem;
+        }
+
+        .analytics-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .analytics-card {
+            background: rgba(22, 28, 48, 0.85);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(122, 160, 255, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .analytics-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .analytics-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
+            border-color: rgba(122, 160, 255, 0.5);
+        }
+
+        .analytics-card .analytics-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .analytics-card .analytics-info {
+            text-align: left;
+        }
+
+        .analytics-card .analytics-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary, #f0f4ff);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+        }
+
+        .analytics-card .analytics-label {
+            color: var(--text-secondary, #a0a6b8);
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .analytics-card .analytics-trend {
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .analytics-card .analytics-trend.positive {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .analytics-card .analytics-trend.negative {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        /* 图表容器优化 */
+        .analytics-charts {
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            background: rgba(22, 28, 48, 0.85);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(122, 160, 255, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-header h3 {
+            color: var(--text-primary, #f0f4ff);
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chart-controls button {
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(122, 160, 255, 0.3);
+            background: rgba(22, 28, 48, 0.5);
+            color: var(--text-secondary, #a0a6b8);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.85rem;
+        }
+
+        .chart-controls button:hover {
+            background: rgba(122, 160, 255, 0.1);
+            color: var(--text-primary, #f0f4ff);
+        }
+
+        .chart-controls button.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: transparent;
+        }
+
+        .chart-content {
+            position: relative;
+            height: 350px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        /* 用户管理模块优化 */
+        .user-management-table {
+            background: rgba(22, 28, 48, 0.85);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(122, 160, 255, 0.3);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-top: 2rem;
+        }
+
+        .table-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(122, 160, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .table-header h3 {
+            color: var(--text-primary, #f0f4ff);
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-box {
+            background: rgba(22, 28, 48, 0.5);
+            border: 1px solid rgba(122, 160, 255, 0.3);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            color: var(--text-primary, #f0f4ff);
+            font-size: 0.85rem;
+            width: 200px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: rgba(122, 160, 255, 0.6);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(122, 160, 255, 0.15);
+        }
+
+        .data-table th {
+            background: rgba(22, 28, 48, 0.5);
+            color: var(--text-secondary, #a0a6b8);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .data-table td {
+            color: var(--text-primary, #f0f4ff);
+        }
+
+        .data-table tr:hover {
+            background: rgba(122, 160, 255, 0.08);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .user-avatar {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--text-primary, #f0f4ff);
+            margin-bottom: 0.25rem;
+        }
+
+        .user-email {
+            color: var(--text-secondary, #a0a6b8);
+            font-size: 0.85rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.active {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .status-badge.inactive {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .status-badge.pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem;
+            border: 1px solid rgba(122, 160, 255, 0.3);
+            background: rgba(22, 28, 48, 0.5);
+            color: var(--text-secondary, #a0a6b8);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.75rem;
+        }
+
+        .action-btn:hover {
+            background: rgba(122, 160, 255, 0.1);
+            color: var(--text-primary, #f0f4ff);
+        }
+
+        .action-btn.edit:hover {
+            border-color: #22c55e;
+            color: #22c55e;
+        }
+
+        .action-btn.delete:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        /* 分页样式 */
+        .table-pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: rgba(22, 28, 48, 0.5);
+            border-top: 1px solid rgba(122, 160, 255, 0.2);
+        }
+
+        .pagination-info {
+            color: var(--text-secondary, #a0a6b8);
+            font-size: 0.85rem;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .pagination-controls button {
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(122, 160, 255, 0.3);
+            background: rgba(22, 28, 48, 0.5);
+            color: var(--text-secondary, #a0a6b8);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.85rem;
+        }
+
+        .pagination-controls button:hover:not(:disabled) {
+            background: rgba(122, 160, 255, 0.1);
+            color: var(--text-primary, #f0f4ff);
+        }
+
+        .pagination-controls button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #pageInfo {
+            color: var(--text-secondary, #a0a6b8);
+            font-size: 0.85rem;
+        }
+
     </style>
 </head>
 <body>
@@ -908,6 +1262,43 @@
                 </div>
             </div>
 
+            <!-- 完整用户管理表格 -->
+            <div class="user-management-table">
+                <div class="table-header">
+                    <h3>全体用户管理</h3>
+                    <div class="table-actions">
+                        <input type="text" class="search-box" placeholder="搜索用户..." id="userSearch">
+                        <button class="btn btn-secondary btn-sm" onclick="exportUsers()">导出数据</button>
+                        <button class="btn btn-primary btn-sm" onclick="addUser()">添加用户</button>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>用户信息</th>
+                            <th>用户类型</th>
+                            <th>注册时间</th>
+                            <th>最后登录</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <!-- 用户数据将动态加载 -->
+                    </tbody>
+                </table>
+                <div class="table-pagination">
+                    <div class="pagination-info">
+                        显示 <span id="currentRange">1-10</span> 条，共 <span id="totalUsers">150</span> 条记录
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="btn btn-secondary btn-sm" onclick="changePage(-1)" id="prevPage">上一页</button>
+                        <span id="pageInfo">第 1 页 / 共 15 页</span>
+                        <button class="btn btn-secondary btn-sm" onclick="changePage(1)" id="nextPage">下一页</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- 律师认证管理 -->
             <div class="lawyer-certification-section">
                 <div class="section-header">
@@ -975,8 +1366,8 @@
                             <button class="btn btn-sm btn-secondary" onclick="setAnalyticsPeriod('month')">月</button>
                         </div>
                     </div>
-                    <div class="chart-content" id="visitTrendChart" style="height: 350px; background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                        访问趋势图表区域 (ECharts)
+                    <div class="chart-content">
+                        <canvas id="visitTrendChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -2898,6 +3289,281 @@
 
 
 
+        // 初始化访问分析图表
+        let analyticsChart = null;
+        function initAnalyticsChart() {
+            const ctx = document.getElementById('visitTrendChart');
+            if (!ctx) return;
+            
+            const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 350);
+            gradient.addColorStop(0, 'rgba(102, 126, 234, 0.4)');
+            gradient.addColorStop(1, 'rgba(102, 126, 234, 0.05)');
+
+            analyticsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月'],
+                    datasets: [{
+                        label: '访问量',
+                        data: [12543, 13876, 11234, 15432, 14567, 16234, 15672],
+                        backgroundColor: gradient,
+                        borderColor: '#667eea',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(122, 160, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#a0a6b8'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(122, 160, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#a0a6b8'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 重新定义访问分析时间段切换
+        function setAnalyticsPeriod(period) {
+            // 更新按钮状态
+            document.querySelectorAll('.chart-controls button').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-secondary');
+            });
+            
+            // 激活点击的按钮
+            event.target.classList.add('active');
+            event.target.classList.add('btn-primary');
+            event.target.classList.remove('btn-secondary');
+
+            // 更新图表数据
+            let labels, data;
+            switch(period) {
+                case 'hour':
+                    labels = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'];
+                    data = [324, 456, 789, 1234, 987, 654];
+                    break;
+                case 'day':
+                    labels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+                    data = [2543, 3876, 2234, 4432, 3567, 4234, 3672];
+                    break;
+                case 'week':
+                    labels = ['第1周', '第2周', '第3周', '第4周'];
+                    data = [15123, 18341, 16976, 19234];
+                    break;
+                case 'month':
+                    labels = ['1月', '2月', '3月', '4月', '5月', '6月', '7月'];
+                    data = [12543, 13876, 11234, 15432, 14567, 16234, 15672];
+                    break;
+            }
+
+            if (analyticsChart) {
+                analyticsChart.data.labels = labels;
+                analyticsChart.data.datasets[0].data = data;
+                analyticsChart.update();
+            }
+        }
+
+        // 初始化用户管理
+        let currentUserPage = 1;
+        let usersPerPage = 10;
+        let allUsers = [];
+        let filteredUsers = [];
+
+        function initUserManagement() {
+            loadUsersList();
+            
+            // 搜索功能
+            const searchInput = document.getElementById('userSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    filterUsers(this.value);
+                });
+            }
+        }
+
+        // 加载用户列表
+        async function loadUsersList() {
+            try {
+                // 模拟用户数据
+                allUsers = [
+                    { id: 1, name: '张三', email: 'zhangsan@example.com', type: '普通用户', registerTime: '2024-01-15', lastLogin: '2024-01-20 14:30', status: 'active' },
+                    { id: 2, name: '李四', email: 'lisi@example.com', type: '律客用户', registerTime: '2024-01-16', lastLogin: '2024-01-19 09:15', status: 'active' },
+                    { id: 3, name: '王五', email: 'wangwu@example.com', type: '普通用户', registerTime: '2024-01-17', lastLogin: '2024-01-18 16:45', status: 'inactive' },
+                    { id: 4, name: '赵六', email: 'zhaoliu@example.com', type: '机构用户', registerTime: '2024-01-18', lastLogin: '2024-01-20 11:20', status: 'active' },
+                    { id: 5, name: '孙七', email: 'sunqi@example.com', type: '律师用户', registerTime: '2024-01-19', lastLogin: '2024-01-20 08:30', status: 'pending' },
+                    { id: 6, name: '周八', email: 'zhouba@example.com', type: '律客用户', registerTime: '2024-01-20', lastLogin: '2024-01-20 12:00', status: 'active' },
+                    { id: 7, name: '吴九', email: 'wujiu@example.com', type: '普通用户', registerTime: '2024-01-21', lastLogin: '2024-01-21 10:15', status: 'active' },
+                    { id: 8, name: '郑十', email: 'zhengshi@example.com', type: '律师用户', registerTime: '2024-01-22', lastLogin: '2024-01-22 15:30', status: 'active' }
+                ];
+
+                filteredUsers = [...allUsers];
+                renderUserTable();
+                
+            } catch (error) {
+                console.error('加载用户列表失败:', error);
+                showNotification('加载用户列表失败', 'error');
+            }
+        }
+
+        // 过滤用户
+        function filterUsers(searchTerm) {
+            filteredUsers = allUsers.filter(user => 
+                user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                user.type.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            currentUserPage = 1;
+            renderUserTable();
+        }
+
+        // 渲染用户表格
+        function renderUserTable() {
+            const tbody = document.getElementById('userTableBody');
+            if (!tbody) return;
+
+            const startIndex = (currentUserPage - 1) * usersPerPage;
+            const endIndex = startIndex + usersPerPage;
+            const pageUsers = filteredUsers.slice(startIndex, endIndex);
+
+            tbody.innerHTML = pageUsers.map(user => `
+                <tr>
+                    <td>
+                        <div class="user-info">
+                            <div class="user-avatar">${user.name.charAt(0)}</div>
+                            <div class="user-details">
+                                <div class="user-name">${user.name}</div>
+                                <div class="user-email">${user.email}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${user.type}</td>
+                    <td>${user.registerTime}</td>
+                    <td>${user.lastLogin}</td>
+                    <td>
+                        <span class="status-badge ${user.status}">
+                            ${user.status === 'active' ? '正常' : user.status === 'inactive' ? '停用' : '待审核'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn edit" onclick="editUser(${user.id})" title="编辑">✏️</button>
+                            <button class="action-btn delete" onclick="deleteUser(${user.id})" title="删除">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            updateUserPagination();
+        }
+
+        // 更新用户分页信息
+        function updateUserPagination() {
+            const totalUsers = filteredUsers.length;
+            const totalPages = Math.ceil(totalUsers / usersPerPage);
+            const startRange = (currentUserPage - 1) * usersPerPage + 1;
+            const endRange = Math.min(currentUserPage * usersPerPage, totalUsers);
+
+            const currentRangeEl = document.getElementById('currentRange');
+            const totalUsersEl = document.getElementById('totalUsers');
+            const pageInfoEl = document.getElementById('pageInfo');
+            
+            if (currentRangeEl) currentRangeEl.textContent = `${startRange}-${endRange}`;
+            if (totalUsersEl) totalUsersEl.textContent = totalUsers;
+            if (pageInfoEl) pageInfoEl.textContent = `第 ${currentUserPage} 页 / 共 ${totalPages} 页`;
+
+            // 更新按钮状态
+            const prevBtn = document.getElementById('prevPage');
+            const nextBtn = document.getElementById('nextPage');
+            if (prevBtn) prevBtn.disabled = currentUserPage <= 1;
+            if (nextBtn) nextBtn.disabled = currentUserPage >= totalPages;
+        }
+
+        // 切换用户页面
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+            if (direction === 1 && currentUserPage < totalPages) {
+                currentUserPage++;
+                renderUserTable();
+            } else if (direction === -1 && currentUserPage > 1) {
+                currentUserPage--;
+                renderUserTable();
+            }
+        }
+
+        // 用户操作函数
+        function editUser(id) {
+            const user = allUsers.find(u => u.id === id);
+            if (user) {
+                showNotification(`编辑用户: ${user.name}`, 'info');
+                // 这里可以打开编辑对话框
+            }
+        }
+
+        function deleteUser(id) {
+            const user = allUsers.find(u => u.id === id);
+            if (user && confirm(`确定要删除用户 ${user.name} 吗？`)) {
+                allUsers = allUsers.filter(u => u.id !== id);
+                filteredUsers = filteredUsers.filter(u => u.id !== id);
+                renderUserTable();
+                showNotification(`用户 ${user.name} 已删除`, 'success');
+            }
+        }
+
+        function addUser() {
+            showNotification('添加新用户功能', 'info');
+            // 这里可以打开添加用户对话框
+        }
+
+        function exportUsers() {
+            const csvContent = [
+                ['姓名', '邮箱', '类型', '注册时间', '最后登录', '状态'].join(','),
+                ...filteredUsers.map(user => [
+                    user.name,
+                    user.email,
+                    user.type,
+                    user.registerTime,
+                    user.lastLogin,
+                    user.status === 'active' ? '正常' : user.status === 'inactive' ? '停用' : '待审核'
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `users_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            
+            showNotification('用户数据导出成功', 'success');
+        }
+
         // 页面初始化
         document.addEventListener('DOMContentLoaded', function() {
             // 添加GPU加速类
@@ -2910,6 +3576,12 @@
             
             // 初始化默认tab
             switchTab('dashboard');
+            
+            // 初始化访问分析图表
+            initAnalyticsChart();
+            
+            // 初始化用户管理
+            initUserManagement();
             
             // 初始化完成提示
             setTimeout(() => {
