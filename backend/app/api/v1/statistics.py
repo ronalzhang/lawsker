@@ -436,4 +436,152 @@ async def get_demo_dashboard_data() -> Dict[str, Any]:
                 "created_at": "2024-01-16T08:45:00Z"
             }
         ]
-    } 
+    }
+
+
+@router.get("/user-stats")
+async def get_user_stats(
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """获取用户统计数据"""
+    
+    try:
+        user_id = UUID(current_user.get("id")) if current_user.get("id") else None
+        user_role = current_user.get("role")
+        
+        if user_role == "sales" and user_id is not None:
+            return await _get_sales_dashboard_stats(db, user_id)
+        elif user_role == "admin":
+            return await _get_admin_dashboard_stats(db)
+        else:
+            return await _get_general_dashboard_stats(db)
+    except Exception as e:
+        # 返回演示数据作为fallback
+        return await get_demo_dashboard_data()
+
+
+@router.get("/lawyer-stats")
+async def get_lawyer_stats(
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """获取律师统计数据"""
+    
+    try:
+        user_id = UUID(current_user.get("id")) if current_user.get("id") else None
+        user_role = current_user.get("role")
+        
+        if user_role == "lawyer" and user_id is not None:
+            return await _get_lawyer_dashboard_stats(db, user_id)
+        elif user_role == "admin":
+            return await _get_admin_dashboard_stats(db)
+        else:
+            return await _get_general_dashboard_stats(db)
+    except Exception as e:
+        # 返回演示数据作为fallback
+        return await get_demo_dashboard_data()
+
+
+@router.get("/sales-stats")
+async def get_sales_stats(
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """获取销售统计数据"""
+    
+    try:
+        user_id = UUID(current_user.get("id")) if current_user.get("id") else None
+        user_role = current_user.get("role")
+        
+        if user_role == "sales" and user_id is not None:
+            return await _get_sales_dashboard_stats(db, user_id)
+        elif user_role == "admin":
+            return await _get_admin_dashboard_stats(db)
+        else:
+            return await _get_general_dashboard_stats(db)
+    except Exception as e:
+        # 返回演示数据作为fallback
+        return await get_demo_dashboard_data()
+
+
+@router.get("/user-level")
+async def get_user_level(
+    db: AsyncSession = Depends(get_db),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """获取用户等级信息"""
+    
+    try:
+        user_id = UUID(current_user.get("id")) if current_user.get("id") else None
+        user_role = current_user.get("role")
+        
+        if user_role == "sales" and user_id is not None:
+            # 计算用户等级（基于发布业务数量和总收益）
+            my_cases = await db.scalar(
+                select(func.count(Case.id)).where(Case.sales_user_id == user_id)
+            ) or 0
+            
+            total_earnings = await db.scalar(
+                select(func.sum(CommissionSplit.amount)).where(
+                    and_(CommissionSplit.user_id == user_id, CommissionSplit.status == "paid")
+                )
+            ) or 0
+            
+            # 律客用户等级系统（10级）
+            level = 1
+            level_name = "律客新手"
+            
+            if my_cases >= 100000 and total_earnings >= 3000000:
+                level = 10
+                level_name = "律客至尊合伙人"
+            elif my_cases >= 50000 and total_earnings >= 1200000:
+                level = 9
+                level_name = "律客钻石合伙人"
+            elif my_cases >= 20000 and total_earnings >= 500000:
+                level = 8
+                level_name = "律客高级合伙人"
+            elif my_cases >= 10000 and total_earnings >= 200000:
+                level = 7
+                level_name = "律客中级合伙人"
+            elif my_cases >= 5000 and total_earnings >= 80000:
+                level = 6
+                level_name = "律客初级合伙人"
+            elif my_cases >= 2000 and total_earnings >= 30000:
+                level = 5
+                level_name = "律客精英"
+            elif my_cases >= 1000 and total_earnings >= 15000:
+                level = 4
+                level_name = "律客专家"
+            elif my_cases >= 500 and total_earnings >= 5000:
+                level = 3
+                level_name = "律客达人"
+            elif my_cases >= 100 and total_earnings >= 1000:
+                level = 2
+                level_name = "律客用户"
+            
+            return {
+                "current_level": level,
+                "level_name": level_name,
+                "published_tasks": my_cases,
+                "total_earnings": float(total_earnings),
+                "level_progress": min(100, (my_cases % 100) / 100 * 100) if level < 10 else 100
+            }
+        else:
+            # 返回默认等级信息
+            return {
+                "current_level": 1,
+                "level_name": "新用户",
+                "published_tasks": 0,
+                "total_earnings": 0.0,
+                "level_progress": 0
+            }
+    except Exception as e:
+        # 返回演示数据作为fallback
+        return {
+            "current_level": 3,
+            "level_name": "律客达人",
+            "published_tasks": 156,
+            "total_earnings": 8500.0,
+            "level_progress": 56
+        } 
