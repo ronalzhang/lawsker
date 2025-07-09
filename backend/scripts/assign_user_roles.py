@@ -55,8 +55,8 @@ async def assign_user_roles():
             # 批量插入新的角色分配
             for user_id, role_id, username, role_name in role_assignments:
                 await session.execute(text("""
-                    INSERT INTO user_roles (user_id, role_id, created_at, updated_at)
-                    VALUES (:user_id, :role_id, NOW(), NOW())
+                    INSERT INTO user_roles (user_id, role_id, assigned_at)
+                    VALUES (:user_id, :role_id, NOW())
                 """), {
                     "user_id": user_id,
                     "role_id": role_id
