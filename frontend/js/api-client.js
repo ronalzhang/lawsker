@@ -24,9 +24,19 @@ class ApiClient {
      */
     _checkDemoMode() {
         const path = window.location.pathname;
-        // 演示页面路径：/legal, /user (不带数字)
-        return path === '/legal' || path === '/user' || 
-               path === '/legal/' || path === '/user/';
+        // 演示页面路径：/legal, /user (不带数字/ID)
+        return path === '/legal' || path === '/user' || path === '/institution' ||
+               path === '/legal/' || path === '/user/' || path === '/institution/';
+    }
+
+    /**
+     * 检测是否为个人工作台模式
+     */
+    _isPersonalWorkspace() {
+        const path = window.location.pathname;
+        // 个人工作台模式：包含用户ID的路径
+        return path.includes('/workspace/') || 
+               /\/(user|legal|institution)\/[^\/]+$/.test(path);
     }
 
     /**
@@ -61,39 +71,37 @@ class ApiClient {
         this.refreshToken();
         if (this.token) {
             config.headers['Authorization'] = `Bearer ${this.token}`;
-            console.log(`API请求 v${this.version}: ${config.method || 'GET'} ${url} (Token: ${this.token.substring(0, 20)}...)`);
+            console.log(`🔗 API请求 v${this.version}: ${config.method || 'GET'} ${url} (Token: ${this.token.substring(0, 20)}...)`);
         } else {
-            console.log(`API请求 v${this.version}: ${config.method || 'GET'} ${url} (无Token)`);
+            console.log(`🔗 API请求 v${this.version}: ${config.method || 'GET'} ${url} (无Token)`);
         }
+
+        // 检查是否为个人工作台模式
+        const isPersonalWorkspace = this._isPersonalWorkspace();
 
         try {
             const response = await fetch(url, config);
             
             if (!response.ok) {
-                console.error(`API请求失败: ${response.status} ${response.statusText} for ${endpoint}`);
+                console.error(`❌ API请求失败: ${response.status} ${response.statusText} for ${endpoint}`);
                 
-                // 对于统计和财务数据，始终使用演示数据而不是抛出错误
+                // 个人工作台模式：绝不使用降级数据，直接抛出错误
+                if (isPersonalWorkspace) {
+                    console.error(`🚫 个人工作台模式: API失败不允许降级 ${endpoint}`);
+                    throw new Error(`个人工作台API请求失败: ${response.status} ${response.statusText}`);
+                }
+                
+                // 非个人工作台：对于统计和财务数据，可以使用演示数据
                 if (endpoint.includes('/statistics/') || endpoint.includes('/finance/') || 
                     endpoint.includes('/cases') || endpoint.includes('/tasks')) {
                     
                     if (response.status === 403 || response.status === 401) {
-                        console.warn(`认证失败(${response.status})，使用演示数据 for ${endpoint}`);
+                        console.warn(`⚠️ 认证失败(${response.status})，使用演示数据 for ${endpoint}`);
                     } else if (response.status === 404) {
-                        console.warn(`API端点不存在(${response.status})，使用演示数据 for ${endpoint}`);
+                        console.warn(`⚠️ API端点不存在(${response.status})，使用演示数据 for ${endpoint}`);
                     }
                     
-                    // 避免递归调用，直接返回fallback数据
-                    if (endpoint === '/statistics/demo-data') {
-                        return this._getFallbackData(endpoint);
-                    }
-                    
-                    try {
-                        // 尝试获取演示数据
-                        return await this.get('/statistics/demo-data');
-                    } catch (demoError) {
-                        console.warn('演示数据API也失败，使用本地fallback数据');
-                        return this._getFallbackData(endpoint);
-                    }
+                    return this._getFallbackData(endpoint);
                 }
                 
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -101,12 +109,18 @@ class ApiClient {
 
             return await response.json();
         } catch (error) {
-            console.error(`API请求异常 for ${endpoint}:`, error);
+            console.error(`💥 API请求异常 for ${endpoint}:`, error);
             
-            // 对于关键数据请求失败，使用fallback
+            // 个人工作台模式：绝不使用降级数据
+            if (isPersonalWorkspace) {
+                console.error(`🚫 个人工作台模式: API异常不允许降级 ${endpoint}`);
+                throw error;
+            }
+            
+            // 非个人工作台：对于关键数据请求失败，使用fallback
             if (endpoint.includes('/statistics/') || endpoint.includes('/finance/') || 
                 endpoint.includes('/cases') || endpoint.includes('/tasks')) {
-                console.warn(`使用fallback数据 for ${endpoint}`);
+                console.warn(`⚠️ 使用fallback数据 for ${endpoint}`);
                 return this._getFallbackData(endpoint);
             }
             
