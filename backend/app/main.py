@@ -13,6 +13,7 @@ from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.core.database import engine, create_tables
 from app.api.v1.api import api_router
+from app.middlewares.access_logger import AccessLoggerMiddleware
 
 
 # 配置结构化日志
@@ -66,6 +67,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 访问日志中间件
+app.add_middleware(AccessLoggerMiddleware)
 
 
 # 全局异常处理
