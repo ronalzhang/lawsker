@@ -975,6 +975,123 @@
         .filter-btn {
             will-change: transform;
         }
+
+        /* 抢单动画效果 */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+            }
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
+        }
+
+        /* 通知动画 */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        /* 模态框样式 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+
+        .modal-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-radius));
+            -webkit-backdrop-filter: blur(var(--blur-radius));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 0;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 18px;
+        }
+
+        .modal-header .close {
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-header .close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 20px;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        /* 状态徽章 */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
     </style>
 </head>
 <body>
@@ -1052,12 +1169,94 @@
             </div>
         </div>
 
-        <!-- 待处理任务列表 -->
+        <!-- 可抢单任务列表 -->
+        <div class="content-section" style="margin-bottom: 32px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h2 class="section-title" style="margin: 0; text-align: left;">
+                    <span>🎯</span>
+                    可抢单任务 (实时更新)
+                </h2>
+                <button class="btn btn-secondary" onclick="refreshAvailableTasks()" style="min-width: 120px;">
+                    <span>🔄</span>
+                    刷新任务
+                </button>
+            </div>
+            
+            <div class="tasks-container" style="background: var(--glass-bg); border-radius: 16px; border: 1px solid var(--glass-border); overflow: hidden; margin-bottom: 24px;">
+                <div id="availableTasksList">
+                    <!-- 可抢单任务演示数据 -->
+                    <div class="task-item" data-task-id="grab-001" style="border-bottom: 1px solid var(--glass-border); padding: 16px 20px;">
+                        <div class="task-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div class="task-info">
+                                <div class="task-title" style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 8px;">🔥 债务催收律师函 - 北京科技有限公司</div>
+                                <div class="task-meta" style="display: flex; gap: 16px; color: var(--text-secondary); font-size: 14px;">
+                                    <span>💰 ¥500</span>
+                                    <span>📅 刚刚发布</span>
+                                    <span>⏰ 3天内完成</span>
+                                    <span>🏃‍♂️ 3人正在抢单</span>
+                                </div>
+                                <div class="task-description" style="color: var(--text-secondary); font-size: 13px; margin-top: 6px;">
+                                    欠款金额：5万元，逾期60天，需要发送催收律师函...
+                                </div>
+                            </div>
+                            <div class="task-actions" style="display: flex; gap: 8px;">
+                                <button class="btn-small btn-info" onclick="previewTaskDetail('grab-001')" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(59, 130, 246, 0.1); color: #3b82f6; cursor: pointer;">预览详情</button>
+                                <button class="btn-small btn-primary grab-btn" onclick="grabTask('grab-001')" style="padding: 6px 12px; border-radius: 6px; border: none; background: var(--gradient-primary); color: white; cursor: pointer; animation: pulse 2s infinite;">🎯 抢任务</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="task-item" data-task-id="grab-002" style="border-bottom: 1px solid var(--glass-border); padding: 16px 20px;">
+                        <div class="task-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div class="task-info">
+                                <div class="task-title" style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 8px;">📄 合同审查服务 - 张三个人</div>
+                                <div class="task-meta" style="display: flex; gap: 16px; color: var(--text-secondary); font-size: 14px;">
+                                    <span>💰 ¥800</span>
+                                    <span>📅 5分钟前</span>
+                                    <span>⏰ 2天内完成</span>
+                                    <span>🏃‍♂️ 1人正在抢单</span>
+                                </div>
+                                <div class="task-description" style="color: var(--text-secondary); font-size: 13px; margin-top: 6px;">
+                                    房屋租赁合同审查，重点关注责任条款和违约条款...
+                                </div>
+                            </div>
+                            <div class="task-actions" style="display: flex; gap: 8px;">
+                                <button class="btn-small btn-info" onclick="previewTaskDetail('grab-002')" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(59, 130, 246, 0.1); color: #3b82f6; cursor: pointer;">预览详情</button>
+                                <button class="btn-small btn-primary grab-btn" onclick="grabTask('grab-002')" style="padding: 6px 12px; border-radius: 6px; border: none; background: var(--gradient-primary); color: white; cursor: pointer;">🎯 抢任务</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="task-item" data-task-id="grab-003" style="border-bottom: 1px solid var(--glass-border); padding: 16px 20px;">
+                        <div class="task-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div class="task-info">
+                                <div class="task-title" style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 8px;">⚡ 紧急法律咨询 - 李四公司</div>
+                                <div class="task-meta" style="display: flex; gap: 16px; color: var(--text-secondary); font-size: 14px;">
+                                    <span style="color: #ef4444;">💰 ¥1200 (加急)</span>
+                                    <span>📅 2分钟前</span>
+                                    <span style="color: #ef4444;">⏰ 24小时内</span>
+                                    <span>🏃‍♂️ 8人正在抢单</span>
+                                </div>
+                                <div class="task-description" style="color: var(--text-secondary); font-size: 13px; margin-top: 6px;">
+                                    商业纠纷紧急咨询，涉及百万合同违约，需立即处理...
+                                </div>
+                            </div>
+                            <div class="task-actions" style="display: flex; gap: 8px;">
+                                <button class="btn-small btn-info" onclick="previewTaskDetail('grab-003')" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(59, 130, 246, 0.1); color: #3b82f6; cursor: pointer;">预览详情</button>
+                                <button class="btn-small btn-danger grab-btn" onclick="grabTask('grab-003')" style="padding: 6px 12px; border-radius: 6px; border: none; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; cursor: pointer; animation: pulse 1.5s infinite;">🚨 抢单</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 我的接单任务 -->
         <div class="content-section" style="margin-bottom: 32px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <h2 class="section-title" style="margin: 0; text-align: left;">
                     <span>📋</span>
-                    已分配任务
+                    我的接单任务
                 </h2>
                 <button class="btn btn-primary" onclick="batchSendAll()" id="batchSendBtn" style="min-width: 200px;">
                     <span>📤</span>
@@ -1681,40 +1880,347 @@
             }
         }
 
+        // 刷新可抢单任务列表
+        async function refreshAvailableTasks() {
+            try {
+                if (apiClient.isAuthenticated()) {
+                    const response = await fetch('/api/v1/tasks/available', {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success && result.tasks) {
+                        updateAvailableTasksList(result.tasks);
+                    }
+                } else {
+                    // 演示模式 - 模拟实时更新
+                    const availableTasksList = document.getElementById('availableTasksList');
+                    availableTasksList.style.opacity = '0.5';
+                    
+                    setTimeout(() => {
+                        // 随机添加或移除任务
+                        const taskCount = availableTasksList.children.length;
+                        if (Math.random() > 0.5 && taskCount < 5) {
+                            addRandomTask();
+                        } else if (taskCount > 1) {
+                            removeRandomTask();
+                        }
+                        availableTasksList.style.opacity = '1';
+                        showNotification('任务列表已更新', 'info');
+                    }, 1000);
+                }
+            } catch (error) {
+                console.error('刷新任务列表失败:', error);
+                showNotification('刷新失败，请稍后重试', 'error');
+            }
+        }
+
+        // 预览任务详情
+        function previewTaskDetail(taskId) {
+            const taskItem = document.querySelector(`[data-task-id="${taskId}"]`);
+            if (!taskItem) return;
+            
+            const title = taskItem.querySelector('.task-title').textContent;
+            const description = taskItem.querySelector('.task-description').textContent;
+            const meta = taskItem.querySelector('.task-meta').textContent;
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h3>${title}</h3>
+                        <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div style="margin-bottom: 16px;">
+                            <strong>任务信息：</strong><br>
+                            ${meta}
+                        </div>
+                        <div style="margin-bottom: 16px;">
+                            <strong>详细描述：</strong><br>
+                            ${description}
+                        </div>
+                        <div style="background: var(--glass-bg); padding: 16px; border-radius: 8px; border: 1px solid var(--glass-border);">
+                            <strong>📋 任务要求：</strong><br>
+                            • 按时完成任务内容<br>
+                            • 保证文书质量和法律准确性<br>
+                            • 及时与客户沟通进度<br>
+                            • 遵守平台服务规范<br><br>
+                            <strong>💰 费用说明：</strong><br>
+                            • 平台不收取任何佣金<br>
+                            • 全额收益归律师所有<br>
+                            • 支持多种提现方式<br>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">取消</button>
+                        <button class="btn btn-primary" onclick="this.closest('.modal').remove(); grabTask('${taskId}');">立即抢单</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
         // 抢任务功能 - 类似滴滴司机抢单
         function grabTask(taskId) {
             const taskItem = document.querySelector(`[data-task-id="${taskId}"]`);
-            if (taskItem) {
-                if (confirm('确定要抢这个任务吗？抢到后需要在规定时间内完成。')) {
-                    // 模拟抢单竞争
-                    const grabBtn = taskItem.querySelector('button');
-                    grabBtn.disabled = true;
-                    grabBtn.textContent = '抢单中...';
+            if (!taskItem) return;
+            
+            if (confirm('确定要抢这个任务吗？抢到后需要在规定时间内完成。')) {
+                // 模拟抢单竞争
+                const grabBtn = taskItem.querySelector('.grab-btn');
+                const originalText = grabBtn.innerHTML;
+                grabBtn.disabled = true;
+                grabBtn.innerHTML = '🔄 抢单中...';
+                grabBtn.style.animation = 'none';
+                
+                // 模拟网络延迟和竞争
+                setTimeout(() => {
+                    const success = Math.random() > 0.3; // 70%成功率
                     
-                    // 模拟网络延迟和竞争
-                    setTimeout(() => {
-                        const success = Math.random() > 0.3; // 70%成功率
+                    if (success) {
+                        // 抢单成功
+                        taskItem.classList.add('grabbed');
+                        taskItem.style.background = 'rgba(76, 175, 80, 0.1)';
+                        taskItem.style.border = '1px solid rgba(76, 175, 80, 0.3)';
                         
-                        if (success) {
-                            taskItem.classList.add('grabbed');
-                            taskItem.style.background = 'rgba(59, 130, 246, 0.1)';
-                            
-                            // 更新按钮状态
-                            const actions = taskItem.querySelector('.task-actions');
-                            actions.innerHTML = '<span class="status-badge" style="padding: 6px 12px; border-radius: 6px; background: rgba(59, 130, 246, 0.2); color: #3b82f6; font-size: 12px; font-weight: 500;">已接受</span>';
-                            
-                            alert('恭喜！您已成功抢到这个任务，请按时完成。客户信息将发送到您的工作台。');
-                            
-                            // 通知用户工作台更新任务状态
-                            notifyUserWorkspace(taskId, 'accepted');
-                        } else {
-                            grabBtn.disabled = false;
-                            grabBtn.textContent = '抢任务';
-                            alert('很遗憾，其他律师抢先一步，请尝试其他任务。');
-                        }
-                    }, 1000 + Math.random() * 2000); // 1-3秒随机延迟
-                }
+                        // 更新按钮状态
+                        const actions = taskItem.querySelector('.task-actions');
+                        actions.innerHTML = '<span class="status-badge" style="padding: 6px 12px; border-radius: 6px; background: rgba(76, 175, 80, 0.2); color: #4caf50; font-size: 12px; font-weight: 500;">✅ 已抢到</span>';
+                        
+                        showNotification('🎉 恭喜！您已成功抢到这个任务，客户信息已发送到您的工作台。', 'success');
+                        
+                        // 通知用户工作台更新任务状态
+                        notifyUserWorkspace(taskId, 'accepted');
+                        
+                        // 将任务移动到"我的接单任务"区域
+                        setTimeout(() => {
+                            moveTaskToMyTasks(taskItem, taskId);
+                        }, 2000);
+                        
+                    } else {
+                        // 抢单失败
+                        grabBtn.disabled = false;
+                        grabBtn.innerHTML = originalText;
+                        grabBtn.style.animation = 'pulse 2s infinite';
+                        showNotification('😢 很遗憾，其他律师抢先一步，请尝试其他任务。', 'warning');
+                    }
+                }, 1000 + Math.random() * 2000); // 1-3秒随机延迟
             }
+        }
+
+        // 将抢到的任务移动到"我的接单任务"区域
+        function moveTaskToMyTasks(taskItem, taskId) {
+            // 移除原任务
+            taskItem.style.transition = 'all 0.5s ease';
+            taskItem.style.transform = 'translateX(100%)';
+            taskItem.style.opacity = '0';
+            
+            setTimeout(() => {
+                taskItem.remove();
+                
+                // 添加到"我的接单任务"
+                const myTasksList = document.getElementById('tasksList');
+                const newTaskItem = createMyTaskItem(taskId);
+                myTasksList.insertBefore(newTaskItem, myTasksList.firstChild);
+                
+                // 动画效果
+                newTaskItem.style.transform = 'translateX(-100%)';
+                newTaskItem.style.opacity = '0';
+                setTimeout(() => {
+                    newTaskItem.style.transition = 'all 0.5s ease';
+                    newTaskItem.style.transform = 'translateX(0)';
+                    newTaskItem.style.opacity = '1';
+                }, 100);
+                
+            }, 500);
+        }
+
+        // 创建"我的任务"项目
+        function createMyTaskItem(taskId) {
+            const taskItem = document.createElement('div');
+            taskItem.className = 'task-item';
+            taskItem.setAttribute('data-task-id', taskId);
+            taskItem.style.borderBottom = '1px solid var(--glass-border)';
+            taskItem.style.padding = '16px 20px';
+            
+            const taskData = {
+                'grab-001': {
+                    title: '债务催收律师函 - 北京科技有限公司',
+                    amount: '¥500',
+                    date: '2024-01-15',
+                    deadline: '3天内完成',
+                    content: '催收欠款律师函模板内容...'
+                },
+                'grab-002': {
+                    title: '合同审查服务 - 张三个人',
+                    amount: '¥800',
+                    date: '2024-01-14',
+                    deadline: '2天内完成',
+                    content: '合同审查报告模板内容...'
+                },
+                'grab-003': {
+                    title: '紧急法律咨询 - 李四公司',
+                    amount: '¥1200',
+                    date: '2024-01-13',
+                    deadline: '1天内完成',
+                    content: '法律咨询回复模板内容...'
+                }
+            };
+            
+            const data = taskData[taskId] || taskData['grab-001'];
+            
+            taskItem.innerHTML = `
+                <div class="task-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                    <div class="task-info">
+                        <div class="task-title" style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 8px;">✨ ${data.title}</div>
+                        <div class="task-meta" style="display: flex; gap: 16px; color: var(--text-secondary); font-size: 14px;">
+                            <span>💰 ${data.amount}</span>
+                            <span>📅 ${data.date}</span>
+                            <span>⏰ ${data.deadline}</span>
+                        </div>
+                    </div>
+                    <div class="task-actions" style="display: flex; gap: 8px;">
+                        <button class="btn-small btn-secondary" onclick="toggleTaskContent('${taskId}')" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.1); color: var(--text-primary); cursor: pointer;">预览</button>
+                        <button class="btn-small btn-success" onclick="confirmTask('${taskId}')" style="padding: 6px 12px; border-radius: 6px; border: none; background: var(--gradient-success); color: white; cursor: pointer;">确认发送</button>
+                    </div>
+                </div>
+                <div class="task-content" id="task-content-${taskId}" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--glass-border);">
+                    <div class="ai-generated-content">
+                        <h4 style="color: var(--text-primary); margin-bottom: 12px;">AI生成的法律文书内容：</h4>
+                        <div class="edit-area">
+                            <textarea class="form-textarea" id="content-${taskId}" rows="8" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--text-primary); font-family: monospace; line-height: 1.6;">${data.content}</textarea>
+                            <div style="margin-top: 12px; display: flex; gap: 8px;">
+                                <button class="btn btn-secondary" onclick="regenerateContent('${taskId}')" style="padding: 8px 16px;">🔄 重新生成</button>
+                                <button class="btn btn-primary" onclick="saveContent('${taskId}')" style="padding: 8px 16px;">💾 保存修改</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return taskItem;
+        }
+
+        // 添加随机任务（演示用）
+        function addRandomTask() {
+            const randomTasks = [
+                {
+                    id: 'grab-' + Date.now(),
+                    title: '🆕 商标侵权律师函 - 科技创新公司',
+                    amount: '¥600',
+                    time: '刚刚发布',
+                    deadline: '5天内完成',
+                    competitors: Math.floor(Math.random() * 10) + 1,
+                    description: '商标权益保护，需要发送侵权警告函...',
+                    urgent: false
+                },
+                {
+                    id: 'grab-' + Date.now(),
+                    title: '⚡ 劳动纠纷咨询 - 王五个人',
+                    amount: '¥400',
+                    time: '1分钟前',
+                    deadline: '2天内完成',
+                    competitors: Math.floor(Math.random() * 5) + 1,
+                    description: '劳动合同纠纷，工资拖欠问题咨询...',
+                    urgent: true
+                }
+            ];
+            
+            const task = randomTasks[Math.floor(Math.random() * randomTasks.length)];
+            const taskItem = document.createElement('div');
+            taskItem.className = 'task-item';
+            taskItem.setAttribute('data-task-id', task.id);
+            taskItem.style.borderBottom = '1px solid var(--glass-border)';
+            taskItem.style.padding = '16px 20px';
+            
+            taskItem.innerHTML = `
+                <div class="task-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                    <div class="task-info">
+                        <div class="task-title" style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 8px;">${task.title}</div>
+                        <div class="task-meta" style="display: flex; gap: 16px; color: var(--text-secondary); font-size: 14px;">
+                            <span${task.urgent ? ' style="color: #ef4444;"' : ''}>💰 ${task.amount}${task.urgent ? ' (加急)' : ''}</span>
+                            <span>📅 ${task.time}</span>
+                            <span${task.urgent ? ' style="color: #ef4444;"' : ''}>⏰ ${task.deadline}</span>
+                            <span>🏃‍♂️ ${task.competitors}人正在抢单</span>
+                        </div>
+                        <div class="task-description" style="color: var(--text-secondary); font-size: 13px; margin-top: 6px;">
+                            ${task.description}
+                        </div>
+                    </div>
+                    <div class="task-actions" style="display: flex; gap: 8px;">
+                        <button class="btn-small btn-info" onclick="previewTaskDetail('${task.id}')" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(59, 130, 246, 0.1); color: #3b82f6; cursor: pointer;">预览详情</button>
+                        <button class="btn-small ${task.urgent ? 'btn-danger' : 'btn-primary'} grab-btn" onclick="grabTask('${task.id}')" style="padding: 6px 12px; border-radius: 6px; border: none; background: ${task.urgent ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'var(--gradient-primary)'}; color: white; cursor: pointer; animation: pulse ${task.urgent ? '1.5s' : '2s'} infinite;">${task.urgent ? '🚨' : '🎯'} 抢任务</button>
+                    </div>
+                </div>
+            `;
+            
+            const availableTasksList = document.getElementById('availableTasksList');
+            availableTasksList.insertBefore(taskItem, availableTasksList.firstChild);
+            
+            // 添加动画效果
+            taskItem.style.transform = 'translateY(-20px)';
+            taskItem.style.opacity = '0';
+            setTimeout(() => {
+                taskItem.style.transition = 'all 0.5s ease';
+                taskItem.style.transform = 'translateY(0)';
+                taskItem.style.opacity = '1';
+            }, 100);
+        }
+
+        // 移除随机任务（演示用）
+        function removeRandomTask() {
+            const availableTasksList = document.getElementById('availableTasksList');
+            const tasks = availableTasksList.children;
+            if (tasks.length > 0) {
+                const randomIndex = Math.floor(Math.random() * tasks.length);
+                const taskToRemove = tasks[randomIndex];
+                
+                taskToRemove.style.transition = 'all 0.5s ease';
+                taskToRemove.style.transform = 'translateX(-100%)';
+                taskToRemove.style.opacity = '0';
+                
+                setTimeout(() => {
+                    taskToRemove.remove();
+                }, 500);
+            }
+        }
+
+        // 通知系统
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                background: ${type === 'success' ? 'linear-gradient(135deg, #4caf50, #45a049)' : 
+                            type === 'warning' ? 'linear-gradient(135deg, #ff9800, #f57c00)' :
+                            type === 'error' ? 'linear-gradient(135deg, #f44336, #d32f2f)' :
+                            'linear-gradient(135deg, #2196f3, #1976d2)'};
+                color: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 10000;
+                font-size: 14px;
+                max-width: 300px;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
         }
 
         // 通知用户工作台任务状态更新

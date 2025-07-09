@@ -6,15 +6,16 @@
 import logging
 from typing import Optional, List
 from uuid import UUID, uuid4
-from datetime import datetime
+from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_
+from sqlalchemy import select, and_, or_, update, func
 from pydantic import BaseModel, Field
 
 from app.core.database import get_db
 from app.models.user import User
 from app.models.lawyer_review import DocumentReviewTask, ReviewStatus
+from app.models.statistics import TaskPublishRecord
 from app.services.lawyer_review_service import LawyerReviewService
 from app.services.ai_service import AIDocumentService
 from app.services.config_service import SystemConfigService
@@ -35,8 +36,11 @@ def get_current_user(db: AsyncSession = Depends(get_db)):
 
 
 def get_current_user_optional(db: AsyncSession = Depends(get_db)):
-    """Mock optional current user dependency"""
-    return None
+    """可选的用户认证，返回None如果未登录"""
+    try:
+        return get_current_user(db)
+    except:
+        return None
 
 
 class VerificationCodeRequest(BaseModel):
@@ -67,6 +71,37 @@ class AnonymousTaskRequest(BaseModel):
     verification_code: str = Field(..., description="短信验证码")
 
 
+class UserTaskRequest(BaseModel):
+    """用户任务发布请求"""
+    task_type: str = Field(..., description="任务类型")
+    title: str = Field(..., description="任务标题")
+    description: str = Field(..., description="任务描述")
+    budget: float = Field(..., description="预算金额")
+    urgency: str = Field("normal", description="紧急程度")
+    target_info: dict = Field(default_factory=dict, description="目标对象信息")
+
+
+class LawyerGrabRequest(BaseModel):
+    """律师抢单请求"""
+    task_id: str = Field(..., description="任务ID")
+    notes: Optional[str] = Field(None, description="抢单备注")
+
+
+class ContactExchangeRequest(BaseModel):
+    """联系方式交换请求"""
+    task_id: str = Field(..., description="任务ID")
+    my_contact: dict = Field(..., description="我的联系方式")
+    message: Optional[str] = Field(None, description="附加消息")
+
+
+class TaskStatusUpdateRequest(BaseModel):
+    """任务状态更新请求"""
+    task_id: str = Field(..., description="任务ID")
+    new_status: str = Field(..., description="新状态")
+    notes: Optional[str] = Field(None, description="备注说明")
+    completion_data: Optional[dict] = Field(None, description="完成数据")
+
+
 class TaskStatusResponse(BaseModel):
     """任务状态响应"""
     task_id: str
@@ -79,7 +114,7 @@ class TaskStatusResponse(BaseModel):
 
 
 class PublicTaskResponse(BaseModel):
-    """公开任务响应（匿名用户可见）"""
+    """公开任务响应（用于跟踪）"""
     task_id: str
     task_number: str
     service_type: str
@@ -506,4 +541,501 @@ async def get_tasks(
         raise HTTPException(
             status_code=500,
             detail=f"获取任务列表失败: {str(e)}"
+        ) 
+
+@router.post("/user/publish", response_model=dict)
+async def publish_user_task(
+    request: UserTaskRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    用户发布任务
+    """
+    try:
+        # 创建任务记录
+        task_record = TaskPublishRecord(
+            user_id=current_user.id,
+            task_type=request.task_type,
+            title=request.title,
+            description=request.description,
+            target_info=request.target_info,
+            amount=request.budget,
+            urgency=request.urgency,
+            status="published"  # 已发布，等待律师抢单
+        )
+        
+        db.add(task_record)
+        await db.commit()
+        await db.refresh(task_record)
+        
+        return {
+            "success": True,
+            "task_id": str(task_record.id),
+            "message": "任务发布成功，等待律师接单",
+            "status": "published"
+        }
+        
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"发布任务失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"发布任务失败: {str(e)}"
+        )
+
+
+@router.get("/available", response_model=List[dict])
+async def get_available_tasks(
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    task_type: Optional[str] = Query(None),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    获取可抢单的任务列表（供律师查看）
+    """
+    try:
+        # 构建查询条件
+        conditions = [
+            TaskPublishRecord.status == "published",  # 已发布，未被抢单
+            TaskPublishRecord.assigned_to.is_(None)   # 未分配律师
+        ]
+        
+        if task_type:
+            conditions.append(TaskPublishRecord.task_type == task_type)
+        
+        # 查询可抢单任务
+        query = select(TaskPublishRecord).where(
+            and_(*conditions)
+        ).order_by(
+            TaskPublishRecord.created_at.desc()
+        ).limit(limit).offset(offset)
+        
+        result = await db.execute(query)
+        tasks = result.scalars().all()
+        
+        # 格式化响应
+        task_list = []
+        for task in tasks:
+            # 获取发布者信息（保护隐私）
+            user_query = select(User).where(User.id == task.user_id)
+            user_result = await db.execute(user_query)
+            user = user_result.scalar_one_or_none()
+            
+            task_data = {
+                "task_id": str(task.id),
+                "task_type": task.task_type,
+                "title": task.title,
+                "description": task.description,
+                "budget": float(task.amount) if task.amount else 0,
+                "urgency": task.urgency,
+                "created_at": task.created_at.isoformat(),
+                "publisher_name": user.username[:2] + "***" if user and user.username else "匿名用户",
+                "target_info": task.target_info
+            }
+            task_list.append(task_data)
+        
+        return task_list
+        
+    except Exception as e:
+        logger.error(f"获取可抢单任务失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取任务列表失败: {str(e)}"
+        )
+
+
+@router.post("/lawyer/grab", response_model=dict)
+async def lawyer_grab_task(
+    request: LawyerGrabRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    律师抢单
+    """
+    try:
+        task_id = UUID(request.task_id)
+        
+        # 查询任务
+        query = select(TaskPublishRecord).where(
+            and_(
+                TaskPublishRecord.id == task_id,
+                TaskPublishRecord.status == "published",
+                TaskPublishRecord.assigned_to.is_(None)
+            )
+        )
+        result = await db.execute(query)
+        task = result.scalar_one_or_none()
+        
+        if not task:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="任务不存在或已被其他律师抢单"
+            )
+        
+        # 更新任务状态
+        task.assigned_to = current_user.id
+        task.status = "grabbed"
+        task.updated_at = datetime.now()
+        
+        await db.commit()
+        
+        return {
+            "success": True,
+            "message": "抢单成功！客户联系方式将在双方确认后交换",
+            "task_id": str(task.id),
+            "next_step": "contact_exchange"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"抢单失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"抢单失败: {str(e)}"
+        )
+
+
+@router.post("/contact/exchange", response_model=dict)
+async def exchange_contact_info(
+    request: ContactExchangeRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    联系方式交换
+    """
+    try:
+        task_id = UUID(request.task_id)
+        
+        # 查询任务
+        query = select(TaskPublishRecord).where(TaskPublishRecord.id == task_id)
+        result = await db.execute(query)
+        task = result.scalar_one_or_none()
+        
+        if not task:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="任务不存在"
+            )
+        
+        # 检查权限（只有任务发布者或接单律师可以交换联系方式）
+        if task.user_id != current_user.id and task.assigned_to != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="无权限交换联系方式"
+            )
+        
+        # 更新任务状态和联系方式
+        if not hasattr(task, 'contact_exchange_data'):
+            task.target_info = task.target_info or {}
+        
+        # 添加联系方式交换记录
+        if "contact_exchanges" not in task.target_info:
+            task.target_info["contact_exchanges"] = []
+        
+        task.target_info["contact_exchanges"].append({
+            "user_id": str(current_user.id),
+            "contact_info": request.my_contact,
+            "message": request.message,
+            "timestamp": datetime.now().isoformat()
+        })
+        
+        # 如果双方都已交换，更新状态
+        exchanges = task.target_info.get("contact_exchanges", [])
+        user_ids = {exchange["user_id"] for exchange in exchanges}
+        
+        if str(task.user_id) in user_ids and str(task.assigned_to) in user_ids:
+            task.status = "contact_exchanged"
+        
+        await db.commit()
+        
+        return {
+            "success": True,
+            "message": "联系方式已交换",
+            "exchange_status": task.status,
+            "can_proceed_offline": task.status == "contact_exchanged"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"联系方式交换失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"联系方式交换失败: {str(e)}"
+        )
+
+
+@router.post("/status/update", response_model=dict)
+async def update_task_status(
+    request: TaskStatusUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    更新任务状态
+    """
+    try:
+        task_id = UUID(request.task_id)
+        
+        # 查询任务
+        query = select(TaskPublishRecord).where(TaskPublishRecord.id == task_id)
+        result = await db.execute(query)
+        task = result.scalar_one_or_none()
+        
+        if not task:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="任务不存在"
+            )
+        
+        # 检查权限
+        if task.user_id != current_user.id and task.assigned_to != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="无权限更新任务状态"
+            )
+        
+        old_status = task.status
+        task.status = request.new_status
+        task.updated_at = datetime.now()
+        
+        if request.notes:
+            task.completion_notes = request.notes
+        
+        # 如果任务完成，记录完成时间和数据
+        if request.new_status == "completed":
+            task.completed_at = datetime.now()
+            
+            # 记录完成数据（包括是否通过平台收费、线下交易金额等）
+            if request.completion_data:
+                task.target_info = task.target_info or {}
+                task.target_info["completion_data"] = request.completion_data
+        
+        await db.commit()
+        
+        return {
+            "success": True,
+            "message": f"任务状态已从 {old_status} 更新为 {request.new_status}",
+            "task_id": str(task.id),
+            "new_status": request.new_status
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"更新任务状态失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"更新任务状态失败: {str(e)}"
+        )
+
+
+@router.get("/my-tasks/user", response_model=List[dict])
+async def get_user_tasks(
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    status_filter: Optional[str] = Query(None),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    获取用户发布的任务列表
+    """
+    try:
+        conditions = [TaskPublishRecord.user_id == current_user.id]
+        
+        if status_filter:
+            conditions.append(TaskPublishRecord.status == status_filter)
+        
+        query = select(TaskPublishRecord).where(
+            and_(*conditions)
+        ).order_by(
+            TaskPublishRecord.created_at.desc()
+        ).limit(limit).offset(offset)
+        
+        result = await db.execute(query)
+        tasks = result.scalars().all()
+        
+        task_list = []
+        for task in tasks:
+            lawyer_info = None
+            if task.assigned_to:
+                lawyer_query = select(User).where(User.id == task.assigned_to)
+                lawyer_result = await db.execute(lawyer_query)
+                lawyer = lawyer_result.scalar_one_or_none()
+                if lawyer:
+                    lawyer_info = {
+                        "name": lawyer.username,
+                        "phone": lawyer.phone_number
+                    }
+            
+            task_data = {
+                "task_id": str(task.id),
+                "task_type": task.task_type,
+                "title": task.title,
+                "description": task.description,
+                "budget": float(task.amount) if task.amount else 0,
+                "status": task.status,
+                "created_at": task.created_at.isoformat(),
+                "updated_at": task.updated_at.isoformat() if task.updated_at else None,
+                "completed_at": task.completed_at.isoformat() if task.completed_at else None,
+                "lawyer_info": lawyer_info,
+                "contact_exchanges": task.target_info.get("contact_exchanges", []) if task.target_info else [],
+                "completion_data": task.target_info.get("completion_data") if task.target_info else None
+            }
+            task_list.append(task_data)
+        
+        return task_list
+        
+    except Exception as e:
+        logger.error(f"获取用户任务失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取任务列表失败: {str(e)}"
+        )
+
+
+@router.get("/my-tasks/lawyer", response_model=List[dict])
+async def get_lawyer_tasks(
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    status_filter: Optional[str] = Query(None),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    获取律师接单的任务列表
+    """
+    try:
+        conditions = [TaskPublishRecord.assigned_to == current_user.id]
+        
+        if status_filter:
+            conditions.append(TaskPublishRecord.status == status_filter)
+        
+        query = select(TaskPublishRecord).where(
+            and_(*conditions)
+        ).order_by(
+            TaskPublishRecord.created_at.desc()
+        ).limit(limit).offset(offset)
+        
+        result = await db.execute(query)
+        tasks = result.scalars().all()
+        
+        task_list = []
+        for task in tasks:
+            client_info = None
+            if task.user_id:
+                client_query = select(User).where(User.id == task.user_id)
+                client_result = await db.execute(client_query)
+                client = client_result.scalar_one_or_none()
+                if client:
+                    client_info = {
+                        "name": client.username,
+                        "phone": client.phone_number
+                    }
+            
+            task_data = {
+                "task_id": str(task.id),
+                "task_type": task.task_type,
+                "title": task.title,
+                "description": task.description,
+                "budget": float(task.amount) if task.amount else 0,
+                "status": task.status,
+                "created_at": task.created_at.isoformat(),
+                "updated_at": task.updated_at.isoformat() if task.updated_at else None,
+                "completed_at": task.completed_at.isoformat() if task.completed_at else None,
+                "client_info": client_info,
+                "contact_exchanges": task.target_info.get("contact_exchanges", []) if task.target_info else [],
+                "completion_data": task.target_info.get("completion_data") if task.target_info else None
+            }
+            task_list.append(task_data)
+        
+        return task_list
+        
+    except Exception as e:
+        logger.error(f"获取律师任务失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取任务列表失败: {str(e)}"
+        )
+
+
+@router.get("/statistics/platform", response_model=dict)
+async def get_platform_statistics(
+    days: int = Query(30, ge=1, le=365),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    获取平台业务统计数据（供管理后台使用）
+    """
+    try:
+        from datetime import datetime, timedelta
+        
+        # 计算时间范围
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=days)
+        
+        # 总任务数
+        total_query = select(TaskPublishRecord).where(
+            TaskPublishRecord.created_at >= start_date
+        )
+        total_result = await db.execute(total_query)
+        total_tasks = len(total_result.scalars().all())
+        
+        # 已完成任务数
+        completed_query = select(TaskPublishRecord).where(
+            and_(
+                TaskPublishRecord.created_at >= start_date,
+                TaskPublishRecord.status == "completed"
+            )
+        )
+        completed_result = await db.execute(completed_query)
+        completed_tasks = len(completed_result.scalars().all())
+        
+        # 联系方式交换数
+        exchange_query = select(TaskPublishRecord).where(
+            and_(
+                TaskPublishRecord.created_at >= start_date,
+                TaskPublishRecord.status.in_(["contact_exchanged", "completed"])
+            )
+        )
+        exchange_result = await db.execute(exchange_query)
+        exchanges = len(exchange_result.scalars().all())
+        
+        # 总交易金额（预估）
+        amount_query = select(TaskPublishRecord).where(
+            and_(
+                TaskPublishRecord.created_at >= start_date,
+                TaskPublishRecord.status == "completed"
+            )
+        )
+        amount_result = await db.execute(amount_query)
+        amount_tasks = amount_result.scalars().all()
+        total_amount = sum(float(task.amount or 0) for task in amount_tasks)
+        
+        return {
+            "period_days": days,
+            "total_tasks": total_tasks,
+            "completed_tasks": completed_tasks,
+            "contact_exchanges": exchanges,
+            "completion_rate": round(completed_tasks / total_tasks * 100, 2) if total_tasks > 0 else 0,
+            "exchange_rate": round(exchanges / total_tasks * 100, 2) if total_tasks > 0 else 0,
+            "estimated_transaction_volume": total_amount,
+            "platform_activity_score": min(100, total_tasks * 2 + exchanges * 5)
+        }
+        
+    except Exception as e:
+        logger.error(f"获取平台统计失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取统计数据失败: {str(e)}"
         ) 

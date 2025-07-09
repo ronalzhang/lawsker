@@ -918,11 +918,119 @@
                     <button class="btn btn-secondary" onclick="refreshTaskFeedback()" style="padding: 6px 12px; font-size: 12px;">刷新状态</button>
                 </div>
                 <div id="taskFeedbackBody">
-                    <!-- 任务反馈内容将由JavaScript动态生成 -->
-                    <div class="task-item" style="text-align: center; padding: 40px; color: var(--text-secondary);">
-                        <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
-                        <div>暂无任务反馈信息</div>
-                        <div style="font-size: 12px; margin-top: 8px;">律师接单后会在此显示详细信息</div>
+                    <!-- 演示数据：律师已接单的任务 -->
+                    <div class="task-item">
+                        <div class="task-info">
+                            <div>
+                                <div class="task-title">催收欠款律师函</div>
+                                <div class="task-details">接单律师：张律师 | 接单时间：2024-01-14 10:30</div>
+                                <div class="task-description">律师消息：已收到您的案件，需要交换联系方式详细沟通案件细节。</div>
+                            </div>
+                            <span class="task-status status-accepted">律师已接单</span>
+                        </div>
+                        <div class="task-actions">
+                            <button class="btn-small btn-primary" onclick="openContactExchange('demo1')">交换联系方式</button>
+                            <button class="btn-small btn-success" onclick="markTaskComplete('demo1')">标记完成</button>
+                        </div>
+                    </div>
+
+                    <div class="task-item">
+                        <div class="task-info">
+                            <div>
+                                <div class="task-title">合同审查</div>
+                                <div class="task-details">接单律师：李律师 | 接单时间：2024-01-13 16:45</div>
+                                <div class="task-description">律师消息：正在审查合同条款，预计明天完成初步审查报告。</div>
+                            </div>
+                            <span class="task-status status-inprogress">进行中</span>
+                        </div>
+                        <div class="task-actions">
+                            <button class="btn-small btn-secondary" disabled>已交换联系方式</button>
+                            <button class="btn-small btn-success" onclick="markTaskComplete('demo2')">标记完成</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 联系方式交换模态框 -->
+            <div id="contactExchangeModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>联系方式交换</h3>
+                        <span class="close" onclick="closeContactModal()">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <p>律师已接单，现在可以交换联系方式进行后续沟通：</p>
+                        
+                        <div class="form-group">
+                            <label class="form-label">您的联系方式</label>
+                            <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                                <input type="text" id="userContactName" class="form-input" placeholder="您的姓名" style="flex: 1;">
+                                <input type="tel" id="userContactPhone" class="form-input" placeholder="联系电话" style="flex: 1;">
+                            </div>
+                            <input type="email" id="userContactEmail" class="form-input" placeholder="邮箱地址（可选）">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">附加消息</label>
+                            <textarea id="contactMessage" class="form-textarea" placeholder="向律师说明具体需求..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="closeContactModal()">取消</button>
+                        <button class="btn btn-primary" onclick="submitContactExchange()">确认交换</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 任务完成模态框 -->
+            <div id="taskCompleteModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>任务完成确认</h3>
+                        <span class="close" onclick="closeCompleteModal()">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="form-label">任务完成情况</label>
+                            <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="completionType" value="platform" checked>
+                                    <span>通过平台完成（律师函等）</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="radio" name="completionType" value="offline">
+                                    <span>线下私下完成</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group" id="offlineAmountGroup" style="display: none;">
+                            <label class="form-label">实际交易金额</label>
+                            <input type="number" id="offlineAmount" class="form-input" placeholder="请输入实际支付给律师的金额">
+                            <div style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;">
+                                💡 此信息用于平台业务量统计，不会影响您的费用
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">完成评价</label>
+                            <textarea id="completionNotes" class="form-textarea" placeholder="请评价律师的服务质量和任务完成情况..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">律师评分</label>
+                            <div class="rating-stars">
+                                <span class="star" data-rating="1">⭐</span>
+                                <span class="star" data-rating="2">⭐</span>
+                                <span class="star" data-rating="3">⭐</span>
+                                <span class="star" data-rating="4">⭐</span>
+                                <span class="star" data-rating="5">⭐</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="closeCompleteModal()">取消</button>
+                        <button class="btn btn-primary" onclick="submitTaskCompletion()">确认完成</button>
                     </div>
                 </div>
             </div>
@@ -1189,31 +1297,72 @@
             }
             
             const formData = {
-                type: document.getElementById('taskType').value,
+                task_type: document.getElementById('taskType').value,
                 title: document.getElementById('taskTitle').value,
                 description: document.getElementById('taskDescription').value,
                 budget: lawyerFee,
-                expectedLawyerFee: lawyerFee.toFixed(2) // 格式化为两位小数显示
+                urgency: 'normal',
+                target_info: {
+                    budget_display: lawyerFee.toFixed(2),
+                    urgency: 'normal'
+                }
             };
             
             try {
                 if (apiClient.isAuthenticated()) {
-                    await apiClient.publishTask(formData);
-                    alert('任务发布成功！');
-                    clearTaskForm();
-                    await loadStats();
-                    await loadTasks();
+                    const response = await fetch('/api/v1/tasks/user/publish', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert('任务发布成功！等待律师接单中...');
+                        clearTaskForm();
+                        await loadStats();
+                        await loadTasks();
+                    } else {
+                        throw new Error(result.message || '发布失败');
+                    }
                 } else {
                     console.log('演示模式 - 发布任务:', formData);
                     alert('任务发布成功！（演示模式）');
                     clearTaskForm();
                     updateStats();
+                    addDemoTask(formData);
                 }
             } catch (error) {
                 console.error('发布任务失败:', error);
-                alert('发布任务失败，请稍后重试');
+                alert('发布任务失败：' + error.message);
             }
         });
+
+        // 演示模式添加任务
+        function addDemoTask(formData) {
+            const taskListBody = document.getElementById('taskListBody');
+            
+            const taskItem = document.createElement('div');
+            taskItem.className = 'task-item';
+            taskItem.innerHTML = `
+                <div class="task-info">
+                    <div>
+                        <div class="task-title">${formData.title}</div>
+                        <div class="task-details">发布时间：${new Date().toLocaleString()} | 预算：¥${formData.budget}</div>
+                    </div>
+                    <span class="task-status status-published">已发布</span>
+                </div>
+                <div class="task-actions">
+                    <button class="btn-small btn-primary" onclick="viewTaskDetail('${Date.now()}')">查看详情</button>
+                </div>
+            `;
+            
+            taskListBody.insertBefore(taskItem, taskListBody.firstChild);
+        }
 
         // 数据上传表单提交（付费上传）
         document.getElementById('dataUploadForm').addEventListener('submit', async function(e) {
@@ -1555,6 +1704,266 @@
         async function loadUserSpecificData(userId) {
             try {
                 // 更新页面标题显示用户ID，但保持用户等级标签的完整结构
+
+        // 联系方式交换和任务完成功能
+        let currentTaskId = null;
+        let currentRating = 5;
+
+        // 打开联系方式交换模态框
+        function openContactExchange(taskId) {
+            currentTaskId = taskId;
+            document.getElementById('contactExchangeModal').style.display = 'block';
+            // 预填充用户信息（从API或localStorage获取）
+            if (apiClient.isAuthenticated()) {
+                // 可以从用户信息中预填充
+                document.getElementById('userContactName').value = localStorage.getItem('userName') || '';
+                document.getElementById('userContactPhone').value = localStorage.getItem('userPhone') || '';
+                document.getElementById('userContactEmail').value = localStorage.getItem('userEmail') || '';
+            }
+        }
+
+        // 关闭联系方式交换模态框
+        function closeContactModal() {
+            document.getElementById('contactExchangeModal').style.display = 'none';
+            currentTaskId = null;
+        }
+
+        // 提交联系方式交换
+        async function submitContactExchange() {
+            const name = document.getElementById('userContactName').value;
+            const phone = document.getElementById('userContactPhone').value;
+            const email = document.getElementById('userContactEmail').value;
+            const message = document.getElementById('contactMessage').value;
+            
+            if (!name || !phone) {
+                alert('请填写姓名和联系电话');
+                return;
+            }
+            
+            try {
+                if (apiClient.isAuthenticated()) {
+                    // 实际API调用
+                    const response = await fetch('/api/v1/tasks/exchange-contact', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        },
+                        body: JSON.stringify({
+                            task_id: currentTaskId,
+                            contact_name: name,
+                            contact_phone: phone,
+                            contact_email: email,
+                            message: message
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('联系方式已成功交换！律师会尽快与您联系。');
+                        closeContactModal();
+                        await refreshTaskFeedback();
+                    } else {
+                        throw new Error(result.message || '交换失败');
+                    }
+                } else {
+                    // 演示模式
+                    alert(`联系方式交换成功！\n您的联系方式：${name} ${phone}\n已发送给律师，请等待律师联系。`);
+                    closeContactModal();
+                    updateTaskStatus(currentTaskId, '已交换联系方式');
+                }
+            } catch (error) {
+                console.error('联系方式交换失败:', error);
+                alert('联系方式交换失败：' + error.message);
+            }
+        }
+
+        // 标记任务完成
+        function markTaskComplete(taskId) {
+            currentTaskId = taskId;
+            document.getElementById('taskCompleteModal').style.display = 'block';
+            
+            // 绑定完成类型切换事件
+            const completionTypeRadios = document.querySelectorAll('input[name="completionType"]');
+            completionTypeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const offlineGroup = document.getElementById('offlineAmountGroup');
+                    if (this.value === 'offline') {
+                        offlineGroup.style.display = 'block';
+                    } else {
+                        offlineGroup.style.display = 'none';
+                    }
+                });
+            });
+            
+            // 评分星星点击事件
+            const stars = document.querySelectorAll('.star');
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    currentRating = parseInt(this.getAttribute('data-rating'));
+                    updateStarDisplay();
+                });
+            });
+        }
+
+        // 关闭任务完成模态框
+        function closeCompleteModal() {
+            document.getElementById('taskCompleteModal').style.display = 'none';
+            currentTaskId = null;
+        }
+
+        // 更新星星显示
+        function updateStarDisplay() {
+            const stars = document.querySelectorAll('.star');
+            stars.forEach((star, index) => {
+                if (index < currentRating) {
+                    star.style.color = '#ffc107';
+                    star.style.filter = 'brightness(1)';
+                } else {
+                    star.style.color = '#ddd';
+                    star.style.filter = 'brightness(0.5)';
+                }
+            });
+        }
+
+        // 提交任务完成
+        async function submitTaskCompletion() {
+            const completionType = document.querySelector('input[name="completionType"]:checked').value;
+            const offlineAmount = document.getElementById('offlineAmount').value;
+            const notes = document.getElementById('completionNotes').value;
+            
+            if (completionType === 'offline' && !offlineAmount) {
+                alert('请填写实际交易金额');
+                return;
+            }
+            
+            if (!notes.trim()) {
+                alert('请填写完成评价');
+                return;
+            }
+            
+            try {
+                if (apiClient.isAuthenticated()) {
+                    // 实际API调用
+                    const response = await fetch('/api/v1/tasks/complete', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        },
+                        body: JSON.stringify({
+                            task_id: currentTaskId,
+                            completion_type: completionType,
+                            offline_amount: completionType === 'offline' ? parseFloat(offlineAmount) : null,
+                            rating: currentRating,
+                            notes: notes
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('任务已成功标记为完成！感谢您的评价。');
+                        closeCompleteModal();
+                        await refreshTaskFeedback();
+                        await loadStats(); // 更新统计数据
+                    } else {
+                        throw new Error(result.message || '标记完成失败');
+                    }
+                } else {
+                    // 演示模式
+                    let message = `任务已标记为完成！\n完成方式：${completionType === 'platform' ? '通过平台' : '线下私下'}\n`;
+                    if (completionType === 'offline') {
+                        message += `交易金额：¥${offlineAmount}\n`;
+                    }
+                    message += `评分：${currentRating}星\n评价：${notes}`;
+                    
+                    alert(message);
+                    closeCompleteModal();
+                    updateTaskStatus(currentTaskId, '已完成');
+                }
+            } catch (error) {
+                console.error('标记任务完成失败:', error);
+                alert('标记任务完成失败：' + error.message);
+            }
+        }
+
+        // 更新任务状态（演示模式）
+        function updateTaskStatus(taskId, newStatus) {
+            // 在演示模式下更新任务状态显示
+            const taskElements = document.querySelectorAll('.task-item');
+            taskElements.forEach(element => {
+                const actions = element.querySelector('.task-actions');
+                if (actions && actions.innerHTML.includes(taskId)) {
+                    const statusElement = element.querySelector('.task-status');
+                    if (statusElement) {
+                        statusElement.textContent = newStatus;
+                        statusElement.className = 'task-status status-completed';
+                    }
+                }
+            });
+        }
+
+        // 刷新任务反馈状态
+        async function refreshTaskFeedback() {
+            try {
+                if (apiClient.isAuthenticated()) {
+                    // 实际API调用获取任务反馈
+                    const response = await fetch('/api/v1/tasks/feedback', {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success && result.tasks) {
+                        updateTaskFeedbackDisplay(result.tasks);
+                    }
+                } else {
+                    console.log('演示模式 - 使用静态任务反馈数据');
+                }
+            } catch (error) {
+                console.error('刷新任务反馈失败:', error);
+            }
+        }
+
+        // 更新任务反馈显示
+        function updateTaskFeedbackDisplay(tasks) {
+            const feedbackBody = document.getElementById('taskFeedbackBody');
+            if (!tasks || tasks.length === 0) {
+                feedbackBody.innerHTML = `
+                    <div class="task-item" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                        <div>暂无任务反馈信息</div>
+                        <div style="font-size: 12px; margin-top: 8px;">律师接单后会在此显示详细信息</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            feedbackBody.innerHTML = '';
+            tasks.forEach(task => {
+                const taskItem = document.createElement('div');
+                taskItem.className = 'task-item';
+                taskItem.innerHTML = `
+                    <div class="task-info">
+                        <div>
+                            <div class="task-title">${task.title}</div>
+                            <div class="task-details">接单律师：${task.lawyer_name} | 接单时间：${new Date(task.accepted_at).toLocaleString()}</div>
+                            <div class="task-description">律师消息：${task.lawyer_message || '律师正在处理您的案件'}</div>
+                        </div>
+                        <span class="task-status status-${getStatusClass(task.status)}">${getStatusText(task.status)}</span>
+                    </div>
+                    <div class="task-actions">
+                        ${task.contact_exchanged ? 
+                            '<button class="btn-small btn-secondary" disabled>已交换联系方式</button>' :
+                            `<button class="btn-small btn-primary" onclick="openContactExchange('${task.id}')">交换联系方式</button>`
+                        }
+                        <button class="btn-small btn-success" onclick="markTaskComplete('${task.id}')">标记完成</button>
+                    </div>
+                `;
+                feedbackBody.appendChild(taskItem);
+            });
+        }
                 const pageTitle = document.querySelector('.page-title');
                 if (pageTitle) {
                     pageTitle.innerHTML = `
