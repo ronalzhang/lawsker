@@ -814,6 +814,49 @@
             color: #ef4444;
         }
 
+        /* 图表降级显示样式 */
+        .chart-fallback {
+            background: rgba(22, 28, 48, 0.85);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(122, 160, 255, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .chart-fallback h4 {
+            color: var(--text-primary, #f0f4ff);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .chart-fallback .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .chart-fallback .data-table th,
+        .chart-fallback .data-table td {
+            padding: 0.75rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(122, 160, 255, 0.2);
+        }
+
+        .chart-fallback .data-table th {
+            background: rgba(122, 160, 255, 0.1);
+            color: var(--text-secondary, #a0a6b8);
+            font-weight: 600;
+        }
+
+        .chart-fallback .data-table td {
+            color: var(--text-primary, #f0f4ff);
+        }
+
+        .chart-fallback .data-table tr:hover {
+            background: rgba(122, 160, 255, 0.05);
+        }
+
         /* 运维中心样式 */
         .operations-section {
             background: rgba(22, 28, 48, 0.85);
@@ -3042,6 +3085,18 @@
                     break;
                 case 'analytics':
                     loadAnalyticsData();
+                    // 延迟初始化图表，确保DOM元素已显示
+                    setTimeout(() => {
+                        if (typeof Chart !== 'undefined' && !window.chartInitialized) {
+                            try {
+                                initAnalyticsChart();
+                                window.chartInitialized = true;
+                                console.log('访问分析标签页图表初始化完成');
+                            } catch (error) {
+                                console.error('访问分析标签页图表初始化失败:', error);
+                            }
+                        }
+                    }, 100);
                     break;
                 case 'rankings':
                     loadRankingsData();
@@ -4119,76 +4174,136 @@
                 console.warn('访问分析图表容器未找到');
                 return;
             }
-            
-            // 获取图表数据
-            const { labels, data } = getAnalyticsChartData();
-            
-            // 创建渐变背景
-            let gradient = null;
-            try {
-                gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 350);
-                gradient.addColorStop(0, 'rgba(102, 126, 234, 0.4)');
-                gradient.addColorStop(1, 'rgba(102, 126, 234, 0.05)');
-            } catch (error) {
-                console.warn('创建渐变失败，使用纯色:', error);
+
+            // 销毁现有图表实例
+            if (analyticsChart) {
+                try {
+                    analyticsChart.destroy();
+                    console.log('已销毁现有图表实例');
+                } catch (error) {
+                    console.warn('销毁图表时出错:', error);
+                }
+                analyticsChart = null;
             }
 
-            // 图表配置
-            const chartConfig = {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: '访问量',
-                        data: data,
-                        backgroundColor: gradient || 'rgba(102, 126, 234, 0.2)',
-                        borderColor: '#667eea',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#667eea',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 5,
-                        pointHoverRadius: 7
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
+            // 清理Canvas元素
+            try {
+                const canvas = ctx;
+                const parent = canvas.parentNode;
+                const newCanvas = canvas.cloneNode(true);
+                parent.replaceChild(newCanvas, canvas);
+                // 更新ctx引用为新的canvas元素
+                const freshCtx = document.getElementById('visitTrendChart');
+                if (!freshCtx) {
+                    console.error('无法获取新的canvas元素');
+                    return;
+                }
+                
+                // 获取图表数据
+                const { labels, data } = getAnalyticsChartData();
+                
+                // 创建渐变背景
+                let gradient = null;
+                try {
+                    gradient = freshCtx.getContext('2d').createLinearGradient(0, 0, 0, 350);
+                    gradient.addColorStop(0, 'rgba(102, 126, 234, 0.4)');
+                    gradient.addColorStop(1, 'rgba(102, 126, 234, 0.05)');
+                } catch (error) {
+                    console.warn('创建渐变失败，使用纯色:', error);
+                }
+
+                // 图表配置
+                const chartConfig = {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: '访问量',
+                            data: data,
+                            backgroundColor: gradient || 'rgba(102, 126, 234, 0.2)',
+                            borderColor: '#667eea',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#667eea',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(122, 160, 255, 0.1)'
-                            },
-                            ticks: {
-                                color: '#a0a6b8'
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
                             }
                         },
-                        x: {
-                            grid: {
-                                color: 'rgba(122, 160, 255, 0.1)'
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(122, 160, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#a0a6b8'
+                                }
                             },
-                            ticks: {
-                                color: '#a0a6b8'
+                            x: {
+                                grid: {
+                                    color: 'rgba(122, 160, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#a0a6b8'
+                                }
                             }
                         }
                     }
-                }
-            };
+                };
 
-            try {
-                analyticsChart = new Chart(ctx, chartConfig);
-                console.log('访问分析图表已初始化:', { labels, data, hasData: data.length > 0 });
+                // 创建新的图表实例
+                analyticsChart = new Chart(freshCtx, chartConfig);
+                console.log('访问分析图表已初始化:', { 
+                    labels, 
+                    data, 
+                    hasData: data.length > 0,
+                    chartId: analyticsChart.id 
+                });
+                
             } catch (error) {
                 console.error('图表创建失败:', error);
-                showNotification('图表创建失败，请刷新页面重试', 'warning');
+                // 降级处理：显示数据表格
+                displayChartDataAsTable(getAnalyticsChartData());
+                showNotification('图表显示异常，已切换到表格模式', 'warning');
+            }
+        }
+
+        // 显示图表数据为表格（降级方案）
+        function displayChartDataAsTable(chartData) {
+            const chartContainer = document.querySelector('#visitTrendChart').parentNode;
+            if (chartContainer) {
+                chartContainer.innerHTML = `
+                    <div class="chart-fallback">
+                        <h4>访问数据统计表</h4>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>日期</th>
+                                    <th>访问量</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${chartData.labels.map((label, index) => `
+                                    <tr>
+                                        <td>${label}</td>
+                                        <td>${chartData.data[index]}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
             }
         }
 
@@ -4526,19 +4641,33 @@
             // 优化事件监听器
             window.addEventListener('scroll', onScroll, { passive: true });
             
+            // 图表初始化状态标记（全局）
+            window.chartInitialized = false;
+            
             // 监听Chart.js加载完成事件
             const initChartWhenReady = () => {
+                if (window.chartInitialized) {
+                    console.log('图表已经初始化，跳过重复初始化');
+                    return;
+                }
+                
                 if (typeof Chart !== 'undefined') {
-                    initAnalyticsChart();
-                    console.log('访问分析图表初始化完成');
+                    try {
+                        initAnalyticsChart();
+                        window.chartInitialized = true;
+                        console.log('访问分析图表初始化完成');
+                    } catch (error) {
+                        console.error('图表初始化过程中出错:', error);
+                        showNotification('图表初始化失败', 'warning');
+                    }
                 } else {
                     console.error('Chart.js仍未加载');
                     showNotification('图表库加载失败，图表功能将不可用', 'warning');
                 }
             };
 
-            // 监听Chart.js加载事件
-            window.addEventListener('chartjs-loaded', initChartWhenReady);
+            // 监听Chart.js加载事件（只监听一次）
+            window.addEventListener('chartjs-loaded', initChartWhenReady, { once: true });
             
             // 如果Chart.js已经加载，直接初始化
             if (typeof Chart !== 'undefined') {
@@ -4546,7 +4675,7 @@
             } else {
                 // 延迟检查（防止事件错过）
                 setTimeout(() => {
-                    if (typeof Chart !== 'undefined') {
+                    if (typeof Chart !== 'undefined' && !window.chartInitialized) {
                         initChartWhenReady();
                     }
                 }, 2000);
