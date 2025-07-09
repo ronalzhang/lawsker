@@ -50,10 +50,10 @@ async def create_simple_test_data():
                 
                 wallet_sql = f"""
                     INSERT INTO wallets (user_id, withdrawable_balance, frozen_balance, total_earned,
-                                       total_withdrawn, balance, created_at)
+                                       total_withdrawn, balance, commission_count, created_at)
                     VALUES ('{user_id}', {available}, {random.randint(0, 5000)}, {total_earnings},
                            {random.randint(0, int(total_earnings * 0.8))}, {available + random.randint(0, 5000)}, 
-                           '{datetime.now().isoformat()}')
+                           {random.randint(1, 50)}, '{datetime.now().isoformat()}')
                     ON CONFLICT (user_id) DO UPDATE SET
                         withdrawable_balance = EXCLUDED.withdrawable_balance,
                         total_earned = EXCLUDED.total_earned
