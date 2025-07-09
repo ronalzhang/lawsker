@@ -616,13 +616,37 @@
             submitBtn.innerHTML = '<span class="loading-spinner"></span>登录中...';
 
             try {
+                // 用户名到邮箱映射
+                const emailMapping = {
+                    'admin': 'admin@lawsker.com',
+                    'lawyer1': 'lawyer1@lawsker.com',
+                    'lawyer2': 'lawyer2@lawsker.com',
+                    'lawyer3': 'lawyer3@lawsker.com',
+                    'lawyer4': 'lawyer4@lawsker.com',
+                    'lawyer5': 'lawyer5@lawsker.com',
+                    'sales1': 'sales1@lawsker.com',
+                    'sales2': 'sales2@lawsker.com',
+                    'sales3': 'sales3@lawsker.com',
+                    'sales4': 'sales4@lawsker.com',
+                    'sales5': 'sales5@lawsker.com',
+                    'sales6': 'sales6@lawsker.com',
+                    'sales7': 'sales7@lawsker.com',
+                    'sales8': 'sales8@lawsker.com',
+                    'institution1': 'institution1@lawsker.com',
+                    'institution2': 'institution2@lawsker.com',
+                    'institution3': 'institution3@lawsker.com'
+                };
+
+                // 如果是测试用户名，转换为邮箱
+                const loginUsername = emailMapping[username] || username;
+
                 const response = await fetch('/api/v1/auth/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        username: username,
+                        username: loginUsername,
                         password: password,
                         role: selectedRole
                     })
