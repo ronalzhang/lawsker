@@ -473,19 +473,7 @@
                         <input type="password" class="form-input" name="password" placeholder="请输入密码" required>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label">角色选择</label>
-                        <div class="role-selector">
-                            <div class="role-option" data-role="lawyer">
-                                <span class="role-icon">⚖️</span>
-                                <span>执业律师</span>
-                            </div>
-                            <div class="role-option" data-role="sales">
-                                <span class="role-icon">📊</span>
-                                <span>律客用户</span>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- 角色选择已移除，系统会根据用户真实角色自动跳转 -->
 
                     <button type="submit" class="submit-btn">
                         登录
@@ -606,11 +594,6 @@
             const username = formData.get('username');
             const password = formData.get('password');
 
-            if (!selectedRole) {
-                showMessage('请选择您的角色', 'error');
-                return;
-            }
-
             const submitBtn = e.target.querySelector('.submit-btn');
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="loading-spinner"></span>登录中...';
@@ -647,8 +630,7 @@
                     },
                     body: JSON.stringify({
                         username: loginUsername,
-                        password: password,
-                        role: selectedRole
+                        password: password
                     })
                 });
 
@@ -657,19 +639,22 @@
                 if (response.ok) {
                     showMessage('登录成功！正在跳转...', 'success');
                     
+                    // 从API响应中获取用户角色
+                    const userRole = data.user?.role || 'user';
+                    
                     // 保存登录信息
                     localStorage.setItem('authToken', data.access_token);
                     localStorage.setItem('userInfo', JSON.stringify({
                         username: username,
-                        role: selectedRole,
+                        role: userRole,
                         ...data.user
                     }));
                     // 保持兼容性
                     localStorage.setItem('accessToken', data.access_token);
-                    localStorage.setItem('userRole', selectedRole);
+                    localStorage.setItem('userRole', userRole);
                     localStorage.setItem('username', username);
 
-                    // 根据角色跳转到对应工作台
+                    // 根据用户真实角色跳转到对应工作台
                     setTimeout(() => {
                         // 检查是否有redirect参数
                         const urlParams = new URLSearchParams(window.location.search);
@@ -679,16 +664,23 @@
                             // 如果有redirect参数，直接跳转到目标页面
                             window.location.href = decodeURIComponent(redirectUrl);
                         } else {
-                            // 否则使用默认的工作台跳转逻辑
+                            // 根据用户真实角色跳转
                             const workspaceMap = {
-                                'lawyer': '/legal',
-                                'sales': '/user'
+                                'admin': '/admin-config-optimized.html',
+                                'lawyer': `/workspace/lawyer/${data.user.id}`,
+                                'sales': `/workspace/user/${data.user.id}`,
+                                'institution': `/workspace/institution/${data.user.id}`
                             };
-                            window.location.href = workspaceMap[selectedRole] || '/';
+                            const targetUrl = workspaceMap[userRole];
+                            if (targetUrl) {
+                                window.location.href = targetUrl;
+                            } else {
+                                showMessage('未知用户角色，请联系管理员', 'error');
+                            }
                         }
                     }, 1000);
                 } else {
-                    showMessage(data.detail || '登录失败，请检查用户名、密码和角色', 'error');
+                    showMessage(data.detail || '登录失败，请检查用户名和密码', 'error');
                 }
             } catch (error) {
                 console.error('登录错误:', error);

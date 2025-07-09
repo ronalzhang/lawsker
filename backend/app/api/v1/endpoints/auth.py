@@ -41,7 +41,6 @@ class UserRegister(BaseModel):
 class UserLogin(BaseModel):
     username: str  # 支持用户名或邮箱
     password: str
-    role: str      # 添加角色字段
 
 
 class SMSCodeRequest(BaseModel):
@@ -59,6 +58,7 @@ class Token(BaseModel):
     access_token: str
     token_type: str
     expires_in: int
+    user: Optional[Dict[str, Any]] = None
 
 
 class UserResponse(BaseModel):
@@ -262,54 +262,22 @@ async def login(
     """
     用户登录
     验证凭据并返回JWT令牌
-    支持用户名或邮箱登录，并验证角色
+    根据用户真实角色自动返回对应信息
     """
     try:
-        # 先尝试演示账号登录
-        demo_accounts = {
-            "lawyer_demo": {"password": "demo123", "role": "lawyer"},
-            "sales_demo": {"password": "demo123", "role": "sales"},
-            "institution_demo": {"password": "demo123", "role": "institution"},
-            "admin": {"password": "admin123", "role": "admin"}
-        }
-        
-        # 检查是否为演示账号
-        if user_data.username in demo_accounts:
-            demo_account = demo_accounts[user_data.username]
-            if (user_data.password == demo_account["password"] and 
-                user_data.role == demo_account["role"]):
-                
-                # 生成演示用户的JWT令牌
-                token_data = {
-                    "user_id": f"demo_{user_data.role}",
-                    "email": f"{user_data.username}@demo.com",
-                    "role": user_data.role,
-                    "username": user_data.username
-                }
-                
-                # 创建JWT令牌（简化版本）
-                access_token = f"demo_token_{user_data.role}"
-                
-                logger.info("演示账号登录成功", username=user_data.username, role=user_data.role)
-                
-                return {
-                    "access_token": access_token,
-                    "token_type": "bearer",
-                    "expires_in": 3600
-                }
-        
         # 实际账号登录逻辑
         result = await auth_service.authenticate_and_create_token(
             email=user_data.username,  # 支持用户名或邮箱
             password=user_data.password
         )
         
-        logger.info("用户登录成功", username=user_data.username)
+        logger.info("用户登录成功", username=user_data.username, user_role=result.get("user", {}).get("role"))
         
         return {
             "access_token": result["access_token"],
             "token_type": result["token_type"],
-            "expires_in": result["expires_in"]
+            "expires_in": result["expires_in"],
+            "user": result["user"]  # 包含用户角色信息
         }
     except HTTPException:
         raise
@@ -317,7 +285,7 @@ async def login(
         logger.error("用户登录失败", error=str(e))
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="用户名、密码或角色错误"
+            detail="用户名或密码错误"
         )
 
 
