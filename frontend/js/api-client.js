@@ -272,14 +272,14 @@ class ApiClient {
      * 获取提现统计数据（修正路径）
      */
     async getWithdrawalStats() {
-        return this.get('/finance/withdrawal-stats');
+        return this.get('/finance/withdrawal/stats');
     }
 
     /**
      * 获取销售提现统计数据
      */
     async getSalesWithdrawalStats() {
-        return this.get('/finance/withdrawal-stats');
+        return this.get('/finance/withdrawal/stats');
     }
 
     /**
