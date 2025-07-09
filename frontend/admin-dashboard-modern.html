@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lawsker 管理后台 - 现代化仪表盘</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/js/auth-guard-ascii.js?v=1735538500"></script>
+    <style>
+        /* 现代化设计系统 */
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #06b6d4;
+            
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            
+            --border: #334155;
+            --border-light: #475569;
+            
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .nav-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* 主布局 */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* 标签页导航 */
+        .tab-navigation {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 1rem 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* 标签页内容 */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 数据卡片网格 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--info));
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--info));
+        }
+
+        .stat-trend {
+            font-size: 0.875rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+        }
+
+        .stat-trend.positive {
+            color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .stat-trend.negative {
+            color: var(--error);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* 图表容器 */
+        .chart-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chart-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .chart-btn:hover,
+        .chart-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .chart-canvas {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        /* 用户管理表格 */
+        .user-management {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .table-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .search-container {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-input {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            width: 250px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-light);
+            color: var(--text-primary);
+        }
+
+        /* 表格 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table th {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .data-table td {
+            color: var(--text-primary);
+        }
+
+        .data-table tr:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        /* 用户头像 */
+        .user-avatar {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--info));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* 状态徽章 */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.active {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .status-badge.inactive {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--error);
+        }
+
+        .status-badge.pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        /* 操作按钮 */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.875rem;
+        }
+
+        .action-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .action-btn.edit:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .action-btn.delete:hover {
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        /* 分页 */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .pagination-info {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .pagination-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.875rem;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tab-navigation {
+                overflow-x: auto;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+
+            .tab-navigation::-webkit-scrollbar {
+                display: none;
+            }
+
+            .search-container {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .search-input {
+                width: 100%;
+            }
+
+            .data-table {
+                font-size: 0.875rem;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 1.5rem;
+            height: 1.5rem;
+            border: 2px solid var(--border);
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 通知样式 */
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            min-width: 300px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--error);
+        }
+
+        .notification.warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        .notification.info {
+            border-left: 4px solid var(--info);
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo">⚖️ Lawsker 管理后台</a>
+            <div class="nav-info">
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>系统运行正常</span>
+                </div>
+                <span id="currentTime"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 标签页导航 -->
+        <div class="tab-navigation">
+            <button class="tab-btn active" onclick="switchTab('analytics')">📊 访问分析</button>
+            <button class="tab-btn" onclick="switchTab('users')">👥 用户管理</button>
+            <button class="tab-btn" onclick="switchTab('lawyers')">⚖️ 律师管理</button>
+            <button class="tab-btn" onclick="switchTab('system')">⚙️ 系统监控</button>
+        </div>
+
+        <!-- 访问分析标签页 -->
+        <div class="tab-content active" id="analytics-tab">
+            <!-- 数据概览卡片 -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">🌐</div>
+                        <div class="stat-trend positive" id="pvTrend">+8.3%</div>
+                    </div>
+                    <div class="stat-value" id="todayPV">15,672</div>
+                    <div class="stat-label">今日页面访问量</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">👁️</div>
+                        <div class="stat-trend positive" id="uvTrend">+12.1%</div>
+                    </div>
+                    <div class="stat-value" id="todayUV">4,523</div>
+                    <div class="stat-label">今日独立访客</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">🌍</div>
+                        <div class="stat-trend positive" id="ipTrend">+15.7%</div>
+                    </div>
+                    <div class="stat-value" id="uniqueIPs">3,891</div>
+                    <div class="stat-label">独立IP数量</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">📱</div>
+                        <div class="stat-trend positive" id="mobileTrend">+2.3%</div>
+                    </div>
+                    <div class="stat-value" id="mobileRate">67.8%</div>
+                    <div class="stat-label">移动端访问占比</div>
+                </div>
+            </div>
+
+            <!-- 访问趋势图表 -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">访问趋势分析</h3>
+                    <div class="chart-controls">
+                        <button class="chart-btn" onclick="setChartPeriod('hour')">小时</button>
+                        <button class="chart-btn active" onclick="setChartPeriod('day')">日</button>
+                        <button class="chart-btn" onclick="setChartPeriod('week')">周</button>
+                        <button class="chart-btn" onclick="setChartPeriod('month')">月</button>
+                    </div>
+                </div>
+                <div class="chart-canvas">
+                    <canvas id="analyticsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 用户管理标签页 -->
+        <div class="tab-content" id="users-tab">
+            <div class="user-management">
+                <div class="table-header">
+                    <h3 class="table-title">用户管理</h3>
+                    <div class="search-container">
+                        <input type="text" class="search-input" placeholder="搜索用户..." id="userSearch">
+                        <button class="btn btn-secondary" onclick="exportUsers()">导出</button>
+                        <button class="btn" onclick="addUser()">添加用户</button>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>用户</th>
+                            <th>角色</th>
+                            <th>注册时间</th>
+                            <th>最后登录</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr>
+                            <td colspan="6" class="loading">
+                                <div class="spinner"></div>
+                                加载用户数据...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    <div class="pagination-info">
+                        显示 <span id="userPaginationInfo">1-10 / 150</span> 条记录
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="pagination-btn" onclick="changePage('prev')" id="prevBtn">上一页</button>
+                        <button class="pagination-btn" onclick="changePage('next')" id="nextBtn">下一页</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 律师管理标签页 -->
+        <div class="tab-content" id="lawyers-tab">
+            <div class="user-management">
+                <div class="table-header">
+                    <h3 class="table-title">律师管理</h3>
+                    <div class="search-container">
+                        <input type="text" class="search-input" placeholder="搜索律师..." id="lawyerSearch">
+                        <button class="btn btn-secondary" onclick="exportLawyers()">导出</button>
+                        <button class="btn" onclick="addLawyer()">添加律师</button>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>律师</th>
+                            <th>执业证号</th>
+                            <th>律所</th>
+                            <th>专业领域</th>
+                            <th>认证状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lawyersTableBody">
+                        <tr>
+                            <td colspan="6" class="loading">
+                                <div class="spinner"></div>
+                                加载律师数据...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    <div class="pagination-info">
+                        显示 <span id="lawyerPaginationInfo">1-10 / 85</span> 条记录
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="pagination-btn" onclick="changeLawyerPage('prev')" id="lawyerPrevBtn">上一页</button>
+                        <button class="pagination-btn" onclick="changeLawyerPage('next')" id="lawyerNextBtn">下一页</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系统监控标签页 -->
+        <div class="tab-content" id="system-tab">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">🖥️</div>
+                        <div class="stat-trend positive">正常</div>
+                    </div>
+                    <div class="stat-value" id="cpuUsage">15.2%</div>
+                    <div class="stat-label">CPU使用率</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">💾</div>
+                        <div class="stat-trend positive">正常</div>
+                    </div>
+                    <div class="stat-value" id="memoryUsage">48.6%</div>
+                    <div class="stat-label">内存使用率</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">💽</div>
+                        <div class="stat-trend positive">正常</div>
+                    </div>
+                    <div class="stat-value" id="diskUsage">32.1%</div>
+                    <div class="stat-label">磁盘使用率</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-trend positive">在线</div>
+                    </div>
+                    <div class="stat-value" id="onlineUsers">23</div>
+                    <div class="stat-label">在线用户数</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let analyticsChart = null;
+        let currentTab = 'analytics';
+        let currentPage = 1;
+        let currentLawyerPage = 1;
+        const pageSize = 10;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+            loadAnalyticsData();
+            initAnalyticsChart();
+        });
+
+        // 更新当前时间
+        function updateCurrentTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleString('zh-CN');
+        }
+
+        // 标签页切换
+        function switchTab(tabName) {
+            // 隐藏所有标签页内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // 移除所有按钮的active类
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // 显示选中的标签页
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+
+            currentTab = tabName;
+
+            // 根据标签页加载相应数据
+            switch(tabName) {
+                case 'analytics':
+                    loadAnalyticsData();
+                    break;
+                case 'users':
+                    loadUsersData();
+                    break;
+                case 'lawyers':
+                    loadLawyersData();
+                    break;
+                case 'system':
+                    loadSystemData();
+                    break;
+            }
+        }
+
+        // 加载访问分析数据
+        async function loadAnalyticsData() {
+            try {
+                const response = await fetch('/api/v1/admin/test/overview');
+                if (response.ok) {
+                    const data = await response.json();
+                    updateAnalyticsDisplay(data.data);
+                } else {
+                    // 使用备用数据
+                    updateAnalyticsDisplay({
+                        todayPV: 15672,
+                        todayUV: 4523,
+                        uniqueIPs: 3891,
+                        mobileRate: 67.8,
+                        trends: {
+                            pvGrowth: 8.3,
+                            uvGrowth: 12.1,
+                            ipGrowth: 15.7,
+                            mobileGrowth: 2.3
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('加载访问分析数据失败:', error);
+                showNotification('加载访问数据失败，使用演示数据', 'warning');
+            }
+        }
+
+        // 更新访问分析显示
+        function updateAnalyticsDisplay(data) {
+            document.getElementById('todayPV').textContent = (data.todayPV || 0).toLocaleString();
+            document.getElementById('todayUV').textContent = (data.todayUV || 0).toLocaleString();
+            document.getElementById('uniqueIPs').textContent = (data.uniqueIPs || 0).toLocaleString();
+            document.getElementById('mobileRate').textContent = (data.mobileRate || 0) + '%';
+
+            // 更新趋势
+            if (data.trends) {
+                updateTrendElement('pvTrend', data.trends.pvGrowth || 0);
+                updateTrendElement('uvTrend', data.trends.uvGrowth || 0);
+                updateTrendElement('ipTrend', data.trends.ipGrowth || 0);
+                updateTrendElement('mobileTrend', data.trends.mobileGrowth || 0);
+            }
+        }
+
+        // 更新趋势显示
+        function updateTrendElement(id, value) {
+            const element = document.getElementById(id);
+            if (element) {
+                const isPositive = value >= 0;
+                element.textContent = `${isPositive ? '+' : ''}${value}%`;
+                element.className = `stat-trend ${isPositive ? 'positive' : 'negative'}`;
+            }
+        }
+
+        // 初始化图表
+        function initAnalyticsChart() {
+            const ctx = document.getElementById('analyticsChart').getContext('2d');
+            
+            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.3)');
+            gradient.addColorStop(1, 'rgba(59, 130, 246, 0.05)');
+
+            analyticsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月'],
+                    datasets: [{
+                        label: '页面访问量',
+                        data: [12543, 13876, 11234, 15432, 14567, 16234, 15672],
+                        backgroundColor: gradient,
+                        borderColor: '#3b82f6',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#3b82f6',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            hoverRadius: 6
+                        }
+                    }
+                }
+            });
+        }
+
+        // 设置图表时间段
+        function setChartPeriod(period) {
+            // 移除所有按钮的active类
+            document.querySelectorAll('.chart-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 添加active类到点击的按钮
+            event.target.classList.add('active');
+
+            // 根据期间更新图表数据
+            let labels, data;
+            switch(period) {
+                case 'hour':
+                    labels = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'];
+                    data = [324, 456, 789, 1234, 987, 654, 432];
+                    break;
+                case 'day':
+                    labels = ['1月', '2月', '3月', '4月', '5月', '6月', '7月'];
+                    data = [12543, 13876, 11234, 15432, 14567, 16234, 15672];
+                    break;
+                case 'week':
+                    labels = ['第1周', '第2周', '第3周', '第4周', '第5周', '第6周'];
+                    data = [45123, 52341, 48976, 61234, 58765, 64321];
+                    break;
+                case 'month':
+                    labels = ['7月', '8月', '9月', '10月', '11月', '12月'];
+                    data = [156234, 189456, 167890, 198765, 187432, 205678];
+                    break;
+            }
+
+            analyticsChart.data.labels = labels;
+            analyticsChart.data.datasets[0].data = data;
+            analyticsChart.update();
+        }
+
+        // 加载用户数据
+        async function loadUsersData() {
+            try {
+                showLoadingInTable('usersTableBody');
+                
+                // 模拟API调用
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const users = [
+                    { id: 1, name: '张三', email: 'zhangsan@example.com', role: '普通用户', registerDate: '2024-01-15', lastLogin: '2024-01-20', status: 'active' },
+                    { id: 2, name: '李四', email: 'lisi@example.com', role: '律客用户', registerDate: '2024-01-16', lastLogin: '2024-01-19', status: 'active' },
+                    { id: 3, name: '王五', email: 'wangwu@example.com', role: '普通用户', registerDate: '2024-01-17', lastLogin: '2024-01-18', status: 'inactive' },
+                    { id: 4, name: '赵六', email: 'zhaoliu@example.com', role: '机构用户', registerDate: '2024-01-18', lastLogin: '2024-01-20', status: 'active' },
+                    { id: 5, name: '孙七', email: 'sunqi@example.com', role: '律客用户', registerDate: '2024-01-19', lastLogin: '2024-01-20', status: 'pending' }
+                ];
+                
+                renderUsersTable(users);
+                
+            } catch (error) {
+                console.error('加载用户数据失败:', error);
+                showNotification('加载用户数据失败', 'error');
+            }
+        }
+
+        // 渲染用户表格
+        function renderUsersTable(users) {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div class="user-avatar">${user.name.charAt(0)}</div>
+                            <div>
+                                <div style="font-weight: 600;">${user.name}</div>
+                                <div style="color: var(--text-secondary); font-size: 0.875rem;">${user.email}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${user.role}</td>
+                    <td>${user.registerDate}</td>
+                    <td>${user.lastLogin}</td>
+                    <td>
+                        <span class="status-badge ${user.status}">
+                            ${user.status === 'active' ? '正常' : user.status === 'inactive' ? '停用' : '待审核'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn edit" onclick="editUser(${user.id})" title="编辑">✏️</button>
+                            <button class="action-btn delete" onclick="deleteUser(${user.id})" title="删除">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 加载律师数据
+        async function loadLawyersData() {
+            try {
+                showLoadingInTable('lawyersTableBody');
+                
+                // 模拟API调用
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const lawyers = [
+                    { id: 1, name: '张律师', licenseNo: '11010120220001', lawFirm: '北京某某律师事务所', specialty: '民商法', status: 'active' },
+                    { id: 2, name: '李律师', licenseNo: '11010120220002', lawFirm: '上海某某律师事务所', specialty: '刑法', status: 'active' },
+                    { id: 3, name: '王律师', licenseNo: '11010120220003', lawFirm: '深圳某某律师事务所', specialty: '公司法', status: 'pending' },
+                    { id: 4, name: '赵律师', licenseNo: '11010120220004', lawFirm: '广州某某律师事务所', specialty: '劳动法', status: 'active' },
+                    { id: 5, name: '孙律师', licenseNo: '11010120220005', lawFirm: '杭州某某律师事务所', specialty: '知识产权', status: 'inactive' }
+                ];
+                
+                renderLawyersTable(lawyers);
+                
+            } catch (error) {
+                console.error('加载律师数据失败:', error);
+                showNotification('加载律师数据失败', 'error');
+            }
+        }
+
+        // 渲染律师表格
+        function renderLawyersTable(lawyers) {
+            const tbody = document.getElementById('lawyersTableBody');
+            tbody.innerHTML = lawyers.map(lawyer => `
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <div class="user-avatar">⚖️</div>
+                            <div>
+                                <div style="font-weight: 600;">${lawyer.name}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${lawyer.licenseNo}</td>
+                    <td>${lawyer.lawFirm}</td>
+                    <td>${lawyer.specialty}</td>
+                    <td>
+                        <span class="status-badge ${lawyer.status}">
+                            ${lawyer.status === 'active' ? '已认证' : lawyer.status === 'pending' ? '待审核' : '未通过'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn edit" onclick="editLawyer(${lawyer.id})" title="编辑">✏️</button>
+                            <button class="action-btn delete" onclick="deleteLawyer(${lawyer.id})" title="删除">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 加载系统数据
+        async function loadSystemData() {
+            try {
+                // 模拟系统监控数据
+                document.getElementById('cpuUsage').textContent = (Math.random() * 30 + 10).toFixed(1) + '%';
+                document.getElementById('memoryUsage').textContent = (Math.random() * 20 + 40).toFixed(1) + '%';
+                document.getElementById('diskUsage').textContent = (Math.random() * 10 + 30).toFixed(1) + '%';
+                document.getElementById('onlineUsers').textContent = Math.floor(Math.random() * 30 + 15);
+            } catch (error) {
+                console.error('加载系统数据失败:', error);
+            }
+        }
+
+        // 显示表格加载状态
+        function showLoadingInTable(tableBodyId) {
+            const tbody = document.getElementById(tableBodyId);
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="loading">
+                        <div class="spinner"></div>
+                        加载数据中...
+                    </td>
+                </tr>
+            `;
+        }
+
+        // 显示通知
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div style="font-weight: 600; margin-bottom: 0.5rem;">${type === 'success' ? '成功' : type === 'error' ? '错误' : type === 'warning' ? '警告' : '信息'}</div>
+                <div>${message}</div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // 操作函数（占位符）
+        function editUser(id) {
+            showNotification(`编辑用户 ${id}`, 'info');
+        }
+
+        function deleteUser(id) {
+            if (confirm('确定要删除该用户吗？')) {
+                showNotification(`删除用户 ${id}`, 'success');
+            }
+        }
+
+        function editLawyer(id) {
+            showNotification(`编辑律师 ${id}`, 'info');
+        }
+
+        function deleteLawyer(id) {
+            if (confirm('确定要删除该律师吗？')) {
+                showNotification(`删除律师 ${id}`, 'success');
+            }
+        }
+
+        function addUser() {
+            showNotification('添加用户功能', 'info');
+        }
+
+        function addLawyer() {
+            showNotification('添加律师功能', 'info');
+        }
+
+        function exportUsers() {
+            showNotification('导出用户数据', 'info');
+        }
+
+        function exportLawyers() {
+            showNotification('导出律师数据', 'info');
+        }
+
+        function changePage(direction) {
+            showNotification(`${direction === 'prev' ? '上一页' : '下一页'}`, 'info');
+        }
+
+        function changeLawyerPage(direction) {
+            showNotification(`律师列表${direction === 'prev' ? '上一页' : '下一页'}`, 'info');
+        }
+    </script>
+</body>
+</html> 
