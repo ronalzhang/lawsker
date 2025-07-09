@@ -73,7 +73,7 @@ async def create_test_data():
                 tenant_id=tenant.id,
                 username="admin",
                 email="admin@lawsker.com",
-                password_hash="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # admin123
+                password_hash="$2b$12$Uh/67FlK.0pstsOQGuEO4u72n664o.dz5IIv2Qvssri5UZcos360a",  # demo123
                 phone_number="13800000001",
                 status=UserStatus.ACTIVE
             )
@@ -87,7 +87,7 @@ async def create_test_data():
                     tenant_id=tenant.id,
                     username=f"lawyer{i+1}",
                     email=f"lawyer{i+1}@lawsker.com",
-                    password_hash="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # demo123
+                    password_hash="$2b$12$Uh/67FlK.0pstsOQGuEO4u72n664o.dz5IIv2Qvssri5UZcos360a",  # demo123
                     phone_number=f"1380000{i+1:04d}",
                     status=UserStatus.ACTIVE
                 )
@@ -101,7 +101,7 @@ async def create_test_data():
                     tenant_id=tenant.id,
                     username=f"sales{i+1}",
                     email=f"sales{i+1}@lawsker.com",
-                    password_hash="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # demo123
+                    password_hash="$2b$12$Uh/67FlK.0pstsOQGuEO4u72n664o.dz5IIv2Qvssri5UZcos360a",  # demo123
                     phone_number=f"1381000{i+1:04d}",
                     status=UserStatus.ACTIVE
                 )
@@ -115,7 +115,7 @@ async def create_test_data():
                     tenant_id=tenant.id,
                     username=f"institution{i+1}",
                     email=f"institution{i+1}@lawsker.com",
-                    password_hash="$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  # demo123
+                    password_hash="$2b$12$Uh/67FlK.0pstsOQGuEO4u72n664o.dz5IIv2Qvssri5UZcos360a",  # demo123
                     phone_number=f"1382000{i+1:04d}",
                     status=UserStatus.ACTIVE
                 )
