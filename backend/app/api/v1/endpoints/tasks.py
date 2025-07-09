@@ -25,20 +25,34 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-# Mock auth dependencies for testing
-def get_current_user(db: AsyncSession = Depends(get_db)):
-    """Mock current user dependency"""
-    # TODO: Replace with actual auth implementation
-    user = User()
-    user.id = UUID("12345678-1234-5678-9012-123456789012")
-    user.phone_number = "13800138000"
+# 真实认证依赖
+from app.core.deps import get_current_user as get_current_user_dict
+from app.models.user import User
+from sqlalchemy import select
+
+
+async def get_current_user(
+    current_user_dict: dict = Depends(get_current_user_dict),
+    db: AsyncSession = Depends(get_db)
+) -> User:
+    """获取当前用户对象"""
+    result = await db.execute(
+        select(User).where(User.id == UUID(current_user_dict["id"]))
+    )
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="用户不存在"
+        )
     return user
 
 
-def get_current_user_optional(db: AsyncSession = Depends(get_db)):
+async def get_current_user_optional(db: AsyncSession = Depends(get_db)) -> Optional[User]:
     """可选的用户认证，返回None如果未登录"""
     try:
-        return get_current_user(db)
+        current_user_dict = await get_current_user_dict()
+        return await get_current_user(current_user_dict, db)
     except:
         return None
 
