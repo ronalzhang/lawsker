@@ -15,6 +15,9 @@ from app.models.user import User
 from app.services.ai_table_recognition_service import AITableRecognitionService
 from app.services.template_service import TemplateService
 import logging
+from datetime import datetime
+import re
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -604,6 +607,500 @@ async def grab_task(
         db.rollback()
         logger.error(f"抢单失败: {str(e)}")
         return {"success": False, "message": f"抢单失败: {str(e)}"}
+
+@router.get("/tasks/my-tasks/lawyer")
+async def get_lawyer_tasks(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """获取律师接单的任务列表"""
+    try:
+        # 查询当前律师接单的任务
+        query = text("""
+            SELECT DISTINCT
+                tr.task_id,
+                tr.user_id,
+                tr.task_type,
+                tr.title,
+                tr.description,
+                tr.budget,
+                tr.deadline,
+                tr.status,
+                tr.created_at,
+                u.username as publisher_name,
+                tgr.grabbed_at,
+                tgr.status as grab_status
+            FROM task_publish_records tr
+            JOIN task_grab_records tgr ON tr.task_id = tgr.task_id
+            LEFT JOIN users u ON tr.user_id = u.id
+            WHERE tgr.lawyer_id = :lawyer_id
+            AND tgr.status IN ('grabbed', 'in_progress', 'completed')
+            ORDER BY tgr.grabbed_at DESC
+        """)
+        
+        result = db.execute(query, {"lawyer_id": str(current_user.id)})
+        tasks = []
+        
+        for row in result:
+            task = {
+                "task_id": row[0],
+                "user_id": row[1],
+                "task_type": row[2],
+                "title": row[3],
+                "description": row[4],
+                "budget": float(row[5]) if row[5] else 0,
+                "deadline": row[6].isoformat() if row[6] else None,
+                "status": row[7],
+                "created_at": row[8].isoformat() if row[8] else None,
+                "publisher_name": row[9],
+                "grabbed_at": row[10].isoformat() if row[10] else None,
+                "grab_status": row[11]
+            }
+            tasks.append(task)
+        
+        return {
+            "success": True,
+            "tasks": tasks,
+            "count": len(tasks)
+        }
+        
+    except Exception as e:
+        logger.error(f"获取律师任务失败: {e}")
+        return {
+            "success": False,
+            "message": f"获取任务失败: {str(e)}",
+            "tasks": []
+        }
+
+@router.post("/tasks/generate-document/{task_id}")
+async def generate_ai_document(
+    task_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """为指定任务生成AI法律文书"""
+    try:
+        # 验证律师是否接了这个任务
+        verify_query = text("""
+            SELECT tr.*, tgr.lawyer_id 
+            FROM task_publish_records tr
+            JOIN task_grab_records tgr ON tr.task_id = tgr.task_id
+            WHERE tr.task_id = :task_id AND tgr.lawyer_id = :lawyer_id
+        """)
+        
+        result = db.execute(verify_query, {
+            "task_id": task_id, 
+            "lawyer_id": str(current_user.id)
+        }).fetchone()
+        
+        if not result:
+            raise HTTPException(status_code=404, detail="任务不存在或您未接单")
+        
+        # 获取任务详细信息
+        task_type = result[2]  # task_type
+        title = result[3]      # title
+        description = result[4] # description
+        
+        # 根据任务类型生成不同的法律文书
+        document_content = await generate_legal_document(
+            task_type=task_type,
+            title=title,
+            description=description,
+            task_id=task_id
+        )
+        
+        # 保存生成的文书到数据库
+        save_query = text("""
+            INSERT INTO task_documents (task_id, lawyer_id, content, document_type, created_at)
+            VALUES (:task_id, :lawyer_id, :content, :document_type, NOW())
+            ON CONFLICT (task_id, lawyer_id) 
+            DO UPDATE SET content = :content, updated_at = NOW()
+        """)
+        
+        db.execute(save_query, {
+            "task_id": task_id,
+            "lawyer_id": str(current_user.id),
+            "content": document_content,
+            "document_type": task_type
+        })
+        db.commit()
+        
+        return {
+            "success": True,
+            "document_content": document_content,
+            "task_id": task_id,
+            "generated_at": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"生成AI文书失败: {e}")
+        raise HTTPException(status_code=500, detail=f"生成文书失败: {str(e)}")
+
+async def generate_legal_document(task_type: str, title: str, description: str, task_id: str) -> str:
+    """生成法律文书内容"""
+    
+    # 模板库 - 根据任务类型生成不同文书
+    templates = {
+        "debt_collection": """律师函
+
+致：{target_company}
+
+关于债务催收事宜，特函告如下：
+
+根据我方委托人提供的相关资料，贵方对我方委托人存在逾期债务，具体情况如下：
+
+1. 债务性质：{debt_nature}
+2. 债务金额：人民币{amount}元
+3. 逾期时间：{overdue_period}
+
+根据《中华人民共和国民法典》相关规定，债务人应当按照约定的期限履行债务。现贵方已逾期未履行还款义务，严重违反了合同约定。
+
+特此函告，请贵方在收到本函后7日内，将上述欠款本金及相应利息一并清偿至指定账户。如逾期仍不履行，我方将依法采取法律手段维护委托人合法权益。
+
+此致
+敬礼！
+
+{lawyer_name}
+{law_firm}
+{date}""",
+
+        "contract_review": """合同审查报告
+
+委托方：{client_name}
+审查日期：{review_date}
+合同名称：{contract_name}
+
+一、合同基本情况
+{contract_basic_info}
+
+二、法律风险分析
+1. 主要条款分析
+{main_clauses_analysis}
+
+2. 风险提示
+{risk_warnings}
+
+三、修改建议
+{modification_suggestions}
+
+四、结论
+{conclusion}
+
+审查律师：{lawyer_name}
+{law_firm}
+{date}""",
+
+        "legal_consultation": """法律咨询意见书
+
+咨询方：{client_name}
+咨询时间：{consultation_date}
+咨询事项：{consultation_matter}
+
+一、事实概述
+{fact_summary}
+
+二、法律分析
+{legal_analysis}
+
+三、处理建议
+{handling_suggestions}
+
+四、风险提示
+{risk_warnings}
+
+五、相关法条
+{relevant_laws}
+
+咨询律师：{lawyer_name}
+{law_firm}
+{date}"""
+    }
+    
+    # 根据描述智能提取信息
+    current_date = datetime.now().strftime("%Y年%m月%d日")
+    
+    # 默认模板
+    if task_type not in templates:
+        task_type = "legal_consultation"
+    
+    template = templates[task_type]
+    
+    # 智能填充内容
+    if task_type == "debt_collection":
+        # 从描述中提取债务信息
+        content = template.format(
+            target_company=extract_company_name(description) or "XX公司",
+            debt_nature=extract_debt_nature(description) or "合同欠款",
+            amount=extract_amount(description) or "XX",
+            overdue_period=extract_overdue_period(description) or "XX天",
+            lawyer_name="[律师签名]",
+            law_firm="[律师事务所]",
+            date=current_date
+        )
+    elif task_type == "contract_review":
+        content = template.format(
+            client_name=extract_client_name(description) or "委托人",
+            review_date=current_date,
+            contract_name=title or "待审查合同",
+            contract_basic_info=f"合同主要内容：{description[:200]}...",
+            main_clauses_analysis="[根据具体合同条款进行分析]",
+            risk_warnings="[识别出的主要法律风险]",
+            modification_suggestions="[针对风险提出的修改建议]",
+            conclusion="[整体评估结论]",
+            lawyer_name="[律师签名]",
+            law_firm="[律师事务所]",
+            date=current_date
+        )
+    else:  # legal_consultation
+        content = template.format(
+            client_name=extract_client_name(description) or "咨询人",
+            consultation_date=current_date,
+            consultation_matter=title or "法律咨询",
+            fact_summary=description[:300] + "..." if len(description) > 300 else description,
+            legal_analysis="[基于相关法律法规进行分析]",
+            handling_suggestions="[根据情况提出的处理建议]",
+            risk_warnings="[需要注意的法律风险]",
+            relevant_laws="[相关适用的法律条文]",
+            lawyer_name="[律师签名]",
+            law_firm="[律师事务所]",
+            date=current_date
+        )
+    
+    return content
+
+def extract_company_name(text: str) -> str:
+    """从文本中提取公司名称"""
+    import re
+    patterns = [
+        r'([^，。！？\s]+公司)',
+        r'([^，。！？\s]+企业)',
+        r'([^，。！？\s]+集团)'
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, text)
+        if match:
+            return match.group(1)
+    return None
+
+def extract_debt_nature(text: str) -> str:
+    """从文本中提取债务性质"""
+    if "货款" in text or "采购" in text:
+        return "货款"
+    elif "服务费" in text or "咨询费" in text:
+        return "服务费"
+    elif "租金" in text:
+        return "租金"
+    elif "借款" in text:
+        return "借款"
+    else:
+        return "合同欠款"
+
+def extract_amount(text: str) -> str:
+    """从文本中提取金额"""
+    import re
+    patterns = [
+        r'(\d+(?:\.\d+)?万元)',
+        r'(\d+(?:\.\d+)?元)',
+        r'人民币\s*(\d+(?:\.\d+)?)',
+        r'¥\s*(\d+(?:,\d{3})*(?:\.\d+)?)',
+        r'(\d+(?:,\d{3})*(?:\.\d+)?)元'
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, text)
+        if match:
+            return match.group(1)
+    return None
+
+def extract_overdue_period(text: str) -> str:
+    """从文本中提取逾期时间"""
+    import re
+    patterns = [
+        r'逾期(\d+)天',
+        r'(\d+)天未还',
+        r'已(\d+)个月',
+        r'超过(\d+)日'
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, text)
+        if match:
+            return match.group(1)
+    return None
+
+def extract_client_name(text: str) -> str:
+    """从文本中提取客户名称"""
+    import re
+    patterns = [
+        r'([^，。！？\s]{2,4}先生)',
+        r'([^，。！？\s]{2,4}女士)',
+        r'([^，。！？\s]{2,4})',
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, text)
+        if match:
+            name = match.group(1)
+            if len(name) >= 2 and len(name) <= 4:
+                return name
+    return None
+
+@router.post("/tasks/save-document/{task_id}")
+async def save_document_content(
+    task_id: str,
+    request: dict,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """保存律师修改后的文书内容"""
+    try:
+        content = request.get("content", "")
+        
+        save_query = text("""
+            UPDATE task_documents 
+            SET content = :content, updated_at = NOW()
+            WHERE task_id = :task_id AND lawyer_id = :lawyer_id
+        """)
+        
+        result = db.execute(save_query, {
+            "task_id": task_id,
+            "lawyer_id": str(current_user.id),
+            "content": content
+        })
+        
+        if result.rowcount == 0:
+            # 如果没有更新记录，说明文档不存在，创建新的
+            insert_query = text("""
+                INSERT INTO task_documents (task_id, lawyer_id, content, document_type, created_at)
+                VALUES (:task_id, :lawyer_id, :content, 'manual', NOW())
+            """)
+            
+            db.execute(insert_query, {
+                "task_id": task_id,
+                "lawyer_id": str(current_user.id),
+                "content": content
+            })
+        
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": "文书内容已保存"
+        }
+        
+    except Exception as e:
+        logger.error(f"保存文书内容失败: {e}")
+        raise HTTPException(status_code=500, detail=f"保存失败: {str(e)}")
+
+@router.post("/tasks/send-document/{task_id}")
+async def send_document(
+    task_id: str,
+    request: dict,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """发送法律文书给委托人"""
+    try:
+        send_method = request.get("send_method", "email")  # email, sms, express
+        recipient_info = request.get("recipient_info", {})
+        
+        # 获取文书内容
+        doc_query = text("""
+            SELECT content FROM task_documents 
+            WHERE task_id = :task_id AND lawyer_id = :lawyer_id
+        """)
+        
+        result = db.execute(doc_query, {
+            "task_id": task_id,
+            "lawyer_id": str(current_user.id)
+        }).fetchone()
+        
+        if not result:
+            raise HTTPException(status_code=404, detail="文书不存在")
+        
+        document_content = result[0]
+        
+        # 记录发送日志
+        send_log_query = text("""
+            INSERT INTO document_send_logs 
+            (task_id, lawyer_id, send_method, recipient_info, content, sent_at, status)
+            VALUES (:task_id, :lawyer_id, :send_method, :recipient_info, :content, NOW(), 'sent')
+        """)
+        
+        db.execute(send_log_query, {
+            "task_id": task_id,
+            "lawyer_id": str(current_user.id),
+            "send_method": send_method,
+            "recipient_info": json.dumps(recipient_info),
+            "content": document_content
+        })
+        
+        # 更新任务状态为已完成
+        update_task_query = text("""
+            UPDATE task_grab_records 
+            SET status = 'completed', completed_at = NOW()
+            WHERE task_id = :task_id AND lawyer_id = :lawyer_id
+        """)
+        
+        db.execute(update_task_query, {
+            "task_id": task_id,
+            "lawyer_id": str(current_user.id)
+        })
+        
+        db.commit()
+        
+        return {
+            "success": True,
+            "message": f"文书已通过{send_method}发送给委托人",
+            "send_method": send_method,
+            "sent_at": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"发送文书失败: {e}")
+        raise HTTPException(status_code=500, detail=f"发送失败: {str(e)}")
+
+@router.get("/tasks/document/{task_id}")
+async def get_task_document(
+    task_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """获取任务的AI生成文书内容"""
+    try:
+        # 检查是否有已生成的文书
+        doc_query = text("""
+            SELECT content, document_type, created_at, updated_at 
+            FROM task_documents 
+            WHERE task_id = :task_id AND lawyer_id = :lawyer_id
+        """)
+        
+        result = db.execute(doc_query, {
+            "task_id": task_id,
+            "lawyer_id": str(current_user.id)
+        }).fetchone()
+        
+        if result:
+            return {
+                "success": True,
+                "content": result[0],
+                "document_type": result[1],
+                "created_at": result[2].isoformat() if result[2] else None,
+                "updated_at": result[3].isoformat() if result[3] else None,
+                "has_document": True
+            }
+        else:
+            # 如果没有文书，自动生成一个
+            return await generate_ai_document(task_id, current_user, db)
+            
+    except Exception as e:
+        logger.error(f"获取文书内容失败: {e}")
+        return {
+            "success": False,
+            "message": f"获取文书失败: {str(e)}",
+            "has_document": False
+        }
 
 # 辅助函数
 
