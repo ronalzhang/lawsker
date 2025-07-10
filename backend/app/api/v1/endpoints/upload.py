@@ -360,27 +360,22 @@ async def get_available_tasks(
 ):
     """获取可抢单任务列表（律师端）"""
     try:
-        # 查询状态为已发布且未被抢单的任务
+        # 查询状态为已发布的任务（暂时不过滤已抢单的任务）
         query = text("""
             SELECT 
-                tr.task_id,
+                tr.id as task_id,
                 tr.user_id,
                 tr.task_type,
                 tr.title,
                 tr.description,
-                tr.budget,
-                tr.deadline,
+                tr.amount,
+                tr.urgency,
                 tr.status,
                 tr.created_at,
                 u.username as publisher_name
             FROM task_publish_records tr
             LEFT JOIN users u ON tr.user_id = u.id
             WHERE tr.status = 'published'
-            AND tr.task_id NOT IN (
-                SELECT DISTINCT task_id 
-                FROM task_grab_records 
-                WHERE status IN ('grabbed', 'completed')
-            )
             ORDER BY tr.created_at DESC
             LIMIT 20
         """)
@@ -389,19 +384,19 @@ async def get_available_tasks(
         tasks = []
         
         for row in result:
-            task_data = {
-                "task_id": row.task_id,
-                "user_id": str(row.user_id),
-                "task_type": row.task_type,
-                "title": row.title,
-                "description": row.description,
-                "budget": float(row.budget) if row.budget else None,
-                "deadline": row.deadline.isoformat() if row.deadline else None,
-                "status": row.status,
-                "created_at": row.created_at.isoformat(),
-                "publisher_name": row.publisher_name
+            task = {
+                "task_id": row[0],
+                "user_id": row[1],
+                "task_type": row[2],
+                "title": row[3],
+                "description": row[4],
+                "budget": float(row[5]) if row[5] else 0,
+                "urgency": row[6] or "normal",
+                "status": row[7],
+                "created_at": row[8].isoformat() if row[8] else None,
+                "publisher_name": row[9] or "匿名用户"
             }
-            tasks.append(task_data)
+            tasks.append(task)
         
         return {
             "success": True,
@@ -410,10 +405,10 @@ async def get_available_tasks(
         }
         
     except Exception as e:
-        logger.error(f"获取可抢单任务失败: {str(e)}")
+        logger.error(f"获取可抢单任务失败: {e}")
         return {
             "success": False,
-            "message": f"获取任务列表失败: {str(e)}",
+            "message": f"获取任务失败: {str(e)}",
             "tasks": []
         }
 
@@ -553,59 +548,54 @@ async def grab_task(
 ):
     """律师抢单功能"""
     try:
-        # 检查任务是否存在且可抢单
-        task_query = text("""
-            SELECT task_id, user_id, title, budget, status 
+        # 检查任务是否存在且可以抢单
+        check_query = text("""
+            SELECT id, status, assigned_to, title, amount 
             FROM task_publish_records 
-            WHERE task_id = :task_id AND status = 'published'
+            WHERE id = :task_id AND status = 'published'
         """)
-        task_result = db.execute(task_query, {"task_id": task_id}).fetchone()
         
-        if not task_result:
-            return {"success": False, "message": "任务不存在或已被抢单"}
+        result = db.execute(check_query, {"task_id": task_id}).fetchone()
         
-        # 检查是否已被其他律师抢单
-        grab_check = text("""
-            SELECT lawyer_id FROM task_grab_records 
-            WHERE task_id = :task_id AND status IN ('grabbed', 'completed')
-        """)
-        existing_grab = db.execute(grab_check, {"task_id": task_id}).fetchone()
+        if not result:
+            return {"success": False, "message": "任务不存在或已不可用"}
         
-        if existing_grab:
+        # 检查任务是否已被其他律师抢单
+        if result[2] is not None:  # assigned_to 不为空
             return {"success": False, "message": "任务已被其他律师抢单"}
         
-        # 创建抢单记录
-        grab_insert = text("""
-            INSERT INTO task_grab_records (
-                task_id, lawyer_id, grabbed_at, status, lawyer_message
-            ) VALUES (
-                :task_id, :lawyer_id, NOW(), 'grabbed', '律师已接单，正在准备处理您的案件'
-            )
+        # 更新任务状态，分配给当前律师
+        grab_query = text("""
+            UPDATE task_publish_records 
+            SET assigned_to = :lawyer_id, 
+                status = 'assigned',
+                updated_at = NOW()
+            WHERE id = :task_id 
+            AND status = 'published' 
+            AND assigned_to IS NULL
         """)
-        db.execute(grab_insert, {
+        
+        update_result = db.execute(grab_query, {
             "task_id": task_id,
-            "lawyer_id": current_user.id
+            "lawyer_id": str(current_user.id)
         })
         
-        # 更新任务状态
-        update_task = text("""
-            UPDATE task_publish_records 
-            SET status = 'grabbed', updated_at = NOW()
-            WHERE task_id = :task_id
-        """)
-        db.execute(update_task, {"task_id": task_id})
+        if update_result.rowcount == 0:
+            return {"success": False, "message": "抢单失败，任务可能已被其他律师抢走"}
         
         db.commit()
         
         return {
             "success": True,
-            "message": "抢单成功！任务已添加到您的工作台",
-            "task_id": task_id
+            "message": "抢单成功！任务已分配给您",
+            "task_id": task_id,
+            "lawyer_id": str(current_user.id),
+            "grabbed_at": datetime.now().isoformat()
         }
         
     except Exception as e:
         db.rollback()
-        logger.error(f"抢单失败: {str(e)}")
+        logger.error(f"抢单失败: {e}")
         return {"success": False, "message": f"抢单失败: {str(e)}"}
 
 @router.get("/tasks/my-tasks/lawyer")
@@ -615,27 +605,25 @@ async def get_lawyer_tasks(
 ):
     """获取律师接单的任务列表"""
     try:
-        # 查询当前律师接单的任务
+        # 暂时查询分配给当前律师的任务（使用assigned_to字段）
         query = text("""
             SELECT DISTINCT
-                tr.task_id,
+                tr.id as task_id,
                 tr.user_id,
                 tr.task_type,
                 tr.title,
                 tr.description,
-                tr.budget,
-                tr.deadline,
+                tr.amount,
+                tr.urgency,
                 tr.status,
                 tr.created_at,
                 u.username as publisher_name,
-                tgr.grabbed_at,
-                tgr.status as grab_status
+                tr.assigned_to,
+                tr.updated_at as grabbed_at
             FROM task_publish_records tr
-            JOIN task_grab_records tgr ON tr.task_id = tgr.task_id
             LEFT JOIN users u ON tr.user_id = u.id
-            WHERE tgr.lawyer_id = :lawyer_id
-            AND tgr.status IN ('grabbed', 'in_progress', 'completed')
-            ORDER BY tgr.grabbed_at DESC
+            WHERE tr.assigned_to = :lawyer_id
+            ORDER BY tr.updated_at DESC
         """)
         
         result = db.execute(query, {"lawyer_id": str(current_user.id)})
@@ -649,12 +637,12 @@ async def get_lawyer_tasks(
                 "title": row[3],
                 "description": row[4],
                 "budget": float(row[5]) if row[5] else 0,
-                "deadline": row[6].isoformat() if row[6] else None,
+                "urgency": row[6] or "normal",
                 "status": row[7],
                 "created_at": row[8].isoformat() if row[8] else None,
-                "publisher_name": row[9],
-                "grabbed_at": row[10].isoformat() if row[10] else None,
-                "grab_status": row[11]
+                "publisher_name": row[9] or "匿名用户",
+                "grabbed_at": row[11].isoformat() if row[11] else None,
+                "grab_status": "grabbed"
             }
             tasks.append(task)
         
@@ -682,10 +670,9 @@ async def generate_ai_document(
     try:
         # 验证律师是否接了这个任务
         verify_query = text("""
-            SELECT tr.*, tgr.lawyer_id 
-            FROM task_publish_records tr
-            JOIN task_grab_records tgr ON tr.task_id = tgr.task_id
-            WHERE tr.task_id = :task_id AND tgr.lawyer_id = :lawyer_id
+            SELECT id, task_type, title, description, amount 
+            FROM task_publish_records 
+            WHERE id = :task_id AND assigned_to = :lawyer_id
         """)
         
         result = db.execute(verify_query, {
@@ -697,33 +684,19 @@ async def generate_ai_document(
             raise HTTPException(status_code=404, detail="任务不存在或您未接单")
         
         # 获取任务详细信息
-        task_type = result[2]  # task_type
-        title = result[3]      # title
-        description = result[4] # description
+        task_type = result[1]  # task_type
+        title = result[2]      # title
+        description = result[3] # description
+        amount = result[4]     # amount
         
         # 根据任务类型生成不同的法律文书
         document_content = await generate_legal_document(
-            task_type=task_type,
-            title=title,
-            description=description,
+            task_type=task_type or "legal_consultation",
+            title=title or "法律文书",
+            description=description or "",
+            amount=float(amount) if amount else 0,
             task_id=task_id
         )
-        
-        # 保存生成的文书到数据库
-        save_query = text("""
-            INSERT INTO task_documents (task_id, lawyer_id, content, document_type, created_at)
-            VALUES (:task_id, :lawyer_id, :content, :document_type, NOW())
-            ON CONFLICT (task_id, lawyer_id) 
-            DO UPDATE SET content = :content, updated_at = NOW()
-        """)
-        
-        db.execute(save_query, {
-            "task_id": task_id,
-            "lawyer_id": str(current_user.id),
-            "content": document_content,
-            "document_type": task_type
-        })
-        db.commit()
         
         return {
             "success": True,
@@ -736,7 +709,7 @@ async def generate_ai_document(
         logger.error(f"生成AI文书失败: {e}")
         raise HTTPException(status_code=500, detail=f"生成文书失败: {str(e)}")
 
-async def generate_legal_document(task_type: str, title: str, description: str, task_id: str) -> str:
+async def generate_legal_document(task_type: str, title: str, description: str, amount: float, task_id: str) -> str:
     """生成法律文书内容"""
     
     # 模板库 - 根据任务类型生成不同文书
@@ -831,7 +804,7 @@ async def generate_legal_document(task_type: str, title: str, description: str, 
         content = template.format(
             target_company=extract_company_name(description) or "XX公司",
             debt_nature=extract_debt_nature(description) or "合同欠款",
-            amount=extract_amount(description) or "XX",
+            amount=f"{amount:,.2f}" if amount > 0 else "XX",
             overdue_period=extract_overdue_period(description) or "XX天",
             lawyer_name="[律师签名]",
             law_firm="[律师事务所]",
