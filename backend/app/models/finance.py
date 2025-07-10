@@ -192,18 +192,18 @@ class WithdrawalRequest(Base):
     # 状态和审核
     status = Column(SQLEnum(WithdrawalStatus), default=WithdrawalStatus.PENDING, nullable=False)
     admin_notes = Column(Text, nullable=True)                               # 管理员备注
-    processed_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # 处理人
+    admin_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # 处理人
     processed_at = Column(DateTime(timezone=True), nullable=True)           # 处理时间
     
-    # 支付信息
-    payment_gateway = Column(String(50), nullable=True)                     # 支付渠道
-    gateway_txn_id = Column(String(255), nullable=True)                     # 支付网关交易号
-    gateway_response = Column(JSONB, nullable=True)                         # 网关响应
+    # 租户信息
+    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=True)
     
     # 风控信息
     risk_score = Column(DECIMAL(5, 2), nullable=True)                       # 风险评分
     auto_approved = Column(Boolean, default=False)                          # 是否自动审批
-    require_manual_review = Column(Boolean, default=False)                  # 是否需要人工审核
+    
+    # 元数据
+    metadata = Column(JSONB, nullable=False, default=dict)                  # 元数据
     
     # 时间戳
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -212,7 +212,7 @@ class WithdrawalRequest(Base):
     # 关联关系
     user = relationship("User", foreign_keys=[user_id])
     # wallet relationship removed due to foreign key conflicts - use user.wallet instead
-    processed_by_user = relationship("User", foreign_keys=[processed_by])
+    admin_user = relationship("User", foreign_keys=[admin_id])
 
     def __repr__(self):
         return f"<WithdrawalRequest(id={self.id}, request_number={self.request_number}, amount={self.amount}, status={self.status.value})>" 
