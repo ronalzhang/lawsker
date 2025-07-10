@@ -98,7 +98,7 @@ async def create_case(
     """创建新案件"""
     
     # 检查权限
-    if current_user.status != "active":
+    if current_user["status"] != "active":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="用户状态异常"
@@ -118,10 +118,10 @@ async def create_case(
         }
         
         case = await case_service.create_case(
-            tenant_id=current_user.tenant_id,
+            tenant_id=current_user["tenant_id"],
             client_id=request.client_id,
             case_data=case_data,
-            creator_id=current_user.id
+            creator_id=current_user["id"]
         )
         
         return CaseResponse.from_orm(case)
@@ -172,7 +172,7 @@ async def get_cases_list(
     
     try:
         result = await case_service.get_cases_list(
-            tenant_id=current_user.tenant_id,
+            tenant_id=current_user["tenant_id"],
             page=page,
             page_size=page_size,
             filters=filters if filters else None
@@ -208,7 +208,7 @@ async def get_case_detail(
     case_service = CaseService(db)
     
     try:
-        case = await case_service.get_case_by_id(case_id, current_user.tenant_id)
+        case = await case_service.get_case_by_id(case_id, current_user["tenant_id"])
         
         if not case:
             raise HTTPException(
