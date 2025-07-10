@@ -803,7 +803,7 @@
             </div>
 
             <!-- 数据上传 -->
-                            <div class="workspace-card">
+            <div class="workspace-card">
                 <div class="card-header">
                     <div class="card-icon">🤖</div>
                     <div>
@@ -984,7 +984,7 @@
                                 <div class="task-title">催收欠款律师函</div>
                                 <div class="task-details">接单律师：张律师 | 接单时间：2024-01-14 10:30</div>
                                 <div class="task-description">律师消息：已收到您的案件，需要交换联系方式详细沟通案件细节。</div>
-                            </div>
+                    </div>
                             <span class="task-status status-accepted">律师已接单</span>
                         </div>
                         <div class="task-actions">
@@ -1382,9 +1382,9 @@
                     
                     if (result.success) {
                         alert('任务发布成功！等待律师接单中...');
-                        clearTaskForm();
-                        await loadStats();
-                        await loadTasks();
+                    clearTaskForm();
+                    await loadStats();
+                    await loadTasks();
                     } else {
                         throw new Error(result.message || '发布失败');
                     }

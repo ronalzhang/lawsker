@@ -1198,8 +1198,8 @@
                     <div style="color: var(--text-primary); font-weight: 600;">AI生成文书</div>
                     <div style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">智能辅助工具</div>
                 </button>
-            </div>
-        </div>
+                                    </div>
+                                </div>
 
         <!-- 最近活动 -->
         <div class="content-section" style="margin-bottom: 32px;">
@@ -1210,30 +1210,30 @@
                     <div style="flex: 1;">
                         <div style="color: var(--text-primary); font-weight: 500;">完成债务催收律师函</div>
                         <div style="color: var(--text-secondary); font-size: 13px;">北京科技有限公司 - 获得收益 ¥500</div>
-                    </div>
+                            </div>
                     <div style="color: var(--text-secondary); font-size: 12px;">2小时前</div>
-                </div>
-                
+                    </div>
+
                 <div class="activity-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--glass-border);">
                     <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(59, 130, 246, 0.2); display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 14px;">📝</div>
                     <div style="flex: 1;">
                         <div style="color: var(--text-primary); font-weight: 500;">接单合同审查服务</div>
                         <div style="color: var(--text-secondary); font-size: 13px;">张三个人 - 预计收益 ¥800</div>
-                    </div>
+                                </div>
                     <div style="color: var(--text-secondary); font-size: 12px;">5小时前</div>
-                </div>
+                            </div>
                 
                 <div class="activity-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 0;">
                     <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(245, 158, 11, 0.2); display: flex; align-items: center; justify-content: center; color: #f59e0b; font-size: 14px;">💰</div>
                     <div style="flex: 1;">
                         <div style="color: var(--text-primary); font-weight: 500;">提现申请已处理</div>
                         <div style="color: var(--text-secondary); font-size: 13px;">¥8,500 已到账</div>
-                    </div>
+                                    </div>
                     <div style="color: var(--text-secondary); font-size: 12px;">昨天</div>
-                </div>
-            </div>
-        </div>
-        </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
         <!-- 任务管理标签页 -->
         <div id="tasks" class="tab-content">
@@ -1248,17 +1248,17 @@
                         <span>🔄</span>
                         刷新任务
                     </button>
-                </div>
+                                </div>
                 
                 <div class="tasks-container" style="background: var(--glass-bg); border-radius: 16px; border: 1px solid var(--glass-border); overflow: hidden; margin-bottom: 24px;">
                     <div id="availableTasksList">
                         <!-- 可抢单任务列表会由API加载 -->
                         <div id="noAvailableTasks" style="padding: 40px; text-align: center; color: var(--text-secondary);">
                             📋 暂无可抢单任务，请稍后刷新
+                            </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
             <!-- 我的接单任务区域 -->
             <div class="content-section" style="margin-bottom: 32px;">
@@ -1271,27 +1271,27 @@
                         <span>📤</span>
                         一键发送全部已确认任务 (<span id="confirmedCount">0</span>)
                     </button>
-                </div>
-                
+            </div>
+            
                 <div class="tasks-container" style="background: var(--glass-bg); border-radius: 16px; border: 1px solid var(--glass-border); overflow: hidden;">
                     <div id="myTasksList">
                         <!-- 我的任务列表会由API加载 -->
                         <div id="noMyTasks" style="padding: 40px; text-align: center; color: var(--text-secondary);">
                             📝 暂无已接单任务
-                        </div>
                     </div>
                 </div>
             </div>
+        </div>
 
             <!-- 任务统计区域 -->
-            <div class="content-section">
+        <div class="content-section">
                 <h2 class="section-title">📊 任务统计</h2>
                 <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
                     <div class="stat-card">
                         <div class="stat-value" id="totalGrabbedTasks">0</div>
                         <div class="stat-label">抢单总数</div>
                         <div class="stat-trend trend-up">↗ +2 本月</div>
-                    </div>
+            </div>
                     <div class="stat-card">
                         <div class="stat-value" id="completedTasks">0</div>
                         <div class="stat-label">已完成</div>
@@ -1308,7 +1308,7 @@
                         <div class="stat-trend trend-down">↘ -0.8h</div>
                     </div>
                 </div>
-            </div>
+        </div>
         </div>
 
         <!-- 案件管理标签页 -->
@@ -2022,7 +2022,7 @@ ${new Date().toLocaleDateString()}`;
 
         // 更新任务状态为已完成
         function updateTaskStatusToCompleted(taskItem) {
-            const actions = taskItem.querySelector('.task-actions');
+                const actions = taskItem.querySelector('.task-actions');
             if (actions) {
                 actions.innerHTML = `
                     <span class="status-badge" style="padding: 6px 12px; border-radius: 6px; background: rgba(76, 175, 80, 0.2); color: #4caf50; font-size: 12px; font-weight: 500;">✅ 已完成</span>
@@ -2031,7 +2031,7 @@ ${new Date().toLocaleDateString()}`;
             }
             
             // 更新统计数据
-            updateConfirmedCount();
+                updateConfirmedCount();
         }
 
         // 刷新可抢单任务列表
@@ -2268,10 +2268,10 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
             const taskItem = document.querySelector(`[data-task-id="${taskId}"]`);
             if (!taskItem) return;
             
-            if (confirm('确定要抢这个任务吗？抢到后需要在规定时间内完成。')) {
+                if (confirm('确定要抢这个任务吗？抢到后需要在规定时间内完成。')) {
                 const grabBtn = taskItem.querySelector('.grab-btn');
                 const originalText = grabBtn.innerHTML;
-                grabBtn.disabled = true;
+                    grabBtn.disabled = true;
                 grabBtn.innerHTML = '🔄 抢单中...';
                 grabBtn.style.animation = 'none';
                 
@@ -2299,7 +2299,7 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
                             showNotification('🎉 恭喜！您已成功抢到这个任务！', 'success');
                             
                             // 刷新任务列表
-                            setTimeout(() => {
+                    setTimeout(() => {
                                 loadAvailableTasks();
                                 loadMyTasks();
                             }, 2000);
@@ -2632,6 +2632,11 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
             
             // 如果任务数量少于等于10个，隐藏分页
             const paginationContainer = document.getElementById('tasksPagination');
+            if (!paginationContainer) {
+                console.warn('分页容器不存在，跳过分页初始化');
+                return;
+            }
+            
             if (allTasks.length <= tasksPerPage) {
                 paginationContainer.style.display = 'none';
                 return;
@@ -2644,9 +2649,15 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
         }
 
         function showCurrentPage() {
+            if (!allTasks || allTasks.length === 0) {
+                return;
+            }
+            
             // 隐藏所有任务
             allTasks.forEach(task => {
-                task.style.display = 'none';
+                if (task && task.style) {
+                    task.style.display = 'none';
+                }
             });
             
             // 显示当前页的任务
@@ -2655,7 +2666,9 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
             const currentTasks = allTasks.slice(startIndex, endIndex);
             
             currentTasks.forEach(task => {
-                task.style.display = 'block';
+                if (task && task.style) {
+                    task.style.display = 'block';
+                }
             });
         }
 
@@ -2663,11 +2676,21 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
             const totalPages = Math.ceil(allTasks.length / tasksPerPage);
             
             // 更新页码信息
-            document.getElementById('pageInfo').textContent = `${currentPage}/${totalPages}`;
+            const pageInfo = document.getElementById('pageInfo');
+            if (pageInfo) {
+                pageInfo.textContent = `${currentPage}/${totalPages}`;
+            }
             
             // 更新按钮状态
-            document.getElementById('prevPage').disabled = currentPage <= 1;
-            document.getElementById('nextPage').disabled = currentPage >= totalPages;
+            const prevPage = document.getElementById('prevPage');
+            const nextPage = document.getElementById('nextPage');
+            
+            if (prevPage) {
+                prevPage.disabled = currentPage <= 1;
+            }
+            if (nextPage) {
+                nextPage.disabled = currentPage >= totalPages;
+            }
         }
 
         function changePage(direction) {

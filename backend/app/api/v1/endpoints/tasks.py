@@ -661,22 +661,22 @@ async def get_available_tasks(
         )
 
 
-@router.post("/lawyer/grab", response_model=dict)
-async def lawyer_grab_task(
-    request: LawyerGrabRequest,
+@router.post("/grab/{task_id}", response_model=dict)
+async def grab_task(
+    task_id: str,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
-    律师抢单
+    律师抢单 - 匹配前端API调用
     """
     try:
-        task_id = UUID(request.task_id)
+        task_uuid = UUID(task_id)
         
         # 查询任务
         query = select(TaskPublishRecord).where(
             and_(
-                TaskPublishRecord.id == task_id,
+                TaskPublishRecord.id == task_uuid,
                 TaskPublishRecord.status == "published",
                 TaskPublishRecord.assigned_to.is_(None)
             )
@@ -699,9 +699,9 @@ async def lawyer_grab_task(
         
         return {
             "success": True,
-            "message": "抢单成功！客户联系方式将在双方确认后交换",
+            "message": "抢单成功！",
             "task_id": str(task.id),
-            "next_step": "contact_exchange"
+            "status": "grabbed"
         }
         
     except HTTPException:

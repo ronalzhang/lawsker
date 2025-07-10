@@ -713,12 +713,14 @@ class WithdrawalService:
             monthly_withdrawn = sum(float(w.actual_amount) for w in monthly_withdrawals if w.status == WithdrawalStatus.COMPLETED)
             monthly_count = len(monthly_withdrawals)
             
-            # 平均提现金额
+            # 平均提现金额 - 安全除法
             completed_withdrawals = [w for w in all_withdrawals if w.status == WithdrawalStatus.COMPLETED]
-            average_amount = (
-                sum(float(w.actual_amount) for w in completed_withdrawals) / len(completed_withdrawals)
-                if completed_withdrawals else 0.0
-            )
+            completed_count = len(completed_withdrawals)
+            if completed_count > 0:
+                total_completed_amount = sum(float(w.actual_amount) for w in completed_withdrawals)
+                average_amount = total_completed_amount / completed_count
+            else:
+                average_amount = 0.0
             
             # 待处理统计
             pending_withdrawals = [w for w in all_withdrawals if w.status in [
@@ -729,7 +731,6 @@ class WithdrawalService:
             
             # 已完成统计
             completed_amount = sum(float(w.actual_amount) for w in completed_withdrawals)
-            completed_count = len(completed_withdrawals)
             
             return {
                 "total_withdrawn": total_withdrawn,
