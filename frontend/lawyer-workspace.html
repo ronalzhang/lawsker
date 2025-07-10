@@ -1125,6 +1125,7 @@
         <!-- 标签页导航 -->
         <div class="tabs">
             <button class="tab active" onclick="switchTab('overview')">工作概览</button>
+            <button class="tab" onclick="switchTab('tasks')">任务管理</button>
             <button class="tab" onclick="switchTab('cases')">案件管理</button>
             <button class="tab" onclick="switchTab('withdrawal')">提现管理</button>
         </div>
@@ -1428,6 +1429,82 @@
                 </a>
             </div>
         </div>
+        </div>
+
+        <!-- 任务管理标签页 -->
+        <div id="tasks" class="tab-content">
+            <!-- 可抢单任务区域 -->
+            <div class="content-section" style="margin-bottom: 32px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h2 class="section-title" style="margin: 0; text-align: left;">
+                        <span>🎯</span>
+                        可抢单任务 (实时更新)
+                    </h2>
+                    <button class="btn btn-secondary" onclick="refreshAvailableTasks()" style="min-width: 120px;">
+                        <span>🔄</span>
+                        刷新任务
+                    </button>
+                </div>
+                
+                <div class="tasks-container" style="background: var(--glass-bg); border-radius: 16px; border: 1px solid var(--glass-border); overflow: hidden; margin-bottom: 24px;">
+                    <div id="availableTasksList">
+                        <!-- 可抢单任务列表会由API加载 -->
+                        <div id="noAvailableTasks" style="padding: 40px; text-align: center; color: var(--text-secondary);">
+                            📋 暂无可抢单任务，请稍后刷新
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 我的接单任务区域 -->
+            <div class="content-section" style="margin-bottom: 32px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h2 class="section-title" style="margin: 0; text-align: left;">
+                        <span>📋</span>
+                        我的接单任务
+                    </h2>
+                    <button class="btn btn-primary" onclick="batchSendAll()" id="batchSendBtn" style="min-width: 200px;">
+                        <span>📤</span>
+                        一键发送全部已确认任务 (<span id="confirmedCount">0</span>)
+                    </button>
+                </div>
+                
+                <div class="tasks-container" style="background: var(--glass-bg); border-radius: 16px; border: 1px solid var(--glass-border); overflow: hidden;">
+                    <div id="myTasksList">
+                        <!-- 我的任务列表会由API加载 -->
+                        <div id="noMyTasks" style="padding: 40px; text-align: center; color: var(--text-secondary);">
+                            📝 暂无已接单任务
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 任务统计区域 -->
+            <div class="content-section">
+                <h2 class="section-title">📊 任务统计</h2>
+                <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalGrabbedTasks">0</div>
+                        <div class="stat-label">抢单总数</div>
+                        <div class="stat-trend trend-up">↗ +2 本月</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="completedTasks">0</div>
+                        <div class="stat-label">已完成</div>
+                        <div class="stat-trend trend-up">↗ +5 本月</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="taskSuccessRate">95%</div>
+                        <div class="stat-label">成功率</div>
+                        <div class="stat-trend trend-up">↗ +2.1%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgResponseTime">2.3h</div>
+                        <div class="stat-label">平均响应</div>
+                        <div class="stat-trend trend-down">↘ -0.8h</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 案件管理标签页 -->

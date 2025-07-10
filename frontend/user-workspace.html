@@ -803,26 +803,62 @@
             </div>
 
             <!-- 数据上传 -->
-            <div class="workspace-card">
+                            <div class="workspace-card">
                 <div class="card-header">
-                    <div class="card-icon">📊</div>
+                    <div class="card-icon">🤖</div>
                     <div>
-                        <h3 class="card-title">付费数据上传</h3>
-                        <p class="card-subtitle">上传机构业务数据，支付上传费用</p>
+                        <h3 class="card-title">智能数据上传</h3>
+                        <p class="card-subtitle">AI智能识别任意格式，自动转换标准数据</p>
+                    </div>
+                </div>
+                
+                <!-- 上传模式选择 -->
+                <div class="upload-mode-selector" style="margin-bottom: 20px;">
+                    <div style="display: flex; gap: 12px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 12px; border: 1px solid var(--glass-border); border-radius: 8px; flex: 1;">
+                            <input type="radio" name="uploadMode" value="smart" checked onchange="toggleUploadMode()">
+                            <div>
+                                <div style="font-weight: 600; color: var(--text-primary);">🤖 AI智能识别</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">自动识别任意格式表格</div>
+                            </div>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 12px; border: 1px solid var(--glass-border); border-radius: 8px; flex: 1;">
+                            <input type="radio" name="uploadMode" value="template" onchange="toggleUploadMode()">
+                            <div>
+                                <div style="font-weight: 600; color: var(--text-primary);">📋 标准模板</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">使用标准模板格式</div>
+                            </div>
+                        </label>
                     </div>
                 </div>
                 
                 <form id="dataUploadForm">
                     <div class="form-group">
                         <label class="form-label">数据类型</label>
-                        <select class="form-select" id="dataType" required>
+                        <select class="form-select" id="dataType" required onchange="updateTemplateInfo()">
                             <option value="">选择数据类型</option>
-                            <option value="客户信息">客户信息</option>
-                            <option value="案件数据">案件数据</option>
-                            <option value="合同模板">合同模板</option>
-                            <option value="法律文书">法律文书</option>
-                            <option value="其他">其他</option>
+                            <option value="debt_collection">债务催收数据</option>
+                            <option value="customer_info">客户信息</option>
+                            <option value="case_data">案件数据</option>
+                            <option value="contract_template">合同模板</option>
+                            <option value="legal_document">法律文书</option>
+                            <option value="other">其他</option>
                         </select>
+                    </div>
+                    
+                    <!-- 模板下载区域 -->
+                    <div id="templateDownloadArea" style="display: none; margin-bottom: 16px;">
+                        <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 16px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">📥 下载标准模板</div>
+                                    <div style="font-size: 12px; color: var(--text-secondary);" id="templateDescription">点击下载对应的标准数据模板</div>
+                                </div>
+                                <button type="button" class="btn btn-secondary" onclick="downloadTemplate()" id="downloadTemplateBtn">
+                                    <span>📥</span> 下载模板
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="form-group">
@@ -835,9 +871,26 @@
                         <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
                             <div class="upload-icon">📁</div>
                             <div class="upload-text">点击选择文件或拖拽文件到此处</div>
-                            <div class="upload-hint">支持 Excel、CSV、PDF、Word 格式</div>
+                            <div class="upload-hint" id="uploadHint">支持 Excel、CSV 格式，AI将自动识别字段</div>
                         </div>
-                        <input type="file" id="fileInput" style="display: none;" accept=".xlsx,.xls,.csv,.pdf,.doc,.docx" multiple>
+                        <input type="file" id="fileInput" style="display: none;" accept=".xlsx,.xls,.csv" multiple>
+                        
+                        <!-- 文件列表 -->
+                        <div id="fileList" style="display: none; margin-top: 12px;"></div>
+                        
+                        <!-- 上传进度 -->
+                        <div id="uploadProgress" style="display: none; margin-top: 12px;">
+                            <div style="display: flex; align-items: center; justify-content: between; margin-bottom: 8px;">
+                                <span id="progressText">正在上传...</span>
+                                <span id="progressPercent">0%</span>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.1); border-radius: 4px; height: 8px; overflow: hidden;">
+                                <div id="progressBar" style="background: var(--primary-color); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- AI识别结果 -->
+                        <div id="aiRecognitionResult" style="display: none; margin-top: 16px;"></div>
                     </div>
 
                     <!-- 支付方式选择 -->
@@ -863,8 +916,13 @@
                     </div>
                     
                     <div class="btn-group">
-                        <button type="submit" class="btn btn-primary">支付并上传数据</button>
+                        <button type="submit" class="btn btn-primary" id="uploadSubmitBtn">
+                            <span id="uploadBtnText">🤖 AI智能上传</span>
+                        </button>
                         <button type="button" class="btn btn-secondary" onclick="clearDataForm()">清空</button>
+                        <button type="button" class="btn btn-outline" onclick="showUploadHelp()" style="margin-left: 8px;">
+                            <span>❓</span> 使用帮助
+                        </button>
                     </div>
                 </form>
             </div>
@@ -1365,49 +1423,59 @@
             taskListBody.insertBefore(taskItem, taskListBody.firstChild);
         }
 
-        // 数据上传表单提交（付费上传）
+        // 数据上传表单提交（智能上传）
         document.getElementById('dataUploadForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            const uploadMode = document.querySelector('input[name="uploadMode"]:checked').value;
+            const dataType = document.getElementById('dataType').value;
+            const files = document.getElementById('fileInput').files;
+            
+            if (files.length === 0) {
+                alert('请选择要上传的文件');
+                return;
+            }
             
             const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
             const uploadFee = 50; // 上传费用50元
             
             try {
+                // 显示上传进度
+                showUploadProgress();
+                
                 // 先处理支付
+                updateProgress(20, '正在处理支付...');
                 await processPayment(paymentMethod, uploadFee);
                 
-                // 支付成功后上传数据
-                const formData = new FormData();
-                formData.append('type', document.getElementById('dataType').value);
-                formData.append('description', document.getElementById('dataDescription').value);
-                formData.append('paymentMethod', paymentMethod);
-                formData.append('uploadFee', uploadFee);
+                updateProgress(40, '支付成功，开始上传文件...');
                 
-                const files = document.getElementById('fileInput').files;
+                // 批量处理文件
+                const results = [];
                 for (let i = 0; i < files.length; i++) {
-                    formData.append('files', files[i]);
+                    const file = files[i];
+                    const progress = 40 + (i / files.length) * 50;
+                    updateProgress(progress, `正在处理文件 ${i + 1}/${files.length}: ${file.name}`);
+                    
+                    const result = await uploadSingleFile(file, dataType, uploadMode);
+                    results.push(result);
                 }
                 
-                if (apiClient.isAuthenticated()) {
-                    await apiClient.uploadData(formData);
-                    alert('支付成功，数据上传完成！');
+                updateProgress(100, '上传完成！');
+                
+                // 显示结果
+                displayUploadResults(results);
+                
+                // 清理表单
+                setTimeout(() => {
+                    hideUploadProgress();
                     clearDataForm();
-                    await loadStats();
-                } else {
-                    console.log('演示模式 - 付费上传数据:', {
-                        type: document.getElementById('dataType').value,
-                        description: document.getElementById('dataDescription').value,
-                        paymentMethod: paymentMethod,
-                        uploadFee: uploadFee,
-                        files: files.length
-                    });
-                    alert('支付成功，数据上传完成！（演示模式）');
-                    clearDataForm();
-                    updateStats();
-                }
+                    loadStats();
+                }, 2000);
+                
             } catch (error) {
-                console.error('支付或上传失败:', error);
-                alert(error.message || '支付或上传失败，请稍后重试');
+                console.error('上传失败:', error);
+                hideUploadProgress();
+                alert(error.message || '上传失败，请稍后重试');
             }
         });
 
@@ -1443,10 +1511,354 @@
         fileInput.addEventListener('change', function() {
             const files = this.files;
             if (files.length > 0) {
-                const fileNames = Array.from(files).map(file => file.name).join(', ');
-                document.querySelector('.upload-text').textContent = `已选择 ${files.length} 个文件: ${fileNames}`;
+                displaySelectedFiles(files);
             }
         });
+
+        // 上传模式切换
+        function toggleUploadMode() {
+            const uploadMode = document.querySelector('input[name="uploadMode"]:checked').value;
+            const uploadBtnText = document.getElementById('uploadBtnText');
+            const uploadHint = document.getElementById('uploadHint');
+            const templateArea = document.getElementById('templateDownloadArea');
+            
+            if (uploadMode === 'smart') {
+                uploadBtnText.textContent = '🤖 AI智能上传';
+                uploadHint.textContent = '支持 Excel、CSV 格式，AI将自动识别字段';
+                templateArea.style.display = 'none';
+            } else {
+                uploadBtnText.textContent = '📋 标准格式上传';
+                uploadHint.textContent = '请使用标准模板格式的文件';
+                templateArea.style.display = 'block';
+            }
+            
+            updateTemplateInfo();
+        }
+
+        // 更新模板信息
+        function updateTemplateInfo() {
+            const dataType = document.getElementById('dataType').value;
+            const templateDesc = document.getElementById('templateDescription');
+            const downloadBtn = document.getElementById('downloadTemplateBtn');
+            
+            if (dataType && dataType !== '') {
+                downloadBtn.disabled = false;
+                
+                const templateDescriptions = {
+                    'debt_collection': '债务催收数据标准模板 - 包含债务人信息、联系方式、金额等字段',
+                    'customer_info': '客户信息标准模板 - 包含客户基本信息、联系方式等字段',
+                    'case_data': '案件数据标准模板 - 包含案件基本信息、进展情况等字段',
+                    'contract_template': '合同模板标准格式 - 包含合同要素、条款等字段',
+                    'legal_document': '法律文书标准模板 - 包含文书类型、内容等字段',
+                    'other': '通用数据模板 - 基础数据字段模板'
+                };
+                
+                templateDesc.textContent = templateDescriptions[dataType] || '点击下载对应的标准数据模板';
+            } else {
+                downloadBtn.disabled = true;
+                templateDesc.textContent = '请先选择数据类型';
+            }
+        }
+
+        // 下载模板
+        async function downloadTemplate() {
+            const dataType = document.getElementById('dataType').value;
+            
+            if (!dataType) {
+                alert('请先选择数据类型');
+                return;
+            }
+            
+            try {
+                const downloadBtn = document.getElementById('downloadTemplateBtn');
+                const originalText = downloadBtn.innerHTML;
+                downloadBtn.innerHTML = '<span>⏳</span> 生成中...';
+                downloadBtn.disabled = true;
+                
+                if (apiClient.isAuthenticated()) {
+                    // 调用模板下载API
+                    const response = await fetch(`/api/v1/upload/template/download?type=${dataType}`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${dataType}_模板_${new Date().getTime()}.xlsx`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                        
+                        alert('模板下载成功！请按照模板格式填写数据。');
+                    } else {
+                        throw new Error('下载失败');
+                    }
+                } else {
+                    // 演示模式
+                    console.log('演示模式 - 下载模板:', dataType);
+                    alert('模板下载成功！（演示模式）\n请按照标准格式填写数据后再上传。');
+                }
+                
+            } catch (error) {
+                console.error('下载模板失败:', error);
+                alert('下载模板失败：' + error.message);
+            } finally {
+                const downloadBtn = document.getElementById('downloadTemplateBtn');
+                downloadBtn.innerHTML = '<span>📥</span> 下载模板';
+                downloadBtn.disabled = false;
+            }
+        }
+
+        // 显示选中的文件
+        function displaySelectedFiles(files) {
+            const fileList = document.getElementById('fileList');
+            const uploadText = document.querySelector('.upload-text');
+            
+            if (files.length > 0) {
+                uploadText.textContent = `已选择 ${files.length} 个文件`;
+                
+                fileList.innerHTML = '';
+                Array.from(files).forEach((file, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.style.cssText = 'padding: 8px; border: 1px solid var(--glass-border); border-radius: 4px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center;';
+                    
+                    fileItem.innerHTML = `
+                        <div>
+                            <span style="font-weight: 600;">${file.name}</span>
+                            <span style="color: var(--text-secondary); margin-left: 8px;">(${formatFileSize(file.size)})</span>
+                        </div>
+                        <button type="button" onclick="removeFile(${index})" style="background: none; border: none; color: var(--text-secondary); cursor: pointer;">✕</button>
+                    `;
+                    
+                    fileList.appendChild(fileItem);
+                });
+                
+                fileList.style.display = 'block';
+            } else {
+                fileList.style.display = 'none';
+                uploadText.textContent = '点击选择文件或拖拽文件到此处';
+            }
+        }
+
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // 移除文件
+        function removeFile(index) {
+            const fileInput = document.getElementById('fileInput');
+            const dt = new DataTransfer();
+            
+            Array.from(fileInput.files).forEach((file, i) => {
+                if (i !== index) {
+                    dt.items.add(file);
+                }
+            });
+            
+            fileInput.files = dt.files;
+            displaySelectedFiles(fileInput.files);
+        }
+
+        // 显示上传进度
+        function showUploadProgress() {
+            document.getElementById('uploadProgress').style.display = 'block';
+            document.getElementById('uploadSubmitBtn').disabled = true;
+        }
+
+        // 隐藏上传进度
+        function hideUploadProgress() {
+            document.getElementById('uploadProgress').style.display = 'none';
+            document.getElementById('uploadSubmitBtn').disabled = false;
+        }
+
+        // 更新进度
+        function updateProgress(percent, text) {
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressPercent').textContent = Math.round(percent) + '%';
+            document.getElementById('progressText').textContent = text;
+        }
+
+        // 上传单个文件
+        async function uploadSingleFile(file, dataType, uploadMode) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('data_type', dataType);
+            formData.append('auto_save', 'true');
+            
+            const endpoint = uploadMode === 'smart' ? '/api/v1/upload/smart-upload' : '/api/v1/upload/manual';
+            
+            try {
+                if (apiClient.isAuthenticated()) {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        },
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(result.message || result.detail || '上传失败');
+                    }
+                    
+                    return {
+                        success: true,
+                        filename: file.name,
+                        result: result,
+                        uploadMode: uploadMode
+                    };
+                } else {
+                    // 演示模式
+                    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+                    
+                    return {
+                        success: true,
+                        filename: file.name,
+                        result: {
+                            success: true,
+                            message: `${uploadMode === 'smart' ? 'AI识别' : '标准格式解析'}成功`,
+                            recognition_result: {
+                                total_records: Math.floor(Math.random() * 100) + 10,
+                                valid_records: Math.floor(Math.random() * 90) + 5,
+                                success_rate: (80 + Math.random() * 20).toFixed(1) + '%'
+                            }
+                        },
+                        uploadMode: uploadMode
+                    };
+                }
+            } catch (error) {
+                return {
+                    success: false,
+                    filename: file.name,
+                    error: error.message,
+                    uploadMode: uploadMode
+                };
+            }
+        }
+
+        // 显示上传结果
+        function displayUploadResults(results) {
+            const resultContainer = document.getElementById('aiRecognitionResult');
+            
+            let successCount = 0;
+            let totalRecords = 0;
+            let totalValidRecords = 0;
+            
+            let html = '<div style="background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 8px; padding: 16px;">';
+            html += '<h4 style="color: var(--text-primary); margin-bottom: 16px;">📊 上传结果总览</h4>';
+            
+            results.forEach(result => {
+                if (result.success) {
+                    successCount++;
+                    if (result.result.recognition_result) {
+                        totalRecords += result.result.recognition_result.total_records || 0;
+                        totalValidRecords += result.result.recognition_result.valid_records || 0;
+                    }
+                    
+                    html += `
+                        <div style="margin-bottom: 12px; padding: 12px; background: rgba(76, 175, 80, 0.1); border: 1px solid rgba(76, 175, 80, 0.3); border-radius: 6px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="color: #4caf50;">✅</span>
+                                <span style="font-weight: 600;">${result.filename}</span>
+                                <span style="color: var(--text-secondary);">(${result.uploadMode === 'smart' ? 'AI识别' : '标准格式'})</span>
+                            </div>
+                            ${result.result.recognition_result ? `
+                                <div style="margin-top: 8px; font-size: 12px; color: var(--text-secondary);">
+                                    共识别 ${result.result.recognition_result.total_records} 条记录，
+                                    有效记录 ${result.result.recognition_result.valid_records} 条，
+                                    成功率 ${result.result.recognition_result.success_rate}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div style="margin-bottom: 12px; padding: 12px; background: rgba(244, 67, 54, 0.1); border: 1px solid rgba(244, 67, 54, 0.3); border-radius: 6px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="color: #f44336;">❌</span>
+                                <span style="font-weight: 600;">${result.filename}</span>
+                            </div>
+                            <div style="margin-top: 8px; font-size: 12px; color: #f44336;">${result.error}</div>
+                        </div>
+                    `;
+                }
+            });
+            
+            html += `
+                <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--glass-border);">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; text-align: center;">
+                        <div>
+                            <div style="font-size: 20px; font-weight: 600; color: var(--text-primary);">${successCount}/${results.length}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">成功文件</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 20px; font-weight: 600; color: var(--text-primary);">${totalRecords}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">总记录数</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 20px; font-weight: 600; color: var(--text-primary);">${totalValidRecords}</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">有效记录</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 20px; font-weight: 600; color: var(--text-primary);">${totalRecords > 0 ? (totalValidRecords/totalRecords*100).toFixed(1) : 0}%</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">整体成功率</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            html += '</div>';
+            
+            resultContainer.innerHTML = html;
+            resultContainer.style.display = 'block';
+        }
+
+        // 显示上传帮助
+        function showUploadHelp() {
+            const helpText = `
+📖 智能数据上传使用帮助
+
+🤖 AI智能识别模式：
+• 支持任意格式的Excel/CSV文件
+• AI自动识别字段并转换为标准格式
+• 适合不规范的历史数据文件
+• 识别准确率通常在80%以上
+
+📋 标准模板模式：
+• 使用我们提供的标准模板格式
+• 解析速度快，准确率100%
+• 适合新录入的规范数据
+• 可先下载模板再填写数据
+
+💡 使用建议：
+1. 如果您的数据格式不规范，建议使用AI智能识别
+2. 如果您愿意按标准格式整理数据，建议使用标准模板
+3. 单次最多上传10个文件，每个文件不超过50MB
+4. 支持.xlsx, .xls, .csv格式
+
+❓ 常见问题：
+• AI识别失败？请下载标准模板重新整理数据
+• 识别结果不准确？请检查原文件的字段名称是否清晰
+• 上传失败？请检查文件格式和网络连接
+
+如需更多帮助，请联系客服：400-123-4567
+            `;
+            
+            alert(helpText);
+        }
 
         // 更新统计数据
         function updateStats() {
@@ -1687,6 +2099,7 @@
             
             await loadStats();
             await loadTasks();
+            await loadUserTasks(); // 加载用户发布的任务列表
             await loadSalesWithdrawalStats();
             updateUserLevel();
             refreshTaskFeedback(); // 添加任务反馈状态刷新
@@ -2068,6 +2481,131 @@
         // 查看任务详情
         function viewTaskDetail(taskId) {
             alert(`查看任务 ${taskId} 的详细信息功能开发中...`);
+        }
+
+        // 刷新任务反馈状态
+        async function refreshTaskFeedback() {
+            try {
+                if (apiClient.isAuthenticated()) {
+                    // 实际API调用获取任务反馈
+                    const response = await fetch('/api/v1/tasks/feedback', {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success && result.tasks) {
+                        updateTaskFeedbackDisplay(result.tasks);
+                    }
+                } else {
+                    console.log('演示模式 - 使用静态任务反馈数据');
+                }
+            } catch (error) {
+                console.error('刷新任务反馈失败:', error);
+            }
+        }
+
+        // 加载用户发布的任务列表
+        async function loadUserTasks() {
+            try {
+                if (apiClient.isAuthenticated()) {
+                    console.log('正在加载用户发布的任务...');
+                    const response = await apiClient.get('/tasks/my-tasks/user');
+                    
+                    if (response && response.length > 0) {
+                        updateUserTasksList(response);
+                        console.log(`已加载 ${response.length} 个用户任务`);
+                    } else {
+                        showEmptyUserTasks();
+                        console.log('暂无用户任务数据');
+                    }
+                } else {
+                    console.log('演示模式 - 使用静态任务数据');
+                    showEmptyUserTasks();
+                }
+            } catch (error) {
+                console.error('加载用户任务失败:', error);
+                showEmptyUserTasks();
+            }
+        }
+
+        // 更新用户任务列表显示
+        function updateUserTasksList(tasks) {
+            const taskListBody = document.getElementById('taskListBody');
+            if (!tasks || tasks.length === 0) {
+                showEmptyUserTasks();
+                return;
+            }
+            
+            taskListBody.innerHTML = '';
+            tasks.forEach(task => {
+                const taskItem = document.createElement('div');
+                taskItem.className = 'task-item';
+                
+                const statusInfo = getTaskStatusInfo(task.status);
+                const createTime = new Date(task.created_at).toLocaleDateString('zh-CN');
+                const budget = task.budget ? `¥${task.budget}` : '待商议';
+                
+                taskItem.innerHTML = `
+                    <div class="task-info">
+                        <div>
+                            <div class="task-title">${task.title || task.task_type}</div>
+                            <div class="task-details">发布时间：${createTime} | 预算：${budget}</div>
+                            ${task.description ? `<div class="task-description" style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;">${task.description}</div>` : ''}
+                        </div>
+                        <span class="task-status ${statusInfo.class}">${statusInfo.text}</span>
+                    </div>
+                    ${task.status === 'published' ? `
+                    <div class="task-actions">
+                        <button class="btn-small btn-primary" onclick="viewTaskDetails('${task.task_id}')">查看详情</button>
+                        <button class="btn-small btn-secondary" onclick="editTask('${task.task_id}')">编辑任务</button>
+                    </div>
+                    ` : ''}
+                `;
+                
+                taskListBody.appendChild(taskItem);
+            });
+        }
+
+        // 显示空任务列表
+        function showEmptyUserTasks() {
+            const taskListBody = document.getElementById('taskListBody');
+            taskListBody.innerHTML = `
+                <div class="task-item" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📝</div>
+                    <div>您还没有发布任何任务</div>
+                    <div style="font-size: 12px; margin-top: 8px;">点击"发布新任务"开始委托律师服务</div>
+                    <button class="btn btn-primary" onclick="showTab('publish-task')" style="margin-top: 16px; padding: 8px 16px;">
+                        发布新任务
+                    </button>
+                </div>
+            `;
+        }
+
+        // 获取任务状态信息
+        function getTaskStatusInfo(status) {
+            const statusMap = {
+                'published': { text: '等待接单', class: 'status-pending' },
+                'grabbed': { text: '律师已接单', class: 'status-accepted' },
+                'contact_exchanged': { text: '已交换联系方式', class: 'status-inprogress' },
+                'completed': { text: '已完成', class: 'status-completed' },
+                'cancelled': { text: '已取消', class: 'status-cancelled' },
+                'pending': { text: '待处理', class: 'status-pending' },
+                'in_progress': { text: '进行中', class: 'status-inprogress' }
+            };
+            
+            return statusMap[status] || { text: status, class: 'status-pending' };
+        }
+
+        // 查看任务详情
+        function viewTaskDetails(taskId) {
+            alert(`查看任务详情功能开发中\n任务ID: ${taskId}`);
+        }
+
+        // 编辑任务
+        function editTask(taskId) {
+            alert(`编辑任务功能开发中\n任务ID: ${taskId}`);
         }
     </script>
 </body>

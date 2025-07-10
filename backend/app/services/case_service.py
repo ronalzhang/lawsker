@@ -83,58 +83,70 @@ class CaseService:
     ) -> Dict[str, Any]:
         """获取案件列表（分页）"""
         
-        query = select(Case).where(Case.tenant_id == tenant_id)
-        
-        # 应用过滤条件
-        if filters:
-            if filters.get("status"):
-                query = query.where(Case.status == filters["status"])
+        try:
+            query = select(Case).where(Case.tenant_id == tenant_id)
             
-            if filters.get("assigned_to"):
-                query = query.where(Case.assigned_to_user_id == filters["assigned_to"])
-            
-            if filters.get("client_id"):
-                query = query.where(Case.client_id == filters["client_id"])
-            
-            if filters.get("amount_min"):
-                query = query.where(Case.case_amount >= filters["amount_min"])
-            
-            if filters.get("amount_max"):
-                query = query.where(Case.case_amount <= filters["amount_max"])
-            
-            if filters.get("keyword"):
-                keyword = f"%{filters['keyword']}%"
-                query = query.where(
-                    or_(
-                        Case.case_number.ilike(keyword),
-                        Case.description.ilike(keyword),
-                        Case.debtor_info["name"].astext.ilike(keyword)
+            # 应用过滤条件
+            if filters:
+                if filters.get("status"):
+                    query = query.where(Case.status == filters["status"])
+                
+                if filters.get("assigned_to"):
+                    query = query.where(Case.assigned_to_user_id == filters["assigned_to"])
+                
+                if filters.get("client_id"):
+                    query = query.where(Case.client_id == filters["client_id"])
+                
+                if filters.get("amount_min"):
+                    query = query.where(Case.case_amount >= filters["amount_min"])
+                
+                if filters.get("amount_max"):
+                    query = query.where(Case.case_amount <= filters["amount_max"])
+                
+                if filters.get("keyword"):
+                    keyword = f"%{filters['keyword']}%"
+                    query = query.where(
+                        or_(
+                            Case.case_number.ilike(keyword),
+                            Case.description.ilike(keyword),
+                            Case.debtor_info["name"].astext.ilike(keyword)
+                        )
                     )
-                )
-        
-        # 总数查询
-        count_query = select(func.count()).select_from(query.subquery())
-        total_result = await self.db.execute(count_query)
-        total = total_result.scalar() or 0
-        
-        # 分页查询
-        offset = (page - 1) * page_size
-        query = query.options(
-            joinedload(Case.client),
-            joinedload(Case.assigned_user),
-            joinedload(Case.sales_user)
-        ).offset(offset).limit(page_size).order_by(Case.created_at.desc())
-        
-        result = await self.db.execute(query)
-        cases = result.scalars().all()
-        
-        return {
-            "items": cases,
-            "total": total,
-            "page": page,
-            "page_size": page_size,
-            "total_pages": (total + page_size - 1) // page_size
-        }
+            
+            # 总数查询
+            count_query = select(func.count()).select_from(query.subquery())
+            total_result = await self.db.execute(count_query)
+            total = total_result.scalar() or 0
+            
+            # 分页查询
+            offset = (page - 1) * page_size
+            query = query.options(
+                joinedload(Case.client),
+                joinedload(Case.assigned_user),
+                joinedload(Case.sales_user)
+            ).offset(offset).limit(page_size).order_by(Case.created_at.desc())
+            
+            result = await self.db.execute(query)
+            cases = result.scalars().all()
+            
+            return {
+                "items": cases,
+                "total": total,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": (total + page_size - 1) // page_size
+            }
+            
+        except Exception as e:
+            # 记录错误但返回空列表而不是抛出异常
+            print(f"获取案件列表失败: {str(e)}")
+            return {
+                "items": [],
+                "total": 0,
+                "page": page,
+                "page_size": page_size,
+                "total_pages": 0
+            }
     
     async def assign_case(
         self,

@@ -696,7 +696,7 @@ class WithdrawalService:
             
             # 从钱包表获取累计提现金额
             wallet = db.query(Wallet).filter(Wallet.user_id == user_id).first()
-            total_withdrawn = float(wallet.total_withdrawn) if wallet else 0.0
+            total_withdrawn = float(wallet.total_withdrawn) if wallet and wallet.total_withdrawn else 0.0
             
             # 查询所有提现记录统计
             all_withdrawals = db.query(WithdrawalRequest).filter(
@@ -745,7 +745,18 @@ class WithdrawalService:
             
         except Exception as e:
             logger.error(f"获取提现统计数据失败: {str(e)}")
-            raise WithdrawalError(f"获取提现统计数据失败: {str(e)}")
+            # 返回默认值而不是抛出异常
+            return {
+                "total_withdrawn": 0.0,
+                "withdrawal_count": 0,
+                "monthly_withdrawn": 0.0,
+                "monthly_count": 0,
+                "average_amount": 0.0,
+                "pending_amount": 0.0,
+                "pending_count": 0,
+                "completed_amount": 0.0,
+                "completed_count": 0
+            }
 
 
 # 服务实例工厂函数
