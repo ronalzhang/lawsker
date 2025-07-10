@@ -938,7 +938,11 @@ async def get_withdrawal_stats(
             sync_session.close()
             
     except Exception as e:
+        # 记录具体错误信息以便调试
+        import traceback
+        print(f"Withdrawal stats API error: {str(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
         raise HTTPException(
             status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="获取提现汇总统计数据失败"
+            detail=f"获取提现汇总统计数据失败: {str(e)}"
         ) 

@@ -187,9 +187,13 @@ async def get_cases_list(
         )
         
     except Exception as e:
+        # 记录具体错误信息以便调试
+        import traceback
+        print(f"Cases API error: {str(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="获取案件列表失败"
+            detail=f"获取案件列表失败: {str(e)}"
         )
 
 
