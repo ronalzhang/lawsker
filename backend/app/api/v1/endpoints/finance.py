@@ -282,14 +282,14 @@ async def get_wallet(
         from sqlalchemy import select
         
         # 查询用户钱包
-        wallet_query = select(Wallet).where(Wallet.user_id == current_user.id)
+        wallet_query = select(Wallet).where(Wallet.user_id == current_user["id"])
         wallet_result = await db.execute(wallet_query)
         wallet = wallet_result.scalar_one_or_none()
         
         if not wallet:
             # 如果钱包不存在，创建默认钱包
             wallet = Wallet(
-                user_id=current_user.id,
+                user_id=current_user["id"],
                 balance=Decimal("0"),
                 withdrawable_balance=Decimal("0"),
                 frozen_balance=Decimal("0"),
@@ -918,7 +918,7 @@ async def get_withdrawal_stats(
         
         try:
             stats = await withdrawal_service.get_withdrawal_stats(
-                user_id=UUID(str(current_user.id)),
+                user_id=UUID(str(current_user["id"])),
                 db=sync_session
             )
             
