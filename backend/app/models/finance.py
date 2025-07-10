@@ -165,7 +165,7 @@ class Wallet(Base):
     
     # 关联关系
     user = relationship("User", back_populates="wallet")
-    withdrawal_requests = relationship("WithdrawalRequest", foreign_keys="WithdrawalRequest.user_id")
+    # withdrawal_requests relationship removed due to foreign key conflicts
 
     def __repr__(self):
         return f"<Wallet(user_id={self.user_id}, balance={self.balance}, withdrawable={self.withdrawable_balance})>"
@@ -211,7 +211,7 @@ class WithdrawalRequest(Base):
     
     # 关联关系
     user = relationship("User", foreign_keys=[user_id])
-    wallet = relationship("Wallet", uselist=False, foreign_keys=[user_id])
+    # wallet relationship removed due to foreign key conflicts - use user.wallet instead
     processed_by_user = relationship("User", foreign_keys=[processed_by])
 
     def __repr__(self):
