@@ -165,7 +165,7 @@ class Wallet(Base):
     
     # 关联关系
     user = relationship("User", back_populates="wallet")
-    withdrawal_requests = relationship("WithdrawalRequest", back_populates="wallet")
+    withdrawal_requests = relationship("WithdrawalRequest", primaryjoin="Wallet.user_id == WithdrawalRequest.user_id")
 
     def __repr__(self):
         return f"<Wallet(user_id={self.user_id}, balance={self.balance}, withdrawable={self.withdrawable_balance})>"
@@ -177,7 +177,6 @@ class WithdrawalRequest(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    wallet_id = Column(UUID(as_uuid=True), ForeignKey("wallets.user_id"), nullable=False)
     
     # 申请信息
     request_number = Column(String(100), unique=True, nullable=False)       # 申请单号
@@ -212,7 +211,7 @@ class WithdrawalRequest(Base):
     
     # 关联关系
     user = relationship("User", foreign_keys=[user_id])
-    wallet = relationship("Wallet", back_populates="withdrawal_requests")
+    wallet = relationship("Wallet", primaryjoin="WithdrawalRequest.user_id == Wallet.user_id")
     processed_by_user = relationship("User", foreign_keys=[processed_by])
 
     def __repr__(self):
