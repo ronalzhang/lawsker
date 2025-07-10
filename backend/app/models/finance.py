@@ -203,7 +203,7 @@ class WithdrawalRequest(Base):
     auto_approved = Column(Boolean, default=False)                          # 是否自动审批
     
     # 元数据
-    metadata = Column(JSONB, nullable=False, default=dict)                  # 元数据
+    request_metadata = Column(JSONB, nullable=False, default=dict)          # 元数据
     
     # 时间戳
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
