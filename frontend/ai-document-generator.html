@@ -673,14 +673,23 @@
             showGenerating();
             
             try {
+                const token = localStorage.getItem('authToken');
+                
+                if (!token) {
+                    showNotification('请先登录', 'error');
+                    hideGenerating();
+                    window.location.href = '/auth';
+                    return;
+                }
+                
                 const response = await fetch('/api/v1/ai/generate-document', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
-                        task_id: currentTask.id,
+                        task_id: currentTask?.id || 'demo_task',
                         ai_engine: selectedEngine,
                         document_type: formData.documentType,
                         tone: formData.documentTone,
@@ -692,6 +701,16 @@
                         demands: formData.demands
                     })
                 });
+                
+                if (response.status === 401) {
+                    localStorage.removeItem('authToken');
+                    showNotification('登录已过期，请重新登录', 'error');
+                    hideGenerating();
+                    setTimeout(() => {
+                        window.location.href = '/auth';
+                    }, 1500);
+                    return;
+                }
                 
                 const result = await response.json();
                 
