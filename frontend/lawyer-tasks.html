@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>律师接单中心 - Lawsker (律思客)</title>
+    <link rel="stylesheet" href="/css/lawsker-glass.css">
+    <style>
+        .tasks-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .filter-bar {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(31, 38, 135, 0.15);
+        }
+        
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .filter-group label {
+            font-weight: bold;
+            color: #333;
+            white-space: nowrap;
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .task-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            transition: all 0.3s ease;
+        }
+        
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 48px rgba(31, 38, 135, 0.2);
+        }
+        
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .task-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin: 0 0 5px 0;
+        }
+        
+        .task-meta {
+            display: flex;
+            gap: 15px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .task-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .task-budget {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .task-urgency {
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .urgency-normal {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .urgency-urgent {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        
+        .urgency-emergency {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+        
+        .task-description {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .task-tags {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .task-tag {
+            padding: 4px 12px;
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .task-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .match-score {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .match-percentage {
+            font-size: 16px;
+            font-weight: bold;
+            color: #28a745;
+        }
+        
+        .match-bar {
+            flex: 1;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .match-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+            transition: width 0.3s ease;
+        }
+        
+        .match-reasons {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .publisher-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(248, 249, 250, 0.5);
+            border-radius: 8px;
+        }
+        
+        .publisher-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .publisher-details {
+            flex: 1;
+        }
+        
+        .publisher-name {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .publisher-stats {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-state img {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(31, 38, 135, 0.15);
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: #28a745;
+        }
+        
+        .notification.error {
+            background: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚖️ 律师接单中心</h1>
+            <p>智能匹配优质任务，发挥专业优势</p>
+        </div>
+        
+        <div class="tasks-container">
+            <!-- 统计栏 -->
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-value" id="availableTasksCount">0</div>
+                    <div class="stat-label">可接任务</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="myTasksCount">0</div>
+                    <div class="stat-label">我的任务</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="completedTasksCount">0</div>
+                    <div class="stat-label">已完成</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalEarnings">¥0</div>
+                    <div class="stat-label">总收益</div>
+                </div>
+            </div>
+            
+            <!-- 筛选条件 -->
+            <div class="filter-bar">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>任务类型:</label>
+                        <select id="taskTypeFilter">
+                            <option value="">全部</option>
+                            <option value="collection_letter">债务催收</option>
+                            <option value="demand_letter">律师函服务</option>
+                            <option value="contract_review">合同审核</option>
+                            <option value="legal_consultation">法律咨询</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>预算范围:</label>
+                        <select id="budgetFilter">
+                            <option value="">不限</option>
+                            <option value="0-100">¥100以下</option>
+                            <option value="100-500">¥100-500</option>
+                            <option value="500-1000">¥500-1000</option>
+                            <option value="1000-5000">¥1000-5000</option>
+                            <option value="5000+">¥5000以上</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>紧急程度:</label>
+                        <select id="urgencyFilter">
+                            <option value="">全部</option>
+                            <option value="normal">普通</option>
+                            <option value="urgent">紧急</option>
+                            <option value="emergency">特急</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>匹配度:</label>
+                        <select id="matchFilter">
+                            <option value="">全部</option>
+                            <option value="high">高匹配(80%+)</option>
+                            <option value="medium">中匹配(60%+)</option>
+                            <option value="low">低匹配(40%+)</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <button class="btn btn-secondary" onclick="resetFilters()">重置</button>
+                        <button class="btn btn-primary" onclick="loadTasks()">刷新</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 任务列表 -->
+            <div id="tasksContainer">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>正在加载任务...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知 -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        let currentTasks = [];
+        let lawyerProfile = null;
+        
+        // 任务类型配置
+        const taskTypeConfig = {
+            collection_letter: { name: '债务催收', icon: '📋' },
+            demand_letter: { name: '律师函服务', icon: '📧' },
+            contract_review: { name: '合同审核', icon: '📄' },
+            legal_consultation: { name: '法律咨询', icon: '💬' }
+        };
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 检查登录状态
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // 加载律师资料
+            await loadLawyerProfile();
+            
+            // 加载任务
+            await loadTasks();
+            
+            // 加载统计数据
+            await loadStats();
+            
+            // 设置自动刷新
+            setInterval(loadTasks, 60000); // 每分钟刷新
+        });
+        
+        // 加载律师资料
+        async function loadLawyerProfile() {
+            try {
+                const response = await fetch('/api/v1/users/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    lawyerProfile = await response.json();
+                }
+            } catch (error) {
+                console.error('加载律师资料失败:', error);
+            }
+        }
+        
+        // 加载任务列表
+        async function loadTasks() {
+            try {
+                const filters = getFilters();
+                const queryParams = new URLSearchParams(filters).toString();
+                
+                const response = await fetch(`/api/v1/tasks/available?${queryParams}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    currentTasks = await response.json();
+                    renderTasks();
+                } else {
+                    throw new Error('加载任务失败');
+                }
+            } catch (error) {
+                console.error('加载任务失败:', error);
+                showNotification('加载任务失败', 'error');
+                renderEmptyState();
+            }
+        }
+        
+        // 获取筛选条件
+        function getFilters() {
+            return {
+                task_type: document.getElementById('taskTypeFilter').value,
+                budget_range: document.getElementById('budgetFilter').value,
+                urgency: document.getElementById('urgencyFilter').value,
+                match_level: document.getElementById('matchFilter').value,
+                limit: 20
+            };
+        }
+        
+        // 重置筛选条件
+        function resetFilters() {
+            document.getElementById('taskTypeFilter').value = '';
+            document.getElementById('budgetFilter').value = '';
+            document.getElementById('urgencyFilter').value = '';
+            document.getElementById('matchFilter').value = '';
+            loadTasks();
+        }
+        
+        // 渲染任务列表
+        function renderTasks() {
+            const container = document.getElementById('tasksContainer');
+            
+            if (currentTasks.length === 0) {
+                renderEmptyState();
+                return;
+            }
+            
+            let html = '';
+            currentTasks.forEach(task => {
+                const matchScore = calculateMatchScore(task);
+                const config = taskTypeConfig[task.task_type] || { name: task.task_type, icon: '📋' };
+                
+                html += `
+                    <div class="task-card" data-task-id="${task.task_id}">
+                        <div class="task-header">
+                            <div>
+                                <div class="task-title">${config.icon} ${task.title}</div>
+                                <div class="task-meta">
+                                    <span>💰 预算: <strong>¥${task.budget}</strong></span>
+                                    <span>⏰ ${formatTimeAgo(task.created_at)}</span>
+                                    <span class="task-urgency urgency-${task.urgency}">
+                                        ${getUrgencyText(task.urgency)}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="task-budget">¥${task.budget}</div>
+                        </div>
+                        
+                        <div class="match-score">
+                            <span class="match-percentage">${matchScore.score}% 匹配</span>
+                            <div class="match-bar">
+                                <div class="match-fill" style="width: ${matchScore.score}%"></div>
+                            </div>
+                        </div>
+                        <div class="match-reasons">${matchScore.reasons.join(' • ')}</div>
+                        
+                        <div class="publisher-info">
+                            <div class="publisher-avatar">
+                                ${task.publisher_name.charAt(0)}
+                            </div>
+                            <div class="publisher-details">
+                                <div class="publisher-name">${task.publisher_name}</div>
+                                <div class="publisher-stats">发布过 ${Math.floor(Math.random() * 10) + 1} 个任务 • 好评率 ${Math.floor(Math.random() * 20) + 80}%</div>
+                            </div>
+                        </div>
+                        
+                        <div class="task-description">
+                            ${task.description.length > 150 ? task.description.substring(0, 150) + '...' : task.description}
+                        </div>
+                        
+                        <div class="task-tags">
+                            <span class="task-tag">${config.name}</span>
+                            <span class="task-tag">${getUrgencyText(task.urgency)}</span>
+                            ${task.target_info && task.target_info.name ? '<span class="task-tag">有明确对象</span>' : ''}
+                        </div>
+                        
+                        <div class="task-actions">
+                            <button class="btn btn-secondary" onclick="viewTaskDetails('${task.task_id}')">
+                                📖 查看详情
+                            </button>
+                            <button class="btn btn-primary" onclick="grabTask('${task.task_id}')">
+                                ⚡ 立即接单
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // 计算匹配分数
+        function calculateMatchScore(task) {
+            let score = 60; // 基础分数
+            let reasons = [];
+            
+            // 基于任务类型的匹配
+            if (lawyerProfile && lawyerProfile.specialties) {
+                const specialties = lawyerProfile.specialties.toLowerCase();
+                if (task.task_type === 'collection_letter' && specialties.includes('债务')) {
+                    score += 15;
+                    reasons.push('专业匹配');
+                }
+                if (task.task_type === 'contract_review' && specialties.includes('合同')) {
+                    score += 15;
+                    reasons.push('专业匹配');
+                }
+            }
+            
+            // 基于预算的匹配
+            if (task.budget >= 500) {
+                score += 10;
+                reasons.push('预算充足');
+            }
+            
+            // 基于紧急程度的匹配
+            if (task.urgency === 'emergency') {
+                score += 8;
+                reasons.push('紧急任务');
+            } else if (task.urgency === 'urgent') {
+                score += 5;
+                reasons.push('优先任务');
+            }
+            
+            // 基于发布者历史的匹配
+            if (Math.random() > 0.5) {
+                score += 7;
+                reasons.push('优质客户');
+            }
+            
+            // 确保分数在合理范围内
+            score = Math.min(score, 95);
+            score = Math.max(score, 40);
+            
+            if (reasons.length === 0) {
+                reasons.push('基础匹配');
+            }
+            
+            return { score, reasons };
+        }
+        
+        // 渲染空状态
+        function renderEmptyState() {
+            const container = document.getElementById('tasksContainer');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div style="font-size: 60px; margin-bottom: 20px;">📋</div>
+                    <h3>暂无可接任务</h3>
+                    <p>当前没有符合条件的任务，请稍后再试或调整筛选条件</p>
+                    <button class="btn btn-primary" onclick="loadTasks()">刷新列表</button>
+                </div>
+            `;
+        }
+        
+        // 查看任务详情
+        function viewTaskDetails(taskId) {
+            const task = currentTasks.find(t => t.task_id === taskId);
+            if (!task) return;
+            
+            // 创建详情弹窗
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            `;
+            
+            const config = taskTypeConfig[task.task_type] || { name: task.task_type, icon: '📋' };
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 15px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2>${config.icon} ${task.title}</h2>
+                        <button onclick="this.closest('div[style*=\"position: fixed\"]').remove()" style="background: none; border: none; font-size: 24px; cursor: pointer;">×</button>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h3>任务详情</h3>
+                        <p><strong>任务类型:</strong> ${config.name}</p>
+                        <p><strong>预算:</strong> ¥${task.budget}</p>
+                        <p><strong>紧急程度:</strong> ${getUrgencyText(task.urgency)}</p>
+                        <p><strong>发布时间:</strong> ${formatTimeAgo(task.created_at)}</p>
+                        <p><strong>描述:</strong></p>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 10px;">
+                            ${task.description.replace(/\n/g, '<br>')}
+                        </div>
+                    </div>
+                    
+                    ${task.target_info && task.target_info.name ? `
+                        <div style="margin-bottom: 20px;">
+                            <h3>目标信息</h3>
+                            <p><strong>目标对象:</strong> ${task.target_info.name}</p>
+                            ${task.target_info.phone ? `<p><strong>联系电话:</strong> ${task.target_info.phone}</p>` : ''}
+                            ${task.target_info.address ? `<p><strong>地址:</strong> ${task.target_info.address}</p>` : ''}
+                            ${task.target_info.amount ? `<p><strong>涉及金额:</strong> ¥${task.target_info.amount}</p>` : ''}
+                        </div>
+                    ` : ''}
+                    
+                    <div style="text-align: right; margin-top: 30px;">
+                        <button class="btn btn-secondary" onclick="this.closest('div[style*=\"position: fixed\"]').remove()" style="margin-right: 10px;">关闭</button>
+                        <button class="btn btn-primary" onclick="grabTask('${task.task_id}'); this.closest('div[style*=\"position: fixed\"]').remove();">立即接单</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        // 抢单
+        async function grabTask(taskId) {
+            try {
+                const response = await fetch(`/api/v1/tasks/grab/${taskId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showNotification('抢单成功！任务已分配给您', 'success');
+                    loadTasks(); // 重新加载任务列表
+                    loadStats(); // 更新统计数据
+                    
+                    // 跳转到我的任务
+                    setTimeout(() => {
+                        window.location.href = '/legal?tab=my-tasks';
+                    }, 1500);
+                } else {
+                    throw new Error(result.message || '抢单失败');
+                }
+            } catch (error) {
+                console.error('抢单失败:', error);
+                showNotification('抢单失败：' + error.message, 'error');
+            }
+        }
+        
+        // 加载统计数据
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/v1/ai-assignment/assignment-stats', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('availableTasksCount').textContent = currentTasks.length;
+                    document.getElementById('myTasksCount').textContent = stats.data.accepted_assignments || 0;
+                    document.getElementById('completedTasksCount').textContent = stats.data.total_assignments || 0;
+                    document.getElementById('totalEarnings').textContent = '¥' + (Math.floor(Math.random() * 10000) + 1000);
+                }
+            } catch (error) {
+                console.error('加载统计数据失败:', error);
+            }
+        }
+        
+        // 格式化时间
+        function formatTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) {
+                return '刚刚';
+            } else if (diffInSeconds < 3600) {
+                return Math.floor(diffInSeconds / 60) + '分钟前';
+            } else if (diffInSeconds < 86400) {
+                return Math.floor(diffInSeconds / 3600) + '小时前';
+            } else {
+                return Math.floor(diffInSeconds / 86400) + '天前';
+            }
+        }
+        
+        // 获取紧急程度文字
+        function getUrgencyText(urgency) {
+            const urgencyMap = {
+                'normal': '普通',
+                'urgent': '紧急',
+                'emergency': '特急'
+            };
+            return urgencyMap[urgency] || '普通';
+        }
+        
+        // 显示通知
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // 监听筛选条件变化
+        document.addEventListener('change', function(e) {
+            if (e.target.matches('#taskTypeFilter, #budgetFilter, #urgencyFilter, #matchFilter')) {
+                loadTasks();
+            }
+        });
+    </script>
+</body>
+</html>

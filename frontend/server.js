@@ -50,6 +50,14 @@ app.get('/withdraw', routeHandler('withdrawal.html'));
 app.get('/submit', routeHandler('anonymous-task.html'));
 app.get('/auth', routeHandler('login.html'));
 
+// O2O业务流程页面路由
+app.get('/task/publish', routeHandler('task-publish.html'));
+app.get('/task/lawyer-tasks', routeHandler('lawyer-tasks.html'));
+app.get('/task/ai-generator', routeHandler('ai-document-generator.html'));
+app.get('/task/execution', routeHandler('task-execution.html'));
+app.get('/payment/settlement', routeHandler('payment-settlement.html'));
+app.get('/demo/business-flow', routeHandler('business-flow-demo.html'));
+
 // 管理后台路由 - 只允许admin-pro访问
 app.get('/admin-pro', routeHandler('admin-config-optimized.html'));
 app.get('/console', routeHandler('dashboard.html'));

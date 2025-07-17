@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布任务 - Lawsker (律思客)</title>
+    <link rel="stylesheet" href="/css/lawsker-glass.css">
+    <style>
+        .task-form {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(10px);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .task-type-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .task-type-card {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.7);
+        }
+        
+        .task-type-card:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .task-type-card.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.2);
+        }
+        
+        .task-type-card h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .task-type-card p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .task-type-card .price {
+            font-weight: bold;
+            color: #667eea;
+            margin-top: 10px;
+        }
+        
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        
+        .step::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 1;
+        }
+        
+        .step:last-child::before {
+            display: none;
+        }
+        
+        .step.active::before {
+            background: #667eea;
+        }
+        
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: bold;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .step.active .step-number {
+            background: #667eea;
+            color: white;
+        }
+        
+        .step.completed .step-number {
+            background: #28a745;
+            color: white;
+        }
+        
+        .step-title {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .step.active .step-title {
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .alert-info {
+            background: #cce7ff;
+            border-color: #b8daff;
+            color: #004085;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .task-preview {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .task-preview h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .preview-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .preview-item:last-child {
+            border-bottom: none;
+        }
+        
+        .preview-label {
+            font-weight: bold;
+            color: #666;
+        }
+        
+        .preview-value {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 发布任务</h1>
+            <p>发布您的法律服务需求，让专业律师为您解决</p>
+        </div>
+        
+        <div class="task-form">
+            <!-- 进度条 -->
+            <div class="progress-steps">
+                <div class="step active" id="step1">
+                    <div class="step-number">1</div>
+                    <div class="step-title">选择服务</div>
+                </div>
+                <div class="step" id="step2">
+                    <div class="step-number">2</div>
+                    <div class="step-title">填写详情</div>
+                </div>
+                <div class="step" id="step3">
+                    <div class="step-number">3</div>
+                    <div class="step-title">确认发布</div>
+                </div>
+            </div>
+            
+            <!-- 提示信息 -->
+            <div id="alertContainer"></div>
+            
+            <!-- 第一步：选择服务类型 -->
+            <div id="stepContent1" class="step-content">
+                <h2>选择服务类型</h2>
+                <div class="task-type-cards">
+                    <div class="task-type-card" data-type="collection_letter">
+                        <h3>📋 债务催收</h3>
+                        <p>专业律师协助进行合法债务催收，通过法律途径追回欠款</p>
+                        <div class="price">预估费用：500-2000元</div>
+                    </div>
+                    <div class="task-type-card" data-type="demand_letter">
+                        <h3>📧 律师函服务</h3>
+                        <p>快速生成和发送律师函，正式通知对方履行义务</p>
+                        <div class="price">预估费用：30-300元</div>
+                    </div>
+                    <div class="task-type-card" data-type="contract_review">
+                        <h3>📄 合同审核</h3>
+                        <p>专业律师审核合同条款，识别风险点并提供修改建议</p>
+                        <div class="price">预估费用：200-1000元</div>
+                    </div>
+                    <div class="task-type-card" data-type="legal_consultation">
+                        <h3>💬 法律咨询</h3>
+                        <p>在线法律咨询，解答您的法律疑问</p>
+                        <div class="price">预估费用：100-500元</div>
+                    </div>
+                </div>
+                <button class="btn-submit" onclick="nextStep()" disabled id="nextBtn1">下一步</button>
+            </div>
+            
+            <!-- 第二步：填写详情 -->
+            <div id="stepContent2" class="step-content" style="display: none;">
+                <h2>填写任务详情</h2>
+                <form id="taskForm">
+                    <div class="form-group">
+                        <label for="taskTitle">任务标题 *</label>
+                        <input type="text" id="taskTitle" name="title" required 
+                               placeholder="请简要描述您的法律服务需求">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="taskDescription">详细描述 *</label>
+                        <textarea id="taskDescription" name="description" required 
+                                  placeholder="请详细描述您的情况，包括相关背景、争议焦点、希望达到的目标等"></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="taskBudget">预算金额 (元) *</label>
+                            <input type="number" id="taskBudget" name="budget" required 
+                                   placeholder="500" min="30" max="100000">
+                        </div>
+                        <div class="form-group">
+                            <label for="taskUrgency">紧急程度 *</label>
+                            <select id="taskUrgency" name="urgency" required>
+                                <option value="">请选择</option>
+                                <option value="normal">普通 (7天内)</option>
+                                <option value="urgent">紧急 (3天内)</option>
+                                <option value="emergency">特急 (24小时内)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- 目标信息 -->
+                    <div id="targetInfo" style="display: none;">
+                        <h3>对方信息</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="targetName">对方姓名/公司</label>
+                                <input type="text" id="targetName" name="targetName" 
+                                       placeholder="如有相关信息请填写">
+                            </div>
+                            <div class="form-group">
+                                <label for="targetPhone">联系电话</label>
+                                <input type="tel" id="targetPhone" name="targetPhone" 
+                                       placeholder="如有相关信息请填写">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="targetAddress">地址</label>
+                            <input type="text" id="targetAddress" name="targetAddress" 
+                                   placeholder="如有相关信息请填写">
+                        </div>
+                        <div class="form-group">
+                            <label for="debtAmount">涉及金额 (元)</label>
+                            <input type="number" id="debtAmount" name="debtAmount" 
+                                   placeholder="如果涉及金额争议，请填写">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <button type="button" class="btn-submit" onclick="prevStep()" 
+                                style="background: #6c757d; width: 48%;">上一步</button>
+                        <button type="button" class="btn-submit" onclick="nextStep()" 
+                                style="width: 48%;" disabled id="nextBtn2">下一步</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- 第三步：确认发布 -->
+            <div id="stepContent3" class="step-content" style="display: none;">
+                <h2>确认发布</h2>
+                <div class="task-preview">
+                    <h3>📋 任务详情预览</h3>
+                    <div id="taskPreview"></div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <strong>📢 发布说明：</strong>
+                    <ul>
+                        <li>任务发布后，我们会智能匹配合适的律师为您服务</li>
+                        <li>律师接单后会联系您确认详情并开始工作</li>
+                        <li>服务完成后您可以对律师进行评价</li>
+                        <li>支付采用担保交易，服务满意后才会付款给律师</li>
+                    </ul>
+                </div>
+                
+                <div class="form-row">
+                    <button type="button" class="btn-submit" onclick="prevStep()" 
+                            style="background: #6c757d; width: 48%;">上一步</button>
+                    <button type="button" class="btn-submit" onclick="publishTask()" 
+                            style="width: 48%;" id="publishBtn">发布任务</button>
+                </div>
+            </div>
+            
+            <!-- 加载状态 -->
+            <div class="loading" id="loadingDiv">
+                <div class="spinner"></div>
+                <p>正在发布任务...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        let selectedTaskType = null;
+        let taskData = {};
+        
+        // 任务类型配置
+        const taskTypeConfig = {
+            collection_letter: {
+                name: '债务催收',
+                showTargetInfo: true,
+                requiredFields: ['targetName', 'debtAmount']
+            },
+            demand_letter: {
+                name: '律师函服务',
+                showTargetInfo: true,
+                requiredFields: ['targetName']
+            },
+            contract_review: {
+                name: '合同审核',
+                showTargetInfo: false,
+                requiredFields: []
+            },
+            legal_consultation: {
+                name: '法律咨询',
+                showTargetInfo: false,
+                requiredFields: []
+            }
+        };
+        
+        // 选择任务类型
+        document.querySelectorAll('.task-type-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.task-type-card').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedTaskType = this.dataset.type;
+                document.getElementById('nextBtn1').disabled = false;
+            });
+        });
+        
+        // 表单验证
+        function validateForm() {
+            const form = document.getElementById('taskForm');
+            const formData = new FormData(form);
+            let isValid = true;
+            
+            // 基本字段验证
+            if (!formData.get('title') || !formData.get('description') || 
+                !formData.get('budget') || !formData.get('urgency')) {
+                isValid = false;
+            }
+            
+            // 特定任务类型的字段验证
+            if (selectedTaskType && taskTypeConfig[selectedTaskType]) {
+                const config = taskTypeConfig[selectedTaskType];
+                config.requiredFields.forEach(field => {
+                    if (!formData.get(field)) {
+                        isValid = false;
+                    }
+                });
+            }
+            
+            document.getElementById('nextBtn2').disabled = !isValid;
+            return isValid;
+        }
+        
+        // 监听表单变化
+        document.getElementById('taskForm').addEventListener('input', validateForm);
+        document.getElementById('taskForm').addEventListener('change', validateForm);
+        
+        // 下一步
+        function nextStep() {
+            if (currentStep === 1) {
+                if (!selectedTaskType) {
+                    showAlert('请选择服务类型', 'error');
+                    return;
+                }
+                
+                // 显示/隐藏目标信息
+                const config = taskTypeConfig[selectedTaskType];
+                const targetInfo = document.getElementById('targetInfo');
+                if (config.showTargetInfo) {
+                    targetInfo.style.display = 'block';
+                } else {
+                    targetInfo.style.display = 'none';
+                }
+                
+                showStep(2);
+            } else if (currentStep === 2) {
+                if (!validateForm()) {
+                    showAlert('请完整填写必填信息', 'error');
+                    return;
+                }
+                
+                // 生成预览
+                generatePreview();
+                showStep(3);
+            }
+        }
+        
+        // 上一步
+        function prevStep() {
+            if (currentStep > 1) {
+                showStep(currentStep - 1);
+            }
+        }
+        
+        // 显示步骤
+        function showStep(step) {
+            // 隐藏所有步骤内容
+            document.querySelectorAll('.step-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // 显示当前步骤
+            document.getElementById(`stepContent${step}`).style.display = 'block';
+            
+            // 更新进度条
+            document.querySelectorAll('.step').forEach((stepEl, index) => {
+                stepEl.classList.remove('active', 'completed');
+                if (index + 1 < step) {
+                    stepEl.classList.add('completed');
+                } else if (index + 1 === step) {
+                    stepEl.classList.add('active');
+                }
+            });
+            
+            currentStep = step;
+        }
+        
+        // 生成预览
+        function generatePreview() {
+            const form = document.getElementById('taskForm');
+            const formData = new FormData(form);
+            
+            const config = taskTypeConfig[selectedTaskType];
+            const preview = document.getElementById('taskPreview');
+            
+            let html = '';
+            html += `<div class="preview-item"><span class="preview-label">服务类型：</span><span class="preview-value">${config.name}</span></div>`;
+            html += `<div class="preview-item"><span class="preview-label">任务标题：</span><span class="preview-value">${formData.get('title')}</span></div>`;
+            html += `<div class="preview-item"><span class="preview-label">详细描述：</span><span class="preview-value">${formData.get('description')}</span></div>`;
+            html += `<div class="preview-item"><span class="preview-label">预算金额：</span><span class="preview-value">￥${formData.get('budget')}</span></div>`;
+            
+            const urgencyMap = {
+                'normal': '普通 (7天内)',
+                'urgent': '紧急 (3天内)',
+                'emergency': '特急 (24小时内)'
+            };
+            html += `<div class="preview-item"><span class="preview-label">紧急程度：</span><span class="preview-value">${urgencyMap[formData.get('urgency')]}</span></div>`;
+            
+            if (config.showTargetInfo) {
+                if (formData.get('targetName')) {
+                    html += `<div class="preview-item"><span class="preview-label">对方信息：</span><span class="preview-value">${formData.get('targetName')}</span></div>`;
+                }
+                if (formData.get('debtAmount')) {
+                    html += `<div class="preview-item"><span class="preview-label">涉及金额：</span><span class="preview-value">￥${formData.get('debtAmount')}</span></div>`;
+                }
+            }
+            
+            preview.innerHTML = html;
+        }
+        
+        // 发布任务
+        async function publishTask() {
+            const form = document.getElementById('taskForm');
+            const formData = new FormData(form);
+            
+            // 收集任务数据
+            taskData = {
+                task_type: selectedTaskType,
+                title: formData.get('title'),
+                description: formData.get('description'),
+                budget: parseFloat(formData.get('budget')),
+                urgency: formData.get('urgency'),
+                target_info: {}
+            };
+            
+            // 添加目标信息
+            if (taskTypeConfig[selectedTaskType].showTargetInfo) {
+                taskData.target_info = {
+                    name: formData.get('targetName') || '',
+                    phone: formData.get('targetPhone') || '',
+                    address: formData.get('targetAddress') || '',
+                    amount: formData.get('debtAmount') ? parseFloat(formData.get('debtAmount')) : null
+                };
+            }
+            
+            // 显示加载状态
+            document.getElementById('loadingDiv').classList.add('show');
+            document.getElementById('publishBtn').disabled = true;
+            
+            try {
+                // 发送到后端API
+                const response = await fetch('/api/v1/tasks/user/publish', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify(taskData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showAlert('任务发布成功！我们会尽快为您匹配合适的律师。', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/user'; // 跳转到用户工作台
+                    }, 2000);
+                } else {
+                    throw new Error(result.message || '发布失败');
+                }
+            } catch (error) {
+                console.error('发布任务失败:', error);
+                showAlert('发布失败：' + error.message, 'error');
+            } finally {
+                document.getElementById('loadingDiv').classList.remove('show');
+                document.getElementById('publishBtn').disabled = false;
+            }
+        }
+        
+        // 显示提示信息
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = message;
+            
+            container.innerHTML = '';
+            container.appendChild(alertDiv);
+            
+            // 自动消失
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+        
+        // 页面加载时的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查登录状态
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // 预填充URL参数
+            const urlParams = new URLSearchParams(window.location.search);
+            const taskType = urlParams.get('type');
+            if (taskType && taskTypeConfig[taskType]) {
+                const card = document.querySelector(`[data-type="${taskType}"]`);
+                if (card) {
+                    card.click();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

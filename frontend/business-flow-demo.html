@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O2O业务流程演示 - Lawsker (律思客)</title>
+    <link rel="stylesheet" href="/css/lawsker-glass.css">
+    <style>
+        .demo-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .flow-visualization {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 12px 48px rgba(31, 38, 135, 0.15);
+            backdrop-filter: blur(10px);
+        }
+        
+        .flow-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .flow-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .flow-subtitle {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .flow-steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-bottom: 50px;
+            overflow-x: auto;
+            padding: 20px 0;
+        }
+        
+        .flow-steps::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 5%;
+            right: 5%;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+            z-index: 1;
+        }
+        
+        .flow-step {
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            margin: 0 10px;
+        }
+        
+        .step-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 28px;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .step-circle:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 36px rgba(102, 126, 234, 0.4);
+        }
+        
+        .step-circle.active {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 8px 24px rgba(40, 167, 69, 0.3); }
+            50% { box-shadow: 0 12px 36px rgba(40, 167, 69, 0.6); }
+            100% { box-shadow: 0 8px 24px rgba(40, 167, 69, 0.3); }
+        }
+        
+        .step-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .step-description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .demo-controls {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .control-btn {
+            padding: 15px 30px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .control-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .control-btn.success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        
+        .control-btn.warning {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            color: #212529;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+        
+        .control-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .demo-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .demo-panel.highlight {
+            border: 3px solid #667eea;
+            box-shadow: 0 12px 48px rgba(102, 126, 234, 0.2);
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .panel-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-indicator {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-waiting {
+            background: #e9ecef;
+            color: #6c757d;
+        }
+        
+        .status-active {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .mock-interface {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            background: rgba(248, 249, 250, 0.8);
+            text-align: center;
+            color: #666;
+            margin: 15px 0;
+        }
+        
+        .mock-interface.active {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            color: #333;
+        }
+        
+        .mock-data {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: left;
+        }
+        
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .data-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .data-label {
+            font-weight: bold;
+            color: #666;
+        }
+        
+        .data-value {
+            color: #333;
+        }
+        
+        .progress-animation {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 3px;
+        }
+        
+        .ai-processing {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-radius: 10px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+        
+        .ai-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(102, 126, 234, 0.3);
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .ai-text {
+            flex: 1;
+        }
+        
+        .ai-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .ai-description {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .demo-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .notification-demo {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            max-width: 300px;
+        }
+        
+        .notification-demo.show {
+            transform: translateX(0);
+        }
+        
+        .notification-demo.success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .notification-demo.info {
+            background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+        }
+        
+        .notification-demo.warning {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            color: #212529;
+        }
+        
+        @media (max-width: 768px) {
+            .flow-steps {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .flow-steps::before {
+                display: none;
+            }
+            
+            .flow-step {
+                margin-bottom: 30px;
+            }
+            
+            .demo-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 O2O业务流程演示</h1>
+            <p>体验完整的法律服务数字化解决方案</p>
+        </div>
+        
+        <div class="demo-container">
+            <!-- 流程可视化 -->
+            <div class="flow-visualization">
+                <div class="flow-header">
+                    <div class="flow-title">🔄 智能法律服务O2O流程</div>
+                    <div class="flow-subtitle">从需求发布到任务完成的全自动化流程</div>
+                </div>
+                
+                <div class="flow-steps">
+                    <div class="flow-step" data-step="1">
+                        <div class="step-circle" onclick="goToStep(1)">📝</div>
+                        <div class="step-title">用户发布需求</div>
+                        <div class="step-description">客户在平台发布法律服务需求，系统智能分类和定价</div>
+                    </div>
+                    
+                    <div class="flow-step" data-step="2">
+                        <div class="step-circle" onclick="goToStep(2)">🤝</div>
+                        <div class="step-title">律师智能匹配</div>
+                        <div class="step-description">AI算法匹配最适合的律师，律师确认接单</div>
+                    </div>
+                    
+                    <div class="flow-step" data-step="3">
+                        <div class="step-circle" onclick="goToStep(3)">🤖</div>
+                        <div class="step-title">AI生成文书</div>
+                        <div class="step-description">AI引擎自动生成专业法律文书，提高效率</div>
+                    </div>
+                    
+                    <div class="flow-step" data-step="4">
+                        <div class="step-circle" onclick="goToStep(4)">⚖️</div>
+                        <div class="step-title">律师审核确认</div>
+                        <div class="step-description">执业律师审核AI生成内容，确保专业性</div>
+                    </div>
+                    
+                    <div class="flow-step" data-step="5">
+                        <div class="step-circle" onclick="goToStep(5)">✅</div>
+                        <div class="step-title">客户确认完成</div>
+                        <div class="step-description">客户确认交付物，系统自动结算分账</div>
+                    </div>
+                </div>
+                
+                <div class="demo-controls">
+                    <button class="control-btn primary" onclick="startDemo()" id="startBtn">
+                        🚀 开始演示
+                    </button>
+                    <button class="control-btn success" onclick="autoPlay()" id="autoBtn" disabled>
+                        ⏯️ 自动播放
+                    </button>
+                    <button class="control-btn warning" onclick="resetDemo()" id="resetBtn" disabled>
+                        🔄 重置演示
+                    </button>
+                </div>
+                
+                <div class="progress-animation">
+                    <div class="progress-bar" id="overallProgress"></div>
+                </div>
+            </div>
+            
+            <!-- 演示统计 -->
+            <div class="demo-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="demoCount">0</div>
+                    <div class="stat-label">演示次数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avgTime">0s</div>
+                    <div class="stat-label">平均用时</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="currentStep">1</div>
+                    <div class="stat-label">当前步骤</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="efficiency">95%</div>
+                    <div class="stat-label">AI处理效率</div>
+                </div>
+            </div>
+            
+            <!-- 步骤详情面板 -->
+            <div id="step1Panel" class="demo-panel">
+                <div class="panel-header">
+                    <div class="panel-title">📝 步骤1: 用户发布需求</div>
+                    <div class="status-indicator status-waiting" id="step1Status">等待开始</div>
+                </div>
+                
+                <div class="mock-interface" id="step1Interface">
+                    <h4>📋 任务发布界面</h4>
+                    <p>点击"开始演示"查看用户如何发布法律服务需求</p>
+                </div>
+                
+                <div class="mock-data" id="step1Data" style="display: none;">
+                    <div class="data-row">
+                        <span class="data-label">任务类型:</span>
+                        <span class="data-value">债务催收服务</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">预算金额:</span>
+                        <span class="data-value">¥1,500</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">紧急程度:</span>
+                        <span class="data-value">紧急 (3天内)</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">目标对象:</span>
+                        <span class="data-value">张某某公司</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">涉及金额:</span>
+                        <span class="data-value">¥50,000</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="step2Panel" class="demo-panel">
+                <div class="panel-header">
+                    <div class="panel-title">🤝 步骤2: 律师智能匹配</div>
+                    <div class="status-indicator status-waiting" id="step2Status">等待开始</div>
+                </div>
+                
+                <div class="mock-interface" id="step2Interface">
+                    <h4>🎯 AI智能匹配系统</h4>
+                    <p>系统将根据任务类型、律师专长、成功率等因素进行智能匹配</p>
+                </div>
+                
+                <div class="mock-data" id="step2Data" style="display: none;">
+                    <div class="data-row">
+                        <span class="data-label">匹配律师:</span>
+                        <span class="data-value">李律师 (专业评分: 4.9/5)</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">专业领域:</span>
+                        <span class="data-value">债务纠纷、合同法</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">成功率:</span>
+                        <span class="data-value">96%</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">匹配度:</span>
+                        <span class="data-value">92% (高度匹配)</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">接单状态:</span>
+                        <span class="data-value">已确认接单</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="step3Panel" class="demo-panel">
+                <div class="panel-header">
+                    <div class="panel-title">🤖 步骤3: AI生成文书</div>
+                    <div class="status-indicator status-waiting" id="step3Status">等待开始</div>
+                </div>
+                
+                <div class="mock-interface" id="step3Interface">
+                    <h4>⚡ AI文书生成引擎</h4>
+                    <p>AI将根据案件信息自动生成专业的法律文书</p>
+                </div>
+                
+                <div class="ai-processing" id="step3Processing" style="display: none;">
+                    <div class="ai-spinner"></div>
+                    <div class="ai-text">
+                        <div class="ai-title">🤖 AI正在生成文书...</div>
+                        <div class="ai-description">使用GPT-4引擎分析案件信息，生成专业债务催收函</div>
+                    </div>
+                </div>
+                
+                <div class="mock-data" id="step3Data" style="display: none;">
+                    <div class="data-row">
+                        <span class="data-label">使用引擎:</span>
+                        <span class="data-value">ChatGPT-4 (主)</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">文书类型:</span>
+                        <span class="data-value">债务催收律师函</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">生成用时:</span>
+                        <span class="data-value">23秒</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">质量评分:</span>
+                        <span class="data-value">98/100 (优秀)</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">状态:</span>
+                        <span class="data-value">生成成功，待律师审核</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="step4Panel" class="demo-panel">
+                <div class="panel-header">
+                    <div class="panel-title">⚖️ 步骤4: 律师审核确认</div>
+                    <div class="status-indicator status-waiting" id="step4Status">等待开始</div>
+                </div>
+                
+                <div class="mock-interface" id="step4Interface">
+                    <h4>👨‍💼 律师审核界面</h4>
+                    <p>执业律师将审核AI生成的文书内容，确保法律条文准确</p>
+                </div>
+                
+                <div class="mock-data" id="step4Data" style="display: none;">
+                    <div class="data-row">
+                        <span class="data-label">审核律师:</span>
+                        <span class="data-value">李律师 (执业证号: 11101200***)</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">审核时间:</span>
+                        <span class="data-value">8分钟</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">修改次数:</span>
+                        <span class="data-value">1次 (格式优化)</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">审核结果:</span>
+                        <span class="data-value">通过审核</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">状态:</span>
+                        <span class="data-value">已提交客户确认</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="step5Panel" class="demo-panel">
+                <div class="panel-header">
+                    <div class="panel-title">✅ 步骤5: 客户确认完成</div>
+                    <div class="status-indicator status-waiting" id="step5Status">等待开始</div>
+                </div>
+                
+                <div class="mock-interface" id="step5Interface">
+                    <h4>🎉 任务完成界面</h4>
+                    <p>客户确认交付物满意，系统自动进行资金结算</p>
+                </div>
+                
+                <div class="mock-data" id="step5Data" style="display: none;">
+                    <div class="data-row">
+                        <span class="data-label">客户确认:</span>
+                        <span class="data-value">满意 ⭐⭐⭐⭐⭐</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">交付物:</span>
+                        <span class="data-value">债务催收律师函 (PDF)</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">律师收益:</span>
+                        <span class="data-value">¥1,275 (85%)</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">平台费用:</span>
+                        <span class="data-value">¥225 (15%)</span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">结算状态:</span>
+                        <span class="data-value">已自动分账完成</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知演示 -->
+    <div id="demoNotification" class="notification-demo"></div>
+
+    <script>
+        let currentStep = 0;
+        let demoRunning = false;
+        let autoPlayMode = false;
+        let demoStartTime = null;
+        let demoCount = parseInt(localStorage.getItem('lawsker_demo_count') || '0');
+        
+        // 更新统计显示
+        function updateStats() {
+            document.getElementById('demoCount').textContent = demoCount;
+            document.getElementById('currentStep').textContent = currentStep;
+            
+            if (demoStartTime) {
+                const elapsed = Math.floor((Date.now() - demoStartTime) / 1000);
+                document.getElementById('avgTime').textContent = elapsed + 's';
+            }
+        }
+        
+        // 显示通知
+        function showDemoNotification(message, type = 'info') {
+            const notification = document.getElementById('demoNotification');
+            notification.textContent = message;
+            notification.className = `notification-demo ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // 开始演示
+        function startDemo() {
+            if (demoRunning) return;
+            
+            demoRunning = true;
+            demoStartTime = Date.now();
+            currentStep = 0;
+            
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('autoBtn').disabled = false;
+            document.getElementById('resetBtn').disabled = false;
+            
+            showDemoNotification('🚀 O2O业务流程演示开始！', 'info');
+            
+            // 重置所有步骤状态
+            resetAllSteps();
+            
+            // 开始第一步
+            setTimeout(() => goToStep(1), 1000);
+        }
+        
+        // 自动播放
+        function autoPlay() {
+            if (!demoRunning) return;
+            
+            autoPlayMode = !autoPlayMode;
+            const btn = document.getElementById('autoBtn');
+            
+            if (autoPlayMode) {
+                btn.textContent = '⏸️ 暂停播放';
+                btn.className = 'control-btn warning';
+                showDemoNotification('⏯️ 自动播放模式开启', 'info');
+                autoPlayNext();
+            } else {
+                btn.textContent = '⏯️ 自动播放';
+                btn.className = 'control-btn success';
+                showDemoNotification('⏸️ 自动播放已暂停', 'warning');
+            }
+        }
+        
+        // 自动播放下一步
+        function autoPlayNext() {
+            if (!autoPlayMode || !demoRunning) return;
+            
+            if (currentStep < 5) {
+                setTimeout(() => {
+                    goToStep(currentStep + 1);
+                    autoPlayNext();
+                }, 3000);
+            } else {
+                // 演示完成
+                setTimeout(() => {
+                    showDemoNotification('🎉 演示完成！感谢您的观看', 'success');
+                    autoPlayMode = false;
+                    document.getElementById('autoBtn').textContent = '⏯️ 自动播放';
+                    document.getElementById('autoBtn').className = 'control-btn success';
+                }, 2000);
+            }
+        }
+        
+        // 重置演示
+        function resetDemo() {
+            demoRunning = false;
+            autoPlayMode = false;
+            currentStep = 0;
+            demoStartTime = null;
+            
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('autoBtn').disabled = true;
+            document.getElementById('resetBtn').disabled = true;
+            
+            document.getElementById('autoBtn').textContent = '⏯️ 自动播放';
+            document.getElementById('autoBtn').className = 'control-btn success';
+            
+            resetAllSteps();
+            document.getElementById('overallProgress').style.width = '0%';
+            
+            showDemoNotification('🔄 演示已重置', 'info');
+            updateStats();
+        }
+        
+        // 重置所有步骤
+        function resetAllSteps() {
+            for (let i = 1; i <= 5; i++) {
+                const stepCircle = document.querySelector(`[data-step="${i}"] .step-circle`);
+                const statusEl = document.getElementById(`step${i}Status`);
+                const panelEl = document.getElementById(`step${i}Panel`);
+                const interfaceEl = document.getElementById(`step${i}Interface`);
+                const dataEl = document.getElementById(`step${i}Data`);
+                
+                stepCircle.classList.remove('active');
+                statusEl.textContent = '等待开始';
+                statusEl.className = 'status-indicator status-waiting';
+                panelEl.classList.remove('highlight');
+                interfaceEl.classList.remove('active');
+                if (dataEl) dataEl.style.display = 'none';
+                
+                // 隐藏AI处理动画
+                if (i === 3) {
+                    document.getElementById('step3Processing').style.display = 'none';
+                }
+            }
+        }
+        
+        // 跳转到指定步骤
+        function goToStep(step) {
+            if (step < 1 || step > 5) return;
+            
+            currentStep = step;
+            updateStats();
+            
+            // 更新进度条
+            document.getElementById('overallProgress').style.width = (step / 5 * 100) + '%';
+            
+            // 重置所有步骤样式
+            resetAllSteps();
+            
+            // 激活当前步骤
+            const stepCircle = document.querySelector(`[data-step="${step}"] .step-circle`);
+            const statusEl = document.getElementById(`step${step}Status`);
+            const panelEl = document.getElementById(`step${step}Panel`);
+            const interfaceEl = document.getElementById(`step${step}Interface`);
+            const dataEl = document.getElementById(`step${step}Data`);
+            
+            stepCircle.classList.add('active');
+            statusEl.textContent = '正在执行';
+            statusEl.className = 'status-indicator status-active';
+            panelEl.classList.add('highlight');
+            interfaceEl.classList.add('active');
+            
+            // 执行步骤特定逻辑
+            executeStepLogic(step);
+            
+            // 显示步骤通知
+            const stepTitles = [
+                '', '📝 用户正在发布法律服务需求',
+                '🤝 AI正在智能匹配专业律师',
+                '🤖 AI引擎正在生成法律文书',
+                '⚖️ 律师正在审核文书内容',
+                '✅ 客户确认并完成任务'
+            ];
+            
+            showDemoNotification(stepTitles[step], 'info');
+        }
+        
+        // 执行步骤特定逻辑
+        function executeStepLogic(step) {
+            switch(step) {
+                case 1:
+                    // 模拟用户填写表单
+                    setTimeout(() => {
+                        document.getElementById('step1Data').style.display = 'block';
+                        document.getElementById('step1Status').textContent = '需求已发布';
+                        document.getElementById('step1Status').className = 'status-indicator status-completed';
+                        showDemoNotification('✅ 用户需求发布成功！', 'success');
+                    }, 2000);
+                    break;
+                    
+                case 2:
+                    // 模拟AI匹配过程
+                    setTimeout(() => {
+                        showDemoNotification('🔍 正在分析律师专业能力...', 'info');
+                    }, 500);
+                    
+                    setTimeout(() => {
+                        document.getElementById('step2Data').style.display = 'block';
+                        document.getElementById('step2Status').textContent = '匹配成功';
+                        document.getElementById('step2Status').className = 'status-indicator status-completed';
+                        showDemoNotification('🎯 律师匹配成功，接单确认！', 'success');
+                    }, 2500);
+                    break;
+                    
+                case 3:
+                    // 模拟AI生成过程
+                    setTimeout(() => {
+                        document.getElementById('step3Processing').style.display = 'flex';
+                        showDemoNotification('🤖 AI引擎启动，开始分析案件...', 'info');
+                    }, 500);
+                    
+                    setTimeout(() => {
+                        showDemoNotification('📝 正在生成专业法律文书...', 'info');
+                    }, 5000);
+                    
+                    setTimeout(() => {
+                        document.getElementById('step3Processing').style.display = 'none';
+                        document.getElementById('step3Data').style.display = 'block';
+                        document.getElementById('step3Status').textContent = 'AI生成完成';
+                        document.getElementById('step3Status').className = 'status-indicator status-completed';
+                        showDemoNotification('⚡ AI文书生成完成！质量评分98分', 'success');
+                    }, 8000);
+                    break;
+                    
+                case 4:
+                    // 模拟律师审核
+                    setTimeout(() => {
+                        showDemoNotification('👨‍💼 律师正在专业审核...', 'info');
+                    }, 500);
+                    
+                    setTimeout(() => {
+                        document.getElementById('step4Data').style.display = 'block';
+                        document.getElementById('step4Status').textContent = '审核通过';
+                        document.getElementById('step4Status').className = 'status-indicator status-completed';
+                        showDemoNotification('⚖️ 律师审核通过，文书已提交！', 'success');
+                    }, 3000);
+                    break;
+                    
+                case 5:
+                    // 模拟客户确认和自动结算
+                    setTimeout(() => {
+                        showDemoNotification('📋 客户正在确认交付物...', 'info');
+                    }, 500);
+                    
+                    setTimeout(() => {
+                        showDemoNotification('💰 系统正在自动分账结算...', 'info');
+                    }, 2000);
+                    
+                    setTimeout(() => {
+                        document.getElementById('step5Data').style.display = 'block';
+                        document.getElementById('step5Status').textContent = '任务完成';
+                        document.getElementById('step5Status').className = 'status-indicator status-completed';
+                        showDemoNotification('🎉 任务完成！资金已自动分账', 'success');
+                        
+                        // 更新演示次数
+                        demoCount++;
+                        localStorage.setItem('lawsker_demo_count', demoCount.toString());
+                        updateStats();
+                    }, 4000);
+                    break;
+            }
+        }
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+            
+            // 添加键盘快捷键
+            document.addEventListener('keydown', function(e) {
+                if (!demoRunning) return;
+                
+                switch(e.key) {
+                    case 'ArrowRight':
+                        if (currentStep < 5) goToStep(currentStep + 1);
+                        break;
+                    case 'ArrowLeft':
+                        if (currentStep > 1) goToStep(currentStep - 1);
+                        break;
+                    case ' ':
+                        e.preventDefault();
+                        autoPlay();
+                        break;
+                    case 'Escape':
+                        resetDemo();
+                        break;
+                }
+            });
+            
+            // 显示欢迎消息
+            setTimeout(() => {
+                showDemoNotification('👋 欢迎体验Lawsker O2O业务流程！', 'info');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

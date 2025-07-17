@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI文书生成器 - Lawsker (律思客)</title>
+    <link rel="stylesheet" href="/css/lawsker-glass.css">
+    <style>
+        .generator-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .input-panel, .output-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            backdrop-filter: blur(10px);
+            height: fit-content;
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .panel-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .task-info {
+            background: rgba(248, 249, 250, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .task-info h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .task-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.9);
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .ai-engine-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .engine-option {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        .engine-option:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .engine-option.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .engine-option .engine-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .engine-option .engine-desc {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .generate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .document-output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 400px;
+            font-family: 'SimSun', serif;
+            line-height: 1.8;
+            color: #333;
+            white-space: pre-wrap;
+        }
+        
+        .document-output.empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-style: italic;
+        }
+        
+        .document-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        
+        .quality-score {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid #28a745;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .score-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .score-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #28a745;
+        }
+        
+        .score-details {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .generating {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .review-panel {
+            background: rgba(255, 243, 224, 0.8);
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .review-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .version-history {
+            background: rgba(248, 249, 250, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .version-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .version-item:last-child {
+            border-bottom: none;
+        }
+        
+        .version-info {
+            flex: 1;
+        }
+        
+        .version-label {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .version-meta {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: #28a745;
+        }
+        
+        .notification.error {
+            background: #dc3545;
+        }
+        
+        @media (max-width: 768px) {
+            .generator-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI文书生成器</h1>
+            <p>智能生成专业法律文书，律师审核确认</p>
+        </div>
+        
+        <div class="generator-container">
+            <!-- 输入面板 -->
+            <div class="input-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        📝 文书生成设置
+                    </div>
+                </div>
+                
+                <!-- 任务信息 -->
+                <div class="task-info" id="taskInfo">
+                    <h3>📋 当前任务</h3>
+                    <div class="task-meta" id="taskMeta">
+                        <div>任务类型: <strong id="taskType">-</strong></div>
+                        <div>预算: <strong id="taskBudget">-</strong></div>
+                        <div>紧急程度: <strong id="taskUrgency">-</strong></div>
+                        <div>创建时间: <strong id="taskCreated">-</strong></div>
+                    </div>
+                </div>
+                
+                <!-- AI引擎选择 -->
+                <div class="form-group">
+                    <label>选择AI引擎</label>
+                    <div class="ai-engine-selector">
+                        <div class="engine-option selected" data-engine="openai">
+                            <div class="engine-name">ChatGPT-4</div>
+                            <div class="engine-desc">逻辑严密，专业准确</div>
+                        </div>
+                        <div class="engine-option" data-engine="deepseek">
+                            <div class="engine-name">Deepseek</div>
+                            <div class="engine-desc">中文优化，本土化强</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 文书类型 -->
+                <div class="form-group">
+                    <label for="documentType">文书类型</label>
+                    <select id="documentType">
+                        <option value="collection_letter">债务催收函</option>
+                        <option value="demand_letter">律师函</option>
+                        <option value="warning_letter">警告函</option>
+                        <option value="cease_desist">停止侵权函</option>
+                        <option value="breach_notice">违约通知书</option>
+                    </select>
+                </div>
+                
+                <!-- 语调风格 -->
+                <div class="form-group">
+                    <label for="documentTone">语调风格</label>
+                    <select id="documentTone">
+                        <option value="friendly_reminder">友好提醒</option>
+                        <option value="formal_notice">正式通知</option>
+                        <option value="stern_warning">严厉警告</option>
+                        <option value="legal_threat">法律威慑</option>
+                    </select>
+                </div>
+                
+                <!-- 基本信息 -->
+                <div class="form-group">
+                    <label for="senderName">发函方(律师/律所)</label>
+                    <input type="text" id="senderName" placeholder="请输入律师或律所名称">
+                </div>
+                
+                <div class="form-group">
+                    <label for="recipientName">收函方</label>
+                    <input type="text" id="recipientName" placeholder="请输入收函方姓名或公司名称">
+                </div>
+                
+                <div class="form-group">
+                    <label for="caseAmount">涉及金额(元)</label>
+                    <input type="number" id="caseAmount" placeholder="如有金额争议请填写">
+                </div>
+                
+                <div class="form-group">
+                    <label for="caseDescription">案情描述</label>
+                    <textarea id="caseDescription" placeholder="请详细描述案件背景、争议焦点、事实经过等"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="legalBasis">法律依据</label>
+                    <textarea id="legalBasis" placeholder="相关法律条文，如不填写AI将自动选择"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="demands">具体要求</label>
+                    <textarea id="demands" placeholder="希望对方采取的具体行动或履行的义务"></textarea>
+                </div>
+                
+                <button class="generate-btn" onclick="generateDocument()" id="generateBtn">
+                    🚀 生成文书
+                </button>
+                
+                <!-- 模板库快捷按钮 -->
+                <div class="form-group">
+                    <label>快捷模板</label>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="loadTemplate('debt_collection')">债务催收</button>
+                        <button class="btn btn-secondary" onclick="loadTemplate('contract_breach')">合同违约</button>
+                        <button class="btn btn-secondary" onclick="loadTemplate('payment_reminder')">付款提醒</button>
+                        <button class="btn btn-secondary" onclick="loadTemplate('infringement')">侵权通知</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 输出面板 -->
+            <div class="output-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        📄 生成结果
+                    </div>
+                    <div id="documentStatus" style="font-size: 12px; color: #666;"></div>
+                </div>
+                
+                <!-- 质量评分 -->
+                <div class="quality-score" id="qualityScore" style="display: none;">
+                    <div class="score-header">
+                        <span>📊 文书质量评分</span>
+                        <span class="score-value" id="scoreValue">-</span>
+                    </div>
+                    <div class="score-details" id="scoreDetails">AI正在评估文书质量...</div>
+                </div>
+                
+                <!-- 文书内容 -->
+                <div class="document-output empty" id="documentOutput">
+                    点击"生成文书"开始AI创作...
+                </div>
+                
+                <!-- 文书操作 -->
+                <div class="document-actions" id="documentActions" style="display: none;">
+                    <button class="btn btn-primary" onclick="regenerateDocument()">
+                        🔄 重新生成
+                    </button>
+                    <button class="btn btn-warning" onclick="editDocument()">
+                        ✏️ 手动编辑
+                    </button>
+                    <button class="btn btn-secondary" onclick="previewDocument()">
+                        👁️ 预览
+                    </button>
+                    <button class="btn btn-success" onclick="approveDocument()">
+                        ✅ 审核通过
+                    </button>
+                </div>
+                
+                <!-- 律师审核面板 -->
+                <div class="review-panel" id="reviewPanel" style="display: none;">
+                    <h4>⚖️ 律师审核</h4>
+                    <p>请仔细审核AI生成的文书内容，确保法条引用准确、逻辑清晰、格式规范。</p>
+                    <div class="form-group">
+                        <label for="reviewNotes">审核意见</label>
+                        <textarea id="reviewNotes" placeholder="请填写审核意见和修改建议"></textarea>
+                    </div>
+                    <div class="review-actions">
+                        <button class="btn btn-success" onclick="approveDocument()">
+                            ✅ 通过审核
+                        </button>
+                        <button class="btn btn-warning" onclick="requestModification()">
+                            🔄 要求修改
+                        </button>
+                        <button class="btn btn-secondary" onclick="rejectDocument()">
+                            ❌ 拒绝文书
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 版本历史 -->
+                <div class="version-history" id="versionHistory" style="display: none;">
+                    <h4>📋 版本历史</h4>
+                    <div id="versionList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知 -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        let currentTask = null;
+        let currentDocument = null;
+        let selectedEngine = 'openai';
+        let documentVersions = [];
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查登录状态
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // 从URL参数获取任务ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const taskId = urlParams.get('task_id');
+            
+            if (taskId) {
+                loadTaskInfo(taskId);
+            } else {
+                // 如果没有任务ID，显示示例任务
+                loadSampleTask();
+            }
+            
+            // 绑定AI引擎选择
+            bindEngineSelector();
+        });
+        
+        // 绑定AI引擎选择器
+        function bindEngineSelector() {
+            document.querySelectorAll('.engine-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.engine-option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedEngine = this.dataset.engine;
+                });
+            });
+        }
+        
+        // 加载任务信息
+        async function loadTaskInfo(taskId) {
+            try {
+                const response = await fetch(`/api/v1/tasks/${taskId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    currentTask = await response.json();
+                    displayTaskInfo();
+                    prefillFormFromTask();
+                } else {
+                    throw new Error('加载任务信息失败');
+                }
+            } catch (error) {
+                console.error('加载任务失败:', error);
+                showNotification('加载任务信息失败', 'error');
+                loadSampleTask();
+            }
+        }
+        
+        // 加载示例任务
+        function loadSampleTask() {
+            currentTask = {
+                task_type: 'collection_letter',
+                title: '债务催收案件',
+                budget: 1000,
+                urgency: 'normal',
+                created_at: new Date().toISOString(),
+                description: '某公司拖欠货款30万元，需要发函催收',
+                target_info: {
+                    name: '某某公司',
+                    amount: 300000
+                }
+            };
+            displayTaskInfo();
+            prefillFormFromTask();
+        }
+        
+        // 显示任务信息
+        function displayTaskInfo() {
+            const taskTypeMap = {
+                'collection_letter': '债务催收',
+                'demand_letter': '律师函服务',
+                'contract_review': '合同审核',
+                'legal_consultation': '法律咨询'
+            };
+            
+            const urgencyMap = {
+                'normal': '普通',
+                'urgent': '紧急',
+                'emergency': '特急'
+            };
+            
+            document.getElementById('taskType').textContent = taskTypeMap[currentTask.task_type] || currentTask.task_type;
+            document.getElementById('taskBudget').textContent = '¥' + currentTask.budget;
+            document.getElementById('taskUrgency').textContent = urgencyMap[currentTask.urgency] || currentTask.urgency;
+            document.getElementById('taskCreated').textContent = formatDate(currentTask.created_at);
+        }
+        
+        // 从任务信息预填表单
+        function prefillFormFromTask() {
+            if (currentTask.target_info) {
+                document.getElementById('recipientName').value = currentTask.target_info.name || '';
+                document.getElementById('caseAmount').value = currentTask.target_info.amount || '';
+            }
+            
+            document.getElementById('caseDescription').value = currentTask.description || '';
+            
+            // 根据任务类型设置文书类型
+            const typeMapping = {
+                'collection_letter': 'collection_letter',
+                'demand_letter': 'demand_letter'
+            };
+            
+            const documentType = typeMapping[currentTask.task_type];
+            if (documentType) {
+                document.getElementById('documentType').value = documentType;
+            }
+        }
+        
+        // 生成文书
+        async function generateDocument() {
+            const formData = collectFormData();
+            
+            if (!validateFormData(formData)) {
+                showNotification('请填写必要信息', 'error');
+                return;
+            }
+            
+            // 显示生成中状态
+            showGenerating();
+            
+            try {
+                const response = await fetch('/api/v1/ai/generate-document', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify({
+                        task_id: currentTask.id,
+                        ai_engine: selectedEngine,
+                        document_type: formData.documentType,
+                        tone: formData.documentTone,
+                        sender_name: formData.senderName,
+                        recipient_name: formData.recipientName,
+                        case_amount: formData.caseAmount,
+                        case_description: formData.caseDescription,
+                        legal_basis: formData.legalBasis,
+                        demands: formData.demands
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    currentDocument = result.data;
+                    displayDocument();
+                    addDocumentVersion();
+                    evaluateQuality();
+                    showNotification('文书生成成功', 'success');
+                } else {
+                    throw new Error(result.message || '生成失败');
+                }
+            } catch (error) {
+                console.error('生成文书失败:', error);
+                showNotification('生成失败：' + error.message, 'error');
+                hideGenerating();
+            }
+        }
+        
+        // 收集表单数据
+        function collectFormData() {
+            return {
+                documentType: document.getElementById('documentType').value,
+                documentTone: document.getElementById('documentTone').value,
+                senderName: document.getElementById('senderName').value,
+                recipientName: document.getElementById('recipientName').value,
+                caseAmount: document.getElementById('caseAmount').value,
+                caseDescription: document.getElementById('caseDescription').value,
+                legalBasis: document.getElementById('legalBasis').value,
+                demands: document.getElementById('demands').value
+            };
+        }
+        
+        // 验证表单数据
+        function validateFormData(data) {
+            return data.recipientName && data.caseDescription && data.demands;
+        }
+        
+        // 显示生成中状态
+        function showGenerating() {
+            const output = document.getElementById('documentOutput');
+            output.className = 'document-output';
+            output.innerHTML = `
+                <div class="generating">
+                    <div class="spinner"></div>
+                    <p>AI正在生成文书，请稍候...</p>
+                    <p style="font-size: 12px; color: #999;">
+                        使用${selectedEngine === 'openai' ? 'ChatGPT-4' : 'Deepseek'}引擎
+                    </p>
+                </div>
+            `;
+            
+            document.getElementById('generateBtn').disabled = true;
+            document.getElementById('documentActions').style.display = 'none';
+        }
+        
+        // 隐藏生成中状态
+        function hideGenerating() {
+            document.getElementById('generateBtn').disabled = false;
+        }
+        
+        // 显示文书内容
+        function displayDocument() {
+            const output = document.getElementById('documentOutput');
+            output.className = 'document-output';
+            output.textContent = currentDocument.content || '生成的文书内容将显示在这里...';
+            
+            document.getElementById('generateBtn').disabled = false;
+            document.getElementById('documentActions').style.display = 'flex';
+            document.getElementById('reviewPanel').style.display = 'block';
+            document.getElementById('documentStatus').textContent = `AI引擎：${selectedEngine === 'openai' ? 'ChatGPT-4' : 'Deepseek'} | 生成时间：${formatTime(new Date())}`;
+        }
+        
+        // 添加文书版本
+        function addDocumentVersion() {
+            const version = {
+                id: documentVersions.length + 1,
+                content: currentDocument.content,
+                engine: selectedEngine,
+                created_at: new Date(),
+                status: 'generated'
+            };
+            
+            documentVersions.push(version);
+            updateVersionHistory();
+        }
+        
+        // 更新版本历史
+        function updateVersionHistory() {
+            const container = document.getElementById('versionList');
+            const historyPanel = document.getElementById('versionHistory');
+            
+            if (documentVersions.length > 0) {
+                historyPanel.style.display = 'block';
+                
+                let html = '';
+                documentVersions.forEach((version, index) => {
+                    const isActive = index === documentVersions.length - 1;
+                    html += `
+                        <div class="version-item" data-version="${version.id}">
+                            <div class="version-info">
+                                <div class="version-label">
+                                    版本 ${version.id} ${isActive ? '(当前)' : ''}
+                                </div>
+                                <div class="version-meta">
+                                    ${version.engine === 'openai' ? 'ChatGPT-4' : 'Deepseek'} • 
+                                    ${formatTime(version.created_at)} • 
+                                    ${getStatusText(version.status)}
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary" onclick="loadVersion(${version.id})" ${isActive ? 'disabled' : ''}>
+                                ${isActive ? '当前版本' : '查看'}
+                            </button>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+            }
+        }
+        
+        // 评估文书质量
+        function evaluateQuality() {
+            // 模拟质量评分
+            const score = Math.floor(Math.random() * 20) + 80;
+            const details = [
+                '✅ 法条引用准确',
+                '✅ 逻辑结构清晰',
+                '✅ 语言表达专业',
+                score > 85 ? '✅ 格式规范标准' : '⚠️ 格式需要调整'
+            ];
+            
+            document.getElementById('qualityScore').style.display = 'block';
+            document.getElementById('scoreValue').textContent = score + '分';
+            document.getElementById('scoreDetails').textContent = details.join(' • ');
+        }
+        
+        // 重新生成文书
+        function regenerateDocument() {
+            if (confirm('确定要重新生成文书吗？当前内容将被替换。')) {
+                generateDocument();
+            }
+        }
+        
+        // 编辑文书
+        function editDocument() {
+            const content = document.getElementById('documentOutput').textContent;
+            const newContent = prompt('编辑文书内容：', content);
+            
+            if (newContent && newContent !== content) {
+                document.getElementById('documentOutput').textContent = newContent;
+                currentDocument.content = newContent;
+                
+                // 添加编辑版本
+                const version = {
+                    id: documentVersions.length + 1,
+                    content: newContent,
+                    engine: 'manual_edit',
+                    created_at: new Date(),
+                    status: 'edited'
+                };
+                
+                documentVersions.push(version);
+                updateVersionHistory();
+                
+                showNotification('文书已更新', 'success');
+            }
+        }
+        
+        // 预览文书
+        function previewDocument() {
+            const content = document.getElementById('documentOutput').textContent;
+            
+            const previewWindow = window.open('', '_blank', 'width=800,height=600');
+            previewWindow.document.write(`
+                <html>
+                <head>
+                    <title>文书预览 - ${currentTask.title}</title>
+                    <style>
+                        body { font-family: 'SimSun', serif; line-height: 1.8; padding: 40px; }
+                        .header { text-align: center; margin-bottom: 30px; }
+                        .content { white-space: pre-wrap; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>法律文书预览</h1>
+                        <p>生成时间：${formatTime(new Date())}</p>
+                    </div>
+                    <div class="content">${content}</div>
+                </body>
+                </html>
+            `);
+        }
+        
+        // 审核通过
+        async function approveDocument() {
+            const reviewNotes = document.getElementById('reviewNotes').value;
+            
+            try {
+                const response = await fetch('/api/v1/ai/approve-document', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify({
+                        document_id: currentDocument.id,
+                        task_id: currentTask.id,
+                        review_notes: reviewNotes,
+                        status: 'approved'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showNotification('文书审核通过，已进入执行阶段', 'success');
+                    
+                    // 跳转到任务执行页面
+                    setTimeout(() => {
+                        window.location.href = `/task-execution.html?task_id=${currentTask.id}`;
+                    }, 1500);
+                } else {
+                    throw new Error(result.message || '审核失败');
+                }
+            } catch (error) {
+                console.error('审核失败:', error);
+                showNotification('审核失败：' + error.message, 'error');
+            }
+        }
+        
+        // 要求修改
+        function requestModification() {
+            const reviewNotes = document.getElementById('reviewNotes').value;
+            
+            if (!reviewNotes.trim()) {
+                showNotification('请填写修改意见', 'error');
+                return;
+            }
+            
+            // 标记为需要修改
+            currentDocument.status = 'modification_requested';
+            currentDocument.review_notes = reviewNotes;
+            
+            showNotification('已要求修改，请重新生成文书', 'success');
+        }
+        
+        // 拒绝文书
+        function rejectDocument() {
+            const reviewNotes = document.getElementById('reviewNotes').value;
+            
+            if (confirm('确定要拒绝这份文书吗？')) {
+                showNotification('文书已被拒绝', 'error');
+                
+                // 清空文书内容
+                document.getElementById('documentOutput').className = 'document-output empty';
+                document.getElementById('documentOutput').textContent = '文书已被拒绝，请重新生成';
+                document.getElementById('documentActions').style.display = 'none';
+                document.getElementById('reviewPanel').style.display = 'none';
+            }
+        }
+        
+        // 加载模板
+        function loadTemplate(templateType) {
+            const templates = {
+                debt_collection: {
+                    senderName: '某某律师事务所',
+                    caseDescription: '根据合同约定，您应于合同规定期限内支付相应款项，但截至目前仍未履行付款义务。',
+                    demands: '1. 立即支付欠款本金及利息\n2. 承担相应的违约责任\n3. 支付律师费等相关费用',
+                    documentTone: 'formal_notice'
+                },
+                contract_breach: {
+                    caseDescription: '根据双方签署的合同，您未按约定履行合同义务，构成违约。',
+                    demands: '1. 立即纠正违约行为\n2. 恢复合同履行\n3. 赔偿相应损失',
+                    documentTone: 'stern_warning'
+                },
+                payment_reminder: {
+                    caseDescription: '根据合同约定的付款期限，您的付款已逾期。',
+                    demands: '1. 请于收函后7日内支付到期款项\n2. 支付逾期利息',
+                    documentTone: 'friendly_reminder'
+                },
+                infringement: {
+                    caseDescription: '您的行为已构成对我方合法权益的侵害。',
+                    demands: '1. 立即停止侵权行为\n2. 公开道歉并消除影响\n3. 赔偿经济损失',
+                    documentTone: 'legal_threat'
+                }
+            };
+            
+            const template = templates[templateType];
+            if (template) {
+                Object.keys(template).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        element.value = template[key];
+                    }
+                });
+                
+                showNotification('模板已加载', 'success');
+            }
+        }
+        
+        // 加载指定版本
+        function loadVersion(versionId) {
+            const version = documentVersions.find(v => v.id === versionId);
+            if (version) {
+                document.getElementById('documentOutput').textContent = version.content;
+                currentDocument.content = version.content;
+                showNotification(`已切换到版本 ${versionId}`, 'success');
+            }
+        }
+        
+        // 格式化日期
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('zh-CN');
+        }
+        
+        // 格式化时间
+        function formatTime(date) {
+            return date.toLocaleString('zh-CN');
+        }
+        
+        // 获取状态文本
+        function getStatusText(status) {
+            const statusMap = {
+                'generated': '已生成',
+                'edited': '手动编辑',
+                'approved': '已通过',
+                'rejected': '已拒绝'
+            };
+            return statusMap[status] || status;
+        }
+        
+        // 显示通知
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

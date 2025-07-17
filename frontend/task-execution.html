@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任务执行管理 - Lawsker (律思客)</title>
+    <link rel="stylesheet" href="/css/lawsker-glass.css">
+    <style>
+        .execution-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+        }
+        
+        .main-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .panel-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .task-header {
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .task-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .task-meta {
+            display: flex;
+            gap: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .status-assigned {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .status-in-progress {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        
+        .status-review {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .status-completed {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .status-cancelled {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+        
+        .progress-section {
+            margin-bottom: 30px;
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .progress-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .progress-percentage {
+            font-size: 16px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+        
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        
+        .progress-step::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 1;
+        }
+        
+        .progress-step:last-child::before {
+            display: none;
+        }
+        
+        .progress-step.completed::before {
+            background: #28a745;
+        }
+        
+        .step-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            color: #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-weight: bold;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .progress-step.completed .step-circle {
+            background: #28a745;
+            color: white;
+        }
+        
+        .progress-step.active .step-circle {
+            background: #667eea;
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .progress-step.active .step-label {
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .timeline-section {
+            margin-bottom: 30px;
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e9ecef;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+            padding-left: 30px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #667eea;
+        }
+        
+        .timeline-item.completed::before {
+            background: #28a745;
+        }
+        
+        .timeline-time {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 5px;
+        }
+        
+        .timeline-content {
+            background: rgba(248, 249, 250, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+        
+        .timeline-item.completed .timeline-content {
+            border-left-color: #28a745;
+        }
+        
+        .timeline-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .timeline-description {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .deliverable-section {
+            margin-bottom: 30px;
+        }
+        
+        .deliverable-item {
+            background: rgba(248, 249, 250, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .deliverable-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .deliverable-title {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .deliverable-status {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .deliverable-status.draft {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .deliverable-status.review {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .deliverable-status.approved {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .deliverable-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .action-section {
+            border-top: 1px solid #e9ecef;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .task-info {
+            margin-bottom: 20px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #666;
+        }
+        
+        .info-value {
+            color: #333;
+        }
+        
+        .participants-section {
+            margin-bottom: 20px;
+        }
+        
+        .participant {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .participant-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .participant-info {
+            flex: 1;
+        }
+        
+        .participant-name {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .participant-role {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .communication-section {
+            margin-top: 20px;
+        }
+        
+        .message-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+        
+        .message-item {
+            background: rgba(248, 249, 250, 0.8);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .message-author {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .message-time {
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .message-content {
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .message-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .message-input textarea {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            resize: vertical;
+            height: 60px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: #28a745;
+        }
+        
+        .notification.error {
+            background: #dc3545;
+        }
+        
+        .notification.info {
+            background: #17a2b8;
+        }
+        
+        @media (max-width: 768px) {
+            .execution-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ 任务执行管理</h1>
+            <p>实时跟踪任务进度，确保高质量交付</p>
+        </div>
+        
+        <div class="execution-container">
+            <!-- 主面板 -->
+            <div class="main-panel">
+                <!-- 任务头部信息 -->
+                <div class="task-header">
+                    <div class="task-title" id="taskTitle">加载中...</div>
+                    <div class="task-meta">
+                        <span>📋 任务ID: <strong id="taskId">-</strong></span>
+                        <span>💰 预算: <strong id="taskBudget">¥0</strong></span>
+                        <span>⏰ 截止时间: <strong id="taskDeadline">-</strong></span>
+                        <span class="status-badge" id="taskStatus">-</span>
+                    </div>
+                </div>
+                
+                <!-- 进度概览 -->
+                <div class="progress-section">
+                    <div class="progress-header">
+                        <div class="progress-title">📊 执行进度</div>
+                        <div class="progress-percentage" id="progressPercentage">0%</div>
+                    </div>
+                    
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    
+                    <div class="progress-steps">
+                        <div class="progress-step" id="step-1">
+                            <div class="step-circle">1</div>
+                            <div class="step-label">接单确认</div>
+                        </div>
+                        <div class="progress-step" id="step-2">
+                            <div class="step-circle">2</div>
+                            <div class="step-label">AI生成</div>
+                        </div>
+                        <div class="progress-step" id="step-3">
+                            <div class="step-circle">3</div>
+                            <div class="step-label">律师审核</div>
+                        </div>
+                        <div class="progress-step" id="step-4">
+                            <div class="step-circle">4</div>
+                            <div class="step-label">客户确认</div>
+                        </div>
+                        <div class="progress-step" id="step-5">
+                            <div class="step-circle">5</div>
+                            <div class="step-label">任务完成</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 交付物管理 -->
+                <div class="deliverable-section">
+                    <h3>📄 交付物管理</h3>
+                    <div id="deliverableList">
+                        <!-- 动态生成交付物列表 -->
+                    </div>
+                </div>
+                
+                <!-- 时间线 -->
+                <div class="timeline-section">
+                    <h3>📅 执行时间线</h3>
+                    <div class="timeline" id="timeline">
+                        <!-- 动态生成时间线 -->
+                    </div>
+                </div>
+                
+                <!-- 操作区域 -->
+                <div class="action-section" id="actionSection">
+                    <div class="action-buttons">
+                        <!-- 动态生成操作按钮 -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 侧边面板 -->
+            <div class="side-panel">
+                <!-- 任务信息 -->
+                <div class="panel-section">
+                    <h3>📋 任务详情</h3>
+                    <div class="task-info" id="taskInfo">
+                        <!-- 动态生成任务信息 -->
+                    </div>
+                </div>
+                
+                <!-- 参与人员 -->
+                <div class="panel-section">
+                    <h3>👥 参与人员</h3>
+                    <div class="participants-section" id="participants">
+                        <!-- 动态生成参与人员 -->
+                    </div>
+                </div>
+                
+                <!-- 沟通记录 -->
+                <div class="panel-section">
+                    <h3>💬 沟通记录</h3>
+                    <div class="communication-section">
+                        <div class="message-list" id="messageList">
+                            <!-- 动态生成消息列表 -->
+                        </div>
+                        <div class="message-input">
+                            <textarea id="messageContent" placeholder="输入消息..."></textarea>
+                            <button class="btn btn-primary" onclick="sendMessage()">发送</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知 -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        let currentTask = null;
+        let userRole = null;
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 检查登录状态
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // 获取任务ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const taskId = urlParams.get('taskId');
+            
+            if (!taskId) {
+                showNotification('缺少任务ID参数', 'error');
+                return;
+            }
+            
+            // 加载任务数据
+            await loadTaskData(taskId);
+            
+            // 设置定时刷新
+            setInterval(() => loadTaskData(taskId), 30000);
+        });
+        
+        // 加载任务数据
+        async function loadTaskData(taskId) {
+            try {
+                const response = await fetch(`/api/v1/tasks/execution/${taskId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    currentTask = await response.json();
+                    userRole = await getUserRole();
+                    renderTaskData();
+                } else {
+                    throw new Error('加载任务数据失败');
+                }
+            } catch (error) {
+                console.error('加载任务数据失败:', error);
+                showNotification('加载任务数据失败', 'error');
+            }
+        }
+        
+        // 获取用户角色
+        async function getUserRole() {
+            try {
+                const response = await fetch('/api/v1/users/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const profile = await response.json();
+                    return profile.role;
+                }
+            } catch (error) {
+                console.error('获取用户角色失败:', error);
+            }
+            return 'user';
+        }
+        
+        // 渲染任务数据
+        function renderTaskData() {
+            if (!currentTask) return;
+            
+            // 渲染基本信息
+            document.getElementById('taskTitle').textContent = currentTask.title;
+            document.getElementById('taskId').textContent = currentTask.task_id;
+            document.getElementById('taskBudget').textContent = '¥' + currentTask.budget;
+            document.getElementById('taskDeadline').textContent = formatDate(currentTask.deadline);
+            
+            const statusElement = document.getElementById('taskStatus');
+            statusElement.textContent = getStatusText(currentTask.status);
+            statusElement.className = `status-badge status-${currentTask.status}`;
+            
+            // 渲染进度
+            renderProgress();
+            
+            // 渲染交付物
+            renderDeliverables();
+            
+            // 渲染时间线
+            renderTimeline();
+            
+            // 渲染任务详情
+            renderTaskInfo();
+            
+            // 渲染参与人员
+            renderParticipants();
+            
+            // 渲染沟通记录
+            renderMessages();
+            
+            // 渲染操作按钮
+            renderActions();
+        }
+        
+        // 渲染进度
+        function renderProgress() {
+            const progress = calculateProgress(currentTask.status);
+            
+            document.getElementById('progressPercentage').textContent = progress + '%';
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            // 更新步骤状态
+            const stepMap = {
+                'assigned': 1,
+                'in_progress': 2,
+                'ai_generated': 2,
+                'lawyer_review': 3,
+                'client_review': 4,
+                'completed': 5
+            };
+            
+            const currentStep = stepMap[currentTask.status] || 1;
+            
+            for (let i = 1; i <= 5; i++) {
+                const stepElement = document.getElementById(`step-${i}`);
+                stepElement.classList.remove('completed', 'active');
+                
+                if (i < currentStep) {
+                    stepElement.classList.add('completed');
+                } else if (i === currentStep) {
+                    stepElement.classList.add('active');
+                }
+            }
+        }
+        
+        // 计算进度百分比
+        function calculateProgress(status) {
+            const progressMap = {
+                'assigned': 10,
+                'in_progress': 25,
+                'ai_generated': 50,
+                'lawyer_review': 65,
+                'client_review': 85,
+                'completed': 100
+            };
+            return progressMap[status] || 0;
+        }
+        
+        // 渲染交付物
+        function renderDeliverables() {
+            const container = document.getElementById('deliverableList');
+            let html = '';
+            
+            if (currentTask.deliverables && currentTask.deliverables.length > 0) {
+                currentTask.deliverables.forEach(deliverable => {
+                    html += `
+                        <div class="deliverable-item">
+                            <div class="deliverable-header">
+                                <div class="deliverable-title">${deliverable.title}</div>
+                                <div class="deliverable-status ${deliverable.status}">${getDeliverableStatusText(deliverable.status)}</div>
+                            </div>
+                            <div style="color: #666; font-size: 14px; margin-bottom: 10px;">
+                                ${deliverable.description}
+                            </div>
+                            <div class="deliverable-actions">
+                                ${generateDeliverableActions(deliverable)}
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                html = '<div style="text-align: center; color: #666; padding: 20px;">暂无交付物</div>';
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        // 生成交付物操作按钮
+        function generateDeliverableActions(deliverable) {
+            let actions = '';
+            
+            if (deliverable.file_url) {
+                actions += `<button class="btn btn-primary" onclick="downloadFile('${deliverable.file_url}')">📄 下载</button>`;
+            }
+            
+            if (userRole === 'lawyer' && deliverable.status === 'draft') {
+                actions += `<button class="btn btn-success" onclick="submitForReview('${deliverable.id}')">✅ 提交审核</button>`;
+            }
+            
+            if (userRole === 'user' && deliverable.status === 'review') {
+                actions += `<button class="btn btn-success" onclick="approveDeliverable('${deliverable.id}')">✅ 批准</button>`;
+                actions += `<button class="btn btn-warning" onclick="requestRevision('${deliverable.id}')">🔄 要求修改</button>`;
+            }
+            
+            return actions;
+        }
+        
+        // 渲染时间线
+        function renderTimeline() {
+            const container = document.getElementById('timeline');
+            let html = '';
+            
+            if (currentTask.timeline && currentTask.timeline.length > 0) {
+                currentTask.timeline.forEach(item => {
+                    html += `
+                        <div class="timeline-item ${item.completed ? 'completed' : ''}">
+                            <div class="timeline-time">${formatDateTime(item.timestamp)}</div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">${item.title}</div>
+                                <div class="timeline-description">${item.description}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                html = '<div style="text-align: center; color: #666; padding: 20px;">暂无时间线记录</div>';
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        // 渲染任务详情
+        function renderTaskInfo() {
+            const container = document.getElementById('taskInfo');
+            const taskTypeConfig = {
+                'collection_letter': '债务催收',
+                'demand_letter': '律师函服务',
+                'contract_review': '合同审核',
+                'legal_consultation': '法律咨询'
+            };
+            
+            let html = '';
+            html += `<div class="info-row"><span class="info-label">任务类型:</span><span class="info-value">${taskTypeConfig[currentTask.task_type] || currentTask.task_type}</span></div>`;
+            html += `<div class="info-row"><span class="info-label">创建时间:</span><span class="info-value">${formatDateTime(currentTask.created_at)}</span></div>`;
+            html += `<div class="info-row"><span class="info-label">预算金额:</span><span class="info-value">¥${currentTask.budget}</span></div>`;
+            html += `<div class="info-row"><span class="info-label">紧急程度:</span><span class="info-value">${getUrgencyText(currentTask.urgency)}</span></div>`;
+            
+            if (currentTask.description) {
+                html += `<div style="margin-top: 15px;"><strong>详细描述:</strong><br><div style="margin-top: 5px; color: #666; font-size: 14px;">${currentTask.description}</div></div>`;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        // 渲染参与人员
+        function renderParticipants() {
+            const container = document.getElementById('participants');
+            let html = '';
+            
+            if (currentTask.client) {
+                html += `
+                    <div class="participant">
+                        <div class="participant-avatar">${currentTask.client.name.charAt(0)}</div>
+                        <div class="participant-info">
+                            <div class="participant-name">${currentTask.client.name}</div>
+                            <div class="participant-role">委托客户</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (currentTask.lawyer) {
+                html += `
+                    <div class="participant">
+                        <div class="participant-avatar">${currentTask.lawyer.name.charAt(0)}</div>
+                        <div class="participant-info">
+                            <div class="participant-name">${currentTask.lawyer.name}</div>
+                            <div class="participant-role">执行律师</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        // 渲染沟通记录
+        function renderMessages() {
+            const container = document.getElementById('messageList');
+            let html = '';
+            
+            if (currentTask.messages && currentTask.messages.length > 0) {
+                currentTask.messages.forEach(message => {
+                    html += `
+                        <div class="message-item">
+                            <div class="message-header">
+                                <div class="message-author">${message.author_name}</div>
+                                <div class="message-time">${formatDateTime(message.timestamp)}</div>
+                            </div>
+                            <div class="message-content">${message.content}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                html = '<div style="text-align: center; color: #666; padding: 20px;">暂无沟通记录</div>';
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        // 渲染操作按钮
+        function renderActions() {
+            const container = document.getElementById('actionSection');
+            let html = '<div class="action-buttons">';
+            
+            if (userRole === 'lawyer') {
+                if (currentTask.status === 'assigned') {
+                    html += `<button class="btn btn-primary" onclick="startTask()">🚀 开始执行</button>`;
+                }
+                if (currentTask.status === 'in_progress') {
+                    html += `<button class="btn btn-primary" onclick="generateDocument()">🤖 AI生成文书</button>`;
+                }
+                if (currentTask.status === 'ai_generated') {
+                    html += `<button class="btn btn-success" onclick="submitToClient()">📤 提交客户审核</button>`;
+                }
+            }
+            
+            if (userRole === 'user') {
+                if (currentTask.status === 'client_review') {
+                    html += `<button class="btn btn-success" onclick="approveTask()">✅ 确认完成</button>`;
+                    html += `<button class="btn btn-warning" onclick="requestRevision()">🔄 要求修改</button>`;
+                }
+            }
+            
+            if (currentTask.status !== 'completed' && currentTask.status !== 'cancelled') {
+                html += `<button class="btn btn-danger" onclick="cancelTask()">❌ 取消任务</button>`;
+            }
+            
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+        
+        // 开始执行任务
+        async function startTask() {
+            await updateTaskStatus('in_progress', '律师已开始执行任务');
+        }
+        
+        // AI生成文书
+        async function generateDocument() {
+            try {
+                showNotification('正在调用AI生成文书...', 'info');
+                
+                const response = await fetch(`/api/v1/ai-assignment/generate/${currentTask.task_id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showNotification('AI文书生成成功！', 'success');
+                    await updateTaskStatus('ai_generated', 'AI已完成文书生成');
+                } else {
+                    throw new Error(result.message || 'AI生成失败');
+                }
+            } catch (error) {
+                console.error('AI生成失败:', error);
+                showNotification('AI生成失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 提交客户审核
+        async function submitToClient() {
+            await updateTaskStatus('client_review', '文书已提交客户审核');
+        }
+        
+        // 批准任务
+        async function approveTask() {
+            await updateTaskStatus('completed', '客户已确认任务完成');
+        }
+        
+        // 要求修改
+        async function requestRevision() {
+            const reason = prompt('请输入修改要求:');
+            if (reason) {
+                await updateTaskStatus('lawyer_review', `客户要求修改: ${reason}`);
+            }
+        }
+        
+        // 取消任务
+        async function cancelTask() {
+            if (confirm('确定要取消这个任务吗？此操作不可撤销。')) {
+                await updateTaskStatus('cancelled', '任务已被取消');
+            }
+        }
+        
+        // 更新任务状态
+        async function updateTaskStatus(newStatus, message) {
+            try {
+                const response = await fetch(`/api/v1/tasks/execution/${currentTask.task_id}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        status: newStatus,
+                        message: message
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showNotification('状态更新成功', 'success');
+                    await loadTaskData(currentTask.task_id);
+                } else {
+                    throw new Error(result.message || '状态更新失败');
+                }
+            } catch (error) {
+                console.error('状态更新失败:', error);
+                showNotification('状态更新失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 发送消息
+        async function sendMessage() {
+            const content = document.getElementById('messageContent').value.trim();
+            if (!content) return;
+            
+            try {
+                const response = await fetch(`/api/v1/tasks/execution/${currentTask.task_id}/message`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ content })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    document.getElementById('messageContent').value = '';
+                    await loadTaskData(currentTask.task_id);
+                } else {
+                    throw new Error(result.message || '发送失败');
+                }
+            } catch (error) {
+                console.error('发送消息失败:', error);
+                showNotification('发送消息失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 工具函数
+        function getStatusText(status) {
+            const statusMap = {
+                'assigned': '已分配',
+                'in_progress': '执行中',
+                'ai_generated': 'AI已生成',
+                'lawyer_review': '律师审核',
+                'client_review': '客户审核',
+                'completed': '已完成',
+                'cancelled': '已取消'
+            };
+            return statusMap[status] || status;
+        }
+        
+        function getDeliverableStatusText(status) {
+            const statusMap = {
+                'draft': '草稿',
+                'review': '审核中',
+                'approved': '已批准'
+            };
+            return statusMap[status] || status;
+        }
+        
+        function getUrgencyText(urgency) {
+            const urgencyMap = {
+                'normal': '普通',
+                'urgent': '紧急',
+                'emergency': '特急'
+            };
+            return urgencyMap[urgency] || urgency;
+        }
+        
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('zh-CN');
+        }
+        
+        function formatDateTime(dateString) {
+            return new Date(dateString).toLocaleString('zh-CN');
+        }
+        
+        function downloadFile(url) {
+            window.open(url, '_blank');
+        }
+        
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

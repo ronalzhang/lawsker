@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>支付结算中心 - Lawsker (律思客)</title>
+    <link rel="stylesheet" href="/css/lawsker-glass.css">
+    <style>
+        .settlement-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+        }
+        
+        .main-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .panel-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-card {
+            background: rgba(248, 249, 250, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .summary-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .summary-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .summary-change {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .summary-change.positive {
+            color: #28a745;
+        }
+        
+        .summary-change.negative {
+            color: #dc3545;
+        }
+        
+        .transaction-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.3s ease;
+        }
+        
+        .transaction-item:hover {
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        
+        .transaction-info {
+            flex: 1;
+        }
+        
+        .transaction-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .transaction-meta {
+            color: #666;
+            font-size: 12px;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .transaction-amount {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: right;
+        }
+        
+        .transaction-amount.income {
+            color: #28a745;
+        }
+        
+        .transaction-amount.expense {
+            color: #dc3545;
+        }
+        
+        .transaction-amount.pending {
+            color: #ffc107;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-processing {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .account-balance {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .balance-title {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .balance-amount {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .balance-change {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .action-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .action-btn.success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .action-btn.warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .settlement-rules {
+            background: rgba(248, 249, 250, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .settlement-rules h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .settlement-rules ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .settlement-rules li {
+            margin-bottom: 5px;
+        }
+        
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .filter-group label {
+            font-size: 14px;
+            color: #666;
+            white-space: nowrap;
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+        
+        .empty-state img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: #28a745;
+        }
+        
+        .notification.error {
+            background: #dc3545;
+        }
+        
+        .notification.info {
+            background: #17a2b8;
+        }
+        
+        @media (max-width: 768px) {
+            .settlement-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-cards {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .quick-actions {
+                flex-direction: column;
+            }
+            
+            .action-btn {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 支付结算中心</h1>
+            <p>智能分账管理，实时资金流转</p>
+        </div>
+        
+        <div class="settlement-container">
+            <!-- 主面板 -->
+            <div class="main-panel">
+                <!-- 账户概览 -->
+                <div class="panel-section">
+                    <div class="section-header">
+                        <div class="section-title">📊 账户概览</div>
+                        <div class="filter-bar">
+                            <div class="filter-group">
+                                <label>时间范围:</label>
+                                <select id="timeRangeFilter">
+                                    <option value="today">今天</option>
+                                    <option value="week">本周</option>
+                                    <option value="month" selected>本月</option>
+                                    <option value="quarter">本季度</option>
+                                    <option value="year">本年</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-secondary" onclick="refreshData()">🔄 刷新</button>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-cards">
+                        <div class="summary-card">
+                            <div class="summary-value" id="totalBalance">¥0</div>
+                            <div class="summary-label">账户余额</div>
+                            <div class="summary-change positive" id="balanceChange">+¥0 (今日)</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-value" id="totalIncome">¥0</div>
+                            <div class="summary-label">总收入</div>
+                            <div class="summary-change positive" id="incomeChange">+¥0 (本月)</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-value" id="pendingAmount">¥0</div>
+                            <div class="summary-label">待结算</div>
+                            <div class="summary-change" id="pendingChange">0笔交易</div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-value" id="commissionRate">15%</div>
+                            <div class="summary-label">平台费率</div>
+                            <div class="summary-change" id="commissionInfo">行业标准</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 交易记录 -->
+                <div class="panel-section">
+                    <div class="section-header">
+                        <div class="section-title">📋 交易记录</div>
+                        <div class="filter-bar">
+                            <div class="filter-group">
+                                <label>类型:</label>
+                                <select id="transactionTypeFilter">
+                                    <option value="">全部</option>
+                                    <option value="income">收入</option>
+                                    <option value="expense">支出</option>
+                                    <option value="settlement">结算</option>
+                                    <option value="withdrawal">提现</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>状态:</label>
+                                <select id="transactionStatusFilter">
+                                    <option value="">全部</option>
+                                    <option value="pending">待处理</option>
+                                    <option value="processing">处理中</option>
+                                    <option value="completed">已完成</option>
+                                    <option value="failed">失败</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="transactionList" class="transaction-list">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>正在加载交易记录...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 侧边面板 -->
+            <div class="side-panel">
+                <!-- 账户余额 -->
+                <div class="account-balance">
+                    <div class="balance-title">可用余额</div>
+                    <div class="balance-amount" id="availableBalance">¥0.00</div>
+                    <div class="balance-change" id="balanceInfo">实时更新</div>
+                </div>
+                
+                <!-- 快速操作 -->
+                <div class="panel-section">
+                    <div class="section-title">⚡ 快速操作</div>
+                    <div class="quick-actions">
+                        <button class="action-btn success" onclick="initiateWithdrawal()">
+                            💸 申请提现
+                        </button>
+                        <button class="action-btn primary" onclick="viewEarningsReport()">
+                            📊 收益报告
+                        </button>
+                        <button class="action-btn warning" onclick="disputeTransaction()">
+                            ⚠️ 交易申诉
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 结算规则 -->
+                <div class="panel-section">
+                    <div class="section-title">📜 结算规则</div>
+                    <div class="settlement-rules">
+                        <h4>💡 智能分账规则</h4>
+                        <ul>
+                            <li>律师获得任务金额的85%</li>
+                            <li>平台收取15%服务费用</li>
+                            <li>任务完成后自动结算</li>
+                            <li>T+1工作日到账</li>
+                            <li>单笔提现最低100元</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="settlement-rules">
+                        <h4>🔒 资金安全</h4>
+                        <ul>
+                            <li>采用担保交易模式</li>
+                            <li>客户确认后才释放资金</li>
+                            <li>支持银行级别加密</li>
+                            <li>24小时风控监控</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- 客服联系 -->
+                <div class="panel-section">
+                    <div class="section-title">🆘 需要帮助？</div>
+                    <p style="color: #666; font-size: 14px; margin-bottom: 15px;">
+                        遇到支付问题？联系我们的专业客服团队
+                    </p>
+                    <div class="quick-actions">
+                        <button class="action-btn primary" onclick="contactSupport()">
+                            💬 在线客服
+                        </button>
+                        <button class="action-btn secondary" onclick="viewFAQ()">
+                            ❓ 常见问题
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知 -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        let currentUser = null;
+        let transactionData = [];
+        let summaryData = {};
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 检查登录状态
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // 加载用户信息
+            await loadUserProfile();
+            
+            // 加载数据
+            await refreshData();
+            
+            // 设置事件监听
+            setupEventListeners();
+            
+            // 设置定时刷新
+            setInterval(refreshData, 60000); // 每分钟刷新
+        });
+        
+        // 加载用户资料
+        async function loadUserProfile() {
+            try {
+                const response = await fetch('/api/v1/users/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    currentUser = await response.json();
+                }
+            } catch (error) {
+                console.error('加载用户资料失败:', error);
+            }
+        }
+        
+        // 刷新数据
+        async function refreshData() {
+            await Promise.all([
+                loadSummaryData(),
+                loadTransactionData()
+            ]);
+            
+            renderSummaryData();
+            renderTransactionList();
+        }
+        
+        // 加载汇总数据
+        async function loadSummaryData() {
+            try {
+                const timeRange = document.getElementById('timeRangeFilter').value;
+                const response = await fetch(`/api/v1/finance/summary?timeRange=${timeRange}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    summaryData = await response.json();
+                } else {
+                    // 模拟数据
+                    summaryData = {
+                        totalBalance: 12580.50,
+                        availableBalance: 11250.00,
+                        totalIncome: 45600.00,
+                        pendingAmount: 1330.50,
+                        pendingCount: 3,
+                        balanceChange: 560.80,
+                        incomeChange: 8900.00,
+                        commissionRate: 15
+                    };
+                }
+            } catch (error) {
+                console.error('加载汇总数据失败:', error);
+                // 使用模拟数据
+                summaryData = {
+                    totalBalance: 12580.50,
+                    availableBalance: 11250.00,
+                    totalIncome: 45600.00,
+                    pendingAmount: 1330.50,
+                    pendingCount: 3,
+                    balanceChange: 560.80,
+                    incomeChange: 8900.00,
+                    commissionRate: 15
+                };
+            }
+        }
+        
+        // 加载交易数据
+        async function loadTransactionData() {
+            try {
+                const filters = getTransactionFilters();
+                const queryParams = new URLSearchParams(filters).toString();
+                
+                const response = await fetch(`/api/v1/finance/transactions?${queryParams}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    transactionData = await response.json();
+                } else {
+                    // 模拟数据
+                    transactionData = generateMockTransactions();
+                }
+            } catch (error) {
+                console.error('加载交易数据失败:', error);
+                // 使用模拟数据
+                transactionData = generateMockTransactions();
+            }
+        }
+        
+        // 生成模拟交易数据
+        function generateMockTransactions() {
+            const transactions = [];
+            const types = ['income', 'settlement', 'withdrawal'];
+            const statuses = ['completed', 'processing', 'pending'];
+            
+            for (let i = 0; i < 20; i++) {
+                const type = types[Math.floor(Math.random() * types.length)];
+                const status = statuses[Math.floor(Math.random() * statuses.length)];
+                const amount = Math.floor(Math.random() * 2000) + 100;
+                
+                transactions.push({
+                    id: `TXN${String(i + 1).padStart(6, '0')}`,
+                    type: type,
+                    title: getTransactionTitle(type),
+                    amount: amount,
+                    status: status,
+                    timestamp: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+                    description: getTransactionDescription(type),
+                    task_id: type === 'income' ? `TASK${String(i + 1).padStart(4, '0')}` : null
+                });
+            }
+            
+            return transactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        }
+        
+        // 获取交易标题
+        function getTransactionTitle(type) {
+            const titles = {
+                'income': ['债务催收服务费', '律师函起草费', '合同审核服务费', '法律咨询费'],
+                'settlement': ['平台结算', '月度结算', '季度结算'],
+                'withdrawal': ['提现到银行卡', '支付宝提现', '微信提现']
+            };
+            
+            const typeOptions = titles[type] || ['其他交易'];
+            return typeOptions[Math.floor(Math.random() * typeOptions.length)];
+        }
+        
+        // 获取交易描述
+        function getTransactionDescription(type) {
+            const descriptions = {
+                'income': '任务完成收入',
+                'settlement': '自动结算',
+                'withdrawal': '申请提现'
+            };
+            return descriptions[type] || '其他';
+        }
+        
+        // 获取交易筛选条件
+        function getTransactionFilters() {
+            return {
+                type: document.getElementById('transactionTypeFilter').value,
+                status: document.getElementById('transactionStatusFilter').value,
+                timeRange: document.getElementById('timeRangeFilter').value,
+                limit: 50
+            };
+        }
+        
+        // 渲染汇总数据
+        function renderSummaryData() {
+            document.getElementById('totalBalance').textContent = '¥' + formatMoney(summaryData.totalBalance);
+            document.getElementById('availableBalance').textContent = '¥' + formatMoney(summaryData.availableBalance);
+            document.getElementById('totalIncome').textContent = '¥' + formatMoney(summaryData.totalIncome);
+            document.getElementById('pendingAmount').textContent = '¥' + formatMoney(summaryData.pendingAmount);
+            document.getElementById('commissionRate').textContent = summaryData.commissionRate + '%';
+            
+            // 变化信息
+            const balanceChangeEl = document.getElementById('balanceChange');
+            balanceChangeEl.textContent = `+¥${formatMoney(summaryData.balanceChange)} (今日)`;
+            balanceChangeEl.className = summaryData.balanceChange >= 0 ? 'summary-change positive' : 'summary-change negative';
+            
+            const incomeChangeEl = document.getElementById('incomeChange');
+            incomeChangeEl.textContent = `+¥${formatMoney(summaryData.incomeChange)} (本月)`;
+            
+            const pendingChangeEl = document.getElementById('pendingChange');
+            pendingChangeEl.textContent = `${summaryData.pendingCount}笔交易`;
+            
+            document.getElementById('balanceInfo').textContent = '最后更新: ' + formatDateTime(new Date());
+        }
+        
+        // 渲染交易列表
+        function renderTransactionList() {
+            const container = document.getElementById('transactionList');
+            
+            if (transactionData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div style="font-size: 60px; margin-bottom: 20px;">💳</div>
+                        <h3>暂无交易记录</h3>
+                        <p>完成任务后将自动生成交易记录</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            transactionData.forEach(transaction => {
+                const amountClass = getAmountClass(transaction.type, transaction.status);
+                const amountPrefix = transaction.type === 'withdrawal' ? '-' : '+';
+                
+                html += `
+                    <div class="transaction-item" onclick="viewTransactionDetail('${transaction.id}')">
+                        <div class="transaction-info">
+                            <div class="transaction-title">${transaction.title}</div>
+                            <div class="transaction-meta">
+                                <span>🆔 ${transaction.id}</span>
+                                <span>📅 ${formatDateTime(transaction.timestamp)}</span>
+                                ${transaction.task_id ? `<span>📋 ${transaction.task_id}</span>` : ''}
+                            </div>
+                            <div class="status-badge status-${transaction.status}">
+                                ${getStatusText(transaction.status)}
+                            </div>
+                        </div>
+                        <div class="transaction-amount ${amountClass}">
+                            ${amountPrefix}¥${formatMoney(transaction.amount)}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // 获取金额样式类
+        function getAmountClass(type, status) {
+            if (status === 'pending' || status === 'processing') {
+                return 'pending';
+            }
+            
+            if (type === 'withdrawal') {
+                return 'expense';
+            }
+            
+            return 'income';
+        }
+        
+        // 获取状态文本
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': '待处理',
+                'processing': '处理中',
+                'completed': '已完成',
+                'failed': '失败'
+            };
+            return statusMap[status] || status;
+        }
+        
+        // 设置事件监听
+        function setupEventListeners() {
+            // 筛选条件变化
+            document.getElementById('timeRangeFilter').addEventListener('change', refreshData);
+            document.getElementById('transactionTypeFilter').addEventListener('change', renderTransactionList);
+            document.getElementById('transactionStatusFilter').addEventListener('change', renderTransactionList);
+        }
+        
+        // 申请提现
+        async function initiateWithdrawal() {
+            const amount = prompt('请输入提现金额（最低100元）:');
+            if (!amount || amount < 100) {
+                showNotification('提现金额不能少于100元', 'error');
+                return;
+            }
+            
+            if (amount > summaryData.availableBalance) {
+                showNotification('提现金额不能超过可用余额', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/v1/finance/withdrawal', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        amount: parseFloat(amount),
+                        method: 'bank_card' // 默认银行卡
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showNotification('提现申请已提交，预计1-2个工作日到账', 'success');
+                    await refreshData();
+                } else {
+                    throw new Error(result.message || '提现申请失败');
+                }
+            } catch (error) {
+                console.error('提现申请失败:', error);
+                showNotification('提现申请失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 查看收益报告
+        function viewEarningsReport() {
+            // 跳转到收益报告页面
+            window.open('/earnings-calculator', '_blank');
+        }
+        
+        // 交易申诉
+        function disputeTransaction() {
+            showNotification('申诉功能正在开发中，如有问题请联系客服', 'info');
+        }
+        
+        // 联系客服
+        function contactSupport() {
+            showNotification('客服电话: 400-123-4567，工作时间: 9:00-18:00', 'info');
+        }
+        
+        // 查看常见问题
+        function viewFAQ() {
+            window.open('/help.html', '_blank');
+        }
+        
+        // 查看交易详情
+        function viewTransactionDetail(transactionId) {
+            const transaction = transactionData.find(t => t.id === transactionId);
+            if (!transaction) return;
+            
+            // 创建详情弹窗
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2>💳 交易详情</h2>
+                        <button onclick="this.closest('div[style*=\\"position: fixed\\"]').remove()" style="background: none; border: none; font-size: 24px; cursor: pointer;">×</button>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <p><strong>交易ID:</strong> ${transaction.id}</p>
+                        <p><strong>交易类型:</strong> ${transaction.title}</p>
+                        <p><strong>交易金额:</strong> ¥${formatMoney(transaction.amount)}</p>
+                        <p><strong>交易状态:</strong> ${getStatusText(transaction.status)}</p>
+                        <p><strong>交易时间:</strong> ${formatDateTime(transaction.timestamp)}</p>
+                        ${transaction.task_id ? `<p><strong>关联任务:</strong> ${transaction.task_id}</p>` : ''}
+                        <p><strong>描述:</strong> ${transaction.description}</p>
+                    </div>
+                    
+                    <div style="text-align: right;">
+                        <button class="btn btn-primary" onclick="this.closest('div[style*=\\"position: fixed\\"]').remove()">关闭</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        // 工具函数
+        function formatMoney(amount) {
+            return parseFloat(amount).toFixed(2);
+        }
+        
+        function formatDateTime(date) {
+            return new Date(date).toLocaleString('zh-CN');
+        }
+        
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
