@@ -50,23 +50,8 @@ if ! sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && git
     }
 fi
 
-# 4. 安装依赖（如果有更新）
-echo "📦 更新依赖包..."
-echo "🔧 安装前端依赖..."
-if ! sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR/frontend && npm install --production"; then
-    echo "⚠️  前端依赖安装失败，但继续部署..."
-fi
-
-echo "🔧 安装后端依赖..."
-if ! sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR/backend && source venv/bin/activate && pip install -r requirements.txt"; then
-    echo "⚠️  后端依赖安装失败，但继续部署..."
-fi
-
-# 4.5. 运行数据库迁移
-echo "🗃️ 运行数据库迁移..."
-if ! sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && chmod +x migrate.sh && ./migrate.sh"; then
-    echo "⚠️  数据库迁移失败，但继续部署..."
-fi
+# 4. 跳过依赖安装（已在服务器上安装）
+echo "📦 跳过依赖安装（已在服务器上配置）..."
 
 # 5. 重启应用
 echo "🔄 重启应用..."
