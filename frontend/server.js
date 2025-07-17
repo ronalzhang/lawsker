@@ -30,16 +30,19 @@ const routeHandler = (filePath) => {
 // 演示页面路由（无需认证）
 app.get('/user', routeHandler('user-workspace.html'));
 app.get('/legal', routeHandler('lawyer-workspace.html'));
+// 注意：机构工作台项目已暂停开发
 app.get('/institution', routeHandler('institution-workspace.html'));
 
 // 个人工作台路由（需要认证和权限验证）
 app.get('/workspace/lawyer/:userId', routeHandler('lawyer-workspace.html'));
 app.get('/workspace/user/:userId', routeHandler('user-workspace.html'));
+// 注意：机构工作台项目已暂停开发
 app.get('/workspace/institution/:userId', routeHandler('institution-workspace.html'));
 
 // 旧版个人路由（保持兼容性，但建议使用新格式）
 app.get('/user/:userId', routeHandler('user-workspace.html'));
 app.get('/legal/:lawyerId', routeHandler('lawyer-workspace.html'));
+// 注意：机构工作台项目已暂停开发
 app.get('/institution/:institutionId', routeHandler('institution-workspace.html'));
 app.get('/calculator', routeHandler('earnings-calculator.html'));
 app.get('/earnings-calculator', routeHandler('earnings-calculator.html'));
