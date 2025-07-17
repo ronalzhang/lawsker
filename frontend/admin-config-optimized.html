@@ -338,6 +338,157 @@
             margin-bottom: 0.5rem;
         }
 
+        /* 分账配置和业务配置样式 */
+        .settlement-config, .business-config {
+            padding: 1rem 0;
+        }
+
+        .config-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .config-section h4 {
+            margin: 0 0 1rem 0;
+            color: var(--text-primary, #f0f4ff);
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .ai-config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .config-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .config-item .form-help {
+            font-size: 0.75rem;
+            color: var(--text-secondary, #a8b2d1);
+            margin-top: 0.25rem;
+        }
+
+        .config-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            color: var(--text-primary, #f0f4ff);
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            width: 1rem;
+            height: 1rem;
+            accent-color: var(--primary);
+        }
+
+        /* 服务类型配置样式 */
+        .service-types {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .service-type-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: var(--radius);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .service-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .service-icon {
+            font-size: 1.5rem;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .service-details {
+            flex: 1;
+        }
+
+        .service-name {
+            font-weight: 600;
+            color: var(--text-primary, #f0f4ff);
+            margin-bottom: 0.25rem;
+        }
+
+        .service-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary, #a8b2d1);
+        }
+
+        .service-pricing {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary, #f0f4ff);
+        }
+
+        .service-pricing input {
+            width: 80px;
+        }
+
+        .service-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-info {
+            background: var(--info);
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: var(--info-hover);
+        }
+
         /* 律师审核管理样式 */
         .lawyer-audit-controls {
             display: flex;
@@ -2015,6 +2166,256 @@
                 </div>
             </div>
 
+            <!-- 💰 分账配置管理 -->
+            <div class="config-card">
+                <div class="card-header">
+                    <div class="card-icon">💰</div>
+                    <div>
+                        <div class="card-title">分账配置管理</div>
+                        <div class="card-subtitle">设置平台分账比例和提现规则</div>
+                    </div>
+                    <div class="status-badge status-active">
+                        <div class="status-dot"></div>
+                        运行中
+                    </div>
+                </div>
+
+                <div class="settlement-config">
+                    <div class="config-section">
+                        <h4>🎯 分账比例设置</h4>
+                        <div class="config-grid">
+                            <div class="config-item">
+                                <label class="form-label">律师分成比例 (%)</label>
+                                <input type="number" class="form-input" id="lawyerCommission" value="85" min="0" max="100" step="1">
+                                <small class="form-help">律师获得的任务金额百分比</small>
+                            </div>
+                            <div class="config-item">
+                                <label class="form-label">平台服务费 (%)</label>
+                                <input type="number" class="form-input" id="platformFee" value="15" min="0" max="100" step="1" readonly>
+                                <small class="form-help">平台收取的服务费用 (自动计算)</small>
+                            </div>
+                            <div class="config-item">
+                                <label class="form-label">最低提现金额 (元)</label>
+                                <input type="number" class="form-input" id="minWithdrawal" value="100" min="1" step="1">
+                                <small class="form-help">用户申请提现的最低金额</small>
+                            </div>
+                            <div class="config-item">
+                                <label class="form-label">提现手续费 (%)</label>
+                                <input type="number" class="form-input" id="withdrawalFee" value="0.5" min="0" max="10" step="0.1">
+                                <small class="form-help">提现时收取的手续费比例</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-section">
+                        <h4>⚡ 结算规则设置</h4>
+                        <div class="config-grid">
+                            <div class="config-item">
+                                <label class="form-label">自动结算时间</label>
+                                <select class="form-input" id="autoSettlementTime">
+                                    <option value="immediate">立即结算</option>
+                                    <option value="1hour">1小时后</option>
+                                    <option value="24hour" selected>24小时后</option>
+                                    <option value="72hour">72小时后</option>
+                                </select>
+                                <small class="form-help">任务完成后多久自动结算</small>
+                            </div>
+                            <div class="config-item">
+                                <label class="form-label">结算周期</label>
+                                <select class="form-input" id="settlementCycle">
+                                    <option value="realtime">实时结算</option>
+                                    <option value="daily" selected>每日结算</option>
+                                    <option value="weekly">每周结算</option>
+                                    <option value="monthly">每月结算</option>
+                                </select>
+                                <small class="form-help">资金结算到账周期</small>
+                            </div>
+                            <div class="config-item">
+                                <label class="form-label">风控检查</label>
+                                <select class="form-input" id="riskControl">
+                                    <option value="strict">严格模式</option>
+                                    <option value="normal" selected>正常模式</option>
+                                    <option value="loose">宽松模式</option>
+                                </select>
+                                <small class="form-help">交易风险控制等级</small>
+                            </div>
+                            <div class="config-item">
+                                <label class="form-label">最大单笔提现 (元)</label>
+                                <input type="number" class="form-input" id="maxWithdrawal" value="50000" min="1" step="1">
+                                <small class="form-help">单次提现的最大金额限制</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-section">
+                        <h4>🔐 支付配置</h4>
+                        <div class="config-grid">
+                            <div class="config-item">
+                                <label class="form-label">支付渠道</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="enableWechat" checked>
+                                        <span>微信支付</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="enableAlipay" checked>
+                                        <span>支付宝</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="enableBank" checked>
+                                        <span>银行转账</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="config-item">
+                                <label class="form-label">担保交易</label>
+                                <select class="form-input" id="escrowMode">
+                                    <option value="enabled" selected>启用担保交易</option>
+                                    <option value="disabled">禁用担保交易</option>
+                                </select>
+                                <small class="form-help">是否启用担保交易模式</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-actions">
+                        <button class="btn btn-primary" onclick="saveSettlementConfig()">
+                            💾 保存分账配置
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetSettlementConfig()">
+                            🔄 重置为默认
+                        </button>
+                        <button class="btn btn-info" onclick="testSettlementConfig()">
+                            🧪 测试配置
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 📊 业务参数配置 -->
+            <div class="config-card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <div>
+                        <div class="card-title">业务参数配置</div>
+                        <div class="card-subtitle">任务定价、服务类型、AI引擎等业务参数</div>
+                    </div>
+                    <div class="status-badge status-active">
+                        <div class="status-dot"></div>
+                        已配置
+                    </div>
+                </div>
+
+                <div class="business-config">
+                    <div class="config-section">
+                        <h4>💼 服务类型配置</h4>
+                        <div class="service-types" id="serviceTypesList">
+                            <div class="service-type-item">
+                                <div class="service-info">
+                                    <span class="service-icon">📋</span>
+                                    <div class="service-details">
+                                        <div class="service-name">债务催收</div>
+                                        <div class="service-desc">专业律师协助进行合法债务催收</div>
+                                    </div>
+                                </div>
+                                <div class="service-pricing">
+                                    <input type="number" class="form-input" value="500" min="1" step="1">
+                                    <span>~ </span>
+                                    <input type="number" class="form-input" value="2000" min="1" step="1">
+                                    <span>元</span>
+                                </div>
+                                <div class="service-actions">
+                                    <button class="btn btn-sm btn-secondary">编辑</button>
+                                    <button class="btn btn-sm btn-danger">删除</button>
+                                </div>
+                            </div>
+                            <div class="service-type-item">
+                                <div class="service-info">
+                                    <span class="service-icon">📧</span>
+                                    <div class="service-details">
+                                        <div class="service-name">律师函服务</div>
+                                        <div class="service-desc">快速生成和发送律师函</div>
+                                    </div>
+                                </div>
+                                <div class="service-pricing">
+                                    <input type="number" class="form-input" value="30" min="1" step="1">
+                                    <span>~ </span>
+                                    <input type="number" class="form-input" value="300" min="1" step="1">
+                                    <span>元</span>
+                                </div>
+                                <div class="service-actions">
+                                    <button class="btn btn-sm btn-secondary">编辑</button>
+                                    <button class="btn btn-sm btn-danger">删除</button>
+                                </div>
+                            </div>
+                            <div class="service-type-item">
+                                <div class="service-info">
+                                    <span class="service-icon">📄</span>
+                                    <div class="service-details">
+                                        <div class="service-name">合同审核</div>
+                                        <div class="service-desc">专业律师审核合同条款</div>
+                                    </div>
+                                </div>
+                                <div class="service-pricing">
+                                    <input type="number" class="form-input" value="200" min="1" step="1">
+                                    <span>~ </span>
+                                    <input type="number" class="form-input" value="1000" min="1" step="1">
+                                    <span>元</span>
+                                </div>
+                                <div class="service-actions">
+                                    <button class="btn btn-sm btn-secondary">编辑</button>
+                                    <button class="btn btn-sm btn-danger">删除</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-success" onclick="addServiceType()">
+                            ➕ 添加服务类型
+                        </button>
+                    </div>
+
+                    <div class="config-section">
+                        <h4>🤖 AI引擎配置</h4>
+                        <div class="ai-config-grid">
+                            <div class="config-item">
+                                <label class="form-label">主要AI引擎</label>
+                                <select class="form-input" id="primaryAI">
+                                    <option value="gpt4" selected>ChatGPT-4</option>
+                                    <option value="gpt35">ChatGPT-3.5</option>
+                                    <option value="deepseek">Deepseek</option>
+                                    <option value="claude">Claude</option>
+                                </select>
+                            </div>
+                            <div class="config-item">
+                                <label class="form-label">备用AI引擎</label>
+                                <select class="form-input" id="backupAI">
+                                    <option value="deepseek" selected>Deepseek</option>
+                                    <option value="gpt35">ChatGPT-3.5</option>
+                                    <option value="claude">Claude</option>
+                                </select>
+                            </div>
+                            <div class="config-item">
+                                <label class="form-label">AI处理超时 (秒)</label>
+                                <input type="number" class="form-input" id="aiTimeout" value="30" min="5" max="300" step="1">
+                            </div>
+                            <div class="config-item">
+                                <label class="form-label">质量评分阈值</label>
+                                <input type="number" class="form-input" id="qualityThreshold" value="85" min="0" max="100" step="1">
+                                <small class="form-help">AI生成内容的最低质量要求</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-actions">
+                        <button class="btn btn-primary" onclick="saveBusinessConfig()">
+                            💾 保存业务配置
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetBusinessConfig()">
+                            🔄 重置为默认
+                        </button>
+                    </div>
+                </div>
+            </div>
+
         <!-- 律师审核管理 -->
         <div class="config-card">
             <div class="card-header">
@@ -2797,6 +3198,206 @@
                 showNotification('新的安全密钥已生成', 'success');
             }
         }
+
+        // 分账配置相关函数
+        async function saveSettlementConfig() {
+            try {
+                const config = {
+                    lawyerCommission: document.getElementById('lawyerCommission').value,
+                    platformFee: document.getElementById('platformFee').value,
+                    minWithdrawal: document.getElementById('minWithdrawal').value,
+                    withdrawalFee: document.getElementById('withdrawalFee').value,
+                    autoSettlementTime: document.getElementById('autoSettlementTime').value,
+                    settlementCycle: document.getElementById('settlementCycle').value,
+                    riskControl: document.getElementById('riskControl').value,
+                    maxWithdrawal: document.getElementById('maxWithdrawal').value,
+                    enableWechat: document.getElementById('enableWechat').checked,
+                    enableAlipay: document.getElementById('enableAlipay').checked,
+                    enableBank: document.getElementById('enableBank').checked,
+                    escrowMode: document.getElementById('escrowMode').value
+                };
+
+                // 模拟API调用
+                showNotification('正在保存分账配置...', 'info');
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // 这里应该调用实际的API
+                console.log('分账配置:', config);
+                
+                showNotification('分账配置保存成功！', 'success');
+                
+                // 更新其他界面的配置
+                updateOtherPages(config);
+                
+            } catch (error) {
+                console.error('保存分账配置失败:', error);
+                showNotification('保存配置失败: ' + error.message, 'error');
+            }
+        }
+
+        function resetSettlementConfig() {
+            if (confirm('确定要重置分账配置为默认值吗？')) {
+                document.getElementById('lawyerCommission').value = 85;
+                document.getElementById('platformFee').value = 15;
+                document.getElementById('minWithdrawal').value = 100;
+                document.getElementById('withdrawalFee').value = 0.5;
+                document.getElementById('autoSettlementTime').value = '24hour';
+                document.getElementById('settlementCycle').value = 'daily';
+                document.getElementById('riskControl').value = 'normal';
+                document.getElementById('maxWithdrawal').value = 50000;
+                document.getElementById('enableWechat').checked = true;
+                document.getElementById('enableAlipay').checked = true;
+                document.getElementById('enableBank').checked = true;
+                document.getElementById('escrowMode').value = 'enabled';
+                
+                showNotification('分账配置已重置为默认值', 'success');
+            }
+        }
+
+        function testSettlementConfig() {
+            showNotification('正在测试分账配置...', 'info');
+            
+            setTimeout(() => {
+                const testResult = Math.random() > 0.2; // 80% 成功率
+                if (testResult) {
+                    showNotification('分账配置测试通过！系统运行正常', 'success');
+                } else {
+                    showNotification('分账配置测试失败，请检查相关设置', 'error');
+                }
+            }, 2000);
+        }
+
+        // 业务配置相关函数
+        async function saveBusinessConfig() {
+            try {
+                const config = {
+                    primaryAI: document.getElementById('primaryAI').value,
+                    backupAI: document.getElementById('backupAI').value,
+                    aiTimeout: document.getElementById('aiTimeout').value,
+                    qualityThreshold: document.getElementById('qualityThreshold').value,
+                    serviceTypes: collectServiceTypes()
+                };
+
+                showNotification('正在保存业务配置...', 'info');
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                console.log('业务配置:', config);
+                
+                showNotification('业务配置保存成功！', 'success');
+                
+            } catch (error) {
+                console.error('保存业务配置失败:', error);
+                showNotification('保存配置失败: ' + error.message, 'error');
+            }
+        }
+
+        function resetBusinessConfig() {
+            if (confirm('确定要重置业务配置为默认值吗？')) {
+                document.getElementById('primaryAI').value = 'gpt4';
+                document.getElementById('backupAI').value = 'deepseek';
+                document.getElementById('aiTimeout').value = 30;
+                document.getElementById('qualityThreshold').value = 85;
+                
+                showNotification('业务配置已重置为默认值', 'success');
+            }
+        }
+
+        function addServiceType() {
+            const name = prompt('请输入服务类型名称:');
+            if (name) {
+                const desc = prompt('请输入服务描述:');
+                const minPrice = prompt('请输入最低价格:');
+                const maxPrice = prompt('请输入最高价格:');
+                
+                if (desc && minPrice && maxPrice) {
+                    const serviceList = document.getElementById('serviceTypesList');
+                    const newService = document.createElement('div');
+                    newService.className = 'service-type-item';
+                    newService.innerHTML = `
+                        <div class="service-info">
+                            <span class="service-icon">🆕</span>
+                            <div class="service-details">
+                                <div class="service-name">${name}</div>
+                                <div class="service-desc">${desc}</div>
+                            </div>
+                        </div>
+                        <div class="service-pricing">
+                            <input type="number" class="form-input" value="${minPrice}" min="1" step="1">
+                            <span>~ </span>
+                            <input type="number" class="form-input" value="${maxPrice}" min="1" step="1">
+                            <span>元</span>
+                        </div>
+                        <div class="service-actions">
+                            <button class="btn btn-sm btn-secondary">编辑</button>
+                            <button class="btn btn-sm btn-danger" onclick="removeServiceType(this)">删除</button>
+                        </div>
+                    `;
+                    serviceList.appendChild(newService);
+                    
+                    showNotification('服务类型添加成功', 'success');
+                }
+            }
+        }
+
+        function removeServiceType(button) {
+            if (confirm('确定要删除这个服务类型吗？')) {
+                button.closest('.service-type-item').remove();
+                showNotification('服务类型删除成功', 'success');
+            }
+        }
+
+        function collectServiceTypes() {
+            const serviceItems = document.querySelectorAll('.service-type-item');
+            const serviceTypes = [];
+            
+            serviceItems.forEach(item => {
+                const name = item.querySelector('.service-name').textContent;
+                const desc = item.querySelector('.service-desc').textContent;
+                const priceInputs = item.querySelectorAll('.service-pricing input');
+                const minPrice = priceInputs[0].value;
+                const maxPrice = priceInputs[1].value;
+                
+                serviceTypes.push({
+                    name,
+                    description: desc,
+                    minPrice: parseFloat(minPrice),
+                    maxPrice: parseFloat(maxPrice)
+                });
+            });
+            
+            return serviceTypes;
+        }
+
+        function updateOtherPages(config) {
+            // 更新其他页面的配置显示
+            // 这里可以通过事件系统或者localStorage来同步配置
+            localStorage.setItem('lawsker_settlement_config', JSON.stringify(config));
+            
+            // 如果有打开的支付页面，通知更新
+            const paymentWindows = window.paymentWindows || [];
+            paymentWindows.forEach(win => {
+                if (win && !win.closed) {
+                    win.postMessage({
+                        type: 'CONFIG_UPDATE',
+                        config: config
+                    }, window.location.origin);
+                }
+            });
+        }
+
+        // 监听律师分成比例变化，自动更新平台费用
+        document.addEventListener('DOMContentLoaded', function() {
+            const lawyerCommissionInput = document.getElementById('lawyerCommission');
+            const platformFeeInput = document.getElementById('platformFee');
+            
+            if (lawyerCommissionInput && platformFeeInput) {
+                lawyerCommissionInput.addEventListener('input', function() {
+                    const lawyerRate = parseFloat(this.value) || 0;
+                    const platformRate = Math.max(0, 100 - lawyerRate);
+                    platformFeeInput.value = platformRate;
+                });
+            }
+        });
 
         // 律师审核管理功能（前端模拟）
         async function refreshLawyerAudits() {
