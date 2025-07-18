@@ -83,12 +83,11 @@ class CaseService:
     ) -> Dict[str, Any]:
         """获取案件列表（分页）"""
         
-        try:
-            # 检查参数有效性
-            if page < 1:
-                page = 1
-            if page_size < 1 or page_size > 100:
-                page_size = 20
+        # 检查参数有效性
+        if page < 1:
+            page = 1
+        if page_size < 1 or page_size > 100:
+            page_size = 20
                 
         query = select(Case).where(Case.tenant_id == tenant_id)
         
