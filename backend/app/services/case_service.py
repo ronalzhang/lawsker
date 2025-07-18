@@ -147,14 +147,14 @@ class CaseService:
         
         # 分页查询
         offset = (page - 1) * page_size
-            query = query.order_by(Case.created_at.desc()).offset(offset).limit(page_size)
-            
-            # 执行查询，但不加载关联数据避免复杂性
+        query = query.order_by(Case.created_at.desc()).offset(offset).limit(page_size)
+        
+        # 执行查询，但不加载关联数据避免复杂性
         result = await self.db.execute(query)
         cases = result.scalars().all()
-            
-            # 安全计算总页数
-            total_pages = max(1, (total + page_size - 1) // page_size) if total > 0 else 1
+        
+        # 安全计算总页数
+        total_pages = max(1, (total + page_size - 1) // page_size) if total > 0 else 1
         
         return {
             "items": cases,
