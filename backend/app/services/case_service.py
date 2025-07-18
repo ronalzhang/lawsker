@@ -102,10 +102,10 @@ class CaseService:
             if filters.get("client_id"):
                 query = query.where(Case.client_id == filters["client_id"])
             
-                if filters.get("amount_min") is not None and filters["amount_min"] >= 0:
+            if filters.get("amount_min") is not None and filters["amount_min"] >= 0:
                 query = query.where(Case.case_amount >= filters["amount_min"])
             
-                if filters.get("amount_max") is not None and filters["amount_max"] >= 0:
+            if filters.get("amount_max") is not None and filters["amount_max"] >= 0:
                 query = query.where(Case.case_amount <= filters["amount_max"])
             
             if filters.get("keyword"):
