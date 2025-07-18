@@ -83,41 +83,42 @@ class CaseService:
     ) -> Dict[str, Any]:
         """获取案件列表（分页）"""
         
-        # 检查参数有效性
-        if page < 1:
-            page = 1
-        if page_size < 1 or page_size > 100:
-            page_size = 20
+        try:
+            # 检查参数有效性
+            if page < 1:
+                page = 1
+            if page_size < 1 or page_size > 100:
+                page_size = 20
                 
-        query = select(Case).where(Case.tenant_id == tenant_id)
-        
-        # 应用过滤条件
-        if filters:
-            if filters.get("status"):
-                query = query.where(Case.status == filters["status"])
+            query = select(Case).where(Case.tenant_id == tenant_id)
             
-            if filters.get("assigned_to"):
-                query = query.where(Case.assigned_to_user_id == filters["assigned_to"])
-            
-            if filters.get("client_id"):
-                query = query.where(Case.client_id == filters["client_id"])
-            
-            if filters.get("amount_min") is not None and filters["amount_min"] >= 0:
-                query = query.where(Case.case_amount >= filters["amount_min"])
-            
-            if filters.get("amount_max") is not None and filters["amount_max"] >= 0:
-                query = query.where(Case.case_amount <= filters["amount_max"])
-            
-            if filters.get("keyword"):
-                keyword = f"%{filters['keyword']}%"
-                query = query.where(
-                    or_(
-                        Case.case_number.ilike(keyword),
-                        Case.description.ilike(keyword),
+            # 应用过滤条件
+            if filters:
+                if filters.get("status"):
+                    query = query.where(Case.status == filters["status"])
+                
+                if filters.get("assigned_to"):
+                    query = query.where(Case.assigned_to_user_id == filters["assigned_to"])
+                
+                if filters.get("client_id"):
+                    query = query.where(Case.client_id == filters["client_id"])
+                
+                if filters.get("amount_min") is not None and filters["amount_min"] >= 0:
+                    query = query.where(Case.case_amount >= filters["amount_min"])
+                
+                if filters.get("amount_max") is not None and filters["amount_max"] >= 0:
+                    query = query.where(Case.case_amount <= filters["amount_max"])
+                
+                if filters.get("keyword"):
+                    keyword = f"%{filters['keyword']}%"
+                    query = query.where(
+                        or_(
+                            Case.case_number.ilike(keyword),
+                            Case.description.ilike(keyword),
                             func.cast(Case.debtor_info, func.text("TEXT")).ilike(keyword)
+                        )
                     )
-                )
-        
+            
             # 总数查询 - 使用更简单的方式
             count_query = select(func.count(Case.id)).where(Case.tenant_id == tenant_id)
             if filters:
@@ -142,25 +143,25 @@ class CaseService:
                         )
                     )
             
-        total_result = await self.db.execute(count_query)
-        total = total_result.scalar() or 0
-        
-        # 分页查询
-        offset = (page - 1) * page_size
-        query = query.order_by(Case.created_at.desc()).offset(offset).limit(page_size)
-        
-        # 执行查询，但不加载关联数据避免复杂性
-        result = await self.db.execute(query)
-        cases = result.scalars().all()
-        
-        # 安全计算总页数
-        total_pages = max(1, (total + page_size - 1) // page_size) if total > 0 else 1
-        
-        return {
-            "items": cases,
-            "total": total,
-            "page": page,
-            "page_size": page_size,
+            total_result = await self.db.execute(count_query)
+            total = total_result.scalar() or 0
+            
+            # 分页查询
+            offset = (page - 1) * page_size
+            query = query.order_by(Case.created_at.desc()).offset(offset).limit(page_size)
+            
+            # 执行查询，但不加载关联数据避免复杂性
+            result = await self.db.execute(query)
+            cases = result.scalars().all()
+            
+            # 安全计算总页数
+            total_pages = max(1, (total + page_size - 1) // page_size) if total > 0 else 1
+            
+            return {
+                "items": cases,
+                "total": total,
+                "page": page,
+                "page_size": page_size,
                 "total_pages": total_pages
             }
             
