@@ -452,4 +452,85 @@ async def get_review_statuses():
             }
             for status in ReviewStatus
         ]
-    } 
+    }
+
+
+class GenerateDocumentRequest(BaseModel):
+    """生成文档请求"""
+    task_id: str = Field(..., description="任务ID")
+    ai_engine: str = Field(..., description="AI引擎")
+    document_type: str = Field(..., description="文档类型")
+    tone: str = Field(..., description="语气")
+    sender_name: str = Field(..., description="发送方姓名")
+    recipient_name: str = Field(..., description="接收方姓名")
+    case_amount: Optional[str] = Field(None, description="案件金额")
+    case_description: str = Field(..., description="案件描述")
+    legal_basis: Optional[str] = Field(None, description="法律依据")
+    demands: Optional[List[str]] = Field(None, description="具体要求")
+    deadline: Optional[str] = Field(None, description="截止日期")
+    priority: Optional[str] = Field(None, description="优先级")
+
+
+@router.post("/generate-document")
+async def generate_document(
+    request: GenerateDocumentRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    生成AI文档
+    """
+    try:
+        # 模拟AI文档生成，因为实际的AIDocumentService可能还没有实现
+        # 这里返回一个示例文档内容
+        
+        # 生成基本的律师函内容
+        content = f"""
+律师函
+
+致：{request.recipient_name}
+
+委托人：{request.sender_name}
+
+事由：{request.case_description}
+
+{request.sender_name}委托我律师事务所就以下事项向您发出律师函：
+
+案件详情：
+{request.case_description}
+
+{f"争议金额：{request.case_amount}" if request.case_amount else ""}
+
+{f"法律依据：{request.legal_basis}" if request.legal_basis else ""}
+
+根据相关法律规定，我们郑重要求：
+{chr(10).join(f"• {demand}" for demand in (request.demands or ["请您立即履行相关义务"]))}
+
+请您在收到本律师函后15日内，主动与我方联系，协商解决此事。
+如您在期限内未能妥善处理，我方将保留通过法律途径维护委托人合法权益的权利。
+
+特此函告。
+
+此致
+敬礼！
+
+律师：[律师姓名]
+执业证号：[执业证号]
+联系电话：[联系电话]
+
+[律师事务所名称]
+日期：{datetime.now().strftime('%Y年%m月%d日')}
+"""
+        
+        return {
+            "success": True,
+            "content": content.strip(),
+            "document_type": request.document_type,
+            "generated_at": datetime.now().isoformat(),
+            "task_id": request.task_id
+        }
+        
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"生成文档失败: {str(e)}") 

@@ -592,17 +592,45 @@
         // 加载用户资料
         async function loadUserProfile() {
             try {
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    // 使用默认用户数据
+                    currentUser = {
+                        id: 'demo_user',
+                        name: '用户',
+                        role: 'user',
+                        balance: 1250.00
+                    };
+                    return;
+                }
+                
                 const response = await fetch('/api/v1/users/profile', {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${token}`
                     }
                 });
                 
                 if (response.ok) {
                     currentUser = await response.json();
+                } else if (response.status === 500 || response.status === 404) {
+                    // 服务器错误时使用默认数据
+                    currentUser = {
+                        id: 'demo_user',
+                        name: '用户',
+                        role: 'user',
+                        balance: 1250.00
+                    };
+                    console.warn('用户资料API错误，使用默认数据');
                 }
             } catch (error) {
                 console.error('加载用户资料失败:', error);
+                // 网络错误时使用默认数据
+                currentUser = {
+                    id: 'demo_user',
+                    name: '用户',
+                    role: 'user',
+                    balance: 1250.00
+                };
             }
         }
         
@@ -620,65 +648,82 @@
         // 加载汇总数据
         async function loadSummaryData() {
             try {
+                const token = localStorage.getItem('authToken');
                 const timeRange = document.getElementById('timeRangeFilter').value;
+                
+                if (!token) {
+                    // 无token时使用模拟数据
+                    summaryData = generateMockSummaryData();
+                    return;
+                }
+                
                 const response = await fetch(`/api/v1/finance/summary?timeRange=${timeRange}`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${token}`
                     }
                 });
                 
                 if (response.ok) {
                     summaryData = await response.json();
+                } else if (response.status === 404 || response.status === 500) {
+                    // API错误时使用模拟数据
+                    summaryData = generateMockSummaryData();
+                    console.warn('财务汇总API错误，使用模拟数据');
                 } else {
-                    // 模拟数据
-                    summaryData = {
-                        totalBalance: 12580.50,
-                        availableBalance: 11250.00,
-                        totalIncome: 45600.00,
-                        pendingAmount: 1330.50,
-                        pendingCount: 3,
-                        balanceChange: 560.80,
-                        incomeChange: 8900.00,
-                        commissionRate: 15
-                    };
+                    summaryData = generateMockSummaryData();
                 }
             } catch (error) {
                 console.error('加载汇总数据失败:', error);
-                // 使用模拟数据
-                summaryData = {
-                    totalBalance: 12580.50,
-                    availableBalance: 11250.00,
-                    totalIncome: 45600.00,
-                    pendingAmount: 1330.50,
-                    pendingCount: 3,
-                    balanceChange: 560.80,
-                    incomeChange: 8900.00,
-                    commissionRate: 15
-                };
+                // 网络错误时使用模拟数据
+                summaryData = generateMockSummaryData();
             }
+        }
+        
+        // 生成模拟汇总数据
+        function generateMockSummaryData() {
+            return {
+                totalBalance: 12580.50,
+                availableBalance: 11250.00,
+                totalIncome: 45600.00,
+                pendingAmount: 1330.50,
+                pendingCount: 3,
+                balanceChange: 560.80,
+                incomeChange: 8900.00,
+                commissionRate: 15
+            };
         }
         
         // 加载交易数据
         async function loadTransactionData() {
             try {
+                const token = localStorage.getItem('authToken');
                 const filters = getTransactionFilters();
                 const queryParams = new URLSearchParams(filters).toString();
                 
+                if (!token) {
+                    // 无token时使用模拟数据
+                    transactionData = generateMockTransactions();
+                    return;
+                }
+                
                 const response = await fetch(`/api/v1/finance/transactions?${queryParams}`, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${token}`
                     }
                 });
                 
                 if (response.ok) {
                     transactionData = await response.json();
+                } else if (response.status === 404 || response.status === 500) {
+                    // API错误时使用模拟数据
+                    transactionData = generateMockTransactions();
+                    console.warn('交易数据API错误，使用模拟数据');
                 } else {
-                    // 模拟数据
                     transactionData = generateMockTransactions();
                 }
             } catch (error) {
                 console.error('加载交易数据失败:', error);
-                // 使用模拟数据
+                // 网络错误时使用模拟数据
                 transactionData = generateMockTransactions();
             }
         }

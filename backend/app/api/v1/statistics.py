@@ -436,7 +436,7 @@ async def get_demo_dashboard_data() -> Dict[str, Any]:
                 "created_at": "2024-01-16T08:45:00Z"
             }
         ]
-    }
+    } 
 
 
 @router.get("/user-stats")

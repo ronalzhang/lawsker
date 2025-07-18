@@ -652,10 +652,35 @@
             
             // 获取任务ID
             const urlParams = new URLSearchParams(window.location.search);
-            const taskId = urlParams.get('taskId');
+            let taskId = urlParams.get('taskId') || urlParams.get('task_id');
             
             if (!taskId) {
-                showNotification('缺少任务ID参数', 'error');
+                // 尝试从localStorage获取最近的任务ID
+                taskId = localStorage.getItem('currentTaskId');
+            }
+            
+            if (!taskId) {
+                // 如果仍然没有taskId，显示错误并提供返回选项
+                showNotification('缺少任务ID参数，请从任务列表选择要管理的任务', 'error');
+                
+                // 显示返回按钮
+                const container = document.querySelector('.execution-container');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="main-panel" style="grid-column: 1/-1; text-align: center; padding: 60px;">
+                            <h2 style="color: #666; margin-bottom: 20px;">❌ 任务执行管理</h2>
+                            <p style="color: #999; margin-bottom: 30px;">需要选择一个任务才能进入执行管理界面</p>
+                            <div>
+                                <button class="btn btn-primary" onclick="window.location.href='/task/lawyer-tasks'" style="margin-right: 10px;">
+                                    📋 返回任务列表
+                                </button>
+                                <button class="btn btn-secondary" onclick="window.location.href='/user'">
+                                    🏠 返回工作台
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
                 return;
             }
             

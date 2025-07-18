@@ -2225,18 +2225,18 @@
             </div>
 
             <!-- 💰 分账配置管理 -->
-            <div class="config-card">
-                <div class="card-header">
+        <div class="config-card">
+            <div class="card-header">
                     <div class="card-icon">💰</div>
-                    <div>
+                <div>
                         <div class="card-title">分账配置管理</div>
                         <div class="card-subtitle">设置平台分账比例和提现规则</div>
-                    </div>
-                    <div class="status-badge status-active">
-                        <div class="status-dot"></div>
-                        运行中
-                    </div>
                 </div>
+                    <div class="status-badge status-active">
+                    <div class="status-dot"></div>
+                        运行中
+                </div>
+            </div>
 
                 <div class="settlement-config">
                     <div class="config-section">
@@ -2333,9 +2333,9 @@
                                     <option value="1hour">1小时后</option>
                                     <option value="24hour" selected>24小时后</option>
                                     <option value="72hour">72小时后</option>
-                                </select>
+                    </select>
                                 <small class="form-help">任务完成后多久自动结算</small>
-                            </div>
+                </div>
                             <div class="config-item">
                                 <label class="form-label">结算周期</label>
                                 <select class="form-input" id="settlementCycle">
@@ -2403,7 +2403,7 @@
                         </button>
                         <button class="btn btn-info" onclick="testSettlementConfig()">
                             🧪 测试配置
-                        </button>
+                    </button>
                     </div>
                 </div>
             </div>
@@ -2419,8 +2419,8 @@
                     <div class="status-badge status-active">
                         <div class="status-dot"></div>
                         已配置
-                    </div>
-                </div>
+            </div>
+        </div>
 
                 <div class="business-config">
                     <div class="config-section">
@@ -3721,6 +3721,9 @@
 
         // 标签页切换功能
         function switchTab(tabName) {
+            try {
+                console.log('切换到标签页:', tabName);
+                
             // 隐藏所有标签页内容
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
@@ -3735,12 +3738,19 @@
             const selectedTab = document.getElementById(`${tabName}-tab`);
             if (selectedTab) {
                 selectedTab.classList.add('active');
+                    console.log('标签页显示成功:', tabName);
+                } else {
+                    console.error('找不到标签页元素:', `${tabName}-tab`);
+                    showNotification(`切换到 ${tabName} 标签页失败`, 'error');
+                    return;
             }
             
             // 激活对应的按钮
             const selectedBtn = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
             if (selectedBtn) {
                 selectedBtn.classList.add('active');
+                } else {
+                    console.warn('找不到对应的标签按钮:', tabName);
             }
             
             // 根据不同标签页加载相应数据
@@ -3754,18 +3764,18 @@
                     break;
                 case 'analytics':
                     loadAnalyticsData();
-                    // 延迟初始化图表，确保DOM元素已显示
-                    setTimeout(() => {
-                        if (typeof Chart !== 'undefined' && !window.chartInitialized) {
-                            try {
-                                initAnalyticsChart();
-                                window.chartInitialized = true;
-                                console.log('访问分析标签页图表初始化完成');
-                            } catch (error) {
-                                console.error('访问分析标签页图表初始化失败:', error);
+                        // 延迟初始化图表，确保DOM元素已显示
+                        setTimeout(() => {
+                            if (typeof Chart !== 'undefined' && !window.chartInitialized) {
+                                try {
+                                    initAnalyticsChart();
+                                    window.chartInitialized = true;
+                                    console.log('访问分析标签页图表初始化完成');
+                                } catch (error) {
+                                    console.error('访问分析标签页图表初始化失败:', error);
+                                }
                             }
-                        }
-                    }, 100);
+                        }, 100);
                     break;
                 case 'rankings':
                     loadRankingsData();
@@ -3776,6 +3786,14 @@
                 case 'operations':
                     loadOperationsData();
                     break;
+                    default:
+                        console.warn('未知的标签页:', tabName);
+                }
+                
+                console.log('标签页切换完成:', tabName);
+            } catch (error) {
+                console.error('标签页切换失败:', error);
+                showNotification('标签页切换失败: ' + error.message, 'error');
             }
         }
 
@@ -5426,13 +5444,29 @@
             }
             
             // 初始化用户管理
-            initUserManagement();
+            try {
+                initUserManagement();
+                console.log('用户管理初始化成功');
+            } catch (error) {
+                console.error('用户管理初始化失败:', error);
+            }
             
             // 初始化默认tab
+            try {
             switchTab('dashboard');
+                console.log('默认标签页初始化成功');
+            } catch (error) {
+                console.error('默认标签页初始化失败:', error);
+                showNotification('页面初始化失败，请刷新重试', 'error');
+            }
             
             // 初始化分账配置
-            initSettlementConfig();
+            try {
+                initSettlementConfig();
+                console.log('分账配置初始化成功');
+            } catch (error) {
+                console.error('分账配置初始化失败:', error);
+            }
             
             // 初始化完成提示
             setTimeout(() => {
@@ -5583,6 +5617,66 @@
                         break;
                 }
             }
+        });
+
+        // 标签页切换功能
+        function switchTab(tabName) {
+            // 移除所有按钮的active状态
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 隐藏所有标签页内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 激活选中的按钮
+            const activeBtn = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
+            
+            // 显示选中的标签页内容
+            const activeContent = document.getElementById(`${tabName}-tab`);
+            if (activeContent) {
+                activeContent.classList.add('active');
+                
+                // 根据不同标签页执行特定的初始化
+                switch (tabName) {
+                    case 'dashboard':
+                        updateSystemStats();
+                        break;
+                    case 'users':
+                        // 用户管理初始化
+                        console.log('用户管理标签页激活');
+                        break;
+                    case 'analytics':
+                        // 访问分析初始化
+                        initAnalyticsChart();
+                        break;
+                    case 'rankings':
+                        // 业绩排行初始化
+                        console.log('业绩排行标签页激活');
+                        break;
+                    case 'config':
+                        // 系统配置初始化
+                        console.log('系统配置标签页激活');
+                        break;
+                    case 'operations':
+                        // 运维工具初始化
+                        console.log('运维工具标签页激活');
+                        break;
+                }
+            } else {
+                console.warn(`未找到标签页内容: ${tabName}-tab`);
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 默认激活第一个标签页
+            switchTab('dashboard');
         });
     </script>
 

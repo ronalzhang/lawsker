@@ -655,9 +655,14 @@
                             <button class="btn btn-secondary" onclick="viewTaskDetails('${task.task_id}')">
                                 📖 查看详情
                             </button>
-                            <button class="btn btn-primary" onclick="grabTask('${task.task_id}')">
-                                ⚡ 立即接单
-                            </button>
+                            ${task.status === 'in_progress' && task.lawyer_id === lawyerProfile.id ? 
+                                `<button class="btn btn-success" onclick="manageTask('${task.task_id}')">
+                                    ⚙️ 管理任务
+                                </button>` :
+                                `<button class="btn btn-primary" onclick="grabTask('${task.task_id}')">
+                                    ⚡ 立即接单
+                                </button>`
+                            }
                         </div>
                     </div>
                 `;
@@ -819,6 +824,15 @@
                 console.error('抢单失败:', error);
                 showNotification('抢单失败：' + error.message, 'error');
             }
+        }
+        
+        // 管理任务
+        function manageTask(taskId) {
+            // 保存当前任务ID到localStorage
+            localStorage.setItem('currentTaskId', taskId);
+            
+            // 跳转到任务执行管理页面
+            window.location.href = `/task/execution?taskId=${taskId}`;
         }
         
         // 加载统计数据

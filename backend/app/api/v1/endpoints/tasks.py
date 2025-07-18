@@ -54,7 +54,7 @@ async def get_current_user_optional(db: AsyncSession = Depends(get_db)) -> Optio
         current_user_dict = await get_current_user_dict()
         return await get_current_user(current_user_dict, db)
     except:
-        return None
+    return None
 
 
 class VerificationCodeRequest(BaseModel):

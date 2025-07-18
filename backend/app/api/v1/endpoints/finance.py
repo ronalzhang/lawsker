@@ -271,6 +271,105 @@ async def payment_callback(
         return {"status": "fail", "message": "回调处理失败"}
 
 
+@router.get("/summary")
+async def get_financial_summary(
+    timeRange: str = Query("month", description="时间范围：week, month, quarter, year"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """获取财务摘要信息"""
+    try:
+        from sqlalchemy import select, func
+        from datetime import datetime, timedelta
+        
+        # 计算时间范围
+        now = datetime.now()
+        if timeRange == "week":
+            start_date = now - timedelta(days=7)
+        elif timeRange == "month":
+            start_date = now - timedelta(days=30)
+        elif timeRange == "quarter":
+            start_date = now - timedelta(days=90)
+        elif timeRange == "year":
+            start_date = now - timedelta(days=365)
+        else:
+            start_date = now - timedelta(days=30)
+        
+        # 获取用户钱包信息
+        wallet_query = select(Wallet).where(Wallet.user_id == current_user.id)
+        wallet_result = await db.execute(wallet_query)
+        wallet = wallet_result.scalar_one_or_none()
+        
+        if not wallet:
+            # 创建新钱包
+            wallet = Wallet(
+                user_id=current_user.id,
+                balance=Decimal('0.00'),
+                withdrawable_balance=Decimal('0.00'),
+                frozen_balance=Decimal('0.00'),
+                total_earned=Decimal('0.00'),
+                total_withdrawn=Decimal('0.00'),
+                commission_count=0
+            )
+            db.add(wallet)
+            await db.commit()
+            await db.refresh(wallet)
+        
+        # 获取时间范围内的交易统计
+        transaction_stats = await db.execute(
+            select(
+                func.count(Transaction.id).label('transaction_count'),
+                func.sum(Transaction.amount).label('total_amount'),
+                func.avg(Transaction.amount).label('avg_amount')
+            ).where(
+                Transaction.user_id == current_user.id,
+                Transaction.created_at >= start_date,
+                Transaction.status == TransactionStatus.completed
+            )
+        )
+        stats = transaction_stats.first()
+        
+        # 获取佣金统计
+        commission_stats = await db.execute(
+            select(
+                func.count(CommissionSplit.id).label('commission_count'),
+                func.sum(CommissionSplit.amount).label('commission_amount')
+            ).where(
+                CommissionSplit.user_id == current_user.id,
+                CommissionSplit.created_at >= start_date,
+                CommissionSplit.status == CommissionStatus.paid
+            )
+        )
+        comm_stats = commission_stats.first()
+        
+        return {
+            "timeRange": timeRange,
+            "wallet": {
+                "balance": float(wallet.balance),
+                "withdrawable_balance": float(wallet.withdrawable_balance),
+                "frozen_balance": float(wallet.frozen_balance),
+                "total_earned": float(wallet.total_earned),
+                "total_withdrawn": float(wallet.total_withdrawn)
+            },
+            "transactions": {
+                "count": stats.transaction_count or 0,
+                "total_amount": float(stats.total_amount or 0),
+                "average_amount": float(stats.avg_amount or 0)
+            },
+            "commissions": {
+                "count": comm_stats.commission_count or 0,
+                "total_amount": float(comm_stats.commission_amount or 0)
+            },
+            "generated_at": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"获取财务摘要失败: {str(e)}")
+        raise HTTPException(
+            status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取财务摘要失败: {str(e)}"
+        )
+
+
 @router.get("/wallet", response_model=WalletResponse)
 async def get_wallet(
     current_user: User = Depends(get_current_user),
@@ -282,14 +381,14 @@ async def get_wallet(
         from sqlalchemy import select
         
         # 查询用户钱包
-        wallet_query = select(Wallet).where(Wallet.user_id == current_user["id"])
+        wallet_query = select(Wallet).where(Wallet.user_id == current_user.id)
         wallet_result = await db.execute(wallet_query)
         wallet = wallet_result.scalar_one_or_none()
         
         if not wallet:
             # 如果钱包不存在，创建默认钱包
             wallet = Wallet(
-                user_id=current_user["id"],
+                user_id=current_user.id,
                 balance=Decimal("0"),
                 withdrawable_balance=Decimal("0"),
                 frozen_balance=Decimal("0"),
@@ -313,6 +412,7 @@ async def get_wallet(
         )
         
     except Exception as e:
+        logger.error(f"获取钱包信息失败: {str(e)}")
         raise HTTPException(
             status_code=http_status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="获取钱包信息失败"
@@ -433,9 +533,8 @@ async def get_transactions(
         # 构建查询条件
         conditions = []
         
-        # 查询用户相关的交易（通过案件关联）
-        from app.models.case import Case
-        conditions.append(Case.tenant_id == current_user.tenant_id)
+        # 查询用户相关的交易
+        conditions.append(Transaction.user_id == current_user.id)
         
         if transaction_type:
             conditions.append(Transaction.transaction_type == transaction_type)
@@ -444,9 +543,7 @@ async def get_transactions(
         
         # 查询交易列表
         offset = (page - 1) * page_size
-        query = select(Transaction).join(Case).options(
-            selectinload(Transaction.case)
-        ).where(and_(*conditions)).order_by(
+        query = select(Transaction).where(and_(*conditions)).order_by(
             Transaction.created_at.desc()
         ).offset(offset).limit(page_size)
         
@@ -454,7 +551,7 @@ async def get_transactions(
         transactions = result.scalars().all()
         
         # 查询总数
-        count_query = select(func.count()).select_from(Transaction).join(Case).where(and_(*conditions))
+        count_query = select(func.count()).select_from(Transaction).where(and_(*conditions))
         count_result = await db.execute(count_query)
         total = count_result.scalar() or 0
         

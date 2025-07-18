@@ -712,20 +712,34 @@
                     return;
                 }
                 
-                const result = await response.json();
-                
-                if (response.ok && result.success) {
-                    currentDocument = result.data;
-                    displayDocument();
-                    addDocumentVersion();
-                    evaluateQuality();
-                    showNotification('文书生成成功', 'success');
-                } else {
-                    throw new Error(result.message || '生成失败');
+                if (response.status === 404) {
+                    showNotification('AI文书生成服务暂时不可用，请稍后再试', 'error');
+                    hideGenerating();
+                    return;
                 }
+                
+                    const result = await response.json();
+                    
+                    if (response.ok && result.success) {
+                        currentDocument = result.data;
+                        displayDocument();
+                        addDocumentVersion();
+                        evaluateQuality();
+                        showNotification('文书生成成功', 'success');
+                    } else {
+                        throw new Error(result.message || `服务器错误 (${response.status})`);
+                    }
             } catch (error) {
                 console.error('生成文书失败:', error);
-                showNotification('生成失败：' + error.message, 'error');
+                
+                // 根据错误类型显示不同的错误信息
+                if (error.message.includes('Failed to fetch')) {
+                    showNotification('网络连接失败，请检查网络连接', 'error');
+                } else if (error.message.includes('404')) {
+                    showNotification('AI文书生成服务暂时不可用', 'error');
+                } else {
+                    showNotification('生成失败：' + error.message, 'error');
+                }
                 hideGenerating();
             }
         }
