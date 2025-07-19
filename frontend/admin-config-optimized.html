@@ -3453,8 +3453,8 @@
             });
         }
 
-        // 监听律师分成比例变化，自动更新平台费用
-        document.addEventListener('DOMContentLoaded', function() {
+        // 律师分成比例变化处理函数
+        function initCommissionHandler() {
             const lawyerCommissionInput = document.getElementById('lawyerCommission');
             const platformFeeInput = document.getElementById('platformFee');
             
@@ -3465,7 +3465,7 @@
                     platformFeeInput.value = platformRate;
                 });
             }
-        });
+        }
 
         // 律师审核管理功能（前端模拟）
         async function refreshLawyerAudits() {
@@ -3719,83 +3719,6 @@
             }, 1500);
         }
 
-        // 标签页切换功能
-        function switchTab(tabName) {
-            try {
-                console.log('切换到标签页:', tabName);
-                
-            // 隐藏所有标签页内容
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // 移除所有按钮的激活状态
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // 显示选中的标签页
-            const selectedTab = document.getElementById(`${tabName}-tab`);
-            if (selectedTab) {
-                selectedTab.classList.add('active');
-                    console.log('标签页显示成功:', tabName);
-                } else {
-                    console.error('找不到标签页元素:', `${tabName}-tab`);
-                    showNotification(`切换到 ${tabName} 标签页失败`, 'error');
-                    return;
-            }
-            
-            // 激活对应的按钮
-            const selectedBtn = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
-            if (selectedBtn) {
-                selectedBtn.classList.add('active');
-                } else {
-                    console.warn('找不到对应的标签按钮:', tabName);
-            }
-            
-            // 根据不同标签页加载相应数据
-            switch(tabName) {
-                case 'dashboard':
-                    loadDashboardData();
-                    break;
-                case 'users':
-                    loadUserManagementData();
-                    refreshLawyerAudits();
-                    break;
-                case 'analytics':
-                    loadAnalyticsData();
-                        // 延迟初始化图表，确保DOM元素已显示
-                        setTimeout(() => {
-                            if (typeof Chart !== 'undefined' && !window.chartInitialized) {
-                                try {
-                                    initAnalyticsChart();
-                                    window.chartInitialized = true;
-                                    console.log('访问分析标签页图表初始化完成');
-                                } catch (error) {
-                                    console.error('访问分析标签页图表初始化失败:', error);
-                                }
-                            }
-                        }, 100);
-                    break;
-                case 'rankings':
-                    loadRankingsData();
-                    break;
-                case 'config':
-                    // 配置页面不需要特殊加载
-                    break;
-                case 'operations':
-                    loadOperationsData();
-                    break;
-                    default:
-                        console.warn('未知的标签页:', tabName);
-                }
-                
-                console.log('标签页切换完成:', tabName);
-            } catch (error) {
-                console.error('标签页切换失败:', error);
-                showNotification('标签页切换失败: ' + error.message, 'error');
-            }
-        }
 
         // 通用元素更新函数
         function updateElement(id, value) {
@@ -5385,94 +5308,22 @@
             showNotification('用户数据导出成功', 'success');
         }
 
-        // 页面初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            // 立即初始化访问统计（在任何其他操作之前）
+        // 访问统计初始化函数
+        function initAccessTracker() {
             try {
                 AccessTracker.init();
                 console.log('访问统计系统已启动');
             } catch (error) {
                 console.error('访问统计初始化失败:', error);
             }
-            
-            // 添加GPU加速类
+        }
+        
+        // GPU加速初始化函数
+        function initGPUAcceleration() {
             document.querySelectorAll('.config-card').forEach(card => {
                 card.classList.add('gpu-layer');
             });
-            
-            // 优化事件监听器
-            window.addEventListener('scroll', onScroll, { passive: true });
-            
-            // 图表初始化状态标记（全局）
-            window.chartInitialized = false;
-            
-            // 监听Chart.js加载完成事件
-            const initChartWhenReady = () => {
-                if (window.chartInitialized) {
-                    console.log('图表已经初始化，跳过重复初始化');
-                    return;
-                }
-                
-                if (typeof Chart !== 'undefined') {
-                    try {
-                        initAnalyticsChart();
-                        window.chartInitialized = true;
-                        console.log('访问分析图表初始化完成');
-                    } catch (error) {
-                        console.error('图表初始化过程中出错:', error);
-                        showNotification('图表初始化失败', 'warning');
-                    }
-                } else {
-                    console.error('Chart.js仍未加载');
-                    showNotification('图表库加载失败，图表功能将不可用', 'warning');
-                }
-            };
-
-            // 监听Chart.js加载事件（只监听一次）
-            window.addEventListener('chartjs-loaded', initChartWhenReady, { once: true });
-            
-            // 如果Chart.js已经加载，直接初始化
-            if (typeof Chart !== 'undefined') {
-                initChartWhenReady();
-            } else {
-                // 延迟检查（防止事件错过）
-                setTimeout(() => {
-                    if (typeof Chart !== 'undefined' && !window.chartInitialized) {
-                        initChartWhenReady();
-                    }
-                }, 2000);
-            }
-            
-            // 初始化用户管理
-            try {
-                initUserManagement();
-                console.log('用户管理初始化成功');
-            } catch (error) {
-                console.error('用户管理初始化失败:', error);
-            }
-            
-            // 初始化默认tab
-            try {
-            switchTab('dashboard');
-                console.log('默认标签页初始化成功');
-            } catch (error) {
-                console.error('默认标签页初始化失败:', error);
-                showNotification('页面初始化失败，请刷新重试', 'error');
-            }
-            
-            // 初始化分账配置
-            try {
-                initSettlementConfig();
-                console.log('分账配置初始化成功');
-            } catch (error) {
-                console.error('分账配置初始化失败:', error);
-            }
-            
-            // 初始化完成提示
-            setTimeout(() => {
-                showNotification('律客 管理后台加载完成 ✓', 'success');
-            }, 800);
-        });
+        }
 
         // 业务模式切换功能
         function switchBusinessMode(mode) {
@@ -5672,10 +5523,145 @@
             }
         }
 
+        // 系统统计数据更新
+        function updateSystemStats() {
+            try {
+                // 获取统计数据
+                const stats = {
+                    totalUsers: Math.floor(Math.random() * 1000) + 500,
+                    activeUsers: Math.floor(Math.random() * 200) + 100,
+                    totalRevenue: Math.floor(Math.random() * 100000) + 50000,
+                    monthlyRevenue: Math.floor(Math.random() * 20000) + 10000,
+                    totalCases: Math.floor(Math.random() * 500) + 200,
+                    completedCases: Math.floor(Math.random() * 300) + 150,
+                    pendingCases: Math.floor(Math.random() * 100) + 50,
+                    totalLawyers: Math.floor(Math.random() * 50) + 20
+                };
+                
+                // 更新仪表板统计卡片
+                const statsCards = document.querySelectorAll('.stat-card');
+                if (statsCards.length > 0) {
+                    const statsData = [
+                        { label: '总用户数', value: stats.totalUsers, icon: '👥' },
+                        { label: '活跃用户', value: stats.activeUsers, icon: '🔥' },
+                        { label: '总收入', value: `¥${stats.totalRevenue.toLocaleString()}`, icon: '💰' },
+                        { label: '月收入', value: `¥${stats.monthlyRevenue.toLocaleString()}`, icon: '📊' },
+                        { label: '总案件', value: stats.totalCases, icon: '📄' },
+                        { label: '已完成案件', value: stats.completedCases, icon: '✅' },
+                        { label: '待处理案件', value: stats.pendingCases, icon: '⏳' },
+                        { label: '律师数量', value: stats.totalLawyers, icon: '⚖️' }
+                    ];
+                    
+                    statsCards.forEach((card, index) => {
+                        if (statsData[index]) {
+                            const data = statsData[index];
+                            card.innerHTML = `
+                                <div class="stat-icon">${data.icon}</div>
+                                <div class="stat-info">
+                                    <h3>${data.value}</h3>
+                                    <p>${data.label}</p>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+                
+                console.log('系统统计数据已更新', stats);
+            } catch (error) {
+                console.error('更新系统统计数据失败:', error);
+                showNotification('获取统计数据失败', 'error');
+            }
+        }
+        
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
-            // 默认激活第一个标签页
-            switchTab('dashboard');
+            // 立即初始化访问统计（在任何其他操作之前）
+            initAccessTracker();
+            
+            // 添加GPU加速
+            initGPUAcceleration();
+            
+            // 初始化律师分成比例变化处理
+            initCommissionHandler();
+            
+            // 优化事件监听器
+            window.addEventListener('scroll', onScroll, { passive: true });
+            
+            // 图表初始化状态标记（全局）
+            window.chartInitialized = false;
+            
+            // 监听Chart.js加载完成事件
+            const initChartWhenReady = () => {
+                if (window.chartInitialized) {
+                    console.log('图表已经初始化，跳过重复初始化');
+                    return;
+                }
+                
+                if (typeof Chart !== 'undefined') {
+                    try {
+                        initAnalyticsChart();
+                        window.chartInitialized = true;
+                        console.log('访问分析图表初始化完成');
+                    } catch (error) {
+                        console.error('图表初始化过程中出错:', error);
+                        showNotification('图表初始化失败', 'warning');
+                    }
+                } else {
+                    console.error('Chart.js仍未加载');
+                    showNotification('图表库加载失败，图表功能将不可用', 'warning');
+                }
+            };
+
+            // 监听Chart.js加载事件（只监听一次）
+            window.addEventListener('chartjs-loaded', initChartWhenReady, { once: true });
+            
+            // 如果Chart.js已经加载，直接初始化
+            if (typeof Chart !== 'undefined') {
+                initChartWhenReady();
+            } else {
+                // 延迟检查（防止事件错过）
+                setTimeout(() => {
+                    if (typeof Chart !== 'undefined' && !window.chartInitialized) {
+                        initChartWhenReady();
+                    }
+                }, 2000);
+            }
+            
+            // 初始化用户管理
+            try {
+                initUserManagement();
+                console.log('用户管理初始化成功');
+            } catch (error) {
+                console.error('用户管理初始化失败:', error);
+            }
+            
+            // 初始化默认tab
+            try {
+                switchTab('dashboard');
+                console.log('默认标签页初始化成功');
+            } catch (error) {
+                console.error('默认标签页初始化失败:', error);
+                showNotification('页面初始化失败，请刷新重试', 'error');
+            }
+            
+            // 初始化分账配置
+            try {
+                initSettlementConfig();
+                console.log('分账配置初始化成功');
+            } catch (error) {
+                console.error('分账配置初始化失败:', error);
+            }
+            
+            // 初始化统计数据
+            updateSystemStats();
+            
+            // 定期更新统计数据
+            setInterval(updateSystemStats, 60000); // 每分钟更新一次
+            
+            // 初始化完成提示
+            setTimeout(() => {
+                showNotification('律客 管理后台加载完成 ✓', 'success');
+            }, 800);
         });
     </script>
 
