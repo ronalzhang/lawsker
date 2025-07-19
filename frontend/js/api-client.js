@@ -7,7 +7,7 @@
 
 class ApiClient {
     constructor() {
-        this.baseURL = window.location.origin + '/api/v1';
+        this.baseURL = 'https://156.236.74.200/api/v1';
         // 兼容多种token存储方式
         this.token = localStorage.getItem('authToken') || localStorage.getItem('accessToken');
         this.version = '1.4'; // API客户端版本号
