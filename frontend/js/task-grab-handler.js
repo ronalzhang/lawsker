@@ -43,22 +43,36 @@ class TaskGrabHandler {
             const isDemoTask = taskId.startsWith('demo-task-') || this.isDemoMode;
             
             if (!isDemoTask && window.apiClient && window.apiClient.isAuthenticated()) {
-                // 真实API调用
-                const response = await fetch(`/api/v1/tasks/grab/${taskId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-                        'Content-Type': 'application/json'
+                // 真实API调用 - 使用统一的API客户端
+                try {
+                    const result = await window.apiClient.grabTask(taskId);
+                    
+                    if (result.success) {
+                        success = true;
+                        message = result.message || '抢单成功！任务已分配给您';
+                    } else {
+                        throw new Error(result.message || '抢单失败');
                     }
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok && result.success) {
-                    success = true;
-                    message = '抢单成功！任务已分配给您';
-                } else {
-                    throw new Error(result.message || '抢单失败');
+                } catch (apiError) {
+                    // 如果API客户端失败，回退到直接fetch
+                    console.warn('API客户端抢单失败，尝试直接调用:', apiError);
+                    
+                    const response = await fetch(`${window.apiClient.baseURL}/tasks/grab/${taskId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok && result.success) {
+                        success = true;
+                        message = result.message || '抢单成功！任务已分配给您';
+                    } else {
+                        throw new Error(result.message || '抢单失败');
+                    }
                 }
             } else {
                 // 演示模式 - 模拟抢单
@@ -133,26 +147,46 @@ class TaskGrabHandler {
         // 延迟执行后续操作
         setTimeout(() => {
             // 如果在律师工作台，移动任务到我的任务列表
-            if (typeof moveTaskToMyTasks === 'function') {
-                moveTaskToMyTasks(taskElement, taskId);
+            if (typeof moveTaskToMyTasks === 'function' && taskElement) {
+                try {
+                    moveTaskToMyTasks(taskElement, taskId);
+                } catch (error) {
+                    console.error('移动任务到我的任务列表失败:', error);
+                }
             }
             
             // 如果在接单中心，刷新列表
             if (typeof loadTasks === 'function') {
-                loadTasks();
+                try {
+                    loadTasks();
+                } catch (error) {
+                    console.error('刷新接单中心任务列表失败:', error);
+                }
             }
             if (typeof loadStats === 'function') {
-                loadStats();
+                try {
+                    loadStats();
+                } catch (error) {
+                    console.error('刷新统计数据失败:', error);
+                }
             }
             
             // 刷新律师工作台的任务列表
             if (typeof loadAvailableTasks === 'function') {
-                loadAvailableTasks();
+                try {
+                    loadAvailableTasks();
+                } catch (error) {
+                    console.error('刷新可抢单任务列表失败:', error);
+                }
             }
             if (typeof loadMyTasks === 'function') {
-                loadMyTasks();
+                try {
+                    loadMyTasks();
+                } catch (error) {
+                    console.error('刷新我的任务列表失败:', error);
+                }
             }
-        }, 2000);
+        }, 1500);
     }
 
     /**

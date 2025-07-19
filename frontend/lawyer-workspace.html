@@ -2310,18 +2310,48 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
 
         // 将抢到的任务移动到"我的接单任务"区域
         function moveTaskToMyTasks(taskItem, taskId) {
+            if (!taskItem) {
+                console.error('taskItem is null, cannot move task');
+                return;
+            }
+            
             // 移除原任务
             taskItem.style.transition = 'all 0.5s ease';
             taskItem.style.transform = 'translateX(100%)';
             taskItem.style.opacity = '0';
             
             setTimeout(() => {
-                taskItem.remove();
+                if (taskItem.parentNode) {
+                    taskItem.remove();
+                }
                 
-                // 添加到"我的接单任务"
-                const myTasksList = document.getElementById('tasksList');
-                const newTaskItem = createMyTaskItem(taskId);
-                myTasksList.insertBefore(newTaskItem, myTasksList.firstChild);
+                // 添加到"我的接单任务" - 正确的ID应该是myTasksList
+                const myTasksList = document.getElementById('myTasksList');
+                if (!myTasksList) {
+                    console.error('myTasksList not found, cannot add task');
+                    return;
+                }
+                
+                // 创建新任务项 - 使用从原任务提取的数据
+                const newTaskItem = createMyTaskItemFromGrabbed(taskItem, taskId);
+                if (!newTaskItem) {
+                    console.error('Failed to create new task item');
+                    return;
+                }
+                
+                // 安全地插入新任务
+                const firstChild = myTasksList.firstElementChild;
+                if (firstChild) {
+                    myTasksList.insertBefore(newTaskItem, firstChild);
+                } else {
+                    myTasksList.appendChild(newTaskItem);
+                }
+                
+                // 隐藏空任务提示
+                const noMyTasks = document.getElementById('noMyTasks');
+                if (noMyTasks) {
+                    noMyTasks.style.display = 'none';
+                }
                 
                 // 动画效果
                 newTaskItem.style.transform = 'translateX(-100%)';
@@ -2330,9 +2360,109 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
                     newTaskItem.style.transition = 'all 0.5s ease';
                     newTaskItem.style.transform = 'translateX(0)';
                     newTaskItem.style.opacity = '1';
+                    
+                    // 更新统计数据
+                    updateTaskStats();
                 }, 100);
                 
             }, 500);
+        }
+        
+        // 更新任务统计数据
+        function updateTaskStats() {
+            try {
+                // 更新抢单总数
+                const totalGrabbedElement = document.getElementById('totalGrabbedTasks');
+                if (totalGrabbedElement) {
+                    const current = parseInt(totalGrabbedElement.textContent) || 0;
+                    totalGrabbedElement.textContent = current + 1;
+                }
+                
+                // 更新确认任务计数
+                updateConfirmedCount();
+                
+                console.log('任务统计已更新');
+            } catch (error) {
+                console.error('更新任务统计失败:', error);
+            }
+        }
+
+        // 从抢到的任务创建"我的任务"项
+        function createMyTaskItemFromGrabbed(originalTaskItem, taskId) {
+            if (!originalTaskItem) {
+                console.error('originalTaskItem is null');
+                return null;
+            }
+            
+            try {
+                // 从原任务提取信息
+                const titleElement = originalTaskItem.querySelector('.task-title');
+                const metaElement = originalTaskItem.querySelector('.task-meta');
+                const descriptionElement = originalTaskItem.querySelector('.task-description');
+                
+                const title = titleElement ? titleElement.textContent.trim() : '未命名任务';
+                const description = descriptionElement ? descriptionElement.textContent.trim() : '无描述';
+                
+                // 提取预算信息
+                let budget = '面议';
+                if (metaElement) {
+                    const metaText = metaElement.textContent;
+                    const budgetMatch = metaText.match(/💰\s*([^📅]+)/);
+                    if (budgetMatch) {
+                        budget = budgetMatch[1].trim();
+                    }
+                }
+                
+                const taskItem = document.createElement('div');
+                taskItem.className = 'task-item';
+                taskItem.setAttribute('data-task-id', taskId);
+                taskItem.style.borderBottom = '1px solid var(--glass-border)';
+                taskItem.style.padding = '16px 20px';
+                
+                const createdDate = new Date().toLocaleDateString();
+                
+                taskItem.innerHTML = `
+                    <div class="task-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                        <div class="task-info">
+                            <div class="task-title" style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 8px;">✨ ${title}</div>
+                            <div class="task-meta" style="display: flex; gap: 16px; color: var(--text-secondary); font-size: 14px;">
+                                <span>💰 ${budget}</span>
+                                <span>📅 ${createdDate}</span>
+                                <span>🏃‍♂️ 已接单</span>
+                            </div>
+                            <div class="task-description" style="color: var(--text-secondary); font-size: 13px; margin-top: 6px;">
+                                ${description}
+                            </div>
+                        </div>
+                        <div class="task-actions" style="display: flex; gap: 8px;">
+                            <button class="btn-small btn-secondary" onclick="toggleTaskContent('${taskId}')" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.1); color: var(--text-primary); cursor: pointer;">预览</button>
+                            <button class="btn-small btn-success" onclick="confirmTask('${taskId}')" style="padding: 6px 12px; border-radius: 6px; border: none; background: var(--gradient-success); color: white; cursor: pointer;">确认发送</button>
+                        </div>
+                    </div>
+                    <div class="task-content" id="task-content-${taskId}" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--glass-border);">
+                        <div class="ai-generated-content">
+                            <h4 style="color: var(--text-primary); margin-bottom: 12px;">AI生成的法律文书内容：</h4>
+                            <div class="edit-area">
+                                <textarea class="form-textarea" id="content-${taskId}" rows="8" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: var(--text-primary); font-family: monospace; line-height: 1.6;">正在生成AI法律文书内容...
+
+任务标题：${title}
+任务描述：${description}
+
+AI将根据以上信息生成专业的法律文书内容...</textarea>
+                                <div style="margin-top: 12px; display: flex; gap: 8px;">
+                                    <button class="btn btn-secondary" onclick="regenerateContent('${taskId}')" style="padding: 8px 16px;">🔄 重新生成</button>
+                                    <button class="btn btn-primary" onclick="saveContent('${taskId}')" style="padding: 8px 16px;">💾 保存修改</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                return taskItem;
+            } catch (error) {
+                console.error('创建我的任务项失败:', error);
+                return null;
+            }
         }
 
         // 创建演示可抢单任务
