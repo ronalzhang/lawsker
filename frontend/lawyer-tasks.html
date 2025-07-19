@@ -335,6 +335,9 @@
             background: #dc3545;
         }
     </style>
+    <!-- 统一的任务处理脚本 -->
+    <script src="/js/api-client.js"></script>
+    <script src="/js/task-grab-handler.js"></script>
 </head>
 <body>
     <div class="container">
@@ -572,6 +575,49 @@
             }
         }
         
+        // 生成演示任务数据 - 使用统一的数据源
+        function generateMockTasks() {
+            if (window.taskGrabHandler) {
+                return window.taskGrabHandler.getDemoTasks();
+            }
+            
+            // 如果统一处理器还未加载，使用备用数据
+            return [
+                {
+                    task_id: 'demo-task-001',
+                    task_type: 'lawyer_letter',
+                    title: '债权催收律师函 #001',
+                    description: '需要向欠款人发送正式的债权催收律师函，督促其履行还款义务。案件编号: CASE-2024-0001',
+                    budget: 650,
+                    urgency: 'normal',
+                    created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+                    publisher_name: '张***',
+                    is_demo: true
+                },
+                {
+                    task_id: 'demo-task-002',
+                    task_type: 'debt_collection',
+                    title: '企业欠款催收 #002',
+                    description: '企业间的货款纠纷，需要专业律师进行催收处理。案件编号: CASE-2024-0002',
+                    budget: 3500,
+                    urgency: 'urgent',
+                    created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+                    publisher_name: '李***',
+                    is_demo: true
+                },
+                {
+                    task_id: 'demo-task-003',
+                    task_type: 'contract_review',
+                    title: '商务合同审查 #003',
+                    description: '需要律师审查商务合作合同的条款和风险点。案件编号: CASE-2024-0003',
+                    budget: 1200,
+                    urgency: 'normal',
+                    created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+                    publisher_name: '王***',
+                    is_demo: true
+                }
+            ];
+        }
         
         // 获取筛选条件
         function getFilters() {
@@ -795,21 +841,21 @@
             document.body.appendChild(modal);
         }
         
-        // 抢单
+        // 抢单 - 使用统一的处理器
         async function grabTask(taskId) {
-            try {
-                const response = await fetch(`/api/v1/tasks/grab/${taskId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok && result.success) {
-                    showNotification('抢单成功！任务已分配给您', 'success');
+            const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+            const grabButton = taskElement ? taskElement.querySelector('.btn-primary') : null;
+            
+            // 存储原始按钮文本
+            if (grabButton) {
+                grabButton.setAttribute('data-original-text', grabButton.innerHTML);
+            }
+            
+            return window.taskGrabHandler.grabTask(taskId, {
+                taskElement: taskElement,
+                grabButton: grabButton,
+                onSuccess: (taskId, message) => {
+                    // 接单中心特有的成功处理
                     loadTasks(); // 重新加载任务列表
                     loadStats(); // 更新统计数据
                     
@@ -817,13 +863,12 @@
                     setTimeout(() => {
                         window.location.href = '/legal?tab=my-tasks';
                     }, 1500);
-                } else {
-                    throw new Error(result.message || '抢单失败');
+                },
+                onError: (error) => {
+                    // 接单中心特有的错误处理
+                    console.error('律师接单中心抢单失败:', error);
                 }
-            } catch (error) {
-                console.error('抢单失败:', error);
-                showNotification('抢单失败：' + error.message, 'error');
-            }
+            });
         }
         
         // 管理任务

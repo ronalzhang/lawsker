@@ -225,6 +225,60 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
+        /* 小按钮样式 */
+        .btn-small {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-small:last-child {
+            margin-right: 0;
+        }
+
+        .btn-small.btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .btn-small.btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-small.btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-small:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-small:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 任务操作按钮区域 */
+        .task-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -686,6 +740,129 @@
         .chart-labels span {
             flex: 1;
             text-align: center;
+        }
+
+        /* 模态框样式 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--blur-radius));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            transform: translateY(30px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-header .close {
+            font-size: 24px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+            border: none;
+            background: none;
+            transition: color 0.3s ease;
+        }
+
+        .modal-header .close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 20px 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px 20px;
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        /* 任务状态样式增强 */
+        .status-accepted {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .status-inprogress {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+
+        .status-published {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .status-cancelled {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        /* 星级评分样式 */
+        .rating-stars {
+            display: flex;
+            gap: 4px;
+            font-size: 20px;
+            margin-top: 8px;
+        }
+
+        .rating-stars .star {
+            cursor: pointer;
+            color: #ddd;
+            transition: color 0.3s ease;
+        }
+
+        .rating-stars .star:hover,
+        .rating-stars .star.active {
+            color: #ffc107;
         }
     </style>
 </head>
@@ -2691,12 +2868,346 @@
 
         // 查看任务详情
         function viewTaskDetails(taskId) {
-            alert(`查看任务详情功能开发中\n任务ID: ${taskId}`);
+            // 查找任务数据
+            let taskData = null;
+            
+            // 从演示数据中查找
+            const demoUserTasks = [
+                {
+                    task_id: 'user-task-001',
+                    task_type: 'lawyer_letter',
+                    title: '债权催收律师函',
+                    description: '需要向欠款方发送律师函，催收货款15万元',
+                    budget: 650,
+                    status: 'grabbed',
+                    urgency: 'normal',
+                    created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                    assigned_lawyer: '张律师',
+                    target_info: {
+                        target_name: '王某某',
+                        contact_phone: '138****5678',
+                        contact_address: '上海市浦东新区张江路123号',
+                        case_details: '拖欠货款15万元，已逾期3个月未付'
+                    }
+                },
+                {
+                    task_id: 'user-task-002', 
+                    task_type: 'contract_review',
+                    title: '商务合作合同审查',
+                    description: '重要合作协议需要法律专业审查，合同金额500万',
+                    budget: 1200,
+                    status: 'completed',
+                    urgency: 'urgent',
+                    created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+                    completed_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+                    assigned_lawyer: '李律师',
+                    target_info: {
+                        target_name: 'ABC科技有限公司',
+                        contact_phone: '021-12345678',
+                        contact_address: '上海市黄浦区南京路100号',
+                        case_details: '战略合作协议，涉及知识产权和技术转让'
+                    }
+                },
+                {
+                    task_id: 'user-task-003',
+                    task_type: 'legal_consultation',
+                    title: '劳动纠纷法律咨询',
+                    description: '公司员工劳动合同纠纷，需要专业法律建议',
+                    budget: 400,
+                    status: 'published',
+                    urgency: 'low',
+                    created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+                    assigned_lawyer: null,
+                    target_info: {
+                        target_name: '员工小李',
+                        contact_phone: '150****9876',
+                        contact_address: '北京市朝阳区建国路88号',
+                        case_details: '劳动合同到期争议，涉及补偿金计算'
+                    }
+                }
+            ];
+            
+            taskData = demoUserTasks.find(task => task.task_id === taskId);
+            
+            if (!taskData) {
+                alert('任务数据不存在');
+                return;
+            }
+
+            // 创建任务详情模态框
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.id = 'taskDetailModal';
+            
+            const statusText = {
+                'published': '等待律师接单',
+                'grabbed': '律师已接单',
+                'in_progress': '处理中',
+                'completed': '已完成',
+                'confirmed': '已确认'
+            };
+            
+            const urgencyText = {
+                'low': '低',
+                'normal': '普通',
+                'urgent': '紧急'
+            };
+            
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>📋 任务详情</h3>
+                        <button class="close" onclick="closeTaskDetailModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="display: grid; gap: 16px;">
+                            <!-- 基本信息 -->
+                            <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 8px;">
+                                <h4 style="margin: 0 0 12px 0; color: var(--text-primary);">基本信息</h4>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <div><strong>任务标题：</strong>${taskData.title}</div>
+                                    <div><strong>任务类型：</strong>${taskData.task_type}</div>
+                                    <div><strong>预算金额：</strong>¥${taskData.budget}</div>
+                                    <div><strong>紧急程度：</strong>${urgencyText[taskData.urgency] || '普通'}</div>
+                                    <div><strong>发布时间：</strong>${new Date(taskData.created_at).toLocaleString()}</div>
+                                    <div><strong>任务状态：</strong><span class="task-status status-${taskData.status}">${statusText[taskData.status]}</span></div>
+                                </div>
+                                <div style="margin-top: 12px;">
+                                    <strong>任务描述：</strong>
+                                    <div style="margin-top: 4px; color: var(--text-secondary);">${taskData.description}</div>
+                                </div>
+                            </div>
+                            
+                            <!-- 目标信息 -->
+                            ${taskData.target_info ? `
+                            <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 8px;">
+                                <h4 style="margin: 0 0 12px 0; color: var(--text-primary);">目标信息</h4>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <div><strong>目标对象：</strong>${taskData.target_info.target_name}</div>
+                                    <div><strong>联系电话：</strong>${taskData.target_info.contact_phone}</div>
+                                    <div style="grid-column: 1 / -1;"><strong>联系地址：</strong>${taskData.target_info.contact_address}</div>
+                                    <div style="grid-column: 1 / -1;">
+                                        <strong>案件详情：</strong>
+                                        <div style="margin-top: 4px; color: var(--text-secondary);">${taskData.target_info.case_details}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            ` : ''}
+                            
+                            <!-- 执行信息 -->
+                            ${taskData.assigned_lawyer ? `
+                            <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 8px;">
+                                <h4 style="margin: 0 0 12px 0; color: var(--text-primary);">执行信息</h4>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <div><strong>接单律师：</strong>${taskData.assigned_lawyer}</div>
+                                    ${taskData.completed_at ? `<div><strong>完成时间：</strong>${new Date(taskData.completed_at).toLocaleString()}</div>` : ''}
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="closeTaskDetailModal()">关闭</button>
+                        ${taskData.status === 'published' ? `<button class="btn btn-primary" onclick="closeTaskDetailModal(); editTask('${taskId}');">编辑任务</button>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        // 关闭任务详情模态框
+        function closeTaskDetailModal() {
+            const modal = document.getElementById('taskDetailModal');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => {
+                    modal.remove();
+                }, 300);
+            }
         }
 
         // 编辑任务
         function editTask(taskId) {
-            alert(`编辑任务功能开发中\n任务ID: ${taskId}`);
+            // 查找任务数据
+            let taskData = null;
+            
+            // 从演示数据中查找
+            const demoUserTasks = [
+                {
+                    task_id: 'user-task-001',
+                    task_type: 'lawyer_letter',
+                    title: '债权催收律师函',
+                    description: '需要向欠款方发送律师函，催收货款15万元',
+                    budget: 650,
+                    status: 'grabbed',
+                    urgency: 'normal',
+                    target_info: {
+                        target_name: '王某某',
+                        contact_phone: '138****5678',
+                        contact_address: '上海市浦东新区张江路123号',
+                        case_details: '拖欠货款15万元，已逾期3个月未付'
+                    }
+                },
+                {
+                    task_id: 'user-task-003',
+                    task_type: 'legal_consultation',
+                    title: '劳动纠纷法律咨询',
+                    description: '公司员工劳动合同纠纷，需要专业法律建议',
+                    budget: 400,
+                    status: 'published',
+                    urgency: 'low',
+                    target_info: {
+                        target_name: '员工小李',
+                        contact_phone: '150****9876',
+                        contact_address: '北京市朝阳区建国路88号',
+                        case_details: '劳动合同到期争议，涉及补偿金计算'
+                    }
+                }
+            ];
+            
+            taskData = demoUserTasks.find(task => task.task_id === taskId);
+            
+            if (!taskData) {
+                alert('任务数据不存在');
+                return;
+            }
+
+            if (taskData.status !== 'published') {
+                alert('只有未被接单的任务才能编辑');
+                return;
+            }
+
+            // 创建编辑任务模态框
+            const modal = document.createElement('div');
+            modal.className = 'modal show';
+            modal.id = 'taskEditModal';
+            
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>✏️ 编辑任务</h3>
+                        <button class="close" onclick="closeTaskEditModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editTaskForm">
+                            <div class="form-group">
+                                <label class="form-label">任务类型</label>
+                                <select class="form-select" id="editTaskType" required>
+                                    <option value="lawyer_letter" ${taskData.task_type === 'lawyer_letter' ? 'selected' : ''}>律师函</option>
+                                    <option value="debt_collection" ${taskData.task_type === 'debt_collection' ? 'selected' : ''}>债务催收</option>
+                                    <option value="contract_review" ${taskData.task_type === 'contract_review' ? 'selected' : ''}>合同审查</option>
+                                    <option value="legal_consultation" ${taskData.task_type === 'legal_consultation' ? 'selected' : ''}>法律咨询</option>
+                                    <option value="litigation" ${taskData.task_type === 'litigation' ? 'selected' : ''}>诉讼代理</option>
+                                    <option value="other" ${taskData.task_type === 'other' ? 'selected' : ''}>其他</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">任务标题</label>
+                                <input type="text" class="form-input" id="editTaskTitle" value="${taskData.title}" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">任务描述</label>
+                                <textarea class="form-textarea" id="editTaskDescription" required>${taskData.description}</textarea>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div class="form-group">
+                                    <label class="form-label">预期律师费（元）</label>
+                                    <input type="number" class="form-input" id="editTaskBudget" value="${taskData.budget}" min="1" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">紧急程度</label>
+                                    <select class="form-select" id="editTaskUrgency" required>
+                                        <option value="low" ${taskData.urgency === 'low' ? 'selected' : ''}>低</option>
+                                        <option value="normal" ${taskData.urgency === 'normal' ? 'selected' : ''}>普通</option>
+                                        <option value="urgent" ${taskData.urgency === 'urgent' ? 'selected' : ''}>紧急</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- 目标信息 -->
+                            <h4 style="margin: 20px 0 12px 0; color: var(--text-primary);">目标信息</h4>
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div class="form-group">
+                                    <label class="form-label">目标对象</label>
+                                    <input type="text" class="form-input" id="editTargetName" value="${taskData.target_info?.target_name || ''}" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">联系电话</label>
+                                    <input type="tel" class="form-input" id="editTargetPhone" value="${taskData.target_info?.contact_phone || ''}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">联系地址</label>
+                                <input type="text" class="form-input" id="editTargetAddress" value="${taskData.target_info?.contact_address || ''}" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">案件详情</label>
+                                <textarea class="form-textarea" id="editCaseDetails" required>${taskData.target_info?.case_details || ''}</textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="closeTaskEditModal()">取消</button>
+                        <button class="btn btn-primary" onclick="saveTaskEdit('${taskId}')">保存修改</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        // 关闭编辑任务模态框
+        function closeTaskEditModal() {
+            const modal = document.getElementById('taskEditModal');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => {
+                    modal.remove();
+                }, 300);
+            }
+        }
+
+        // 保存任务编辑
+        function saveTaskEdit(taskId) {
+            const form = document.getElementById('editTaskForm');
+            if (!form.checkValidity()) {
+                alert('请填写完整的任务信息');
+                return;
+            }
+
+            const updatedData = {
+                task_type: document.getElementById('editTaskType').value,
+                title: document.getElementById('editTaskTitle').value,
+                description: document.getElementById('editTaskDescription').value,
+                budget: parseInt(document.getElementById('editTaskBudget').value),
+                urgency: document.getElementById('editTaskUrgency').value,
+                target_info: {
+                    target_name: document.getElementById('editTargetName').value,
+                    contact_phone: document.getElementById('editTargetPhone').value,
+                    contact_address: document.getElementById('editTargetAddress').value,
+                    case_details: document.getElementById('editCaseDetails').value
+                }
+            };
+
+            // 演示模式 - 模拟保存
+            console.log('保存任务修改:', taskId, updatedData);
+            alert('任务修改已保存！（演示模式）');
+            
+            closeTaskEditModal();
+            
+            // 刷新任务列表
+            setTimeout(() => {
+                loadUserTasks();
+            }, 500);
         }
     </script>
 </body>

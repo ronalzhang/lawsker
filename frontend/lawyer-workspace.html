@@ -12,6 +12,7 @@
     <!-- 核心脚本 -->
     <script src="/js/api-client.js?v=1.4"></script>
     <script src="/js/workspace-auth.js?v=1752099300"></script>
+    <script src="/js/task-grab-handler.js"></script>
     <style>
         /* 确保页面背景正确显示 */
         html, body {
@@ -2278,82 +2279,34 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
         }
 
         // 抢任务功能 - 更新后的版本
+        // 抢单 - 使用统一的处理器
         async function grabTask(taskId) {
             const taskItem = document.querySelector(`[data-task-id="${taskId}"]`);
             if (!taskItem) return;
             
-                if (confirm('确定要抢这个任务吗？抢到后需要在规定时间内完成。')) {
-                const grabBtn = taskItem.querySelector('.grab-btn');
-                const originalText = grabBtn.innerHTML;
-                    grabBtn.disabled = true;
-                grabBtn.innerHTML = '🔄 抢单中...';
-                grabBtn.style.animation = 'none';
-                
-                try {
-                    if (apiClient.isAuthenticated()) {
-                        // 真实API调用
-                        const response = await fetch(`/api/v1/tasks/grab/${taskId}`, {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                            }
-                        });
-                        
-                        const result = await response.json();
-                        
-                        if (result.success) {
-                            // 抢单成功
-                            taskItem.classList.add('grabbed');
-                            taskItem.style.background = 'rgba(76, 175, 80, 0.1)';
-                            taskItem.style.border = '1px solid rgba(76, 175, 80, 0.3)';
-                            
-                            const actions = taskItem.querySelector('.task-actions');
-                            actions.innerHTML = '<span class="status-badge" style="padding: 6px 12px; border-radius: 6px; background: rgba(76, 175, 80, 0.2); color: #4caf50; font-size: 12px; font-weight: 500;">✅ 已抢到</span>';
-                            
-                            showNotification('🎉 恭喜！您已成功抢到这个任务！', 'success');
-                            
-                            // 刷新任务列表
-                    setTimeout(() => {
-                                loadAvailableTasks();
-                                loadMyTasks();
-                            }, 2000);
-                            
-                        } else {
-                            throw new Error(result.message || '抢单失败');
-                        }
-                    } else {
-                        // 演示模式 - 模拟抢单
-                        await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
-                        
-                        const success = Math.random() > 0.3;
-                        if (success) {
-                            taskItem.classList.add('grabbed');
-                            taskItem.style.background = 'rgba(76, 175, 80, 0.1)';
-                            taskItem.style.border = '1px solid rgba(76, 175, 80, 0.3)';
-                            
-                            const actions = taskItem.querySelector('.task-actions');
-                            actions.innerHTML = '<span class="status-badge" style="padding: 6px 12px; border-radius: 6px; background: rgba(76, 175, 80, 0.2); color: #4caf50; font-size: 12px; font-weight: 500;">✅ 已抢到</span>';
-                            
-                            showNotification('🎉 恭喜！您已成功抢到这个任务！', 'success');
-                            
-                            setTimeout(() => {
-                                moveTaskToMyTasks(taskItem, taskId);
-                            }, 2000);
-                        } else {
-                            grabBtn.disabled = false;
-                            grabBtn.innerHTML = originalText;
-                            grabBtn.style.animation = 'pulse 2s infinite';
-                            showNotification('😢 很遗憾，其他律师抢先一步，请尝试其他任务。', 'warning');
-                        }
-                    }
-                } catch (error) {
-                    console.error('抢单失败:', error);
-                    grabBtn.disabled = false;
-                    grabBtn.innerHTML = originalText;
-                    grabBtn.style.animation = 'pulse 2s infinite';
-                    showNotification('抢单失败：' + error.message, 'error');
-                }
+            const grabBtn = taskItem.querySelector('.grab-btn');
+            
+            // 存储原始按钮文本
+            if (grabBtn) {
+                grabBtn.setAttribute('data-original-text', grabBtn.innerHTML);
             }
+            
+            return window.taskGrabHandler.grabTask(taskId, {
+                taskElement: taskItem,
+                grabButton: grabBtn,
+                onSuccess: (taskId, message) => {
+                    // 律师工作台特有的成功处理
+                    setTimeout(() => {
+                        moveTaskToMyTasks(taskItem, taskId);
+                        loadAvailableTasks();
+                        loadMyTasks();
+                    }, 2000);
+                },
+                onError: (error) => {
+                    // 律师工作台特有的错误处理
+                    console.error('律师工作台抢单失败:', error);
+                }
+            });
         }
 
         // 将抢到的任务移动到"我的接单任务"区域
