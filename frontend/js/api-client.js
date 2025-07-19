@@ -50,9 +50,17 @@ class ApiClient {
      * 通用请求方法
      */
     async request(endpoint, options = {}) {
-        // 演示模式下，先尝试API调用，失败后使用fallback数据
+        // 演示模式下，如果没有token直接使用fallback数据
         if (this.isDemoMode) {
-            console.log(`🎭 演示模式: 先尝试真实API，失败后使用本地数据 for ${endpoint}`);
+            this.refreshToken();
+            if (!this.token) {
+                console.log(`🎭 演示模式: 无Token，直接使用本地数据 for ${endpoint}`);
+                // 模拟网络延迟，提供真实感
+                await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 200));
+                return this._getFallbackData(endpoint);
+            }
+            
+            console.log(`🎭 演示模式: 有Token，先尝试真实API，失败后使用本地数据 for ${endpoint}`);
             // 尝试真实API调用
             try {
                 const url = `${this.baseURL}${endpoint}`;
@@ -64,14 +72,9 @@ class ApiClient {
                     ...options
                 };
 
-                // 即使是演示模式，也尝试添加token（如果有的话）
-                this.refreshToken();
-                if (this.token) {
-                    config.headers['Authorization'] = `Bearer ${this.token}`;
-                    console.log(`🔗 演示模式API尝试: ${config.method || 'GET'} ${url} (有Token)`);
-                } else {
-                    console.log(`🔗 演示模式API尝试: ${config.method || 'GET'} ${url} (无Token)`);
-                }
+                // 添加token到请求头
+                config.headers['Authorization'] = `Bearer ${this.token}`;
+                console.log(`🔗 演示模式API尝试: ${config.method || 'GET'} ${url} (有Token)`);
 
                 const response = await fetch(url, config);
                 
