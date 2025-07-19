@@ -53,7 +53,7 @@ async def get_current_user_optional(db: AsyncSession = Depends(get_db)) -> Optio
     try:
         current_user_dict = await get_current_user_dict()
         return await get_current_user(current_user_dict, db)
-    except:
+    except Exception:
         return None
 
 

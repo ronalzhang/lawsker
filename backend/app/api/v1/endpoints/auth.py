@@ -22,7 +22,7 @@ security = HTTPBearer()
 # Redis客户端用于存储验证码
 try:
     redis_client = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
-except:
+except Exception:
     redis_client = None
 
 router = APIRouter()
