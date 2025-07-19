@@ -1584,6 +1584,7 @@
             
             const taskItem = document.createElement('div');
             taskItem.className = 'task-item';
+            const taskId = `user-task-${Date.now()}`;
             taskItem.innerHTML = `
                 <div class="task-info">
                     <div>
@@ -1593,7 +1594,8 @@
                     <span class="task-status status-published">已发布</span>
                 </div>
                 <div class="task-actions">
-                    <button class="btn-small btn-primary" onclick="viewTaskDetail('${Date.now()}')">查看详情</button>
+                    <button class="btn-small btn-primary" onclick="viewTaskDetails('${taskId}')">查看详情</button>
+                    <button class="btn-small btn-secondary" onclick="editTask('${taskId}')">编辑任务</button>
                 </div>
             `;
             
@@ -2590,8 +2592,34 @@
             }
         }
 
-        // 刷新任务反馈状态
-        function refreshTaskFeedback() {
+        // 刷新任务反馈状态（统一函数）
+        async function refreshTaskFeedback() {
+            try {
+                if (apiClient.isAuthenticated()) {
+                    // 实际API调用获取任务反馈
+                    const response = await fetch('/api/v1/tasks/feedback', {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success && result.tasks) {
+                        updateTaskFeedbackDisplay(result.tasks);
+                    } else {
+                        loadDemoTaskFeedback();
+                    }
+                } else {
+                    loadDemoTaskFeedback();
+                }
+            } catch (error) {
+                console.error('刷新任务反馈失败:', error);
+                loadDemoTaskFeedback();
+            }
+        }
+
+        // 加载演示任务反馈数据
+        function loadDemoTaskFeedback() {
             const taskUpdates = JSON.parse(localStorage.getItem('taskUpdates') || '[]');
             const taskFeedbackBody = document.getElementById('taskFeedbackBody');
             
@@ -2655,32 +2683,9 @@
             return statusMap[status] || status;
         }
 
-        // 查看任务详情
+        // 查看任务详情（兼容性函数）
         function viewTaskDetail(taskId) {
-            alert(`查看任务 ${taskId} 的详细信息功能开发中...`);
-        }
-
-        // 刷新任务反馈状态
-        async function refreshTaskFeedback() {
-            try {
-                if (apiClient.isAuthenticated()) {
-                    // 实际API调用获取任务反馈
-                    const response = await fetch('/api/v1/tasks/feedback', {
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                        }
-                    });
-                    
-                    const result = await response.json();
-                    if (result.success && result.tasks) {
-                        updateTaskFeedbackDisplay(result.tasks);
-                    }
-                } else {
-                    console.log('演示模式 - 使用静态任务反馈数据');
-                }
-            } catch (error) {
-                console.error('刷新任务反馈失败:', error);
-            }
+            viewTaskDetails(taskId);
         }
 
         // 加载用户发布的任务列表
@@ -2733,12 +2738,11 @@
                         </div>
                         <span class="task-status ${statusInfo.class}">${statusInfo.text}</span>
                     </div>
-                    ${task.status === 'published' ? `
                     <div class="task-actions">
                         <button class="btn-small btn-primary" onclick="viewTaskDetails('${task.task_id}')">查看详情</button>
-                        <button class="btn-small btn-secondary" onclick="editTask('${task.task_id}')">编辑任务</button>
+                        ${task.status === 'published' ? `<button class="btn-small btn-secondary" onclick="editTask('${task.task_id}')">编辑任务</button>` : ''}
+                        ${task.status === 'grabbed' || task.status === 'in_progress' ? `<button class="btn-small btn-success" onclick="openContactExchange('${task.task_id}')">交换联系方式</button>` : ''}
                     </div>
-                    ` : ''}
                 `;
                 
                 taskListBody.appendChild(taskItem);
@@ -2828,6 +2832,11 @@
                             </div>
                         </div>
                         <span class="task-status ${statusClass[task.status]}">${statusText[task.status]}</span>
+                    </div>
+                    <div class="task-actions">
+                        <button class="btn-small btn-primary" onclick="viewTaskDetails('${task.task_id}')">查看详情</button>
+                        ${task.status === 'published' ? `<button class="btn-small btn-secondary" onclick="editTask('${task.task_id}')">编辑任务</button>` : ''}
+                        ${task.status === 'grabbed' || task.status === 'in_progress' ? `<button class="btn-small btn-success" onclick="openContactExchange('${task.task_id}')">交换联系方式</button>` : ''}
                     </div>
                 `;
                 taskListBody.appendChild(taskItem);

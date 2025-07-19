@@ -556,7 +556,21 @@
                 }
                 
                 if (response.ok) {
-                    currentTasks = await response.json();
+                    const result = await response.json();
+                    console.log('接单中心API响应:', result);
+                    
+                    // 处理不同的响应格式
+                    if (result.success && Array.isArray(result.tasks)) {
+                        currentTasks = result.tasks;
+                    } else if (Array.isArray(result)) {
+                        currentTasks = result;
+                    } else if (result.tasks && Array.isArray(result.tasks)) {
+                        currentTasks = result.tasks;
+                    } else {
+                        currentTasks = [];
+                    }
+                    
+                    console.log(`接单中心获取到 ${currentTasks.length} 个真实任务`);
                     renderTasks();
                 } else {
                     throw new Error('加载任务失败');

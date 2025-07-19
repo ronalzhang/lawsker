@@ -50,12 +50,47 @@ class ApiClient {
      * 通用请求方法
      */
     async request(endpoint, options = {}) {
-        // 演示模式下，直接返回fallback数据
+        // 演示模式下，先尝试API调用，失败后使用fallback数据
         if (this.isDemoMode) {
-            console.log(`🎭 演示模式: 使用本地数据 for ${endpoint}`);
-            // 模拟网络延迟，提供真实感
-            await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 200));
-            return this._getFallbackData(endpoint);
+            console.log(`🎭 演示模式: 先尝试真实API，失败后使用本地数据 for ${endpoint}`);
+            // 尝试真实API调用
+            try {
+                const url = `${this.baseURL}${endpoint}`;
+                const config = {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                };
+
+                // 即使是演示模式，也尝试添加token（如果有的话）
+                this.refreshToken();
+                if (this.token) {
+                    config.headers['Authorization'] = `Bearer ${this.token}`;
+                    console.log(`🔗 演示模式API尝试: ${config.method || 'GET'} ${url} (有Token)`);
+                } else {
+                    console.log(`🔗 演示模式API尝试: ${config.method || 'GET'} ${url} (无Token)`);
+                }
+
+                const response = await fetch(url, config);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log(`✅ 演示模式获取到真实数据: ${endpoint}`);
+                    return data;
+                } else {
+                    console.log(`⚠️ 演示模式API失败(${response.status})，使用fallback数据: ${endpoint}`);
+                    // 模拟网络延迟，提供真实感
+                    await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 200));
+                    return this._getFallbackData(endpoint);
+                }
+            } catch (error) {
+                console.log(`⚠️ 演示模式API异常，使用fallback数据: ${endpoint}`, error);
+                // 模拟网络延迟，提供真实感
+                await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 200));
+                return this._getFallbackData(endpoint);
+            }
         }
 
         const url = `${this.baseURL}${endpoint}`;

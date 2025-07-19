@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试真实数据获取</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .task-item { background: #f8f9fa; margin: 10px 0; padding: 15px; border-radius: 8px; border-left: 4px solid #007bff; }
+        .task-title { font-weight: bold; color: #333; }
+        .task-meta { color: #666; font-size: 14px; margin: 5px 0; }
+        .task-description { margin: 10px 0; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Lawsker 真实数据获取测试</h1>
+    <p>这个页面用于测试演示模式下是否能获取到真实的任务数据</p>
+    
+    <h2>测试结果</h2>
+    <div id="testResults"></div>
+    
+    <h2>获取到的任务数据</h2>
+    <div id="tasksContainer"></div>
+    
+    <h2>详细日志</h2>
+    <pre id="detailLog"></pre>
+
+    <script src="/js/api-client.js?v=1.4"></script>
+    <script>
+        let logs = [];
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            logs.push(logEntry);
+            document.getElementById('detailLog').textContent = logs.join('\n');
+            console.log(logEntry);
+        }
+        
+        function showResult(type, message) {
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = message;
+            document.getElementById('testResults').appendChild(div);
+        }
+        
+        async function testApiClient() {
+            log('开始测试 API 客户端...');
+            
+            try {
+                // 检查是否为演示模式
+                log(`当前路径: ${window.location.pathname}`);
+                log(`演示模式状态: ${window.apiClient.isDemoMode}`);
+                
+                // 测试获取可用任务
+                log('调用 API 获取可用任务...');
+                const tasks = await window.apiClient.getAvailableTasks();
+                
+                if (Array.isArray(tasks)) {
+                    showResult('success', `✅ 成功获取到 ${tasks.length} 个任务`);
+                    log(`获取到 ${tasks.length} 个任务`);
+                    
+                    // 显示任务列表
+                    const container = document.getElementById('tasksContainer');
+                    if (tasks.length > 0) {
+                        tasks.forEach((task, index) => {
+                            const taskDiv = document.createElement('div');
+                            taskDiv.className = 'task-item';
+                            taskDiv.innerHTML = `
+                                <div class="task-title">${task.title || '未命名任务'}</div>
+                                <div class="task-meta">
+                                    💰 预算: ¥${task.budget || task.amount || '未知'} | 
+                                    ⏰ 紧急程度: ${task.urgency || '普通'} | 
+                                    📅 发布时间: ${task.created_at ? new Date(task.created_at).toLocaleString() : '未知'}
+                                </div>
+                                <div class="task-description">${task.description || '无描述'}</div>
+                                <div class="task-meta">
+                                    👤 发布者: ${task.publisher_name || '匿名'} | 
+                                    🏷️ 类型: ${task.task_type || '未知'}
+                                </div>
+                            `;
+                            container.appendChild(taskDiv);
+                        });
+                        
+                        // 检查是否有真实数据的特征
+                        const hasRealData = tasks.some(task => 
+                            task.task_id && 
+                            !task.task_id.startsWith('demo-') &&
+                            task.title && task.title.includes('测试')
+                        );
+                        
+                        if (hasRealData) {
+                            showResult('success', '✅ 检测到真实数据！包含测试任务');
+                            log('✅ 成功检测到真实任务数据');
+                        } else {
+                            showResult('error', '⚠️ 可能仍为演示数据');
+                            log('⚠️ 未检测到真实测试任务，可能仍为演示数据');
+                        }
+                    } else {
+                        showResult('error', '❌ 获取到空任务列表');
+                        log('❌ 任务列表为空');
+                    }
+                } else {
+                    showResult('error', '❌ API 返回格式异常');
+                    log('❌ API 返回数据格式异常');
+                    log(`返回数据: ${JSON.stringify(tasks)}`);
+                }
+                
+            } catch (error) {
+                showResult('error', `❌ 测试失败: ${error.message}`);
+                log(`❌ 测试异常: ${error.message}`);
+                console.error('测试异常:', error);
+            }
+        }
+        
+        // 页面加载完成后开始测试
+        document.addEventListener('DOMContentLoaded', function() {
+            log('页面加载完成，开始测试...');
+            setTimeout(testApiClient, 1000); // 延迟1秒确保API客户端初始化完成
+        });
+    </script>
+</body>
+</html>
