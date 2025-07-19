@@ -84,6 +84,12 @@ class ApiClient {
                     return data;
                 } else {
                     console.log(`⚠️ 演示模式API失败(${response.status})，使用fallback数据: ${endpoint}`);
+                    // 如果是401错误，清除无效token避免后续重复请求
+                    if (response.status === 401) {
+                        localStorage.removeItem('authToken');
+                        localStorage.removeItem('accessToken');
+                        this.token = null;
+                    }
                     // 模拟网络延迟，提供真实感
                     await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 200));
                     return this._getFallbackData(endpoint);

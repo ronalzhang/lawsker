@@ -2051,6 +2051,8 @@ ${new Date().toLocaleDateString()}`;
                     tasks = result;
                 } else if (result.tasks && Array.isArray(result.tasks)) {
                     tasks = result.tasks;
+                } else if (result.items && Array.isArray(result.items)) {
+                    tasks = result.items;
                 }
                 
                 console.log(`获取到 ${tasks.length} 个任务`);
