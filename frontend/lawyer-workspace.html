@@ -1769,7 +1769,7 @@
             
             try {
                 if (apiClient.isAuthenticated()) {
-                    const response = await fetch(`/api/v1/tasks/generate-document/${taskId}`, {
+                    const response = await fetch(`https://156.236.74.200/api/v1/tasks/generate-document/${taskId}`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${localStorage.getItem('authToken')}`
@@ -1841,7 +1841,7 @@ ${new Date().toLocaleDateString()}`;
             
             try {
                 if (apiClient.isAuthenticated()) {
-                    const response = await fetch(`/api/v1/tasks/save-document/${taskId}`, {
+                    const response = await fetch(`https://156.236.74.200/api/v1/tasks/save-document/${taskId}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1897,7 +1897,7 @@ ${new Date().toLocaleDateString()}`;
                 }
                 
                 if (apiClient.isAuthenticated()) {
-                    const response = await fetch(`/api/v1/tasks/send-document/${taskId}`, {
+                    const response = await fetch(`https://156.236.74.200/api/v1/tasks/send-document/${taskId}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -2042,7 +2042,7 @@ ${new Date().toLocaleDateString()}`;
                     console.log('正在从API获取可抢单任务...');
                     // 使用与lawyer-tasks.html相同的API调用方式
                     const queryParams = new URLSearchParams({limit: 20}).toString();
-                    const response = await fetch(`/api/v1/tasks/available?${queryParams}`, {
+                    const response = await fetch(`https://156.236.74.200/api/v1/tasks/available?${queryParams}`, {
                         headers: {
                             'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                         }
@@ -2207,7 +2207,7 @@ ${new Date().toLocaleDateString()}`;
         async function loadMyTasks() {
             try {
                 if (apiClient.isAuthenticated()) {
-                    const response = await fetch('/api/v1/tasks/my-tasks/lawyer', {
+                    const response = await fetch('https://156.236.74.200/api/v1/tasks/my-tasks/lawyer', {
                         headers: {
                             'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                         }

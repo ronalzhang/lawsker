@@ -541,7 +541,7 @@
                 }
                 
                 const queryParams = new URLSearchParams(filters).toString();
-                const response = await fetch(`/api/v1/tasks/available?${queryParams}`, {
+                const response = await fetch(`https://156.236.74.200/api/v1/tasks/available?${queryParams}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }

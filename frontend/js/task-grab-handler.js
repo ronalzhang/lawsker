@@ -211,7 +211,7 @@ class TaskGrabHandler {
                 return this.getDemoTasks();
             }
 
-            const response = await fetch('/api/v1/tasks/available', {
+            const response = await fetch('https://156.236.74.200/api/v1/tasks/available', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('authToken')}`
                 }
