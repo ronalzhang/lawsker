@@ -2517,16 +2517,16 @@
                         updateUserTasksList(response);
                         console.log(`已加载 ${response.length} 个用户任务`);
                     } else {
-                        showEmptyUserTasks();
-                        console.log('暂无用户任务数据');
+                        console.log('暂无真实用户任务数据，创建演示数据');
+                        createDemoUserTasks();
                     }
                 } else {
-                    console.log('演示模式 - 使用静态任务数据');
-                    showEmptyUserTasks();
+                    console.log('演示模式 - 创建演示任务数据');
+                    createDemoUserTasks();
                 }
             } catch (error) {
                 console.error('加载用户任务失败:', error);
-                showEmptyUserTasks();
+                createDemoUserTasks();
             }
         }
 
@@ -2566,6 +2566,97 @@
                 
                 taskListBody.appendChild(taskItem);
             });
+        }
+
+        // 创建演示用户任务
+        function createDemoUserTasks() {
+            console.log('创建演示用户任务...');
+            const taskListBody = document.getElementById('taskListBody');
+            
+            if (!taskListBody) return;
+            
+            // 清空现有内容
+            taskListBody.innerHTML = '';
+            
+            // 演示用户发布的任务数据
+            const demoUserTasks = [
+                {
+                    task_id: 'user-task-001',
+                    task_type: 'lawyer_letter',
+                    title: '债权催收律师函',
+                    description: '需要向欠款方发送律师函，催收货款15万元',
+                    budget: 650,
+                    status: 'grabbed',
+                    urgency: 'normal',
+                    created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2天前
+                    assigned_lawyer: '张律师'
+                },
+                {
+                    task_id: 'user-task-002', 
+                    task_type: 'contract_review',
+                    title: '商务合作合同审查',
+                    description: '重要合作协议需要法律专业审查，合同金额500万',
+                    budget: 1200,
+                    status: 'completed',
+                    urgency: 'urgent',
+                    created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5天前
+                    completed_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1天前完成
+                    assigned_lawyer: '李律师'
+                },
+                {
+                    task_id: 'user-task-003',
+                    task_type: 'legal_consultation',
+                    title: '劳动纠纷法律咨询',
+                    description: '公司员工劳动合同纠纷，需要专业法律建议',
+                    budget: 400,
+                    status: 'published',
+                    urgency: 'low',
+                    created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3小时前
+                    assigned_lawyer: null
+                }
+            ];
+            
+            // 渲染演示任务
+            demoUserTasks.forEach(task => {
+                const statusText = {
+                    'published': '等待律师接单',
+                    'grabbed': '律师已接单',
+                    'in_progress': '处理中',
+                    'completed': '已完成',
+                    'confirmed': '已确认'
+                };
+                
+                const statusClass = {
+                    'published': 'status-pending',
+                    'grabbed': 'status-processing', 
+                    'in_progress': 'status-processing',
+                    'completed': 'status-completed',
+                    'confirmed': 'status-completed'
+                };
+                
+                const taskItem = document.createElement('div');
+                taskItem.className = 'task-item';
+                taskItem.innerHTML = `
+                    <div class="task-info">
+                        <div>
+                            <div class="task-title">${task.title}</div>
+                            <div class="task-details">
+                                发布时间：${new Date(task.created_at).toLocaleDateString()} | 
+                                预算：¥${task.budget} | 
+                                类型：${task.task_type} |
+                                ${task.assigned_lawyer ? `律师：${task.assigned_lawyer}` : '等待律师接单'}
+                            </div>
+                            <div class="task-description" style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">
+                                ${task.description}
+                            </div>
+                        </div>
+                        <span class="task-status ${statusClass[task.status]}">${statusText[task.status]}</span>
+                    </div>
+                `;
+                taskListBody.appendChild(taskItem);
+            });
+            
+            console.log(`已创建 ${demoUserTasks.length} 个演示用户任务`);
         }
 
         // 显示空任务列表

@@ -2149,8 +2149,19 @@ ${new Date().toLocaleDateString()}`;
             try {
                 console.log('正在加载可抢单任务...');
                 await refreshAvailableTasks();
+                
+                // 如果刷新后仍然没有任务，创建演示数据
+                const availableTasksList = document.getElementById('availableTasksList');
+                const noAvailableTasks = document.getElementById('noAvailableTasks');
+                
+                if (availableTasksList && availableTasksList.children.length <= 1 && noAvailableTasks) {
+                    console.log('没有可抢单任务，创建演示数据...');
+                    createDemoAvailableTasks();
+                }
             } catch (error) {
                 console.error('加载可抢单任务失败:', error);
+                // 如果API失败，也创建演示数据
+                createDemoAvailableTasks();
             }
         }
 
@@ -2171,10 +2182,13 @@ ${new Date().toLocaleDateString()}`;
                         updateMyTasksList(result.tasks);
                     }
                 } else {
-                    console.log('演示模式 - 使用静态我的任务数据');
+                    console.log('演示模式 - 创建演示我的任务数据');
+                    createDemoMyTasks();
                 }
             } catch (error) {
                 console.error('加载我的任务失败:', error);
+                // 如果API失败，也创建演示数据
+                createDemoMyTasks();
             }
         }
 
@@ -2367,6 +2381,145 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
                 }, 100);
                 
             }, 500);
+        }
+
+        // 创建演示可抢单任务
+        function createDemoAvailableTasks() {
+            console.log('创建演示可抢单任务...');
+            const availableTasksList = document.getElementById('availableTasksList');
+            const noAvailableTasks = document.getElementById('noAvailableTasks');
+            
+            if (!availableTasksList) return;
+            
+            // 隐藏空状态提示
+            if (noAvailableTasks) {
+                noAvailableTasks.style.display = 'none';
+            }
+            
+            // 清空现有内容
+            availableTasksList.innerHTML = '';
+            
+            // 演示任务数据
+            const demoTasks = [
+                {
+                    task_id: 'demo-task-001',
+                    task_type: 'lawyer_letter',
+                    title: '债权催收律师函 #001',
+                    description: '需要向欠款人发送正式的债权催收律师函，督促其履行还款义务。案件编号: CASE-2024-0001',
+                    budget: 650,
+                    urgency: 'normal',
+                    created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2小时前
+                    publisher_name: '张***'
+                },
+                {
+                    task_id: 'demo-task-002',
+                    task_type: 'debt_collection',
+                    title: '企业欠款催收 #002',
+                    description: '企业间的货款纠纷，需要专业律师进行催收处理。案件编号: CASE-2024-0002',
+                    budget: 3500,
+                    urgency: 'urgent',
+                    created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), // 1小时前
+                    publisher_name: '李***'
+                },
+                {
+                    task_id: 'demo-task-003',
+                    task_type: 'contract_review',
+                    title: '商务合同审查 #003',
+                    description: '需要律师审查商务合作合同的条款和风险点。案件编号: CASE-2024-0003',
+                    budget: 1200,
+                    urgency: 'normal',
+                    created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30分钟前
+                    publisher_name: '王***'
+                },
+                {
+                    task_id: 'demo-task-004',
+                    task_type: 'legal_consultation',
+                    title: '法律咨询服务 #004',
+                    description: '关于公司经营中的法律问题咨询和建议。案件编号: CASE-2024-0004',
+                    budget: 800,
+                    urgency: 'low',
+                    created_at: new Date(Date.now() - 45 * 60 * 1000).toISOString(), // 45分钟前
+                    publisher_name: '陈***'
+                },
+                {
+                    task_id: 'demo-task-005',
+                    task_type: 'lawyer_letter',
+                    title: '违约责任追究函 #005',
+                    description: '合同违约后需要发送法律函件追究违约责任。案件编号: CASE-2024-0005',
+                    budget: 950,
+                    urgency: 'urgent',
+                    created_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(), // 15分钟前
+                    publisher_name: '刘***'
+                }
+            ];
+            
+            // 渲染演示任务
+            demoTasks.forEach(task => {
+                const taskItem = createAvailableTaskItem(task, 0);
+                availableTasksList.appendChild(taskItem);
+            });
+            
+            console.log(`已创建 ${demoTasks.length} 个演示可抢单任务`);
+        }
+
+        // 创建演示我的接单任务
+        function createDemoMyTasks() {
+            console.log('创建演示我的接单任务...');
+            const myTasksList = document.getElementById('myTasksList');
+            const noMyTasks = document.getElementById('noMyTasks');
+            
+            if (!myTasksList) return;
+            
+            // 隐藏空状态提示
+            if (noMyTasks) {
+                noMyTasks.style.display = 'none';
+            }
+            
+            // 清空现有内容
+            myTasksList.innerHTML = '';
+            
+            // 演示已接单任务数据
+            const demoMyTasks = [
+                {
+                    task_id: 'my-task-001',
+                    task_type: 'lawyer_letter',
+                    title: '劳动合同纠纷律师函',
+                    description: '员工与公司劳动合同纠纷，需要发送律师函要求履行合同义务。',
+                    budget: 800,
+                    status: 'in_progress',
+                    created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1天前
+                    client_name: '赵先生'
+                },
+                {
+                    task_id: 'my-task-002',
+                    task_type: 'debt_collection',
+                    title: '货款催收案件',
+                    description: 'B2B企业间货款纠纷，金额较大，需要通过法律途径催收。',
+                    budget: 4500,
+                    status: 'completed',
+                    created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3天前
+                    completed_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1天前完成
+                    client_name: '某贸易公司'
+                },
+                {
+                    task_id: 'my-task-003',
+                    task_type: 'contract_review',
+                    title: '股权转让协议审查',
+                    description: '创业公司股权转让协议的法律条款审查和风险评估。',
+                    budget: 1500,
+                    status: 'grabbed',
+                    created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2小时前
+                    client_name: '科技创新公司'
+                }
+            ];
+            
+            // 渲染演示任务
+            demoMyTasks.forEach(task => {
+                const taskItem = createMyTaskItem(task, 0);
+                myTasksList.appendChild(taskItem);
+            });
+            
+            console.log(`已创建 ${demoMyTasks.length} 个演示我的接单任务`);
         }
 
         // 添加随机任务（演示用）
