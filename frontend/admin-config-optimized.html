@@ -2696,6 +2696,67 @@
 
 要求：语气严厉但合法合规，明确还款期限和法律后果</textarea>
                     </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">合同审查Prompt模板</label>
+                        <textarea class="form-input" name="contract_review_prompt" 
+                                  rows="5" placeholder="请输入合同审查的AI提示词模板">你是一位专业的律师，请对以下合同进行法律审查：
+
+合同类型：{contract_type}
+合同名称：{contract_name}
+当事方：{parties}
+合同金额：{contract_amount}
+履行期限：{performance_deadline}
+特殊条款：{special_clauses}
+
+请从以下角度进行审查：
+1. 合同主体资格
+2. 条款完整性和明确性
+3. 权利义务平衡性
+4. 违约责任合理性
+5. 争议解决机制
+6. 潜在法律风险
+
+提供具体的修改建议和风险提示</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">法律咨询Prompt模板</label>
+                        <textarea class="form-input" name="legal_consultation_prompt" 
+                                  rows="4" placeholder="请输入法律咨询的AI提示词模板">你是一位专业的律师，请针对以下法律问题提供咨询意见：
+
+咨询类别：{consultation_category}
+问题描述：{problem_description}
+相关背景：{background_info}
+期望结果：{expected_outcome}
+
+请提供：
+1. 问题的法律性质分析
+2. 适用的法律法规
+3. 处理建议和操作步骤
+4. 风险提示和注意事项
+5. 预期结果和替代方案
+
+语言要求：专业准确、通俗易懂</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">通用法律文书Prompt模板</label>
+                        <textarea class="form-input" name="general_legal_prompt" 
+                                  rows="4" placeholder="请输入通用法律文书的AI提示词模板">你是一位专业的律师，请根据以下信息生成相应的法律文书：
+
+文书类型：{document_type}
+案件标题：{case_title}
+基本事实：{basic_facts}
+法律依据：{legal_basis}
+处理要求：{processing_requirements}
+
+请确保文书内容：
+1. 事实描述客观准确
+2. 法律依据充分有效
+3. 逻辑结构清晰合理
+4. 语言表达专业规范</textarea>
+                    </div>
                 </form>
 
                 <div class="card-actions">

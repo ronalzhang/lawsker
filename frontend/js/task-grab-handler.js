@@ -5,7 +5,7 @@
 
 class TaskGrabHandler {
     constructor() {
-        this.isDemoMode = !window.apiClient || !window.apiClient.isAuthenticated();
+        // 移除演示模式，专注真实环境
     }
 
     /**
@@ -36,59 +36,37 @@ class TaskGrabHandler {
         }
 
         try {
-            let success = false;
-            let message = '';
-
-            // 检查是否为演示任务
-            const isDemoTask = taskId.startsWith('demo-task-') || this.isDemoMode;
-            
-            if (!isDemoTask && window.apiClient && window.apiClient.isAuthenticated()) {
-                // 真实API调用 - 使用统一的API客户端
-                try {
-                    const result = await window.apiClient.grabTask(taskId);
-                    
-                    if (result.success) {
-                        success = true;
-                        message = result.message || '抢单成功！任务已分配给您';
-                    } else {
-                        throw new Error(result.message || '抢单失败');
-                    }
-                } catch (apiError) {
-                    // 如果API客户端失败，回退到直接fetch
-                    console.warn('API客户端抢单失败，尝试直接调用:', apiError);
-                    
-                    const response = await fetch(`${window.apiClient.baseURL}/tasks/grab/${taskId}`, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (response.ok && result.success) {
-                        success = true;
-                        message = result.message || '抢单成功！任务已分配给您';
-                    } else {
-                        throw new Error(result.message || '抢单失败');
-                    }
-                }
-            } else {
-                // 演示模式 - 模拟抢单
-                console.log('演示模式抢单:', taskId);
-                await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
-                
-                const successRate = Math.random();
-                if (successRate > 0.2) { // 80%成功率
-                    success = true;
-                    message = '🎉 恭喜！您已成功抢到这个任务！（演示模式）';
-                } else {
-                    throw new Error('很遗憾，其他律师抢先一步，请尝试其他任务。');
-                }
+            // 检查用户是否已认证
+            if (!window.apiClient || !window.apiClient.isAuthenticated()) {
+                throw new Error('请先登录后再抢单');
             }
 
-            if (success) {
+            // 真实API调用 - 使用统一的API客户端
+            let result;
+            try {
+                result = await window.apiClient.grabTask(taskId);
+            } catch (apiError) {
+                // 如果API客户端失败，回退到直接fetch
+                console.warn('API客户端抢单失败，尝试直接调用:', apiError);
+                
+                const response = await fetch(`${window.apiClient.baseURL}/tasks/grab/${taskId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.message || '抢单失败');
+                }
+            }
+            
+            if (result.success) {
+                const message = result.message || '抢单成功！任务已分配给您';
+                
                 // 抢单成功处理
                 this.handleGrabSuccess(taskId, taskElement, message);
                 
@@ -96,6 +74,8 @@ class TaskGrabHandler {
                 if (onSuccess) {
                     onSuccess(taskId, message);
                 }
+            } else {
+                throw new Error(result.message || '抢单失败');
             }
 
         } catch (error) {
@@ -241,90 +221,18 @@ class TaskGrabHandler {
      */
     async getAvailableTasks() {
         try {
-            if (this.isDemoMode) {
-                return this.getDemoTasks();
+            if (!window.apiClient || !window.apiClient.isAuthenticated()) {
+                throw new Error('请先登录');
             }
 
-            const response = await fetch('https://156.236.74.200/api/v1/tasks/available', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                }
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                return result.tasks || [];
-            }
-
-            throw new Error('获取任务列表失败');
+            const result = await window.apiClient.getAvailableTasks();
+            return result.tasks || result || [];
         } catch (error) {
             console.error('获取任务列表失败:', error);
-            return this.getDemoTasks();
+            throw error;
         }
     }
 
-    /**
-     * 获取演示任务数据
-     */
-    getDemoTasks() {
-        return [
-            {
-                task_id: 'demo-task-001',
-                task_type: 'lawyer_letter',
-                title: '债权催收律师函 #001',
-                description: '需要向欠款人发送正式的债权催收律师函，督促其履行还款义务。案件编号: CASE-2024-0001',
-                budget: 650,
-                urgency: 'normal',
-                created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-                publisher_name: '张***',
-                is_demo: true
-            },
-            {
-                task_id: 'demo-task-002',
-                task_type: 'debt_collection',
-                title: '企业欠款催收 #002',
-                description: '企业间的货款纠纷，需要专业律师进行催收处理。案件编号: CASE-2024-0002',
-                budget: 3500,
-                urgency: 'urgent',
-                created_at: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-                publisher_name: '李***',
-                is_demo: true
-            },
-            {
-                task_id: 'demo-task-003',
-                task_type: 'contract_review',
-                title: '商务合同审查 #003',
-                description: '需要律师审查商务合作合同的条款和风险点。案件编号: CASE-2024-0003',
-                budget: 1200,
-                urgency: 'normal',
-                created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-                publisher_name: '王***',
-                is_demo: true
-            },
-            {
-                task_id: 'demo-task-004',
-                task_type: 'legal_consultation',
-                title: '法律咨询服务 #004',
-                description: '关于公司经营中的法律问题咨询和建议。案件编号: CASE-2024-0004',
-                budget: 800,
-                urgency: 'low',
-                created_at: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-                publisher_name: '陈***',
-                is_demo: true
-            },
-            {
-                task_id: 'demo-task-005',
-                task_type: 'lawyer_letter',
-                title: '违约责任追究函 #005',
-                description: '合同违约后需要发送法律函件追究违约责任。案件编号: CASE-2024-0005',
-                budget: 950,
-                urgency: 'urgent',
-                created_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-                publisher_name: '刘***',
-                is_demo: true
-            }
-        ];
-    }
 }
 
 // 创建全局实例

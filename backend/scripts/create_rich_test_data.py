@@ -58,30 +58,33 @@ async def create_rich_test_data():
                                        contact_person, contact_phone, contact_email, address,
                                        sales_owner_id, cooperation_level, credit_rating,
                                        total_cases, total_amount, success_rate, created_at)
-                    VALUES ($1, (SELECT id FROM tenants LIMIT 1), $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+                    VALUES (:id, (SELECT id FROM tenants LIMIT 1), :name, :client_type, :business_license, 
+                           :contact_person, :contact_phone, :contact_email, :address,
+                           :sales_owner_id, :cooperation_level, :credit_rating,
+                           :total_cases, :total_amount, :success_rate, :created_at)
                 """
                 
                 client_types = ["银行", "消费金融", "小贷公司", "担保公司", "资产管理公司"]
                 cooperation_levels = ["VIP", "金牌", "银牌", "普通"]
                 credit_ratings = ["AAA", "AA", "A", "BBB", "BB"]
                 
-                params = [
-                    client_id,
-                    f"客户公司{i+1}",
-                    random.choice(client_types),
-                    f"9144{random.randint(1000000000000000, 9999999999999999)}",
-                    f"联系人{i+1}",
-                    f"1390000{i+1:04d}",
-                    f"client{i+1}@example.com",
-                    f"测试地址{i+1}号",
-                    random.choice(sales_users)[0] if sales_users else admin_users[0][0],
-                    random.choice(cooperation_levels),
-                    random.choice(credit_ratings),
-                    random.randint(50, 500),
-                    Decimal(random.randint(1000000, 10000000)),
-                    Decimal(random.randint(75, 98)) / 100,
-                    datetime.now() - timedelta(days=random.randint(30, 365))
-                ]
+                params = {
+                    'id': client_id,
+                    'name': f"客户公司{i+1}",
+                    'client_type': random.choice(client_types),
+                    'business_license': f"9144{random.randint(1000000000000000, 9999999999999999)}",
+                    'contact_person': f"联系人{i+1}",
+                    'contact_phone': f"1390000{i+1:04d}",
+                    'contact_email': f"client{i+1}@example.com",
+                    'address': f"测试地址{i+1}号",
+                    'sales_owner_id': random.choice(sales_users)[0] if sales_users else admin_users[0][0],
+                    'cooperation_level': random.choice(cooperation_levels),
+                    'credit_rating': random.choice(credit_ratings),
+                    'total_cases': random.randint(50, 500),
+                    'total_amount': Decimal(random.randint(1000000, 10000000)),
+                    'success_rate': Decimal(random.randint(75, 98)) / 100,
+                    'created_at': datetime.now() - timedelta(days=random.randint(30, 365))
+                }
                 
                 await session.execute(text(client_sql), params)
                 client_data.append(client_id)
@@ -141,7 +144,7 @@ async def create_rich_test_data():
                     datetime.now() - timedelta(days=random.randint(1, 30)) if case_status == "completed" else None
                 ]
                 
-                await session.execute(text(case_sql), params)
+                await session.execute(text(case_sql), tuple(params))
                 case_data.append((case_id, case_status, assigned_lawyer))
             
             await session.commit()
@@ -180,7 +183,7 @@ async def create_rich_test_data():
                     datetime.now()
                 ]
                 
-                await session.execute(text(wallet_sql), params)
+                await session.execute(text(wallet_sql), tuple(params))
             
             await session.commit()
             print(f"✅ 创建了 {len(users)} 个钱包")
@@ -219,7 +222,7 @@ async def create_rich_test_data():
                     datetime.now() - timedelta(days=random.randint(1, 180))
                 ]
                 
-                await session.execute(text(transaction_sql), params)
+                await session.execute(text(transaction_sql), tuple(params))
             
             await session.commit()
             print("✅ 创建了 200 条交易记录")
@@ -276,7 +279,7 @@ async def create_rich_test_data():
                     datetime.now() - timedelta(days=random.randint(1, 60))
                 ]
                 
-                await session.execute(text(withdrawal_sql), params)
+                await session.execute(text(withdrawal_sql), tuple(params))
             
             await session.commit()
             print("✅ 创建了 50 条提现记录")
@@ -306,7 +309,7 @@ async def create_rich_test_data():
                     Decimal(random.randint(1000000, 10000000)),
                     datetime.now()
                 ]
-                await session.execute(text(stats_sql), params)
+                await session.execute(text(stats_sql), tuple(params))
             
             await session.commit()
             print("✅ 创建了 30 天的系统统计数据")
