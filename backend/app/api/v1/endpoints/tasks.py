@@ -5,7 +5,7 @@
 
 import logging
 import json
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from uuid import UUID, uuid4
 from datetime import datetime, timedelta, date
 from fastapi import APIRouter, Depends, HTTPException, status, Query
@@ -14,7 +14,6 @@ from sqlalchemy import select, and_, or_, update, func
 from pydantic import BaseModel, Field
 
 from app.core.database import get_db
-from app.models.user import User
 from app.models.lawyer_review import DocumentReviewTask, ReviewStatus
 from app.models.statistics import TaskPublishRecord, LawyerDailyLimit, UserDailyPublishLimit
 from app.services.lawyer_review_service import LawyerReviewService
@@ -27,35 +26,7 @@ router = APIRouter()
 
 
 # 真实认证依赖
-from app.core.deps import get_current_user as get_current_user_dict
-from app.models.user import User
-from sqlalchemy import select
-
-
-async def get_current_user(
-    current_user_dict: dict = Depends(get_current_user_dict),
-    db: AsyncSession = Depends(get_db)
-) -> User:
-    """获取当前用户对象"""
-    result = await db.execute(
-        select(User).where(User.id == UUID(current_user_dict["id"]))
-    )
-    user = result.scalar_one_or_none()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="用户不存在"
-        )
-    return user
-
-
-async def get_current_user_optional(db: AsyncSession = Depends(get_db)) -> Optional[User]:
-    """可选的用户认证，返回None如果未登录"""
-    try:
-        current_user_dict = await get_current_user_dict()
-        return await get_current_user(current_user_dict, db)
-    except Exception:
-        return None
+from app.core.deps import get_current_user
 
 
 class VerificationCodeRequest(BaseModel):
@@ -363,7 +334,7 @@ async def get_my_tasks(
     limit: int = 20,
     offset: int = 0,
     status_filter: Optional[str] = None,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -371,7 +342,7 @@ async def get_my_tasks(
     """
     try:
         # 构建查询条件
-        conditions = [DocumentReviewTask.creator_id == current_user.id]
+        conditions = [DocumentReviewTask.creator_id == current_user["id"]]
         
         if status_filter:
             conditions.append(DocumentReviewTask.status == status_filter)
@@ -419,7 +390,7 @@ async def get_my_tasks(
 @router.post("/convert-anonymous")
 async def convert_anonymous_task(
     task_number: str,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -455,13 +426,13 @@ async def convert_anonymous_task(
                 )
         
         # 转换任务
-        task.creator_id = current_user.id
+        task.creator_id = current_user["id"]
         
         # 更新metadata标记
         if task_metadata:
             task_metadata["converted_to_user"] = True
             task_metadata["converted_at"] = datetime.now().isoformat()
-            task_metadata["converted_user_id"] = str(current_user.id)
+            task_metadata["converted_user_id"] = str(current_user["id"])
             task.ai_metadata = task_metadata
         
         await db.commit()
@@ -561,7 +532,7 @@ async def get_tasks(
 @router.post("/user/publish", response_model=dict)
 async def publish_user_task(
     request: UserTaskRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -573,7 +544,7 @@ async def publish_user_task(
         # 检查用户每日发单限制
         daily_limit_query = select(UserDailyPublishLimit).where(
             and_(
-                UserDailyPublishLimit.user_id == current_user.id,
+                UserDailyPublishLimit.user_id == current_user["id"],
                 UserDailyPublishLimit.date == today
             )
         )
@@ -588,7 +559,7 @@ async def publish_user_task(
             default_limit = user_config.get("default_limit", 5) if user_config else 5
             
             daily_limit = UserDailyPublishLimit(
-                user_id=current_user.id,
+                user_id=current_user["id"],
                 date=today,
                 published_count=0,
                 max_daily_limit=default_limit
@@ -605,7 +576,7 @@ async def publish_user_task(
         
         # 创建任务记录
         task_record = TaskPublishRecord(
-            user_id=current_user.id,
+            user_id=current_user["id"],
             task_type=request.task_type,
             title=request.title,
             description=request.description,
@@ -644,7 +615,7 @@ async def publish_user_task(
 
 @router.get("/user/daily-publish-limit/status", response_model=dict)
 async def get_user_daily_publish_limit_status(
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -656,7 +627,7 @@ async def get_user_daily_publish_limit_status(
         # 查询今日限制记录
         daily_limit_query = select(UserDailyPublishLimit).where(
             and_(
-                UserDailyPublishLimit.user_id == current_user.id,
+                UserDailyPublishLimit.user_id == current_user["id"],
                 UserDailyPublishLimit.date == today
             )
         )
@@ -671,7 +642,7 @@ async def get_user_daily_publish_limit_status(
             default_limit = user_config.get("default_limit", 5) if user_config else 5
             
             daily_limit = UserDailyPublishLimit(
-                user_id=current_user.id,
+                user_id=current_user["id"],
                 date=today,
                 published_count=0,
                 max_daily_limit=default_limit
@@ -683,7 +654,7 @@ async def get_user_daily_publish_limit_status(
         # 检查今日已发布的任务数量（以实际任务记录为准）
         actual_published_query = select(func.count(TaskPublishRecord.id)).where(
             and_(
-                TaskPublishRecord.user_id == current_user.id,
+                TaskPublishRecord.user_id == current_user["id"],
                 func.date(TaskPublishRecord.created_at) == today,
                 TaskPublishRecord.status.in_(["published", "grabbed", "in_progress", "completed"])
             )
@@ -717,7 +688,7 @@ async def get_available_tasks(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     task_type: Optional[str] = Query(None),
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -777,7 +748,7 @@ async def get_available_tasks(
 @router.post("/grab/{task_id}", response_model=dict)
 async def grab_task(
     task_id: str,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -790,7 +761,7 @@ async def grab_task(
         # 检查律师每日接单限制
         daily_limit_query = select(LawyerDailyLimit).where(
             and_(
-                LawyerDailyLimit.lawyer_id == current_user.id,
+                LawyerDailyLimit.lawyer_id == current_user["id"],
                 LawyerDailyLimit.date == today
             )
         )
@@ -805,7 +776,7 @@ async def grab_task(
             default_limit = lawyer_config.get("default_limit", 3) if lawyer_config else 3
             
             daily_limit = LawyerDailyLimit(
-                lawyer_id=current_user.id,
+                lawyer_id=current_user["id"],
                 date=today,
                 grabbed_count=0,
                 max_daily_limit=default_limit
@@ -838,7 +809,7 @@ async def grab_task(
             )
         
         # 更新任务状态
-        task.assigned_to = current_user.id
+        task.assigned_to = current_user["id"]
         task.status = "grabbed"
         task.updated_at = datetime.now()
         
@@ -870,7 +841,7 @@ async def grab_task(
 
 @router.get("/daily-limit/status", response_model=dict)
 async def get_daily_limit_status(
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -882,7 +853,7 @@ async def get_daily_limit_status(
         # 查询今日限制记录
         daily_limit_query = select(LawyerDailyLimit).where(
             and_(
-                LawyerDailyLimit.lawyer_id == current_user.id,
+                LawyerDailyLimit.lawyer_id == current_user["id"],
                 LawyerDailyLimit.date == today
             )
         )
@@ -891,13 +862,11 @@ async def get_daily_limit_status(
         
         # 如果没有记录，创建默认记录
         if not daily_limit:
-            # 从系统配置获取每日限制
-            config_service = SystemConfigService(db)
-            lawyer_config = await config_service.get_config("business", "lawyer_daily_limit")
-            default_limit = lawyer_config.get("default_limit", 3) if lawyer_config else 3
+            # 暂时使用硬编码默认值，避免配置服务问题
+            default_limit = 3
             
             daily_limit = LawyerDailyLimit(
-                lawyer_id=current_user.id,
+                lawyer_id=current_user["id"],
                 date=today,
                 grabbed_count=0,
                 max_daily_limit=default_limit
@@ -909,7 +878,7 @@ async def get_daily_limit_status(
         # 检查今日已接单的任务数量（以实际任务记录为准）
         actual_grabbed_query = select(func.count(TaskPublishRecord.id)).where(
             and_(
-                TaskPublishRecord.assigned_to == current_user.id,
+                TaskPublishRecord.assigned_to == current_user["id"],
                 func.date(TaskPublishRecord.updated_at) == today,
                 TaskPublishRecord.status.in_(["grabbed", "in_progress", "completed"])
             )
@@ -941,7 +910,7 @@ async def get_daily_limit_status(
 @router.post("/contact/exchange", response_model=dict)
 async def exchange_contact_info(
     request: ContactExchangeRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -962,7 +931,7 @@ async def exchange_contact_info(
             )
         
         # 检查权限（只有任务发布者或接单律师可以交换联系方式）
-        if task.user_id != current_user.id and task.assigned_to != current_user.id:
+        if task.user_id != current_user["id"] and task.assigned_to != current_user["id"]:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="无权限交换联系方式"
@@ -977,7 +946,7 @@ async def exchange_contact_info(
             task.target_info["contact_exchanges"] = []
         
         task.target_info["contact_exchanges"].append({
-            "user_id": str(current_user.id),
+            "user_id": str(current_user["id"]),
             "contact_info": request.my_contact,
             "message": request.message,
             "timestamp": datetime.now().isoformat()
@@ -1013,7 +982,7 @@ async def exchange_contact_info(
 @router.post("/status/update", response_model=dict)
 async def update_task_status(
     request: TaskStatusUpdateRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1034,7 +1003,7 @@ async def update_task_status(
             )
         
         # 检查权限
-        if task.user_id != current_user.id and task.assigned_to != current_user.id:
+        if task.user_id != current_user["id"] and task.assigned_to != current_user["id"]:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="无权限更新任务状态"
@@ -1081,14 +1050,14 @@ async def get_user_tasks(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     status_filter: Optional[str] = Query(None),
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
     获取用户发布的任务列表
     """
     try:
-        conditions = [TaskPublishRecord.user_id == current_user.id]
+        conditions = [TaskPublishRecord.user_id == current_user["id"]]
         
         if status_filter:
             conditions.append(TaskPublishRecord.status == status_filter)
@@ -1146,14 +1115,14 @@ async def get_lawyer_tasks(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     status_filter: Optional[str] = Query(None),
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
     获取律师接单的任务列表
     """
     try:
-        conditions = [TaskPublishRecord.assigned_to == current_user.id]
+        conditions = [TaskPublishRecord.assigned_to == current_user["id"]]
         
         if status_filter:
             conditions.append(TaskPublishRecord.status == status_filter)
@@ -1210,7 +1179,7 @@ async def get_lawyer_tasks(
 async def get_task_feedback(
     limit: int = Query(10, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -1221,8 +1190,8 @@ async def get_task_feedback(
         conditions = [
             TaskPublishRecord.status == "completed",
             or_(
-                TaskPublishRecord.user_id == current_user.id,  # 用户发布的任务
-                TaskPublishRecord.assigned_to == current_user.id  # 律师接单的任务
+                TaskPublishRecord.user_id == current_user["id"],  # 用户发布的任务
+                TaskPublishRecord.assigned_to == current_user["id"]  # 律师接单的任务
             )
         ]
         
@@ -1238,7 +1207,7 @@ async def get_task_feedback(
         feedback_list = []
         for task in tasks:
             # 获取对方信息
-            other_user_id = task.assigned_to if task.user_id == current_user.id else task.user_id
+            other_user_id = task.assigned_to if task.user_id == current_user["id"] else task.user_id
             if other_user_id:
                 user_query = select(User).where(User.id == other_user_id)
                 user_result = await db.execute(user_query)
@@ -1252,10 +1221,10 @@ async def get_task_feedback(
                 "task_type": task.task_type,
                 "status": task.status,
                 "completed_at": task.completed_at.isoformat() if task.completed_at else None,
-                "my_role": "client" if task.user_id == current_user.id else "lawyer",
+                "my_role": "client" if task.user_id == current_user["id"] else "lawyer",
                 "other_party": {
                     "name": other_user.username if other_user else "匿名用户",
-                    "role": "lawyer" if task.user_id == current_user.id else "client"
+                    "role": "lawyer" if task.user_id == current_user["id"] else "client"
                 },
                 "budget": float(task.amount) if task.amount else 0,
                 "feedback_available": True,

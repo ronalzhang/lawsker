@@ -18,7 +18,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.core.deps import get_db, get_current_user, get_config_service
 from app.core.config import settings
-from app.models.user import User
+# User model import removed as we now use Dict[str, Any] for current_user
 from app.models.finance import Transaction, CommissionSplit, Wallet, WithdrawalRequest, TransactionStatus, CommissionStatus, PaymentOrder, WithdrawalStatus
 from app.services.payment_service import WeChatPayService, CommissionSplitService, WithdrawalService, WeChatPayError, WithdrawalError
 from app.services.config_service import SystemConfigService
@@ -194,7 +194,7 @@ class TransactionListResponse(BaseModel):
 @router.post("/payment/create", response_model=PaymentResponse)
 async def create_payment(
     request: PaymentRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
     config_service: SystemConfigService = Depends(get_config_service)
 ):
@@ -211,9 +211,9 @@ async def create_payment(
                 case_id=request.case_id,
                 amount=Decimal(str(request.amount)),
                 description=request.description or "律师服务费用",
-                user_id=UUID(str(current_user.id)),
+                user_id=UUID(str(current_user["id"])),
                 db=sync_session,
-                tenant_id=UUID(str(current_user.tenant_id))
+                tenant_id=UUID(str(current_user.get("tenant_id")))
             )
             
             return PaymentResponse(
@@ -274,7 +274,7 @@ async def payment_callback(
 @router.get("/summary")
 async def get_financial_summary(
     timeRange: str = Query("month", description="时间范围：week, month, quarter, year"),
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """获取财务摘要信息"""
@@ -296,14 +296,14 @@ async def get_financial_summary(
             start_date = now - timedelta(days=30)
         
         # 获取用户钱包信息
-        wallet_query = select(Wallet).where(Wallet.user_id == current_user.id)
+        wallet_query = select(Wallet).where(Wallet.user_id == current_user["id"])
         wallet_result = await db.execute(wallet_query)
         wallet = wallet_result.scalar_one_or_none()
         
         if not wallet:
             # 创建新钱包
             wallet = Wallet(
-                user_id=current_user.id,
+                user_id=current_user["id"],
                 balance=Decimal('0.00'),
                 withdrawable_balance=Decimal('0.00'),
                 frozen_balance=Decimal('0.00'),
@@ -322,7 +322,7 @@ async def get_financial_summary(
                 func.sum(Transaction.amount).label('total_amount'),
                 func.avg(Transaction.amount).label('avg_amount')
             ).where(
-                Transaction.user_id == current_user.id,
+                Transaction.user_id == current_user["id"],
                 Transaction.created_at >= start_date,
                 Transaction.status == TransactionStatus.completed
             )
@@ -335,7 +335,7 @@ async def get_financial_summary(
                 func.count(CommissionSplit.id).label('commission_count'),
                 func.sum(CommissionSplit.amount).label('commission_amount')
             ).where(
-                CommissionSplit.user_id == current_user.id,
+                CommissionSplit.user_id == current_user["id"],
                 CommissionSplit.created_at >= start_date,
                 CommissionSplit.status == CommissionStatus.paid
             )
@@ -372,7 +372,7 @@ async def get_financial_summary(
 
 @router.get("/wallet", response_model=WalletResponse)
 async def get_wallet(
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """获取用户钱包信息"""
@@ -381,14 +381,14 @@ async def get_wallet(
         from sqlalchemy import select
         
         # 查询用户钱包
-        wallet_query = select(Wallet).where(Wallet.user_id == current_user.id)
+        wallet_query = select(Wallet).where(Wallet.user_id == current_user["id"])
         wallet_result = await db.execute(wallet_query)
         wallet = wallet_result.scalar_one_or_none()
         
         if not wallet:
             # 如果钱包不存在，创建默认钱包
             wallet = Wallet(
-                user_id=current_user.id,
+                user_id=current_user["id"],
                 balance=Decimal("0"),
                 withdrawable_balance=Decimal("0"),
                 frozen_balance=Decimal("0"),
@@ -423,7 +423,7 @@ async def get_wallet(
 
 @router.get("/commission/summary", response_model=CommissionSummaryResponse)
 async def get_commission_summary(
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
     config_service: SystemConfigService = Depends(get_config_service)
 ):
@@ -437,7 +437,7 @@ async def get_commission_summary(
         
         try:
             summary = commission_service.get_commission_summary(
-                user_id=UUID(str(current_user.id)),
+                user_id=UUID(str(current_user["id"])),
                 db=sync_session
             )
             
@@ -462,7 +462,7 @@ async def get_commission_summary(
 async def get_commission_details(
     page: int = Query(1, ge=1, description="页码"),
     size: int = Query(20, ge=1, le=100, description="每页数量"),
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
     config_service: SystemConfigService = Depends(get_config_service)
 ):
@@ -476,7 +476,7 @@ async def get_commission_details(
         
         try:
             details = commission_service.get_commission_details(
-                user_id=UUID(str(current_user.id)),
+                user_id=UUID(str(current_user["id"])),
                 page=page,
                 size=size,
                 db=sync_session
@@ -521,7 +521,7 @@ async def get_transactions(
     page_size: int = Query(20, ge=1, le=100, description="每页数量"),
     transaction_type: Optional[str] = Query(None, description="交易类型过滤"),
     status_filter: Optional[str] = Query(None, description="状态过滤"),
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """获取交易记录"""
@@ -534,7 +534,7 @@ async def get_transactions(
         conditions = []
         
         # 查询用户相关的交易
-        conditions.append(Transaction.user_id == current_user.id)
+        conditions.append(Transaction.user_id == current_user["id"])
         
         if transaction_type:
             conditions.append(Transaction.transaction_type == transaction_type)
@@ -586,7 +586,7 @@ async def get_transactions(
 @router.post("/withdrawal/create", response_model=WithdrawalResponse)
 async def create_withdrawal_request(
     request: WithdrawalCreateRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
     config_service: SystemConfigService = Depends(get_config_service)
 ):
@@ -600,13 +600,13 @@ async def create_withdrawal_request(
         
         try:
             result = await withdrawal_service.create_withdrawal_request(
-                user_id=UUID(str(current_user.id)),
+                user_id=UUID(str(current_user["id"])),
                 amount=Decimal(str(request.amount)),
                 bank_account=request.bank_account,
                 bank_name=request.bank_name,
                 account_holder=request.account_holder,
                 db=sync_session,
-                tenant_id=UUID(str(current_user.tenant_id))
+                tenant_id=UUID(str(current_user.get("tenant_id")))
             )
             
             return WithdrawalResponse(
@@ -640,7 +640,7 @@ async def get_user_withdrawal_requests(
     page: int = Query(1, ge=1, description="页码"),
     size: int = Query(20, ge=1, le=100, description="每页数量"),
     status: Optional[str] = Query(None, description="状态筛选"),
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
     config_service: SystemConfigService = Depends(get_config_service)
 ):
@@ -665,7 +665,7 @@ async def get_user_withdrawal_requests(
         
         try:
             result = await withdrawal_service.get_withdrawal_requests(
-                user_id=UUID(str(current_user.id)),
+                user_id=UUID(str(current_user["id"])),
                 status=status_filter,
                 page=page,
                 size=size,
@@ -717,7 +717,7 @@ async def get_admin_withdrawal_requests(
     page: int = Query(1, ge=1, description="页码"),
     size: int = Query(20, ge=1, le=100, description="每页数量"),
     status: Optional[str] = Query(None, description="状态筛选"),
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
     config_service: SystemConfigService = Depends(get_config_service)
 ):
@@ -800,7 +800,7 @@ async def get_admin_withdrawal_requests(
 async def approve_withdrawal_request(
     withdrawal_id: UUID,
     request: WithdrawalApprovalRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
     config_service: SystemConfigService = Depends(get_config_service)
 ):
@@ -822,7 +822,7 @@ async def approve_withdrawal_request(
         try:
             result = await withdrawal_service.approve_withdrawal(
                 withdrawal_id=withdrawal_id,
-                admin_id=UUID(str(current_user.id)),
+                admin_id=UUID(str(current_user["id"])),
                 admin_notes=request.admin_notes,
                 db=sync_session
             )
@@ -848,7 +848,7 @@ async def approve_withdrawal_request(
 async def reject_withdrawal_request(
     withdrawal_id: UUID,
     request: WithdrawalRejectionRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
     config_service: SystemConfigService = Depends(get_config_service)
 ):
@@ -870,7 +870,7 @@ async def reject_withdrawal_request(
         try:
             result = await withdrawal_service.reject_withdrawal(
                 withdrawal_id=withdrawal_id,
-                admin_id=UUID(str(current_user.id)),
+                admin_id=UUID(str(current_user["id"])),
                 admin_notes=request.admin_notes,
                 db=sync_session
             )
@@ -894,7 +894,7 @@ async def reject_withdrawal_request(
 
 @router.get("/withdrawal/config")
 async def get_withdrawal_config(
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     config_service: SystemConfigService = Depends(get_config_service)
 ):
     """获取提现配置信息"""
@@ -939,7 +939,7 @@ async def get_withdrawal_config(
 
 @router.get("/config")
 async def get_finance_config(
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
     config_service: SystemConfigService = Depends(get_config_service)
 ):
@@ -1001,7 +1001,7 @@ async def get_finance_config(
 
 @router.get("/withdrawal/stats", response_model=WithdrawalStatsResponse)
 async def get_withdrawal_stats(
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
     config_service: SystemConfigService = Depends(get_config_service)
 ):

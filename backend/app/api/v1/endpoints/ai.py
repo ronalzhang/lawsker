@@ -12,7 +12,6 @@ from app.core.database import get_db
 from app.services.lawyer_review_service import LawyerReviewService
 from app.services.ai_service import AIDocumentService, DocumentType
 from app.models.lawyer_review import DocumentReviewTask, ReviewStatus
-from app.models.user import User
 from app.core.deps import get_current_user
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -126,7 +125,7 @@ async def create_collection_letter(
         service = LawyerReviewService(db)
         task = await service.create_collection_letter_task(
             case_id=request.case_id,
-            creator_id=current_user.id,
+            creator_id=current_user["id"],
             tone_style=request.tone_style,
             grace_period=request.grace_period,
             priority=request.priority
@@ -142,7 +141,7 @@ async def create_collection_letter(
 @router.post("/documents/independent-letter", response_model=ReviewTaskResponse)
 async def create_independent_letter(
     request: CreateIndependentLetterRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -171,7 +170,7 @@ async def create_independent_letter(
         service = LawyerReviewService(db)
         task = await service.create_independent_letter_task(
             order_id=None,  # 暂时不关联订单
-            creator_id=current_user.id,
+            creator_id=current_user["id"],
             order_data=order_data,
             priority=request.priority
         )
@@ -187,7 +186,7 @@ async def create_independent_letter(
 async def accept_task(
     task_id: UUID,
     request: AcceptTaskRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -197,7 +196,7 @@ async def accept_task(
         service = LawyerReviewService(db)
         task = await service.lawyer_accept_task(
             task_id=task_id,
-            lawyer_id=current_user.id,
+            lawyer_id=current_user["id"],
             notes=request.notes
         )
         await service.close()
@@ -212,7 +211,7 @@ async def accept_task(
 async def approve_document(
     task_id: UUID,
     request: ApproveDocumentRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -222,7 +221,7 @@ async def approve_document(
         service = LawyerReviewService(db)
         task = await service.lawyer_approve_document(
             task_id=task_id,
-            lawyer_id=current_user.id,
+            lawyer_id=current_user["id"],
             approval_notes=request.approval_notes,
             final_content=request.final_content
         )
@@ -238,7 +237,7 @@ async def approve_document(
 async def request_modification(
     task_id: UUID,
     request: RequestModificationRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -248,7 +247,7 @@ async def request_modification(
         service = LawyerReviewService(db)
         task = await service.lawyer_request_modification(
             task_id=task_id,
-            lawyer_id=current_user.id,
+            lawyer_id=current_user["id"],
             modification_requests=request.modification_requests,
             current_content=request.current_content
         )
@@ -264,7 +263,7 @@ async def request_modification(
 async def authorize_sending(
     task_id: UUID,
     request: AuthorizeSendingRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -274,7 +273,7 @@ async def authorize_sending(
         service = LawyerReviewService(db)
         task = await service.lawyer_authorize_sending(
             task_id=task_id,
-            lawyer_id=current_user.id,
+            lawyer_id=current_user["id"],
             authorization_notes=request.authorization_notes
         )
         await service.close()
@@ -289,7 +288,7 @@ async def authorize_sending(
 async def get_pending_tasks(
     limit: int = Query(20, ge=1, le=100, description="限制数量"),
     offset: int = Query(0, ge=0, description="偏移量"),
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -298,7 +297,7 @@ async def get_pending_tasks(
     try:
         service = LawyerReviewService(db)
         tasks = await service.get_lawyer_pending_tasks(
-            lawyer_id=current_user.id,
+            lawyer_id=current_user["id"],
             limit=limit,
             offset=offset
         )
@@ -311,7 +310,7 @@ async def get_pending_tasks(
 @router.get("/tasks/{task_id}", response_model=ReviewTaskResponse)
 async def get_task_detail(
     task_id: UUID,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -326,7 +325,7 @@ async def get_task_detail(
             raise HTTPException(status_code=404, detail="任务不存在")
         
         # 检查权限：只有分配的律师或创建者可以查看
-        if task.lawyer_id != current_user.id and task.creator_id != current_user.id:
+        if task.lawyer_id != current_user["id"] and task.creator_id != current_user["id"]:
             raise HTTPException(status_code=403, detail="无权限查看此任务")
         
         return task
@@ -338,7 +337,7 @@ async def get_task_detail(
 
 @router.get("/statistics", response_model=TaskStatisticsResponse)
 async def get_task_statistics(
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -346,7 +345,7 @@ async def get_task_statistics(
     """
     try:
         service = LawyerReviewService(db)
-        stats = await service.get_task_statistics(lawyer_id=current_user.id)
+        stats = await service.get_task_statistics(lawyer_id=current_user["id"])
         await service.close()
         return stats
     except Exception as e:
@@ -355,7 +354,7 @@ async def get_task_statistics(
 
 @router.get("/statistics/all", response_model=TaskStatisticsResponse)
 async def get_all_task_statistics(
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -376,7 +375,7 @@ async def regenerate_document(
     original_content: str = Body(..., description="原始内容"),
     modification_requests: str = Body(..., description="修改要求"),
     document_type: str = Body(..., description="文档类型"),
-    current_user: User = Depends(get_current_user)
+    current_user: Dict[str, Any] = Depends(get_current_user)
 ):
     """
     重新生成文档（独立调用AI服务）
@@ -474,7 +473,7 @@ class GenerateDocumentRequest(BaseModel):
 @router.post("/generate-document")
 async def generate_document(
     request: GenerateDocumentRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """

@@ -2,12 +2,11 @@
 文件上传API端点
 """
 
-from typing import List
+from typing import List, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_db, get_current_user
-from app.models.user import User
 from app.services.file_upload_service import FileUploadService
 
 router = APIRouter()
@@ -18,7 +17,7 @@ async def upload_files(
     files: List[UploadFile] = File(...),
     data_type: str = Form(...),
     description: str = Form(""),
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -42,7 +41,7 @@ async def upload_files(
     try:
         results = await service.upload_files(
             files=files,
-            user_id=current_user.id,  # type: ignore
+            user_id=current_user["id"],
             data_type=data_type,
             description=description
         )
@@ -63,7 +62,7 @@ async def upload_files(
 async def get_upload_history(
     limit: int = 20,
     offset: int = 0,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """获取用户上传历史"""
@@ -72,7 +71,7 @@ async def get_upload_history(
     
     try:
         history = await service.get_upload_history(
-            user_id=current_user.id,  # type: ignore
+            user_id=current_user["id"],
             limit=limit,
             offset=offset
         )

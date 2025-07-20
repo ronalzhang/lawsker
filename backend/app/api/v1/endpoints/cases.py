@@ -12,7 +12,6 @@ from datetime import datetime, date
 
 from app.core.deps import get_current_user, get_db, require_roles
 from app.services.case_service import CaseService
-from app.models.user import User
 from app.models.case import CaseStatus
 
 
@@ -92,7 +91,7 @@ class CaseListResponse(BaseModel):
 @router.post("/", response_model=CaseResponse)
 async def create_case(
     request: CaseCreateRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """创建新案件"""
@@ -148,7 +147,7 @@ async def get_cases_list(
     amount_min: Optional[float] = Query(None, description="最小金额"),
     amount_max: Optional[float] = Query(None, description="最大金额"),
     keyword: Optional[str] = Query(None, description="关键词搜索"),
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """获取案件列表"""
@@ -200,7 +199,7 @@ async def get_cases_list(
 @router.get("/{case_id}", response_model=CaseResponse)
 async def get_case_detail(
     case_id: UUID,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """获取案件详情"""
@@ -231,7 +230,7 @@ async def get_case_detail(
 async def assign_case(
     case_id: UUID,
     request: CaseAssignRequest,
-    current_user: User = Depends(require_roles(["admin", "manager"])),
+    current_user: Dict[str, Any] = Depends(require_roles(["admin", "manager"])),
     db: AsyncSession = Depends(get_db)
 ):
     """分配案件给律师"""
@@ -242,8 +241,8 @@ async def assign_case(
         case = await case_service.assign_case(
             case_id=case_id,
             lawyer_id=request.lawyer_id,
-            assigner_id=current_user.id,
-            tenant_id=current_user.tenant_id
+            assigner_id=current_user["id"],
+            tenant_id=current_user.get("tenant_id")
         )
         
         return CaseResponse.from_orm(case)
@@ -263,7 +262,7 @@ async def assign_case(
 @router.post("/{case_id}/smart-assign", response_model=CaseResponse)
 async def smart_assign_case(
     case_id: UUID,
-    current_user: User = Depends(require_roles(["admin", "manager"])),
+    current_user: Dict[str, Any] = Depends(require_roles(["admin", "manager"])),
     db: AsyncSession = Depends(get_db)
 ):
     """智能分配案件"""
@@ -273,8 +272,8 @@ async def smart_assign_case(
     try:
         case = await case_service.smart_assign_case(
             case_id=case_id,
-            tenant_id=current_user.tenant_id,
-            assigner_id=current_user.id
+            tenant_id=current_user.get("tenant_id"),
+            assigner_id=current_user["id"]
         )
         
         return CaseResponse.from_orm(case)
@@ -295,7 +294,7 @@ async def smart_assign_case(
 async def update_case_status(
     case_id: UUID,
     request: CaseStatusUpdateRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """更新案件状态"""
@@ -306,8 +305,8 @@ async def update_case_status(
         case = await case_service.update_case_status(
             case_id=case_id,
             new_status=request.status,
-            user_id=current_user.id,
-            tenant_id=current_user.tenant_id,
+            user_id=current_user["id"],
+            tenant_id=current_user.get("tenant_id"),
             notes=request.notes
         )
         
@@ -327,7 +326,7 @@ async def update_case_status(
 
 @router.get("/statistics/overview")
 async def get_case_statistics(
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """获取案件统计信息"""
@@ -335,7 +334,7 @@ async def get_case_statistics(
     case_service = CaseService(db)
     
     try:
-        stats = await case_service.get_case_statistics(current_user.tenant_id)
+        stats = await case_service.get_case_statistics(current_user.get("tenant_id"))
         return stats
         
     except Exception as e:
@@ -348,7 +347,7 @@ async def get_case_statistics(
 @router.get("/lawyers/{lawyer_id}/workload")
 async def get_lawyer_workload(
     lawyer_id: UUID,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """获取律师工作负荷"""
@@ -358,7 +357,7 @@ async def get_lawyer_workload(
     try:
         workload = await case_service.get_lawyer_workload(
             lawyer_id=lawyer_id,
-            tenant_id=current_user.tenant_id
+            tenant_id=current_user.get("tenant_id")
         )
         return workload
         

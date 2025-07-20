@@ -140,10 +140,10 @@ class AuthService:
                 "token_type": "bearer",
                 "expires_in": 1800,  # 30分钟
                 "user": {
-                    "id": user.id,
+                    "id": str(user.id),
                     "email": user.email,
                     "role": primary_role,
-                    "status": user.status
+                    "status": user.status.value if hasattr(user.status, 'value') else str(user.status)
                 }
             }
             

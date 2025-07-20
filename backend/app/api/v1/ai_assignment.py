@@ -3,13 +3,12 @@ AI分配和律师确认API端点
 """
 
 import uuid
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_db, get_current_user
-from app.models.user import User
 from app.services.ai_assignment_service import AIAssignmentService
 
 router = APIRouter()
@@ -35,7 +34,7 @@ class ConfirmAssignmentRequest(BaseModel):
 @router.post("/assign-case")
 async def assign_case_to_lawyer(
     request: AssignCaseRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -45,7 +44,8 @@ async def assign_case_to_lawyer(
     """
     
     # 检查权限
-    if current_user.role not in ["sales", "admin"]:
+    user_roles = current_user.get("roles", [])
+    if not any(role in ["sales", "admin"] for role in user_roles):
         raise HTTPException(status_code=403, detail="没有权限分配案件")
     
     service = AIAssignmentService(db)
@@ -72,7 +72,7 @@ async def assign_case_to_lawyer(
 @router.post("/confirm-assignment")
 async def confirm_assignment(
     request: ConfirmAssignmentRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -82,7 +82,8 @@ async def confirm_assignment(
     """
     
     # 检查权限
-    if current_user.role != "lawyer":
+    user_roles = current_user.get("roles", [])
+    if "lawyer" not in user_roles:
         raise HTTPException(status_code=403, detail="只有律师可以确认案件分配")
     
     service = AIAssignmentService(db)
@@ -90,7 +91,7 @@ async def confirm_assignment(
     try:
         result = await service.lawyer_confirm_assignment(
             assignment_id=uuid.UUID(request.assignment_id),
-            lawyer_id=current_user.id,  # type: ignore
+            lawyer_id=current_user["id"],
             action=request.action,
             reason=request.reason
         )
@@ -109,7 +110,7 @@ async def get_lawyer_assignments(
     status: Optional[str] = None,
     limit: int = 20,
     offset: int = 0,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -119,14 +120,15 @@ async def get_lawyer_assignments(
     """
     
     # 检查权限
-    if current_user.role != "lawyer":
+    user_roles = current_user.get("roles", [])
+    if "lawyer" not in user_roles:
         raise HTTPException(status_code=403, detail="只有律师可以查看分配记录")
     
     service = AIAssignmentService(db)
     
     try:
         assignments = await service.get_lawyer_assignments(
-            lawyer_id=current_user.id,  # type: ignore
+            lawyer_id=current_user["id"],
             status=status,
             limit=limit,
             offset=offset
@@ -144,7 +146,7 @@ async def get_lawyer_assignments(
 
 @router.get("/assignment-stats")
 async def get_assignment_statistics(
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -153,11 +155,12 @@ async def get_assignment_statistics(
     律师可以查看自己的统计，管理员可以查看全部统计
     """
     
-    if current_user.role == "lawyer":
+    user_roles = current_user.get("roles", [])
+    if "lawyer" in user_roles:
         # 律师查看自己的统计
         service = AIAssignmentService(db)
         assignments = await service.get_lawyer_assignments(
-            lawyer_id=current_user.id,  # type: ignore
+            lawyer_id=current_user["id"],
             limit=1000  # 获取所有记录用于统计
         )
         
@@ -177,7 +180,7 @@ async def get_assignment_statistics(
             }
         }
     
-    elif current_user.role in ["admin", "sales"]:
+    elif any(role in ["admin", "sales"] for role in user_roles):
         # 管理员和销售查看全部统计
         return {
             "message": "获取统计信息成功",
@@ -196,7 +199,7 @@ async def get_assignment_statistics(
 @router.get("/available-lawyers")
 async def get_available_lawyers(
     region: Optional[str] = None,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -206,7 +209,8 @@ async def get_available_lawyers(
     """
     
     # 检查权限
-    if current_user.role not in ["sales", "admin"]:
+    user_roles = current_user.get("roles", [])
+    if not any(role in ["sales", "admin"] for role in user_roles):
         raise HTTPException(status_code=403, detail="没有权限查看律师列表")
     
     service = AIAssignmentService(db)

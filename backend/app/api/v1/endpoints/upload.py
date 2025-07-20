@@ -11,7 +11,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from app.core.deps import get_db, get_current_user
-from app.models.user import User
 from app.services.ai_table_recognition_service import AITableRecognitionService
 from app.services.template_service import TemplateService
 import logging
@@ -43,7 +42,7 @@ async def smart_table_upload(
     file: UploadFile = File(...),
     data_type: str = Query('debt_collection', description="数据类型"),
     auto_save: bool = Query(True, description="是否自动保存成功识别的数据"),
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -65,7 +64,7 @@ async def smart_table_upload(
         if file.size and file.size > 50 * 1024 * 1024:  # 50MB限制
             raise HTTPException(status_code=400, detail="文件大小不能超过50MB")
         
-        logger.info(f"用户 {current_user.username} 开始上传文件: {file.filename}")
+        logger.info(f"用户 {current_user.get('username', 'unknown')} 开始上传文件: {file.filename}")
         
         # AI智能识别
         recognition_result = await ai_service.recognize_and_convert_table(file, data_type)
@@ -93,7 +92,7 @@ async def smart_table_upload(
             'success': True,
             'step': 'ai_recognition_success',
             'message': f'AI成功识别并转换 {len(converted_data)} 条记录',
-            'user_id': current_user.id,
+            'user_id': current_user["id"],
             'original_filename': file.filename,
             'recognition_result': {
                 'total_records': len(converted_data),
@@ -131,7 +130,7 @@ async def smart_table_upload(
                         valid_data.append(row)
                 
                 # 保存到数据库（这里需要根据实际的数据保存服务来实现）
-                save_result = await save_debt_data(valid_data, current_user.id, db)
+                save_result = await save_debt_data(valid_data, current_user["id"], db)
                 
                 response_data['auto_save_result'] = {
                     'saved_count': len(valid_data),
@@ -175,7 +174,7 @@ async def smart_table_upload(
 @router.get("/template/info")
 async def get_template_info(
     template_type: str = Query('debt_collection', description="模板类型"),
-    current_user: User = Depends(get_current_user)
+    current_user: Dict[str, Any] = Depends(get_current_user)
 ):
     """获取模板信息"""
     try:
@@ -195,13 +194,13 @@ async def get_template_info(
 @router.get("/template/download")
 async def download_template(
     template_type: str = Query('debt_collection', description="模板类型"),
-    current_user: User = Depends(get_current_user)
+    current_user: Dict[str, Any] = Depends(get_current_user)
 ):
     """下载标准模板"""
     try:
         _, template_service, _ = get_services()
         
-        logger.info(f"用户 {current_user.username} 下载模板: {template_type}")
+        logger.info(f"用户 {current_user.get('username', 'unknown')} 下载模板: {template_type}")
         
         # 生成并返回模板文件
         return await template_service.download_template(template_type)
@@ -211,7 +210,7 @@ async def download_template(
         raise HTTPException(status_code=500, detail=f"下载模板失败: {str(e)}")
 
 @router.get("/templates")
-async def list_templates(current_user: User = Depends(get_current_user)):
+async def list_templates(current_user: Dict[str, Any] = Depends(get_current_user)):
     """获取所有可用模板列表"""
     try:
         _, template_service, _ = get_services()
@@ -232,7 +231,7 @@ async def manual_upload(
     file: UploadFile = File(...),
     data_type: str = Query('debt_collection', description="数据类型"),
     skip_validation: bool = Query(False, description="跳过数据验证"),
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -246,7 +245,7 @@ async def manual_upload(
         if not file.filename:
             raise HTTPException(status_code=400, detail="请选择要上传的文件")
         
-        logger.info(f"用户 {current_user.username} 手动上传文件: {file.filename}")
+        logger.info(f"用户 {current_user.get('username', 'unknown')} 手动上传文件: {file.filename}")
         
         # 解析标准格式文件
         parsed_result = await parse_standard_format_file(file, data_type)
@@ -268,7 +267,7 @@ async def manual_upload(
         return {
             'success': True,
             'message': f'成功解析 {len(parsed_result["data"])} 条记录',
-            'user_id': current_user.id,
+            'user_id': current_user["id"],
             'filename': file.filename,
             'total_records': len(parsed_result['data']),
             'valid_records': validation_result['valid_count'],
@@ -283,7 +282,7 @@ async def manual_upload(
 @router.get("/status/{upload_id}")
 async def get_upload_status(
     upload_id: str,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """获取上传任务状态"""
@@ -308,7 +307,7 @@ async def batch_process_files(
     files: List[UploadFile] = File(...),
     data_type: str = Query('debt_collection'),
     processing_mode: str = Query('smart', description="处理模式: smart(AI识别) 或 manual(标准格式)"),
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """批量文件处理"""
@@ -355,7 +354,7 @@ async def batch_process_files(
 
 @router.get("/tasks/available")
 async def get_available_tasks(
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """获取可抢单任务列表（律师端）"""
@@ -414,7 +413,7 @@ async def get_available_tasks(
 
 @router.get("/tasks/my-tasks/user")
 async def get_user_published_tasks(
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """获取用户发布的任务列表"""
@@ -441,7 +440,7 @@ async def get_user_published_tasks(
             ORDER BY tr.created_at DESC
         """)
         
-        result = db.execute(query, {"user_id": current_user.id})
+        result = db.execute(query, {"user_id": current_user["id"]})
         tasks = []
         
         for row in result:
@@ -477,7 +476,7 @@ async def get_user_published_tasks(
 
 @router.get("/tasks/feedback")
 async def get_task_feedback(
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """获取用户任务的反馈状态（已被律师接单的任务）"""
@@ -505,7 +504,7 @@ async def get_task_feedback(
             ORDER BY tgr.grabbed_at DESC
         """)
         
-        result = db.execute(query, {"user_id": current_user.id})
+        result = db.execute(query, {"user_id": current_user["id"]})
         tasks = []
         
         for row in result:
@@ -543,7 +542,7 @@ async def get_task_feedback(
 @router.post("/tasks/grab/{task_id}")
 async def grab_task(
     task_id: str,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """律师抢单功能"""
@@ -577,7 +576,7 @@ async def grab_task(
         
         update_result = db.execute(grab_query, {
             "task_id": task_id,
-            "lawyer_id": str(current_user.id)
+            "lawyer_id": str(current_user["id"])
         })
         
         if update_result.rowcount == 0:
@@ -589,7 +588,7 @@ async def grab_task(
             "success": True,
             "message": "抢单成功！任务已分配给您",
             "task_id": task_id,
-            "lawyer_id": str(current_user.id),
+            "lawyer_id": str(current_user["id"]),
             "grabbed_at": datetime.now().isoformat()
         }
         
@@ -600,7 +599,7 @@ async def grab_task(
 
 @router.get("/tasks/my-tasks/lawyer")
 async def get_lawyer_tasks(
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """获取律师接单的任务列表"""
@@ -626,7 +625,7 @@ async def get_lawyer_tasks(
             ORDER BY tr.updated_at DESC
         """)
         
-        result = db.execute(query, {"lawyer_id": str(current_user.id)})
+        result = db.execute(query, {"lawyer_id": str(current_user["id"])})
         tasks = []
         
         for row in result:
@@ -663,7 +662,7 @@ async def get_lawyer_tasks(
 @router.post("/tasks/generate-document/{task_id}")
 async def generate_ai_document(
     task_id: str,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """为指定任务生成AI法律文书"""
@@ -677,7 +676,7 @@ async def generate_ai_document(
         
         result = db.execute(verify_query, {
             "task_id": task_id, 
-            "lawyer_id": str(current_user.id)
+            "lawyer_id": str(current_user["id"])
         }).fetchone()
         
         if not result:
@@ -923,7 +922,7 @@ def extract_client_name(text: str) -> str:
 async def save_document_content(
     task_id: str,
     request: dict,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """保存律师修改后的文书内容"""
@@ -938,7 +937,7 @@ async def save_document_content(
         
         result = db.execute(save_query, {
             "task_id": task_id,
-            "lawyer_id": str(current_user.id),
+            "lawyer_id": str(current_user["id"]),
             "content": content
         })
         
@@ -951,7 +950,7 @@ async def save_document_content(
             
             db.execute(insert_query, {
                 "task_id": task_id,
-                "lawyer_id": str(current_user.id),
+                "lawyer_id": str(current_user["id"]),
                 "content": content
             })
         
@@ -970,7 +969,7 @@ async def save_document_content(
 async def send_document(
     task_id: str,
     request: dict,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """发送法律文书给委托人"""
@@ -986,7 +985,7 @@ async def send_document(
         
         result = db.execute(doc_query, {
             "task_id": task_id,
-            "lawyer_id": str(current_user.id)
+            "lawyer_id": str(current_user["id"])
         }).fetchone()
         
         if not result:
@@ -1003,7 +1002,7 @@ async def send_document(
         
         db.execute(send_log_query, {
             "task_id": task_id,
-            "lawyer_id": str(current_user.id),
+            "lawyer_id": str(current_user["id"]),
             "send_method": send_method,
             "recipient_info": json.dumps(recipient_info),
             "content": document_content
@@ -1018,7 +1017,7 @@ async def send_document(
         
         db.execute(update_task_query, {
             "task_id": task_id,
-            "lawyer_id": str(current_user.id)
+            "lawyer_id": str(current_user["id"])
         })
         
         db.commit()
@@ -1037,7 +1036,7 @@ async def send_document(
 @router.get("/tasks/document/{task_id}")
 async def get_task_document(
     task_id: str,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """获取任务的AI生成文书内容"""
@@ -1051,7 +1050,7 @@ async def get_task_document(
         
         result = db.execute(doc_query, {
             "task_id": task_id,
-            "lawyer_id": str(current_user.id)
+            "lawyer_id": str(current_user["id"])
         }).fetchone()
         
         if result:

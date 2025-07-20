@@ -10,7 +10,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.deps import get_current_user
-from app.models.user import User
 from app.services.document_library_service import DocumentLibraryService
 from app.services.config_service import SystemConfigService
 from app.services.ai_service import AIDocumentService
@@ -40,7 +39,7 @@ class DocumentUsageFeedback(BaseModel):
 @router.post("/generate")
 async def generate_document(
     request: DocumentGenerationRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -67,7 +66,7 @@ async def generate_document(
         result = await doc_service.get_or_generate_document(
             db=db,
             task_info=task_info,
-            user_id=current_user.id,
+            user_id=current_user["id"],
             case_id=request.case_id,
             force_regenerate=request.force_regenerate
         )
@@ -104,7 +103,7 @@ async def generate_document(
 @router.post("/feedback")
 async def submit_document_feedback(
     feedback: DocumentUsageFeedback,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -135,7 +134,7 @@ async def submit_document_feedback(
             'modifications': feedback.modifications_made,
             'final_content': feedback.final_content,
             'doc_id': feedback.document_id,
-            'user_id': current_user.id
+            'user_id': current_user["id"]
         })
         
         # 重新计算文书成功率
@@ -171,7 +170,7 @@ async def submit_document_feedback(
 
 @router.get("/stats")
 async def get_document_library_stats(
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """获取用户的文书库统计信息"""
@@ -179,7 +178,7 @@ async def get_document_library_stats(
         config_service = SystemConfigService(db)
         doc_service = DocumentLibraryService(config_service)
         
-        stats = await doc_service.get_document_library_stats(db, current_user.id)
+        stats = await doc_service.get_document_library_stats(db, current_user["id"])
         
         return stats
     
@@ -195,7 +194,7 @@ async def get_user_documents(
     document_type: Optional[str] = None,
     limit: int = 20,
     offset: int = 0,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """获取用户的文书库列表"""
@@ -204,7 +203,7 @@ async def get_user_documents(
         
         # 构建查询条件
         where_conditions = ["created_by = :user_id", "is_active = true"]
-        params = {"user_id": current_user.id, "limit": limit, "offset": offset}
+        params = {"user_id": current_user["id"], "limit": limit, "offset": offset}
         
         if document_type:
             where_conditions.append("document_type = :doc_type")
@@ -265,7 +264,7 @@ async def get_user_documents(
 @router.get("/{document_id}")
 async def get_document_detail(
     document_id: UUID,
-    current_user: User = Depends(get_current_user),
+    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """获取文书详细内容"""
@@ -284,7 +283,7 @@ async def get_document_detail(
         
         result = await db.execute(query, {
             'doc_id': document_id,
-            'user_id': current_user.id
+            'user_id': current_user["id"]
         })
         
         row = result.fetchone()
