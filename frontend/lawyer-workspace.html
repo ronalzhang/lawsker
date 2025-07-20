@@ -936,6 +936,48 @@
             margin-bottom: 24px;
             background: var(--glass-bg);
             border-radius: 12px;
+
+        /* 子标签样式 */
+        .sub-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .sub-tab {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .sub-tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .sub-tab.active {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .sub-tab-content {
+            display: none;
+        }
+
+        .sub-tab-content.active {
+            display: block;
+        }
             padding: 4px;
             border: 1px solid var(--glass-border);
         }
@@ -1222,7 +1264,6 @@
             <button class="tab" onclick="switchTab('tasks')">任务管理</button>
             <button class="tab" onclick="switchTab('cases')">案件管理</button>
             <button class="tab" onclick="switchTab('withdrawal')">提现管理</button>
-            <button class="tab" onclick="window.open('send-records.html', '_blank')">📤 发送记录</button>
         </div>
 
         <!-- 工作概览标签页 -->
@@ -1408,17 +1449,25 @@
 
         <!-- 案件管理标签页 -->
         <div id="cases" class="tab-content">
-        <!-- 案件列表 -->
-        <div class="cases-section">
-            <div class="cases-header">
-                <h3 class="cases-title">我的案件</h3>
-                <div class="cases-filter">
-                    <button class="filter-btn active">全部</button>
-                    <button class="filter-btn">进行中</button>
-                    <button class="filter-btn">待处理</button>
-                    <button class="filter-btn">已完成</button>
-                </div>
+            <!-- 子标签导航 -->
+            <div class="sub-tabs" style="margin-bottom: 20px;">
+                <button class="sub-tab active" onclick="switchSubTab('my-cases')">我的案件</button>
+                <button class="sub-tab" onclick="switchSubTab('send-records')">📤 发送记录</button>
             </div>
+
+            <!-- 我的案件子页面 -->
+            <div id="my-cases" class="sub-tab-content active">
+                <!-- 案件列表 -->
+                <div class="cases-section">
+                    <div class="cases-header">
+                        <h3 class="cases-title">我的案件</h3>
+                        <div class="cases-filter">
+                            <button class="filter-btn active">全部</button>
+                            <button class="filter-btn">进行中</button>
+                            <button class="filter-btn">待处理</button>
+                            <button class="filter-btn">已完成</button>
+                        </div>
+                    </div>
             
             <table class="cases-table">
                 <thead>
@@ -1472,6 +1521,19 @@
                 </tbody>
             </table>
         </div>
+            </div>
+
+            <!-- 发送记录子页面 -->
+            <div id="send-records" class="sub-tab-content">
+                <div id="sendRecordsContainer">
+                    <!-- 发送记录内容将动态加载 -->
+                    <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📤</div>
+                        <h3>发送记录</h3>
+                        <p>正在加载发送记录...</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- 提现管理标签页 -->
@@ -1617,12 +1679,69 @@
             event.target.classList.add('active');
         }
 
+        // 子标签切换功能
+        function switchSubTab(subTabName) {
+            // 隐藏所有子标签页内容
+            document.querySelectorAll('.sub-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 移除所有子标签的激活状态
+            document.querySelectorAll('.sub-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 显示选中的子标签页内容
+            const targetContent = document.getElementById(subTabName);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+            
+            // 激活选中的子标签
+            event.target.classList.add('active');
+            
+            // 如果切换到发送记录，加载数据
+            if (subTabName === 'send-records') {
+                loadSendRecords();
+            }
+        }
+
         // 退出登录
         function logout() {
-            if (confirm('确定要退出登录吗？')) {
-                localStorage.removeItem('authToken');
-                window.location.href = '/auth';
-            }
+            showLogoutModal();
+        }
+
+        // 显示退出登录模态框
+        function showLogoutModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 450px;">
+                    <div class="modal-header">
+                        <h3>确认退出</h3>
+                        <span class="close" onclick="this.closest('.modal').remove();">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <p style="margin: 20px 0; font-size: 16px; color: #666;">确定要退出登录吗？</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove();">
+                            取消
+                        </button>
+                        <button class="btn btn-primary" onclick="confirmLogout(); this.closest('.modal').remove();">
+                            确认退出
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // 确认退出登录
+        function confirmLogout() {
+            localStorage.removeItem('authToken');
+            window.location.href = '/auth';
         }
 
         // 过滤案件
@@ -2096,35 +2215,159 @@
         
         // 生成律师函内容
         function generateLawyerLetterContent(taskInfo, date) {
-            return `律师函
+            // 从任务信息中提取债务人姓名
+            const debtorName = extractDebtorName(taskInfo);
+            
+            // 获取当前律师信息
+            const lawyerInfo = getCurrentLawyerInfo();
+            
+            // 从描述中提取金额信息
+            const amountInfo = extractAmountFromDescription(taskInfo.description);
+            
+            return `催收律师函
 
-致：相关当事人
+致：${debtorName}先生/女士
 
-我所接受委托人的委托，就${taskInfo.title}一事，根据《中华人民共和国民法典》、《中华人民共和国民事诉讼法》等相关法律法规，现致函如下：
+我是${lawyerInfo.lawFirm}${lawyerInfo.name}律师，执业证号：${lawyerInfo.licenseNumber}，联系电话：${lawyerInfo.phone}。
 
-一、基本事实
-根据委托人提供的材料和陈述：${taskInfo.description}
+现受委托人委托，就您所欠债务事宜向您发出本催收函。
 
-二、法律分析
-根据上述事实，结合相关法律规定：
-1. 根据《民法典》相关条款，当事人应当履行相应义务；
-2. 如不履行，将承担相应的法律责任；
-3. 我方保留通过法律途径维护委托人合法权益的权利。
+一、债务事实
+据委托人提供的相关材料显示，您与委托人之间存在债权债务关系${amountInfo}。该债务已到期，但您至今未履行还款义务。
 
-三、律师意见
-1. 请贵方在收到本函后7日内，妥善处理相关事宜；
-2. 如需沟通协商，请及时与我方联系；
-3. 逾期未处理，我方将依法采取进一步措施。
+${taskInfo.description}
 
-特此致函！
+二、法律依据
+根据《中华人民共和国民法典》第五百七十七条、第五百七十八条等相关规定，债务人应当按照约定履行债务。逾期不履行的，应当承担继续履行、采取补救措施或者赔偿损失等违约责任。
+
+三、催收要求
+现正式要求您在收到本函之日起十五日内履行还款义务。
+
+四、法律后果
+如您在上述期限内既不还款又不提出异议，将面临以下法律后果：
+1. 承担违约责任及逾期利息损失；
+2. 我方将依法通过诉讼途径解决，由此产生的诉讼费、律师费、保全费等费用均由您承担；
+3. 可能被纳入失信被执行人名单，影响您的征信记录；
+4. 面临财产保全和强制执行措施。
+
+五、协商解决
+如您确有还款意愿但暂时存在困难，请主动与我方联系，我们可以协商制定合理的还款计划。
+
+请您务必重视本催收函，积极配合解决债务问题，避免承担更严重的法律后果。
+
+联系地址：${lawyerInfo.address}
+联系电话：${lawyerInfo.phone}
+传真号码：${lawyerInfo.fax}
+邮政编码：${lawyerInfo.postalCode}
 
 此致
 敬礼！
 
-XXX律师事务所
-执业律师：XXX
-联系电话：XXX-XXXX-XXXX
+${lawyerInfo.lawFirm}
+${lawyerInfo.name}律师
+
 ${date}`;
+        }
+
+        // 提取债务人姓名
+        function extractDebtorName(taskInfo) {
+            // 从标题中提取债务人姓名
+            let debtorName = '债务人';
+            
+            if (taskInfo.title) {
+                // 匹配模式：XX债务催收案、XX欠款案等
+                const nameMatch = taskInfo.title.match(/^([^债欠案]+)(?:债务|欠款|催收)/);
+                if (nameMatch && nameMatch[1]) {
+                    debtorName = nameMatch[1].trim();
+                } else {
+                    // 尝试其他模式匹配
+                    const titleMatch = taskInfo.title.match(/致?([^先生女士,，：:\s]{2,4})(?:先生|女士|债务|欠款)?/);
+                    if (titleMatch && titleMatch[1]) {
+                        debtorName = titleMatch[1];
+                    }
+                }
+            }
+            
+            // 从描述中提取姓名
+            if (debtorName === '债务人' && taskInfo.description) {
+                const descNameMatch = taskInfo.description.match(/(?:债务人|欠款人|借款人)[:：]?\s*([^，,。.\s]{2,4})/);
+                if (descNameMatch && descNameMatch[1]) {
+                    debtorName = descNameMatch[1];
+                }
+            }
+            
+            return debtorName;
+        }
+
+        // 提取金额信息
+        function extractAmountFromDescription(description) {
+            if (!description) return '';
+            
+            // 匹配各种金额格式
+            const amountMatches = [
+                /金额[:：]?\s*[¥￥]?(\d+(?:,\d{3})*(?:\.\d{2})?)\s*[元万]/,
+                /欠款[:：]?\s*[¥￥]?(\d+(?:,\d{3})*(?:\.\d{2})?)\s*[元万]/,
+                /债务[:：]?\s*[¥￥]?(\d+(?:,\d{3})*(?:\.\d{2})?)\s*[元万]/,
+                /[¥￥](\d+(?:,\d{3})*(?:\.\d{2})?)[元万]?/
+            ];
+            
+            for (const regex of amountMatches) {
+                const match = description.match(regex);
+                if (match && match[1]) {
+                    const amount = match[1];
+                    return `，债务金额为人民币${amount}元`;
+                }
+            }
+            
+            return '';
+        }
+
+        // 获取当前律师信息
+        function getCurrentLawyerInfo() {
+            // 尝试从用户信息获取律师信息
+            const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+            const userName = localStorage.getItem('userName') || '';
+            
+            let lawyerName = '张律师';
+            let licenseNumber = '11010201234567890';
+            let phone = '138-0000-0000';
+            
+            // 如果是登录用户，使用真实信息
+            if (userName && userName !== 'demo') {
+                if (userName.startsWith('lawyer')) {
+                    // 根据律师ID获取演示姓名
+                    const lawyerId = userName.replace('lawyer', '').padStart(3, '0');
+                    const demoName = getLawyerNameFromDemo(lawyerId);
+                    if (demoName) {
+                        lawyerName = demoName;
+                        licenseNumber = `1101020123456${lawyerId}`;
+                        phone = `138-${lawyerId.substring(0,2)}00-${lawyerId.substring(2,3)}000`;
+                    }
+                } else {
+                    lawyerName = userName;
+                }
+            }
+            
+            // 如果有用户详细信息，使用真实信息
+            if (userInfo.full_name) {
+                lawyerName = userInfo.full_name;
+            }
+            if (userInfo.phone_number) {
+                phone = userInfo.phone_number;
+            }
+            if (userInfo.license_number) {
+                licenseNumber = userInfo.license_number;
+            }
+            
+            return {
+                name: lawyerName,
+                licenseNumber: licenseNumber,
+                phone: phone,
+                lawFirm: '北京律思客律师事务所',
+                address: '北京市朝阳区建国路XX号XX大厦XX层',
+                fax: '010-8888-8889',
+                postalCode: '100000'
+            };
         }
         
         // 生成债务催收内容
@@ -2277,7 +2520,39 @@ ${date}`;
 
         // 重新生成内容
         async function regenerateContent(taskId) {
-            if (confirm('确定要重新生成AI文书内容吗？当前的修改将会丢失。')) {
+            showRegenerateModal(taskId);
+        }
+
+        // 显示重新生成内容模态框
+        function showRegenerateModal(taskId) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 500px;">
+                    <div class="modal-header">
+                        <h3>重新生成内容</h3>
+                        <span class="close" onclick="this.closest('.modal').remove();">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <p style="margin: 20px 0; font-size: 16px; color: #666;">确定要重新生成AI文书内容吗？</p>
+                        <p style="margin: 10px 0; font-size: 14px; color: #e74c3c;"><strong>注意：</strong>当前的修改将会丢失。</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove();">
+                            取消
+                        </button>
+                        <button class="btn btn-primary" onclick="confirmRegenerateContent('${taskId}'); this.closest('.modal').remove();">
+                            确认重新生成
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // 确认重新生成内容
+        async function confirmRegenerateContent(taskId) {
                 // 强制重新生成，不使用库存文书
                 const textarea = document.getElementById(`content-${taskId}`);
                 const originalContent = textarea.value;
@@ -2356,7 +2631,6 @@ ${date}`;
                 } finally {
                     textarea.disabled = false;
                 }
-            }
         }
 
         // 保存内容
@@ -2398,13 +2672,61 @@ ${date}`;
         async function confirmTask(taskId) {
             const textarea = document.getElementById(`content-${taskId}`);
             if (!textarea || textarea.value.trim() === '') {
-                alert('请先生成或编辑文书内容');
+                showNotification('请先生成或编辑文书内容', 'warning');
                 return;
             }
             
-            if (confirm('确认要发送这份法律文书给委托人吗？发送后将自动标记任务为已完成。')) {
-                await sendDocument(taskId);
-            }
+            showConfirmSendModal(taskId);
+        }
+
+        // 显示确认发送模态框
+        function showConfirmSendModal(taskId) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 500px;">
+                    <div class="modal-header">
+                        <h3>📤 确认发送文书</h3>
+                        <span class="close" onclick="this.closest('.modal').remove();">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #3b82f6;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="font-size: 18px;">⚠️</span>
+                                <strong style="color: #3b82f6;">重要提醒</strong>
+                            </div>
+                            <p style="margin: 0; color: var(--text-secondary);">
+                                确认发送后，文书将通过您选择的方式发送给委托人，<br>
+                                任务将自动标记为已完成且无法撤销。
+                            </p>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(0, 0, 0, 0.05); border-radius: 8px;">
+                            <span style="font-size: 24px;">📋</span>
+                            <div>
+                                <div style="font-weight: 600; color: var(--text-primary);">当前任务</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">任务ID: ${taskId}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove();">
+                            取消
+                        </button>
+                        <button class="btn btn-primary" onclick="confirmSendDocument('${taskId}'); this.closest('.modal').remove();">
+                            <span>📤</span> 确认发送
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        // 确认发送文书
+        async function confirmSendDocument(taskId) {
+            await sendDocument(taskId);
         }
 
         // 发送文书给委托人
@@ -3782,9 +4104,63 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
                 return;
             }
             
-            if (confirm(`确定要发送 ${confirmedTasks.length} 个已确认的任务吗？发送后将通过短信、邮件等方式送达客户。`)) {
+            showBatchSendModal(confirmedTasks);
+        }
+
+        // 显示批量发送确认模态框
+        function showBatchSendModal(confirmedTasks) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h3>📤 批量发送确认</h3>
+                        <span class="close" onclick="this.closest('.modal').remove();">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div style="background: rgba(245, 158, 11, 0.1); padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #f59e0b;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="font-size: 18px;">⚡</span>
+                                <strong style="color: #f59e0b;">批量发送提醒</strong>
+                            </div>
+                            <p style="margin: 0; color: var(--text-secondary);">
+                                即将批量发送 <strong>${confirmedTasks.length}</strong> 个已确认的任务，<br>
+                                文书将通过短信、邮件等方式送达客户。
+                            </p>
+                        </div>
+                        
+                        <div style="max-height: 200px; overflow-y: auto; border: 1px solid var(--glass-border); border-radius: 8px; padding: 12px;">
+                            <h4 style="margin: 0 0 12px 0; color: var(--text-primary);">待发送任务列表：</h4>
+                            ${confirmedTasks.map((task, index) => `
+                                <div style="display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(0, 0, 0, 0.02); border-radius: 6px; margin-bottom: 6px;">
+                                    <span style="font-size: 14px;">📋</span>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 14px; font-weight: 500;">${task.title || `任务 ${index + 1}`}</div>
+                                        <div style="font-size: 12px; color: var(--text-secondary);">ID: ${task.id}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove();">
+                            取消
+                        </button>
+                        <button class="btn btn-primary" onclick="executeBatchSend(${JSON.stringify(confirmedTasks).replace(/"/g, '&quot;')}); this.closest('.modal').remove();">
+                            <span>📤</span> 确认批量发送
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        // 执行批量发送
+        function executeBatchSend(confirmedTasks) {
                 // 模拟批量发送
-                alert(`正在发送 ${confirmedTasks.length} 个任务的律师函...`);
+                showNotification(`正在发送 ${confirmedTasks.length} 个任务的律师函...`, 'info');
                 
                 // 模拟发送过程
                 setTimeout(() => {
@@ -3803,8 +4179,41 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
         }
 
         function resetContent(taskId) {
+            showResetModal(taskId);
+        }
+
+        // 显示重置内容模态框
+        function showResetModal(taskId) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 450px;">
+                    <div class="modal-header">
+                        <h3>重置内容</h3>
+                        <span class="close" onclick="this.closest('.modal').remove();">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <p style="margin: 20px 0; font-size: 16px; color: #666;">确定要重置内容吗？</p>
+                        <p style="margin: 10px 0; font-size: 14px; color: #f39c12;">内容将恢复为AI原始生成版本。</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove();">
+                            取消
+                        </button>
+                        <button class="btn btn-primary" onclick="confirmResetContent('${taskId}'); this.closest('.modal').remove();">
+                            确认重置
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // 确认重置内容
+        function confirmResetContent(taskId) {
             const textarea = document.getElementById('content-' + taskId);
-            if (textarea && confirm('确定要重置内容吗？')) {
+            if (textarea) {
                 // 这里可以从API重新获取原始AI生成的内容
                 alert('内容已重置为AI原始生成版本');
             }
@@ -4315,6 +4724,117 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
             };
             
             return demoLawyers[lawyerId] || null;
+        }
+
+        // 加载发送记录
+        async function loadSendRecords() {
+            const container = document.getElementById('sendRecordsContainer');
+            if (!container) return;
+
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                    <div style="font-size: 24px; margin-bottom: 16px;">⏳</div>
+                    <p>正在加载发送记录...</p>
+                </div>
+            `;
+
+            try {
+                if (apiClient.isAuthenticated()) {
+                    const response = await fetch('https://156.236.74.200/api/v1/document-send/send-records', {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        }
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        renderSendRecords(result.records);
+                    } else {
+                        container.innerHTML = `
+                            <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                                <div style="font-size: 48px; margin-bottom: 16px;">❌</div>
+                                <h3>加载失败</h3>
+                                <p>${result.message || '未知错误'}</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    // 演示模式
+                    renderSendRecords([]);
+                }
+            } catch (error) {
+                console.error('加载发送记录失败:', error);
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+                        <h3>加载失败</h3>
+                        <p>网络错误，请稍后重试</p>
+                        <button class="btn btn-primary" onclick="loadSendRecords()" style="margin-top: 16px;">重新加载</button>
+                    </div>
+                `;
+            }
+        }
+
+        // 渲染发送记录
+        function renderSendRecords(records) {
+            const container = document.getElementById('sendRecordsContainer');
+            
+            if (records.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
+                        <h3>暂无发送记录</h3>
+                        <p>当您发送文书后，记录将显示在这里</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const recordsHtml = records.map(record => {
+                const methods = record.send_methods || [];
+                const methodTags = methods.map(method => {
+                    const methodInfo = getMethodInfo(method);
+                    return `<span class="method-tag method-${methodInfo.type}" style="padding: 4px 8px; border-radius: 6px; font-size: 11px; margin-right: 8px;">${methodInfo.icon} ${methodInfo.name}</span>`;
+                }).join('');
+
+                return `
+                    <div style="background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div>
+                                <div style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">${record.document_title || '未知文书'}</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">
+                                    收件人：${record.recipient_name} | 发送时间：${new Date(record.created_at).toLocaleString()}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            ${methodTags}
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">
+                            状态：${record.send_status || '处理中'} | 
+                            ${record.tracking_number ? `快递单号：${record.tracking_number}` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div style="margin-bottom: 16px;">
+                    <h3 style="color: var(--text-primary); margin-bottom: 12px;">📤 发送记录</h3>
+                </div>
+                ${recordsHtml}
+            `;
+        }
+
+        // 获取发送方式信息
+        function getMethodInfo(method) {
+            const methodMap = {
+                'email': { type: 'email', icon: '📧', name: '邮件' },
+                'sms': { type: 'sms', icon: '📱', name: '短信' },
+                'registered_mail': { type: 'mail', icon: '📮', name: '挂号信' }
+            };
+            return methodMap[method] || { type: 'unknown', icon: '❓', name: method };
         }
     </script>
 </body>
