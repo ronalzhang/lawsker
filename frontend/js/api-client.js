@@ -166,28 +166,28 @@ class ApiClient {
      * 获取当前用户信息
      */
     async getCurrentUserInfo() {
-        return this.get('/user/profile');
+        return this.get('/users/profile');
     }
 
     /**
      * 更新用户信息
      */
     async updateUserProfile(profileData) {
-        return this.put('/user/profile', profileData);
+        return this.put('/users/profile', profileData);
     }
 
     /**
      * 获取用户统计数据
      */
     async getUserStats() {
-        return this.get('/user/stats');
+        return this.get('/users/stats');
     }
 
     /**
      * 获取仪表盘统计
      */
     async getDashboardStats() {
-        return this.get('/dashboard/stats');
+        return this.get('/statistics/dashboard');
     }
 
     // ========== 任务相关API ==========

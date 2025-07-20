@@ -4,9 +4,10 @@
 """
 
 import logging
+import json
 from typing import Optional, List
 from uuid import UUID, uuid4
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, update, func
@@ -15,7 +16,7 @@ from pydantic import BaseModel, Field
 from app.core.database import get_db
 from app.models.user import User
 from app.models.lawyer_review import DocumentReviewTask, ReviewStatus
-from app.models.statistics import TaskPublishRecord
+from app.models.statistics import TaskPublishRecord, LawyerDailyLimit, UserDailyPublishLimit
 from app.services.lawyer_review_service import LawyerReviewService
 from app.services.ai_service import AIDocumentService
 from app.services.config_service import SystemConfigService
@@ -564,9 +565,44 @@ async def publish_user_task(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    用户发布任务
+    用户发布任务 - 包含每日发单限制检查
     """
     try:
+        today = date.today()
+        
+        # 检查用户每日发单限制
+        daily_limit_query = select(UserDailyPublishLimit).where(
+            and_(
+                UserDailyPublishLimit.user_id == current_user.id,
+                UserDailyPublishLimit.date == today
+            )
+        )
+        daily_limit_result = await db.execute(daily_limit_query)
+        daily_limit = daily_limit_result.scalar_one_or_none()
+        
+        # 如果没有今日记录，创建一个
+        if not daily_limit:
+            # 从系统配置获取每日限制
+            config_service = SystemConfigService(db)
+            user_config = await config_service.get_config("business", "user_daily_limit")
+            default_limit = user_config.get("default_limit", 5) if user_config else 5
+            
+            daily_limit = UserDailyPublishLimit(
+                user_id=current_user.id,
+                date=today,
+                published_count=0,
+                max_daily_limit=default_limit
+            )
+            db.add(daily_limit)
+            await db.flush()  # 刷新以获取ID，但不提交事务
+        
+        # 检查是否已达到每日限制
+        if daily_limit.published_count >= daily_limit.max_daily_limit:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"您今日已达到发单上限（{daily_limit.max_daily_limit}单），请明日再试。"
+            )
+        
         # 创建任务记录
         task_record = TaskPublishRecord(
             user_id=current_user.id,
@@ -580,14 +616,21 @@ async def publish_user_task(
         )
         
         db.add(task_record)
+        
+        # 更新用户每日发单计数
+        daily_limit.published_count += 1
+        daily_limit.updated_at = datetime.now()
+        
         await db.commit()
         await db.refresh(task_record)
         
         return {
             "success": True,
             "task_id": str(task_record.id),
-            "message": "任务发布成功，等待律师接单",
-            "status": "published"
+            "message": f"任务发布成功！今日还可发布 {daily_limit.max_daily_limit - daily_limit.published_count} 个任务",
+            "status": "published",
+            "daily_remaining": daily_limit.max_daily_limit - daily_limit.published_count,
+            "daily_limit": daily_limit.max_daily_limit
         }
         
     except Exception as e:
@@ -596,6 +639,76 @@ async def publish_user_task(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"发布任务失败: {str(e)}"
+        )
+
+
+@router.get("/user/daily-publish-limit/status", response_model=dict)
+async def get_user_daily_publish_limit_status(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    获取用户每日发单限制状态
+    """
+    try:
+        today = date.today()
+        
+        # 查询今日限制记录
+        daily_limit_query = select(UserDailyPublishLimit).where(
+            and_(
+                UserDailyPublishLimit.user_id == current_user.id,
+                UserDailyPublishLimit.date == today
+            )
+        )
+        daily_limit_result = await db.execute(daily_limit_query)
+        daily_limit = daily_limit_result.scalar_one_or_none()
+        
+        # 如果没有记录，创建默认记录
+        if not daily_limit:
+            # 从系统配置获取每日限制
+            config_service = SystemConfigService(db)
+            user_config = await config_service.get_config("business", "user_daily_limit")
+            default_limit = user_config.get("default_limit", 5) if user_config else 5
+            
+            daily_limit = UserDailyPublishLimit(
+                user_id=current_user.id,
+                date=today,
+                published_count=0,
+                max_daily_limit=default_limit
+            )
+            db.add(daily_limit)
+            await db.commit()
+            await db.refresh(daily_limit)
+        
+        # 检查今日已发布的任务数量（以实际任务记录为准）
+        actual_published_query = select(func.count(TaskPublishRecord.id)).where(
+            and_(
+                TaskPublishRecord.user_id == current_user.id,
+                func.date(TaskPublishRecord.created_at) == today,
+                TaskPublishRecord.status.in_(["published", "grabbed", "in_progress", "completed"])
+            )
+        )
+        actual_published_count = await db.scalar(actual_published_query)
+        
+        # 同步计数（防止数据不一致）
+        if actual_published_count != daily_limit.published_count:
+            daily_limit.published_count = actual_published_count
+            await db.commit()
+        
+        return {
+            "date": today.isoformat(),
+            "published_count": daily_limit.published_count,
+            "max_daily_limit": daily_limit.max_daily_limit,
+            "remaining": max(0, daily_limit.max_daily_limit - daily_limit.published_count),
+            "can_publish_more": daily_limit.published_count < daily_limit.max_daily_limit,
+            "status": "available" if daily_limit.published_count < daily_limit.max_daily_limit else "limit_reached"
+        }
+        
+    except Exception as e:
+        logger.error(f"获取用户每日发单限制状态失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="获取发单限制状态失败"
         )
 
 
@@ -672,6 +785,40 @@ async def grab_task(
     """
     try:
         task_uuid = UUID(task_id)
+        today = date.today()
+        
+        # 检查律师每日接单限制
+        daily_limit_query = select(LawyerDailyLimit).where(
+            and_(
+                LawyerDailyLimit.lawyer_id == current_user.id,
+                LawyerDailyLimit.date == today
+            )
+        )
+        daily_limit_result = await db.execute(daily_limit_query)
+        daily_limit = daily_limit_result.scalar_one_or_none()
+        
+        # 如果没有今日记录，创建一个
+        if not daily_limit:
+            # 从系统配置获取每日限制
+            config_service = SystemConfigService(db)
+            lawyer_config = await config_service.get_config("business", "lawyer_daily_limit")
+            default_limit = lawyer_config.get("default_limit", 3) if lawyer_config else 3
+            
+            daily_limit = LawyerDailyLimit(
+                lawyer_id=current_user.id,
+                date=today,
+                grabbed_count=0,
+                max_daily_limit=default_limit
+            )
+            db.add(daily_limit)
+            await db.flush()  # 刷新以获取ID，但不提交事务
+        
+        # 检查是否已达到每日限制
+        if daily_limit.grabbed_count >= daily_limit.max_daily_limit:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=f"您今日已达到接单上限（{daily_limit.max_daily_limit}单），请明日再试。完成已接单任务后才能接新单。"
+            )
         
         # 查询任务
         query = select(TaskPublishRecord).where(
@@ -695,13 +842,19 @@ async def grab_task(
         task.status = "grabbed"
         task.updated_at = datetime.now()
         
+        # 更新律师每日抢单计数
+        daily_limit.grabbed_count += 1
+        daily_limit.updated_at = datetime.now()
+        
         await db.commit()
         
         return {
             "success": True,
-            "message": "抢单成功！",
+            "message": f"抢单成功！今日还可接单 {daily_limit.max_daily_limit - daily_limit.grabbed_count} 次",
             "task_id": str(task.id),
-            "status": "grabbed"
+            "status": "grabbed",
+            "daily_remaining": daily_limit.max_daily_limit - daily_limit.grabbed_count,
+            "daily_limit": daily_limit.max_daily_limit
         }
         
     except HTTPException:
@@ -712,6 +865,76 @@ async def grab_task(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"抢单失败: {str(e)}"
+        )
+
+
+@router.get("/daily-limit/status", response_model=dict)
+async def get_daily_limit_status(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    获取律师每日接单限制状态
+    """
+    try:
+        today = date.today()
+        
+        # 查询今日限制记录
+        daily_limit_query = select(LawyerDailyLimit).where(
+            and_(
+                LawyerDailyLimit.lawyer_id == current_user.id,
+                LawyerDailyLimit.date == today
+            )
+        )
+        daily_limit_result = await db.execute(daily_limit_query)
+        daily_limit = daily_limit_result.scalar_one_or_none()
+        
+        # 如果没有记录，创建默认记录
+        if not daily_limit:
+            # 从系统配置获取每日限制
+            config_service = SystemConfigService(db)
+            lawyer_config = await config_service.get_config("business", "lawyer_daily_limit")
+            default_limit = lawyer_config.get("default_limit", 3) if lawyer_config else 3
+            
+            daily_limit = LawyerDailyLimit(
+                lawyer_id=current_user.id,
+                date=today,
+                grabbed_count=0,
+                max_daily_limit=default_limit
+            )
+            db.add(daily_limit)
+            await db.commit()
+            await db.refresh(daily_limit)
+        
+        # 检查今日已接单的任务数量（以实际任务记录为准）
+        actual_grabbed_query = select(func.count(TaskPublishRecord.id)).where(
+            and_(
+                TaskPublishRecord.assigned_to == current_user.id,
+                func.date(TaskPublishRecord.updated_at) == today,
+                TaskPublishRecord.status.in_(["grabbed", "in_progress", "completed"])
+            )
+        )
+        actual_grabbed_count = await db.scalar(actual_grabbed_query)
+        
+        # 同步计数（防止数据不一致）
+        if actual_grabbed_count != daily_limit.grabbed_count:
+            daily_limit.grabbed_count = actual_grabbed_count
+            await db.commit()
+        
+        return {
+            "date": today.isoformat(),
+            "grabbed_count": daily_limit.grabbed_count,
+            "max_daily_limit": daily_limit.max_daily_limit,
+            "remaining": max(0, daily_limit.max_daily_limit - daily_limit.grabbed_count),
+            "can_grab_more": daily_limit.grabbed_count < daily_limit.max_daily_limit,
+            "status": "available" if daily_limit.grabbed_count < daily_limit.max_daily_limit else "limit_reached"
+        }
+        
+    except Exception as e:
+        logger.error(f"获取每日限制状态失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取状态失败: {str(e)}"
         )
 
 
@@ -980,6 +1203,214 @@ async def get_lawyer_tasks(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"获取任务列表失败: {str(e)}"
+        )
+
+
+@router.get("/feedback", response_model=List[dict])
+async def get_task_feedback(
+    limit: int = Query(10, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    获取任务反馈信息
+    """
+    try:
+        # 查询与当前用户相关的已完成任务
+        conditions = [
+            TaskPublishRecord.status == "completed",
+            or_(
+                TaskPublishRecord.user_id == current_user.id,  # 用户发布的任务
+                TaskPublishRecord.assigned_to == current_user.id  # 律师接单的任务
+            )
+        ]
+        
+        query = select(TaskPublishRecord).where(
+            and_(*conditions)
+        ).order_by(
+            TaskPublishRecord.updated_at.desc()
+        ).limit(limit).offset(offset)
+        
+        result = await db.execute(query)
+        tasks = result.scalars().all()
+        
+        feedback_list = []
+        for task in tasks:
+            # 获取对方信息
+            other_user_id = task.assigned_to if task.user_id == current_user.id else task.user_id
+            if other_user_id:
+                user_query = select(User).where(User.id == other_user_id)
+                user_result = await db.execute(user_query)
+                other_user = user_result.scalar_one_or_none()
+            else:
+                other_user = None
+            
+            feedback_data = {
+                "task_id": str(task.id),
+                "task_title": task.title,
+                "task_type": task.task_type,
+                "status": task.status,
+                "completed_at": task.completed_at.isoformat() if task.completed_at else None,
+                "my_role": "client" if task.user_id == current_user.id else "lawyer",
+                "other_party": {
+                    "name": other_user.username if other_user else "匿名用户",
+                    "role": "lawyer" if task.user_id == current_user.id else "client"
+                },
+                "budget": float(task.amount) if task.amount else 0,
+                "feedback_available": True,
+                "rating": None,  # 实际项目中可以添加评分功能
+                "comments": task.completion_notes or ""
+            }
+            feedback_list.append(feedback_data)
+        
+        return feedback_list
+        
+    except Exception as e:
+        logger.error(f"获取任务反馈失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取任务反馈失败: {str(e)}"
+        )
+
+
+@router.post("/convert-cases-to-tasks")
+async def convert_cases_to_tasks(
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    将案件数据转换为任务数据（供律师抢单）
+    """
+    try:
+        # 从案件表导入数据
+        from app.models.case import Case
+        
+        # 查询未分配律师或状态为PENDING的案件
+        cases_query = select(Case).where(
+            or_(
+                Case.assigned_to_user_id.is_(None),
+                Case.status == "PENDING"
+            )
+        ).limit(50)  # 限制数量避免一次性转换太多
+        
+        cases_result = await db.execute(cases_query)
+        cases = cases_result.scalars().all()
+        
+        converted_count = 0
+        
+        for case in cases:
+            # 检查是否已经转换过
+            existing_task = await db.scalar(
+                select(TaskPublishRecord).where(
+                    TaskPublishRecord.source_case_id == case.id
+                )
+            )
+            
+            if existing_task:
+                continue  # 已转换过，跳过
+            
+            # 解析债务人信息
+            debtor_info = {}
+            if case.debtor_info:
+                if isinstance(case.debtor_info, str):
+                    try:
+                        debtor_info = json.loads(case.debtor_info)
+                    except:
+                        debtor_info = {"raw": case.debtor_info}
+                else:
+                    debtor_info = case.debtor_info
+            
+            # 根据案件信息推断任务类型
+            task_type = "debt_collection"  # 默认债务催收
+            if case.description:
+                desc_lower = case.description.lower()
+                if "合同" in desc_lower:
+                    task_type = "contract_review"
+                elif "咨询" in desc_lower:
+                    task_type = "legal_consultation"
+                elif "律师函" in desc_lower:
+                    task_type = "lawyer_letter"
+            
+            # 生成任务标题
+            debtor_name = debtor_info.get("name", "未知债务人")
+            case_amount = float(case.case_amount) if case.case_amount else 0
+            
+            if case_amount > 0:
+                title = f"{debtor_name}债务催收案 - ¥{case_amount:,.0f}"
+                budget = min(max(case_amount * 0.02, 500), 5000)  # 2%佣金，最低500，最高5000
+            else:
+                title = f"{debtor_name}法律服务案"
+                budget = 800  # 默认预算
+            
+            # 生成详细描述
+            description = f"""
+案件编号：{case.case_number}
+债务人：{debtor_name}
+联系方式：{debtor_info.get('phone', '待提供')}
+地址：{debtor_info.get('address', '待提供')}
+案件金额：¥{case_amount:,.2f}
+
+案件描述：
+{case.description or '详细信息请与委托人沟通'}
+
+要求：
+1. 专业处理债务催收事务
+2. 按法律程序发送催收函件
+3. 及时反馈处理进度
+4. 确保符合相关法律法规
+""".strip()
+            
+            # 设置紧急程度
+            urgency = "normal"
+            if case.legal_status == "EXPIRING_SOON":
+                urgency = "urgent"
+            elif case_amount and case_amount > 100000:
+                urgency = "high"
+            
+            # 创建任务记录
+            task_record = TaskPublishRecord(
+                user_id=None,  # 系统生成的任务，暂时不分配用户
+                task_type=task_type,
+                title=title,
+                description=description,
+                target_info={
+                    "debtor_info": debtor_info,
+                    "case_number": case.case_number,
+                    "source": "case_conversion",
+                    "original_case_id": str(case.id)
+                },
+                amount=budget,
+                urgency=urgency,
+                status="published",  # 立即可抢单
+                source_case_id=case.id,  # 关联原案件ID
+                created_at=case.created_at or datetime.now()
+            )
+            
+            db.add(task_record)
+            converted_count += 1
+        
+        await db.commit()
+        
+        return {
+            "success": True,
+            "message": f"成功转换 {converted_count} 个案件为可抢单任务",
+            "converted_count": converted_count,
+            "total_available_tasks": await db.scalar(
+                select(func.count(TaskPublishRecord.id)).where(
+                    and_(
+                        TaskPublishRecord.status == "published",
+                        TaskPublishRecord.assigned_to.is_(None)
+                    )
+                )
+            )
+        }
+        
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"案件转换失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"案件转换失败: {str(e)}"
         )
 
 

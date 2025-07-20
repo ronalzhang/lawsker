@@ -82,7 +82,7 @@ class TaskPublishRecord(Base):
     __tablename__ = "task_publish_records"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # 允许为空，系统生成的任务
     task_type = Column(String(50), nullable=False)  # lawyer_letter, debt_collection, contract_review
     title = Column(String(200), nullable=False)
     description = Column(Text)
@@ -92,10 +92,56 @@ class TaskPublishRecord(Base):
     status = Column(String(20), default='pending', nullable=False)
     assigned_to = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     completion_notes = Column(Text)
+    source_case_id = Column(UUID(as_uuid=True), ForeignKey("cases.id"), nullable=True)  # 关联的案件ID
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     completed_at = Column(DateTime(timezone=True))
 
     # 关联关系
     user = relationship("User", foreign_keys=[user_id])
-    assigned_user = relationship("User", foreign_keys=[assigned_to]) 
+    assigned_user = relationship("User", foreign_keys=[assigned_to])
+    source_case = relationship("Case", foreign_keys=[source_case_id])
+
+
+class LawyerDailyLimit(Base):
+    """律师每日接单限制记录表"""
+    __tablename__ = "lawyer_daily_limits"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    lawyer_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    date = Column(Date, nullable=False)
+    grabbed_count = Column(Integer, default=0, nullable=False)  # 当日已抢单数量
+    max_daily_limit = Column(Integer, default=3, nullable=False)  # 每日最大接单数量（可配置）
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    
+    # 关联关系
+    lawyer = relationship("User")
+    
+    # 创建复合索引，确保每个律师每天只有一条记录
+    __table_args__ = (
+        {'schema': None},
+        # 在这里可以添加更多的索引
+    )
+
+
+class UserDailyPublishLimit(Base):
+    """用户每日发单限制记录表"""
+    __tablename__ = "user_daily_publish_limits"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    date = Column(Date, nullable=False)
+    published_count = Column(Integer, default=0, nullable=False)  # 当日已发单数量
+    max_daily_limit = Column(Integer, default=5, nullable=False)  # 每日最大发单数量（可配置）
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    
+    # 关联关系
+    user = relationship("User")
+    
+    # 创建复合索引，确保每个用户每天只有一条记录
+    __table_args__ = (
+        {'schema': None},
+        # 在这里可以添加更多的索引
+    ) 

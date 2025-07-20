@@ -49,57 +49,65 @@
         
         .task-card {
             background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 8px rgba(31, 38, 135, 0.1);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.18);
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
         
         .task-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 48px rgba(31, 38, 135, 0.2);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(31, 38, 135, 0.15);
         }
         
-        .task-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
+        .task-info {
+            flex: 1;
+            min-width: 0;
         }
         
         .task-title {
-            font-size: 18px;
-            font-weight: bold;
+            font-size: 15px;
+            font-weight: 600;
             color: #333;
-            margin: 0 0 5px 0;
+            margin: 0 0 4px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .task-meta {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             color: #666;
-            font-size: 14px;
+            font-size: 12px;
+            align-items: center;
         }
         
         .task-meta span {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 3px;
+            white-space: nowrap;
         }
         
         .task-budget {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: bold;
             color: #667eea;
+            min-width: 80px;
+            text-align: right;
         }
         
         .task-urgency {
-            padding: 4px 8px;
-            border-radius: 15px;
-            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
             font-weight: bold;
         }
         
@@ -118,44 +126,53 @@
             color: #d32f2f;
         }
         
-        .task-description {
-            color: #555;
-            line-height: 1.6;
-            margin-bottom: 15px;
-        }
-        
-        .task-tags {
+        .match-score-compact {
             display: flex;
-            gap: 8px;
-            margin-bottom: 15px;
+            align-items: center;
+            gap: 6px;
+            min-width: 100px;
         }
         
-        .task-tag {
-            padding: 4px 12px;
-            background: rgba(102, 126, 234, 0.1);
-            color: #667eea;
-            border-radius: 15px;
+        .match-percentage-compact {
             font-size: 12px;
             font-weight: bold;
+            color: #28a745;
+            min-width: 40px;
+        }
+        
+        .match-bar-compact {
+            width: 40px;
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .match-fill-compact {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+            transition: width 0.3s ease;
         }
         
         .task-actions {
             display: flex;
-            gap: 10px;
+            gap: 6px;
+            min-width: 140px;
             justify-content: flex-end;
         }
         
         .btn {
-            padding: 10px 20px;
+            padding: 6px 12px;
             border: none;
-            border-radius: 25px;
-            font-size: 14px;
+            border-radius: 16px;
+            font-size: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 3px;
+            white-space: nowrap;
         }
         
         .btn-primary {
@@ -182,74 +199,6 @@
             cursor: not-allowed;
         }
         
-        .match-score {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        
-        .match-percentage {
-            font-size: 16px;
-            font-weight: bold;
-            color: #28a745;
-        }
-        
-        .match-bar {
-            flex: 1;
-            height: 6px;
-            background: #e9ecef;
-            border-radius: 3px;
-            overflow: hidden;
-        }
-        
-        .match-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
-            transition: width 0.3s ease;
-        }
-        
-        .match-reasons {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
-        
-        .publisher-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            padding: 10px;
-            background: rgba(248, 249, 250, 0.5);
-            border-radius: 8px;
-        }
-        
-        .publisher-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-        
-        .publisher-details {
-            flex: 1;
-        }
-        
-        .publisher-name {
-            font-weight: bold;
-            color: #333;
-        }
-        
-        .publisher-stats {
-            color: #666;
-            font-size: 12px;
-        }
         
         .empty-state {
             text-align: center;
@@ -669,58 +618,37 @@
                 
                 html += `
                     <div class="task-card" data-task-id="${task.task_id}">
-                        <div class="task-header">
-                            <div>
-                                <div class="task-title">${config.icon} ${task.title}</div>
-                                <div class="task-meta">
-                                    <span>💰 预算: <strong>¥${task.budget}</strong></span>
-                                    <span>⏰ ${formatTimeAgo(task.created_at)}</span>
-                                    <span class="task-urgency urgency-${task.urgency}">
-                                        ${getUrgencyText(task.urgency)}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="task-budget">¥${task.budget}</div>
-                        </div>
-                        
-                        <div class="match-score">
-                            <span class="match-percentage">${matchScore.score}% 匹配</span>
-                            <div class="match-bar">
-                                <div class="match-fill" style="width: ${matchScore.score}%"></div>
-                            </div>
-                        </div>
-                        <div class="match-reasons">${matchScore.reasons.join(' • ')}</div>
-                        
-                        <div class="publisher-info">
-                            <div class="publisher-avatar">
-                                ${task.publisher_name.charAt(0)}
-                            </div>
-                            <div class="publisher-details">
-                                <div class="publisher-name">${task.publisher_name}</div>
-                                <div class="publisher-stats">发布过 ${Math.floor(Math.random() * 10) + 1} 个任务 • 好评率 ${Math.floor(Math.random() * 20) + 80}%</div>
+                        <div class="task-info">
+                            <div class="task-title">${config.icon} ${task.title}</div>
+                            <div class="task-meta">
+                                <span>💰 ¥${task.budget}</span>
+                                <span>⏰ ${formatTimeAgo(task.created_at)}</span>
+                                <span class="task-urgency urgency-${task.urgency}">
+                                    ${getUrgencyText(task.urgency)}
+                                </span>
+                                <span>👤 ${task.publisher_name}</span>
                             </div>
                         </div>
                         
-                        <div class="task-description">
-                            ${task.description.length > 150 ? task.description.substring(0, 150) + '...' : task.description}
+                        <div class="match-score-compact">
+                            <span class="match-percentage-compact">${matchScore.score}%</span>
+                            <div class="match-bar-compact">
+                                <div class="match-fill-compact" style="width: ${matchScore.score}%"></div>
+                            </div>
                         </div>
                         
-                        <div class="task-tags">
-                            <span class="task-tag">${config.name}</span>
-                            <span class="task-tag">${getUrgencyText(task.urgency)}</span>
-                            ${task.target_info && task.target_info.name ? '<span class="task-tag">有明确对象</span>' : ''}
-                        </div>
+                        <div class="task-budget">¥${task.budget}</div>
                         
                         <div class="task-actions">
                             <button class="btn btn-secondary" onclick="viewTaskDetails('${task.task_id}')">
-                                📖 查看详情
+                                📖 详情
                             </button>
                             ${task.status === 'in_progress' && task.lawyer_id === lawyerProfile.id ? 
                                 `<button class="btn btn-success" onclick="manageTask('${task.task_id}')">
-                                    ⚙️ 管理任务
+                                    ⚙️ 管理
                                 </button>` :
                                 `<button class="btn btn-primary" onclick="grabTask('${task.task_id}')">
-                                    ⚡ 立即接单
+                                    ⚡ 抢单
                                 </button>`
                             }
                         </div>

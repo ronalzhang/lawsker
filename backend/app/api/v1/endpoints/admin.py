@@ -594,3 +594,204 @@ async def get_database_status(
                 "timestamp": "2025-01-08T01:30:00"
             }
         } 
+
+
+# 每日限制配置管理
+class DailyLimitConfigRequest(BaseModel):
+    """每日限制配置请求"""
+    lawyer_daily_limit: Optional[int] = Field(None, description="律师每日接单限制", ge=1, le=20)
+    user_daily_limit: Optional[int] = Field(None, description="用户每日发单限制", ge=1, le=20)
+
+
+@router.get("/daily-limits/config", response_model=dict)
+async def get_daily_limits_config(
+    current_user = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    获取每日限制配置
+    管理员可以查看当前的每日限制配置
+    """
+    try:
+        config_service = SystemConfigService(db)
+        
+        # 获取律师每日接单限制配置
+        lawyer_config = await config_service.get_config("business", "lawyer_daily_limit")
+        lawyer_limit = lawyer_config.get("default_limit", 3) if lawyer_config else 3
+        
+        # 获取用户每日发单限制配置
+        user_config = await config_service.get_config("business", "user_daily_limit")
+        user_limit = user_config.get("default_limit", 5) if user_config else 5
+        
+        return {
+            "success": True,
+            "data": {
+                "lawyer_daily_limit": lawyer_limit,
+                "user_daily_limit": user_limit,
+                "description": {
+                    "lawyer_daily_limit": "律师每日最多可以接单的数量",
+                    "user_daily_limit": "用户每日最多可以发布任务的数量"
+                }
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"获取每日限制配置失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="获取配置失败"
+        )
+
+
+@router.post("/daily-limits/config", response_model=dict)
+async def update_daily_limits_config(
+    request: DailyLimitConfigRequest,
+    current_user = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    更新每日限制配置
+    管理员可以配置律师和用户的每日限制
+    """
+    try:
+        config_service = SystemConfigService(db)
+        updated_configs = {}
+        
+        # 更新律师每日接单限制
+        if request.lawyer_daily_limit is not None:
+            lawyer_config = {
+                "default_limit": request.lawyer_daily_limit,
+                "description": "律师每日最多可以接单的数量",
+                "updated_by": str(current_user.get("id", "system")),
+                "updated_at": datetime.now().isoformat()
+            }
+            
+            await config_service.set_config(
+                "business", 
+                "lawyer_daily_limit", 
+                lawyer_config,
+                description="律师每日接单限制配置"
+            )
+            updated_configs["lawyer_daily_limit"] = request.lawyer_daily_limit
+        
+        # 更新用户每日发单限制
+        if request.user_daily_limit is not None:
+            user_config = {
+                "default_limit": request.user_daily_limit,
+                "description": "用户每日最多可以发布任务的数量",
+                "updated_by": str(current_user.get("id", "system")),
+                "updated_at": datetime.now().isoformat()
+            }
+            
+            await config_service.set_config(
+                "business", 
+                "user_daily_limit", 
+                user_config,
+                description="用户每日发单限制配置"
+            )
+            updated_configs["user_daily_limit"] = request.user_daily_limit
+        
+        if not updated_configs:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="请提供至少一个要更新的配置项"
+            )
+        
+        return {
+            "success": True,
+            "message": "每日限制配置更新成功",
+            "data": updated_configs
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"更新每日限制配置失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="更新配置失败"
+        )
+
+
+@router.get("/daily-limits/statistics", response_model=dict)
+async def get_daily_limits_statistics(
+    current_user = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    获取每日限制统计信息
+    管理员可以查看当前的使用情况和限制状态
+    """
+    try:
+        from app.models.statistics import LawyerDailyLimit, UserDailyPublishLimit
+        from sqlalchemy import select, func, and_
+        from datetime import date, timedelta
+        
+        today = date.today()
+        
+        # 获取律师每日限制统计
+        lawyer_stats_query = select(
+            func.count(LawyerDailyLimit.id).label('total_lawyers'),
+            func.sum(LawyerDailyLimit.grabbed_count).label('total_grabbed'),
+            func.avg(LawyerDailyLimit.grabbed_count).label('avg_grabbed'),
+            func.max(LawyerDailyLimit.grabbed_count).label('max_grabbed')
+        ).where(LawyerDailyLimit.date == today)
+        
+        lawyer_stats = await db.execute(lawyer_stats_query)
+        lawyer_result = lawyer_stats.first()
+        
+        # 获取用户每日限制统计
+        user_stats_query = select(
+            func.count(UserDailyPublishLimit.id).label('total_users'),
+            func.sum(UserDailyPublishLimit.published_count).label('total_published'),
+            func.avg(UserDailyPublishLimit.published_count).label('avg_published'),
+            func.max(UserDailyPublishLimit.published_count).label('max_published')
+        ).where(UserDailyPublishLimit.date == today)
+        
+        user_stats = await db.execute(user_stats_query)
+        user_result = user_stats.first()
+        
+        # 获取达到限制的律师和用户数量
+        lawyer_at_limit_query = select(func.count(LawyerDailyLimit.id)).where(
+            and_(
+                LawyerDailyLimit.date == today,
+                LawyerDailyLimit.grabbed_count >= LawyerDailyLimit.max_daily_limit
+            )
+        )
+        lawyer_at_limit = await db.scalar(lawyer_at_limit_query)
+        
+        user_at_limit_query = select(func.count(UserDailyPublishLimit.id)).where(
+            and_(
+                UserDailyPublishLimit.date == today,
+                UserDailyPublishLimit.published_count >= UserDailyPublishLimit.max_daily_limit
+            )
+        )
+        user_at_limit = await db.scalar(user_at_limit_query)
+        
+        return {
+            "success": True,
+            "data": {
+                "date": today.isoformat(),
+                "lawyer_statistics": {
+                    "active_lawyers": lawyer_result.total_lawyers or 0,
+                    "total_grabbed_tasks": lawyer_result.total_grabbed or 0,
+                    "average_grabbed": round(float(lawyer_result.avg_grabbed or 0), 2),
+                    "max_grabbed": lawyer_result.max_grabbed or 0,
+                    "lawyers_at_limit": lawyer_at_limit or 0
+                },
+                "user_statistics": {
+                    "active_users": user_result.total_users or 0,
+                    "total_published_tasks": user_result.total_published or 0,
+                    "average_published": round(float(user_result.avg_published or 0), 2),
+                    "max_published": user_result.max_published or 0,
+                    "users_at_limit": user_at_limit or 0
+                }
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"获取每日限制统计失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="获取统计信息失败"
+        )

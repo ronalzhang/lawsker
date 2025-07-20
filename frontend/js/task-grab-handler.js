@@ -20,9 +20,31 @@ class TaskGrabHandler {
     async grabTask(taskId, options = {}) {
         const { taskElement, grabButton, onSuccess, onError } = options;
         
-        // 确认对话框
-        if (!confirm('确定要抢这个任务吗？抢到后需要在规定时间内完成。')) {
-            return;
+        try {
+            // 检查用户是否已认证
+            if (!window.apiClient || !window.apiClient.isAuthenticated()) {
+                throw new Error('请先登录后再抢单');
+            }
+
+            // 检查每日接单限制
+            const dailyStatus = await this.checkDailyLimit();
+            if (!dailyStatus.can_grab_more) {
+                const message = `您今日已达到接单上限（${dailyStatus.max_daily_limit}单），请完成现有任务后再接新单。`;
+                this.showNotification(message, 'warning');
+                return;
+            }
+
+            // 显示确认对话框，包含每日限制信息
+            const remainingText = dailyStatus.remaining > 0 ? `（今日还可接单 ${dailyStatus.remaining} 次）` : '';
+            if (!confirm(`确定要抢这个任务吗？${remainingText}\n抢到后需要在规定时间内完成。`)) {
+                return;
+            }
+        } catch (error) {
+            console.error('检查每日限制失败:', error);
+            // 如果检查失败，仍允许用户尝试抢单，由后端进行最终校验
+            if (!confirm('确定要抢这个任务吗？抢到后需要在规定时间内完成。')) {
+                return;
+            }
         }
 
         // 更新按钮状态
@@ -213,6 +235,42 @@ class TaskGrabHandler {
                 notification.parentNode.removeChild(notification);
             }
         }, 3000);
+    }
+
+    /**
+     * 检查律师每日接单限制
+     */
+    async checkDailyLimit() {
+        try {
+            if (!window.apiClient || !window.apiClient.isAuthenticated()) {
+                throw new Error('请先登录');
+            }
+
+            const response = await fetch(`${window.apiClient.baseURL}/tasks/daily-limit/status`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+            return result;
+        } catch (error) {
+            console.error('检查每日限制失败:', error);
+            // 返回默认值，让后端进行最终校验
+            return {
+                grabbed_count: 0,
+                max_daily_limit: 3,
+                remaining: 3,
+                can_grab_more: true,
+                status: 'unknown'
+            };
+        }
     }
 
     /**
