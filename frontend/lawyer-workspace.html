@@ -4159,23 +4159,22 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
 
         // 执行批量发送
         function executeBatchSend(confirmedTasks) {
-                // 模拟批量发送
-                showNotification(`正在发送 ${confirmedTasks.length} 个任务的律师函...`, 'info');
+            // 模拟批量发送
+            showNotification(`正在发送 ${confirmedTasks.length} 个任务的律师函...`, 'info');
+            
+            // 模拟发送过程
+            setTimeout(() => {
+                confirmedTasks.forEach(task => {
+                    task.style.background = 'rgba(102, 126, 234, 0.1)';
+                    const actions = task.querySelector('.task-actions');
+                    actions.innerHTML = '<span class="status-badge" style="padding: 6px 12px; border-radius: 6px; background: rgba(102, 126, 234, 0.2); color: #667eea; font-size: 12px; font-weight: 500;">已发送</span>';
+                    task.classList.remove('confirmed');
+                    task.classList.add('sent');
+                });
                 
-                // 模拟发送过程
-                setTimeout(() => {
-                    confirmedTasks.forEach(task => {
-                        task.style.background = 'rgba(102, 126, 234, 0.1)';
-                        const actions = task.querySelector('.task-actions');
-                        actions.innerHTML = '<span class="status-badge" style="padding: 6px 12px; border-radius: 6px; background: rgba(102, 126, 234, 0.2); color: #667eea; font-size: 12px; font-weight: 500;">已发送</span>';
-                        task.classList.remove('confirmed');
-                        task.classList.add('sent');
-                    });
-                    
-                    updateConfirmedCount();
-                    alert('所有律师函已成功发送！客户将在5分钟内收到通知。');
-                }, 1000);
-            }
+                updateConfirmedCount();
+                alert('所有律师函已成功发送！客户将在5分钟内收到通知。');
+            }, 1000);
         }
 
         function resetContent(taskId) {

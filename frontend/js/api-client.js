@@ -10,7 +10,7 @@ class ApiClient {
         this.baseURL = 'https://156.236.74.200/api/v1';
         // 兼容多种token存储方式
         this.token = localStorage.getItem('authToken') || localStorage.getItem('accessToken');
-        this.version = '1.5'; // API客户端版本号
+        this.version = '1.6'; // API客户端版本号
     }
 
     /**
@@ -204,6 +204,18 @@ class ApiClient {
      */
     async getMyTasks(userType = 'user') {
         return this.get(`/tasks/my-tasks/${userType}`);
+    }
+
+    /**
+     * 获取任务列表 (兼容性方法)
+     */
+    async getTasks(params = {}) {
+        // 根据参数决定调用哪个API
+        if (params.type === 'available') {
+            return this.getAvailableTasks(params);
+        } else {
+            return this.getMyTasks(params.userType || 'user');
+        }
     }
 
     /**
