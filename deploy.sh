@@ -36,17 +36,27 @@ fi
 
 # 3. 在服务器上拉取最新代码
 echo "📥 在服务器上拉取最新代码..."
+echo "🔧 检查服务器Git状态..."
+sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && git status --porcelain" | head -5
+echo "🔧 配置Git拉取策略..."
+sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && git config pull.rebase false"
 echo "🔧 清理服务器上的未跟踪文件..."
 sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && git clean -fd"
 echo "🔄 重置本地更改..."
 sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && git reset --hard HEAD"
+echo "🔧 获取远程更新..."
+sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && git fetch origin"
 echo "📥 拉取最新代码..."
 if ! sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && git pull origin main"; then
     echo "❌ Git拉取失败，尝试强制更新..."
-    sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && git fetch origin && git reset --hard origin/main" || {
-        echo "❌ 强制更新也失败，请手动检查Git仓库状态"
-        echo "🔧 手动操作: ssh $SERVER_USER@$SERVER_IP 'cd $APP_DIR && git status'"
-        exit 1
+    sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && git reset --hard origin/main" || {
+        echo "❌ 强制更新也失败，尝试重新克隆..."
+        sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd /root && rm -rf lawsker_backup && mv lawsker lawsker_backup && git clone https://github.com/ronalzhang/lawsker.git" || {
+            echo "❌ 重新克隆失败，恢复备份..."
+            sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd /root && rm -rf lawsker && mv lawsker_backup lawsker"
+            echo "🔧 手动操作: ssh $SERVER_USER@$SERVER_IP 'cd $APP_DIR && git status'"
+            exit 1
+        }
     }
 fi
 
