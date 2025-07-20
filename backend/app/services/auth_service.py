@@ -91,14 +91,14 @@ class AuthService:
     
     async def authenticate_and_create_token(
         self,
-        email: str,
+        username_or_email: str,
         password: str
     ) -> Dict[str, Any]:
         """
         用户认证并创建令牌
         
         Args:
-            email: 用户邮箱
+            username_or_email: 用户名或邮箱
             password: 密码
         
         Returns:
@@ -109,11 +109,11 @@ class AuthService:
         """
         try:
             # 验证用户凭据
-            user = await self.user_service.authenticate_user(email, password)
+            user = await self.user_service.authenticate_user(username_or_email, password)
             if not user:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="邮箱或密码错误"
+                    detail="用户名或密码错误"
                 )
             
             # 获取用户角色
@@ -133,7 +133,7 @@ class AuthService:
             # 更新最后登录时间
             await self.user_service.update_last_login(user.id)
             
-            logger.info("用户登录成功", user_id=user.id, email=email)
+            logger.info("用户登录成功", user_id=user.id, username_or_email=username_or_email)
             
             return {
                 "access_token": access_token,
@@ -150,7 +150,7 @@ class AuthService:
         except HTTPException:
             raise
         except Exception as e:
-            logger.error("用户登录失败", error=str(e), email=email)
+            logger.error("用户登录失败", error=str(e), username_or_email=username_or_email)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="登录失败，请稍后重试"

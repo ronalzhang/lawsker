@@ -131,6 +131,24 @@ class UserService:
             logger.error("获取用户失败", error=str(e), email=email)
             return None
     
+    async def get_user_by_username(self, username: str) -> Optional[User]:
+        """
+        根据用户名获取用户
+        
+        Args:
+            username: 用户名
+        
+        Returns:
+            用户对象或None
+        """
+        try:
+            stmt = select(User).where(User.username == username)
+            result = await self.db.execute(stmt)
+            return result.scalar_one_or_none()
+        except Exception as e:
+            logger.error("获取用户失败", error=str(e), username=username)
+            return None
+    
     async def get_user_by_id(self, user_id: str) -> Optional[User]:
         """
         根据ID获取用户
@@ -153,33 +171,46 @@ class UserService:
             logger.error("获取用户失败", error=str(e), user_id=user_id)
             return None
     
-    async def authenticate_user(self, email: str, password: str) -> Optional[User]:
+    async def authenticate_user(self, username_or_email: str, password: str) -> Optional[User]:
         """
         验证用户凭据
         
         Args:
-            email: 用户邮箱
+            username_or_email: 用户名或邮箱
             password: 密码
         
         Returns:
             验证成功返回用户对象，否则返回None
         """
         try:
-            user = await self.get_user_by_email(email)
+            # 首先尝试按邮箱查找（包含@符号）
+            if '@' in username_or_email:
+                user = await self.get_user_by_email(username_or_email)
+            else:
+                # 否则按用户名查找
+                user = await self.get_user_by_username(username_or_email)
+            
+            # 如果用户名方式未找到，再尝试邮箱方式（兼容性处理）
+            if not user and '@' not in username_or_email:
+                user = await self.get_user_by_email(username_or_email)
+            
             if not user:
+                logger.info("用户不存在", username_or_email=username_or_email)
                 return None
             
             if not verify_password(password, user.password_hash):
+                logger.info("密码验证失败", user_id=user.id, username_or_email=username_or_email)
                 return None
             
             if user.status != UserStatus.ACTIVE:
+                logger.info("用户状态非活跃", user_id=user.id, status=user.status, username_or_email=username_or_email)
                 return None
             
-            logger.info("用户认证成功", user_id=user.id, email=email)
+            logger.info("用户认证成功", user_id=user.id, username=user.username, email=user.email)
             return user
             
         except Exception as e:
-            logger.error("用户认证失败", error=str(e), email=email)
+            logger.error("用户认证失败", error=str(e), username_or_email=username_or_email)
             return None
     
     async def update_user(self, user_id: str, **kwargs) -> Optional[User]:

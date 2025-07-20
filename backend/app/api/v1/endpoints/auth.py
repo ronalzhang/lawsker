@@ -267,7 +267,7 @@ async def login(
     try:
         # 实际账号登录逻辑
         result = await auth_service.authenticate_and_create_token(
-            email=user_data.username,  # 支持用户名或邮箱
+            username_or_email=user_data.username,  # 支持用户名或邮箱
             password=user_data.password
         )
         
