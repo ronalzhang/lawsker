@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 from app.core.database import get_db
 from app.models.lawyer_review import DocumentReviewTask, ReviewStatus
 from app.models.statistics import TaskPublishRecord, LawyerDailyLimit, UserDailyPublishLimit
+from app.models.user import User
 from app.services.lawyer_review_service import LawyerReviewService
 from app.services.ai_service import AIDocumentService
 from app.services.config_service import SystemConfigService
