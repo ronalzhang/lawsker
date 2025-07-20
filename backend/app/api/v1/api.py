@@ -5,7 +5,7 @@ API路由主文件
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, users, cases, finance, admin, ai, tasks, admin_analytics, document_library
+from app.api.v1.endpoints import auth, users, cases, finance, admin, ai, tasks, admin_analytics, document_library, document_send
 from app.api.v1 import statistics, file_upload, ai_assignment, lawyer_verification
 
 # 创建API路由器
@@ -25,6 +25,7 @@ api_router.include_router(file_upload.router, prefix="/upload", tags=["文件上
 api_router.include_router(ai_assignment.router, prefix="/ai-assignment", tags=["AI分配"])
 api_router.include_router(lawyer_verification.router, prefix="/lawyer-verification", tags=["律师认证"])
 api_router.include_router(document_library.router, prefix="/document-library", tags=["文书库管理"])
+api_router.include_router(document_send.router, prefix="/document-send", tags=["文书发送"])
 
 # 健康检查路由
 @api_router.get("/health")

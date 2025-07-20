@@ -13,6 +13,7 @@ from app.core.deps import get_current_user
 from app.services.document_library_service import DocumentLibraryService
 from app.services.config_service import SystemConfigService
 from app.services.ai_service import AIDocumentService
+from app.services.email_service import create_email_service
 
 router = APIRouter()
 

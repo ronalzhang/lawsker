@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发送记录管理 - 律思客平台</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .send-record-item {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .send-record-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .record-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .record-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .record-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .method-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .method-tag {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .method-email {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+
+        .method-sms {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border: 1px solid #f59e0b;
+        }
+
+        .method-mail {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+            border: 1px solid #8b5cf6;
+        }
+
+        .status-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .status-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .status-btn.sent {
+            background: #10b981;
+            color: white;
+        }
+
+        .status-btn.pending {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .status-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .tracking-input {
+            margin-top: 8px;
+            padding: 8px;
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            width: 200px;
+            font-size: 12px;
+        }
+
+        .update-form {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+        }
+
+        .update-form.active {
+            display: block;
+        }
+
+        .filter-bar {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📤 发送记录管理</h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="history.back()">返回工作台</button>
+                <button class="btn btn-primary" onclick="refreshRecords()">刷新记录</button>
+            </div>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-value" id="totalRecords">0</div>
+                <div class="stat-label">总发送记录</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="emailSent">0</div>
+                <div class="stat-label">邮件已发送</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="smsPending">0</div>
+                <div class="stat-label">短信待处理</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="mailPending">0</div>
+                <div class="stat-label">挂号信待处理</div>
+            </div>
+        </div>
+
+        <!-- 筛选栏 -->
+        <div class="filter-bar">
+            <label>筛选条件：</label>
+            <select class="filter-select" id="statusFilter" onchange="applyFilters()">
+                <option value="">全部状态</option>
+                <option value="pending">待处理</option>
+                <option value="sent">已处理</option>
+            </select>
+            <select class="filter-select" id="methodFilter" onchange="applyFilters()">
+                <option value="">全部方式</option>
+                <option value="email">邮件</option>
+                <option value="sms">短信</option>
+                <option value="registered_mail">挂号信</option>
+            </select>
+            <button class="btn btn-secondary" onclick="clearFilters()">清除筛选</button>
+        </div>
+
+        <!-- 发送记录列表 -->
+        <div id="recordsContainer">
+            <!-- 动态加载发送记录 -->
+        </div>
+
+        <!-- 加载更多 -->
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="btn btn-secondary" id="loadMoreBtn" onclick="loadMoreRecords()">加载更多</button>
+        </div>
+    </div>
+
+    <!-- 状态更新模态框 -->
+    <div id="updateModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>📝 更新发送状态</h3>
+                <span class="close" onclick="closeUpdateModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 4px; font-weight: 500;">发送方式</label>
+                    <input type="text" id="updateMethod" readonly style="width: 100%; padding: 8px; border: 1px solid var(--glass-border); border-radius: 6px; background: #f5f5f5;">
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 4px; font-weight: 500;">发送状态</label>
+                    <select id="updateStatus" style="width: 100%; padding: 8px; border: 1px solid var(--glass-border); border-radius: 6px;">
+                        <option value="false">待发送</option>
+                        <option value="true">已发送</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 16px;" id="trackingNumberDiv">
+                    <label style="display: block; margin-bottom: 4px; font-weight: 500;">快递单号（挂号信）</label>
+                    <input type="text" id="updateTrackingNumber" placeholder="请输入快递单号" style="width: 100%; padding: 8px; border: 1px solid var(--glass-border); border-radius: 6px;">
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 4px; font-weight: 500;">备注</label>
+                    <textarea id="updateNotes" placeholder="请输入备注信息" rows="3" style="width: 100%; padding: 8px; border: 1px solid var(--glass-border); border-radius: 6px; resize: vertical;"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeUpdateModal()">取消</button>
+                <button class="btn btn-primary" onclick="submitStatusUpdate()">确认更新</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="api-client.js"></script>
+    <script>
+        let currentRecords = [];
+        let currentPage = 0;
+        let isLoading = false;
+        let currentUpdateRecordId = null;
+        let currentUpdateMethod = null;
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSendRecords();
+        });
+
+        // 加载发送记录
+        async function loadSendRecords(page = 0, append = false) {
+            if (isLoading) return;
+            isLoading = true;
+
+            try {
+                const response = await fetch(`https://156.236.74.200/api/v1/document-send/send-records?limit=10&offset=${page * 10}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (append) {
+                        currentRecords = [...currentRecords, ...result.records];
+                    } else {
+                        currentRecords = result.records;
+                    }
+                    
+                    renderRecords();
+                    updateStats();
+                    
+                    // 更新加载更多按钮
+                    const loadMoreBtn = document.getElementById('loadMoreBtn');
+                    if (result.has_more) {
+                        loadMoreBtn.style.display = 'block';
+                    } else {
+                        loadMoreBtn.style.display = 'none';
+                    }
+                } else {
+                    showNotification('加载发送记录失败', 'error');
+                }
+            } catch (error) {
+                console.error('加载发送记录失败:', error);
+                showNotification('加载失败：' + error.message, 'error');
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        // 渲染发送记录
+        function renderRecords() {
+            const container = document.getElementById('recordsContainer');
+            
+            if (currentRecords.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📭</div>
+                        <h3>暂无发送记录</h3>
+                        <p>当您发送文书后，记录将显示在这里</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = currentRecords.map(record => {
+                const methods = record.send_methods || [];
+                const methodTags = methods.map(method => {
+                    const methodInfo = getMethodInfo(method);
+                    return `<span class="method-tag method-${methodInfo.type}">${methodInfo.icon} ${methodInfo.name}</span>`;
+                }).join('');
+
+                return `
+                    <div class="send-record-item" data-record-id="${record.id}">
+                        <div class="record-header">
+                            <div>
+                                <div class="record-title">${record.document_title || '未知文书'}</div>
+                                <div class="record-meta">
+                                    收件人：${record.recipient_name} | 
+                                    发送时间：${new Date(record.created_at).toLocaleString()}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="method-tags">
+                            ${methodTags}
+                        </div>
+                        
+                        ${renderMethodActions(record)}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 渲染方式操作按钮
+        function renderMethodActions(record) {
+            const methods = record.send_methods || [];
+            
+            return methods.map(method => {
+                if (method === 'email') {
+                    return `
+                        <div style="margin-bottom: 8px;">
+                            <span style="color: #10b981; font-weight: 500;">📧 邮件：</span>
+                            <span style="color: #10b981;">已自动发送</span>
+                        </div>
+                    `;
+                } else if (method === 'sms') {
+                    const status = getSendStatus(record, 'sms');
+                    return `
+                        <div style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #f59e0b; font-weight: 500;">📱 短信：</span>
+                            <button class="status-btn ${status ? 'sent' : 'pending'}" 
+                                    onclick="openUpdateModal('${record.id}', 'sms')">
+                                ${status ? '已发送' : '待发送'}
+                            </button>
+                        </div>
+                    `;
+                } else if (method === 'registered_mail') {
+                    const status = getSendStatus(record, 'registered_mail');
+                    const trackingNumber = getTrackingNumber(record);
+                    return `
+                        <div style="margin-bottom: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                <span style="color: #8b5cf6; font-weight: 500;">📮 挂号信：</span>
+                                <button class="status-btn ${status ? 'sent' : 'pending'}" 
+                                        onclick="openUpdateModal('${record.id}', 'registered_mail')">
+                                    ${status ? '已寄送' : '待寄送'}
+                                </button>
+                            </div>
+                            ${trackingNumber ? `<div style="font-size: 12px; color: #8b5cf6;">快递单号：${trackingNumber}</div>` : ''}
+                        </div>
+                    `;
+                }
+                return '';
+            }).join('');
+        }
+
+        // 获取方式信息
+        function getMethodInfo(method) {
+            const methodMap = {
+                'email': { type: 'email', icon: '📧', name: '邮件' },
+                'sms': { type: 'sms', icon: '📱', name: '短信' },
+                'registered_mail': { type: 'mail', icon: '📮', name: '挂号信' }
+            };
+            return methodMap[method] || { type: 'unknown', icon: '❓', name: method };
+        }
+
+        // 获取发送状态
+        function getSendStatus(record, method) {
+            const sendStatus = record.send_status || '';
+            return sendStatus.includes(`${method}:sent`);
+        }
+
+        // 获取快递单号
+        function getTrackingNumber(record) {
+            return record.tracking_number || '';
+        }
+
+        // 更新统计数据
+        function updateStats() {
+            const totalRecords = currentRecords.length;
+            let emailSent = 0;
+            let smsPending = 0;
+            let mailPending = 0;
+
+            currentRecords.forEach(record => {
+                const methods = record.send_methods || [];
+                
+                if (methods.includes('email')) {
+                    emailSent++;
+                }
+                if (methods.includes('sms') && !getSendStatus(record, 'sms')) {
+                    smsPending++;
+                }
+                if (methods.includes('registered_mail') && !getSendStatus(record, 'registered_mail')) {
+                    mailPending++;
+                }
+            });
+
+            document.getElementById('totalRecords').textContent = totalRecords;
+            document.getElementById('emailSent').textContent = emailSent;
+            document.getElementById('smsPending').textContent = smsPending;
+            document.getElementById('mailPending').textContent = mailPending;
+        }
+
+        // 刷新记录
+        function refreshRecords() {
+            currentPage = 0;
+            loadSendRecords(0, false);
+        }
+
+        // 加载更多记录
+        function loadMoreRecords() {
+            currentPage++;
+            loadSendRecords(currentPage, true);
+        }
+
+        // 应用筛选
+        function applyFilters() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const methodFilter = document.getElementById('methodFilter').value;
+            
+            // 这里可以实现筛选逻辑
+            // 暂时先刷新记录
+            refreshRecords();
+        }
+
+        // 清除筛选
+        function clearFilters() {
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('methodFilter').value = '';
+            refreshRecords();
+        }
+
+        // 打开更新模态框
+        function openUpdateModal(recordId, method) {
+            currentUpdateRecordId = recordId;
+            currentUpdateMethod = method;
+
+            const record = currentRecords.find(r => r.id === recordId);
+            if (!record) return;
+
+            const methodNames = {
+                'sms': '短信发送',
+                'registered_mail': '挂号信寄送'
+            };
+
+            document.getElementById('updateMethod').value = methodNames[method] || method;
+            document.getElementById('updateStatus').value = getSendStatus(record, method) ? 'true' : 'false';
+            document.getElementById('updateTrackingNumber').value = method === 'registered_mail' ? getTrackingNumber(record) : '';
+            document.getElementById('updateNotes').value = '';
+
+            // 显示/隐藏快递单号输入框
+            const trackingDiv = document.getElementById('trackingNumberDiv');
+            trackingDiv.style.display = method === 'registered_mail' ? 'block' : 'none';
+
+            document.getElementById('updateModal').style.display = 'block';
+        }
+
+        // 关闭更新模态框
+        function closeUpdateModal() {
+            document.getElementById('updateModal').style.display = 'none';
+            currentUpdateRecordId = null;
+            currentUpdateMethod = null;
+        }
+
+        // 提交状态更新
+        async function submitStatusUpdate() {
+            if (!currentUpdateRecordId || !currentUpdateMethod) return;
+
+            const isSent = document.getElementById('updateStatus').value === 'true';
+            const trackingNumber = document.getElementById('updateTrackingNumber').value;
+            const notes = document.getElementById('updateNotes').value;
+
+            try {
+                const response = await fetch(`https://156.236.74.200/api/v1/document-send/update-send-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        send_record_id: currentUpdateRecordId,
+                        method: currentUpdateMethod,
+                        is_sent: isSent,
+                        tracking_number: trackingNumber || null,
+                        sent_time: isSent ? new Date().toISOString() : null,
+                        notes: notes || null
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification('发送状态更新成功', 'success');
+                    closeUpdateModal();
+                    refreshRecords();
+                } else {
+                    showNotification('更新失败：' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('更新发送状态失败:', error);
+                showNotification('更新失败：' + error.message, 'error');
+            }
+        }
+
+        // 显示通知
+        function showNotification(message, type = 'info') {
+            // 简单的通知实现
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+            `;
+
+            const colors = {
+                'success': '#10b981',
+                'error': '#ef4444',
+                'warning': '#f59e0b',
+                'info': '#3b82f6'
+            };
+
+            notification.style.background = colors[type] || colors.info;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
