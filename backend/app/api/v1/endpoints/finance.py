@@ -642,18 +642,19 @@ async def get_withdrawal_history(
     page_size: int = Query(20, ge=1, le=100, description="每页条数"),
     status: Optional[str] = Query(None, description="提现状态过滤"),
     current_user: Dict[str, Any] = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    """获取用户提现历史记录（别名）"""
-    return await get_user_withdrawal_requests(page, page_size, status, current_user, db)
-
-async def get_user_withdrawal_requests(
-    page: int = Query(1, ge=1, description="页码"),
-    size: int = Query(20, ge=1, le=100, description="每页数量"),
-    status: Optional[str] = Query(None, description="状态筛选"),
-    current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
     config_service: SystemConfigService = Depends(get_config_service)
+):
+    """获取用户提现历史记录（别名）"""
+    return await get_user_withdrawal_requests(page, page_size, status, current_user, db, config_service)
+
+async def get_user_withdrawal_requests(
+    page: int,
+    size: int,
+    status: Optional[str],
+    current_user: Dict[str, Any],
+    db: AsyncSession,
+    config_service: SystemConfigService = None
 ):
     """获取用户提现申请列表"""
     

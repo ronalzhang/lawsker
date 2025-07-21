@@ -8,10 +8,10 @@
     <meta name="theme-color" content="#0f1424">
     <title>律师工作台 - Lawsker 律客</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
-    <link rel="stylesheet" href="/css/lawsker-glass.css?v=3">
+    <link rel="stylesheet" href="/css/lawsker-glass.css?v=4">
     <!-- 核心脚本 -->
     <script src="/js/api-client.js?v=1.7"></script>
-    <script src="/js/workspace-auth.js?v=1752099302"></script>
+    <script src="/js/workspace-auth.js?v=1752099303"></script>
     <script src="/js/task-grab-handler.js"></script>
     <style>
         /* 确保页面背景正确显示 */
@@ -971,29 +971,29 @@
 
         .cases-tab {
             flex: 1;
-            padding: 12px 20px;
-            border: none;
-            background: transparent;
-            color: var(--text-secondary);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            display: flex;
+            padding: 12px 20px !important;
+            border: none !important;
+            background: transparent !important;
+            color: var(--text-secondary) !important;
+            border-radius: 8px !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+            font-weight: 500 !important;
+            display: flex !important;
             align-items: center;
             justify-content: center;
             gap: 8px;
         }
 
         .cases-tab.active {
-            background: var(--gradient-primary);
-            color: white;
-            box-shadow: 0 2px 8px rgba(122, 160, 255, 0.3);
+            background: var(--gradient-primary) !important;
+            color: white !important;
+            box-shadow: 0 2px 8px rgba(122, 160, 255, 0.3) !important;
         }
 
         .cases-tab:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05) !important;
+            color: var(--text-primary) !important;
         }
 
         .cases-tab .tab-icon {
@@ -3460,8 +3460,15 @@ ${date}`;
         async function refreshAvailableTasks() {
             try {
                 console.log('正在从API获取可抢单任务...');
+                
+                // 检测移动端并调整请求参数
+                const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                if (isMobile) {
+                    console.log('检测到移动端浏览器，使用优化请求');
+                }
+                
                 // 使用 apiClient 统一处理API调用（包括演示模式逻辑）
-                const result = await apiClient.get('/tasks/available', {limit: 20});
+                const result = await apiClient.get('/tasks/available', {limit: isMobile ? 10 : 20});
                 console.log('API响应:', result);
                 
                 // 处理不同的响应格式
@@ -3477,11 +3484,66 @@ ${date}`;
                 }
                 
                 console.log(`获取到 ${tasks.length} 个任务`);
-                updateAvailableTasksList(tasks);
+                
+                // 如果没有获取到任务但API响应正常，显示空状态
+                if (tasks.length === 0) {
+                    console.log('API成功但暂无任务');
+                    showEmptyTasksState();
+                } else {
+                    updateAvailableTasksList(tasks);
+                }
+                
             } catch (error) {
                 console.error('刷新任务列表失败:', error);
-                showNotification('刷新失败，请稍后重试', 'error');
-                throw error; // 重新抛出错误，让调用方处理
+                
+                // 移动端使用不同的错误处理策略
+                if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                    console.log('移动端错误处理: 使用演示数据作为回退');
+                    showMobileErrorWithFallback(error);
+                } else {
+                    showNotification('刷新失败，请稍后重试', 'error');
+                    throw error; // 重新抛出错误，让调用方处理
+                }
+            }
+        }
+        
+        // 显示空任务状态
+        function showEmptyTasksState() {
+            const availableTasksList = document.getElementById('availableTasksList');
+            const noAvailableTasks = document.getElementById('noAvailableTasks');
+            
+            if (availableTasksList && noAvailableTasks) {
+                availableTasksList.innerHTML = '';
+                noAvailableTasks.innerHTML = `
+                    <div style="padding: 40px; text-align: center; color: var(--text-secondary);">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                        <div>暂无可抢单任务</div>
+                        <div style="font-size: 12px; margin-top: 8px;">请稍后刷新或联系管理员</div>
+                        <button onclick="refreshAvailableTasks()" style="margin-top: 16px; padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer;">刷新任务</button>
+                    </div>
+                `;
+                noAvailableTasks.style.display = 'block';
+            }
+        }
+        
+        // 移动端错误处理和回退机制
+        function showMobileErrorWithFallback(error) {
+            const availableTasksList = document.getElementById('availableTasksList');
+            const noAvailableTasks = document.getElementById('noAvailableTasks');
+            
+            if (availableTasksList && noAvailableTasks) {
+                noAvailableTasks.innerHTML = `
+                    <div style="padding: 30px 20px; text-align: center; color: var(--text-secondary);">
+                        <div style="font-size: 24px; margin-bottom: 12px;">⚠️</div>
+                        <div style="margin-bottom: 16px;">网络加载失败</div>
+                        <div style="font-size: 12px; margin-bottom: 16px;">请检查网络连接后重试</div>
+                        <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                            <button onclick="refreshAvailableTasks()" style="padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">重试</button>
+                            <button onclick="createDemoAvailableTasks(); document.getElementById('noAvailableTasks').style.display='none';" style="padding: 8px 16px; background: rgba(255,255,255,0.1); color: var(--text-primary); border: 1px solid var(--glass-border); border-radius: 4px; cursor: pointer; font-size: 12px;">查看示例</button>
+                        </div>
+                    </div>
+                `;
+                noAvailableTasks.style.display = 'block';
             }
         }
 
