@@ -8,10 +8,10 @@
     <meta name="theme-color" content="#0f1424">
     <title>用户工作台 - Lawsker 律客</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
-    <link rel="stylesheet" href="/css/lawsker-glass.css">
+    <link rel="stylesheet" href="/css/lawsker-glass.css?v=2">
     <!-- 核心脚本 -->
     <script src="/js/api-client.js?v=1.4"></script>
-    <script src="/js/workspace-auth.js?v=1752099300"></script>
+    <script src="/js/workspace-auth.js?v=1752099301"></script>
     <style>
         /* 确保页面背景正确显示 */
         html, body {
@@ -1442,8 +1442,12 @@
     </div>
 
     <script>
+        // 确保脚本加载
+        console.log('用户工作台脚本已加载');
+        
         // 标签页切换函数
         function switchTab(tabName) {
+            console.log('switchTab called with:', tabName);
             // 隐藏所有标签页内容
             const tabContents = document.querySelectorAll('.tab-content');
             tabContents.forEach(content => {
