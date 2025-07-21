@@ -238,6 +238,8 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .btn-small:last-child {
@@ -1474,13 +1476,6 @@
                 window.location.href = '/auth';
             }
         }
-        // 退出登录
-        function logout() {
-            if (confirm('确定要退出登录吗？')) {
-                localStorage.removeItem('authToken');
-                window.location.href = '/auth';
-            }
-        }
 
         // 清空任务表单
         function clearTaskForm() {
@@ -2229,32 +2224,40 @@
                 const userLevelBadgeEl = document.querySelector('.user-level-badge');
                 
                 if (userStats && userLevelEl) {
-                    // 根据真实数据计算用户等级
-                    const businessVolume = userStats.business_volume || 0;
+                    // 根据用户业务数据计算等级：业务量（任务数）+ 收益金额
+                    const publishedTasks = userStats.published_tasks || 0;
                     const totalEarnings = userStats.total_earnings || 0;
+                    const uploadedData = userStats.uploaded_data || 0;
                     
                     let level = 1;
-                    let levelName = '初级销售';
+                    let levelName = '律客新人';
+                    let levelIcon = '🌱';
                     
-                    if (businessVolume >= 5000 && totalEarnings >= 50000) {
+                    // 优化的升级规则：鼓励用户多使用平台功能
+                    if (publishedTasks >= 20 && totalEarnings >= 10000 && uploadedData >= 10) {
                         level = 5;
-                        levelName = '金牌销售';
-                    } else if (businessVolume >= 3000 && totalEarnings >= 30000) {
+                        levelName = '律客专家';
+                        levelIcon = '💎';
+                    } else if (publishedTasks >= 10 && totalEarnings >= 5000 && uploadedData >= 5) {
                         level = 4;
-                        levelName = '高级销售';
-                    } else if (businessVolume >= 1500 && totalEarnings >= 15000) {
+                        levelName = '律客达人';
+                        levelIcon = '⭐';
+                    } else if (publishedTasks >= 5 && totalEarnings >= 2000 && uploadedData >= 3) {
                         level = 3;
-                        levelName = '中级销售';
-                    } else if (businessVolume >= 500 && totalEarnings >= 5000) {
+                        levelName = '律客熟手';
+                        levelIcon = '🔥';
+                    } else if (publishedTasks >= 2 && (totalEarnings >= 500 || uploadedData >= 1)) {
                         level = 2;
-                        levelName = '专业销售';
+                        levelName = '律客学徒';
+                        levelIcon = '⚡';
                     }
                     
                     userLevelEl.textContent = levelName;
                     
-                    if (userLevelBadgeEl) {
-                        userLevelBadgeEl.textContent = `LV${level}`;
-                        userLevelBadgeEl.className = `user-level-badge level-${level}`;
+                    // 更新等级图标
+                    const levelIconEl = document.querySelector('.level-icon');
+                    if (levelIconEl) {
+                        levelIconEl.textContent = levelIcon;
                     }
                 }
                 
@@ -2264,11 +2267,8 @@
                 const userLevelEl = document.getElementById('userLevel');
                 const userLevelBadgeEl = document.querySelector('.user-level-badge');
                 
-                if (userLevelEl) userLevelEl.textContent = '中级销售';
-                if (userLevelBadgeEl) {
-                    userLevelBadgeEl.textContent = 'LV3';
-                    userLevelBadgeEl.className = 'user-level-badge level-3';
-                }
+                if (userLevelEl) userLevelEl.textContent = '律客达人';
+                // 不需要修改badge的textContent
             }
         }
 
@@ -2302,7 +2302,49 @@
         // 根据用户ID加载个性化数据
         async function loadUserSpecificData(userId) {
             try {
-                // 更新页面标题显示用户ID，但保持用户等级标签的完整结构
+                // 更新页面标题显示用户ID（不要重复创建用户等级标签）
+                const pageTitle = document.querySelector('.page-title');
+                if (pageTitle) {
+                    const userLevelBadge = pageTitle.querySelector('.user-level-badge');
+                    if (userLevelBadge) {
+                        // 保留现有的用户等级标签，只更新标题文字
+                        const titleText = pageTitle.childNodes[0];
+                        if (titleText && titleText.nodeType === Node.TEXT_NODE) {
+                            titleText.textContent = `用户工作台（${userId}）`;
+                        }
+                    } else {
+                        // 如果没有用户等级标签，完整设置
+                        pageTitle.innerHTML = `
+                            用户工作台（${userId}）
+                            <span class="user-level-badge">
+                                <span class="level-icon">⭐</span>
+                                <span id="userLevel">律客达人</span>
+                            </span>
+                        `;
+                    }
+                }
+                
+                // 更新导航栏用户信息
+                const userName = document.querySelector('.user-name');
+                if (userName) {
+                    userName.textContent = `用户${userId}`;
+                }
+                
+                const userAvatar = document.querySelector('.user-avatar');
+                if (userAvatar) {
+                    userAvatar.textContent = userId.charAt(0).toUpperCase();
+                }
+                
+                // 这里可以根据用户ID从API获取个性化数据
+                console.log(`已为用户 ${userId} 加载个性化数据`);
+                
+                // 重新计算和更新用户等级显示
+                await updateUserLevel();
+                
+            } catch (error) {
+                console.error('加载用户个性化数据失败:', error);
+            }
+        }
 
         // 联系方式交换和任务完成功能
         let currentTaskId = null;
@@ -2502,28 +2544,6 @@
             });
         }
 
-        // 刷新任务反馈状态
-        async function refreshTaskFeedback() {
-            try {
-                if (apiClient.isAuthenticated()) {
-                    // 实际API调用获取任务反馈
-                    const response = await fetch('/api/v1/tasks/feedback', {
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                        }
-                    });
-                    
-                    const result = await response.json();
-                    if (result.success && result.tasks) {
-                        updateTaskFeedbackDisplay(result.tasks);
-                    }
-                } else {
-                    console.log('演示模式 - 使用静态任务反馈数据');
-                }
-            } catch (error) {
-                console.error('刷新任务反馈失败:', error);
-            }
-        }
 
         // 更新任务反馈显示
         function updateTaskFeedbackDisplay(tasks) {
@@ -2563,35 +2583,6 @@
                 feedbackBody.appendChild(taskItem);
             });
         }
-                const pageTitle = document.querySelector('.page-title');
-                if (pageTitle) {
-                    pageTitle.innerHTML = `
-                        用户工作台（${userId}）
-                        <span class="user-level-badge">
-                            <span class="level-icon">⭐</span>
-                            <span id="userLevel">律客达人</span>
-                        </span>
-                    `;
-                }
-                
-                // 更新导航栏用户信息
-                const userName = document.querySelector('.user-name');
-                if (userName) {
-                    userName.textContent = `用户${userId}`;
-                }
-                
-                const userAvatar = document.querySelector('.user-avatar');
-                if (userAvatar) {
-                    userAvatar.textContent = userId.charAt(0).toUpperCase();
-                }
-                
-                // 这里可以根据用户ID从API获取个性化数据
-                // const userData = await apiClient.getUserData(userId);
-                // 暂时使用模拟数据
-                console.log(`已为用户 ${userId} 加载个性化数据`);
-                
-                // 重新计算和更新用户等级显示
-                await updateUserLevel();
                 
             } catch (error) {
                 console.error('加载用户个性化数据失败:', error);
@@ -2738,6 +2729,9 @@
                 showEmptyUserTasks();
                 return;
             }
+            
+            // 更新全局任务数据
+            currentUserTasks = tasks;
             
             taskListBody.innerHTML = '';
             tasks.forEach(task => {

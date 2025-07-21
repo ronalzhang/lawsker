@@ -16,44 +16,56 @@ from sqlalchemy import select
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from app.core.database import AsyncSessionLocal
-from app.models.user import User
+from app.models.user import User, UserStatus
 from app.models.lawyer_review import DocumentReviewTask, ReviewStatus
 from sqlalchemy import text
 
 
 async def init_demo_users(db: AsyncSession):
     """初始化演示用户数据"""
+    # 获取默认租户ID
+    tenant_result = await db.execute(text("SELECT id FROM tenants LIMIT 1"))
+    tenant_id = tenant_result.scalar()
+    
+    if not tenant_id:
+        raise ValueError("No tenant found. Please create a tenant first.")
+    
+    print(f"Using tenant: {tenant_id}")
+    
     # 生成固定的UUID，便于前端引用
     user_001_id = "1b364915-89df-48d8-9c70-e1e16a6d9446"
     lawyer_001_id = "2c475026-9aef-59e9-ad81-f2f27b7daf57"
-    lawyer_002_id = "3d586137-abf0-6afa-be92-g3g38c8ebg68"
+    lawyer_002_id = "3d586137-abf0-6afa-be92-f3f38c8ebf68"
     
     demo_users = [
         {
             "id": user_001_id,
+            "tenant_id": tenant_id,
             "username": "demo_user_001", 
             "email": "user001@lawsker.com",
             "phone_number": "13812345678",
             "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewJMpEPoZaIlM9KG",  # password: demo123
-            "status": "active",
+            "status": UserStatus.ACTIVE,
             "created_at": datetime.now() - timedelta(days=30)
         },
         {
             "id": lawyer_001_id,
+            "tenant_id": tenant_id,
             "username": "lawyer_zhang",
             "email": "zhang.jianguo@lawsker.com", 
             "phone_number": "13800000001",
             "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewJMpEPoZaIlM9KG",  # password: demo123
-            "status": "active",
+            "status": UserStatus.ACTIVE,
             "created_at": datetime.now() - timedelta(days=60)
         },
         {
-            "id": lawyer_002_id, 
+            "id": lawyer_002_id,
+            "tenant_id": tenant_id, 
             "username": "lawyer_li",
             "email": "li.minghua@lawsker.com",
             "phone_number": "13800000002",
             "password_hash": "$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewJMpEPoZaIlM9KG",  # password: demo123
-            "status": "active",
+            "status": UserStatus.ACTIVE,
             "created_at": datetime.now() - timedelta(days=50)
         }
     ]
@@ -64,12 +76,12 @@ async def init_demo_users(db: AsyncSession):
             select(User).where(User.id == user_data["id"])
         )
         if existing_user.scalar_one_or_none():
-            print(f"用户 {user_data['full_name']} 已存在，跳过创建")
+            print(f"用户 {user_data['username']} 已存在，跳过创建")
             continue
             
         user = User(**user_data)
         db.add(user)
-        print(f"创建用户: {user_data['full_name']}")
+        print(f"创建用户: {user_data['username']}")
     
     await db.commit()
     print("✅ 演示用户数据初始化完成")
@@ -77,10 +89,14 @@ async def init_demo_users(db: AsyncSession):
 
 async def init_demo_tasks(db: AsyncSession):
     """初始化演示任务数据"""
+    # 获取默认租户ID
+    tenant_result = await db.execute(text("SELECT id FROM tenants LIMIT 1"))
+    tenant_id = tenant_result.scalar()
+    
     # 使用前面定义的UUID
     user_001_id = "1b364915-89df-48d8-9c70-e1e16a6d9446"
     lawyer_001_id = "2c475026-9aef-59e9-ad81-f2f27b7daf57"
-    lawyer_002_id = "3d586137-abf0-6afa-be92-g3g38c8ebg68"
+    lawyer_002_id = "3d586137-abf0-6afa-be92-f3f38c8ebf68"
     
     demo_tasks = [
         {

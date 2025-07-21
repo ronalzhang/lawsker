@@ -706,6 +706,21 @@
                 height: 24px;
                 font-size: 12px;
             }
+
+            /* 案件标签在移动端优化 */
+            .cases-tabs {
+                gap: 2px;
+                padding: 2px;
+            }
+            
+            .cases-tab {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+            
+            .cases-tab .tab-icon {
+                font-size: 14px;
+            }
             
             .page-info {
                 font-size: 11px;
@@ -936,6 +951,62 @@
             margin-bottom: 24px;
             background: var(--glass-bg);
             border-radius: 12px;
+            padding: 4px;
+            border: 1px solid var(--glass-border);
+        }
+
+        /* 案件管理标签导航样式 */
+        .cases-tabs-navigation {
+            margin-bottom: 24px;
+        }
+
+        .cases-tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--glass-bg);
+            border-radius: 12px;
+            padding: 4px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .cases-tab {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .cases-tab.active {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 2px 8px rgba(122, 160, 255, 0.3);
+        }
+
+        .cases-tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .cases-tab .tab-icon {
+            font-size: 16px;
+        }
+
+        .cases-tab-content {
+            display: none;
+        }
+
+        .cases-tab-content.active {
+            display: block;
+        }
 
         /* 子标签样式 */
         .sub-tabs {
@@ -1449,16 +1520,23 @@
 
         <!-- 案件管理标签页 -->
         <div id="cases" class="tab-content">
+            <!-- 案件管理标签导航 -->
+            <div class="cases-tabs-navigation">
+                <div class="cases-tabs">
+                    <button class="cases-tab active" onclick="switchCasesTab('my-cases')">
+                        <span class="tab-icon">📋</span>
+                        <span>我的案件</span>
+                    </button>
+                    <button class="cases-tab" onclick="switchCasesTab('send-records')">
+                        <span class="tab-icon">📤</span>
+                        <span>发送记录</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- 案件列表 -->
             <div class="cases-section">
-                <div class="cases-header">
-                    <div style="display: flex; align-items: center; gap: 16px;">
-                        <h3 class="cases-title">我的案件</h3>
-                        <div class="sub-tabs" style="margin: 0;">
-                            <button class="sub-tab active" onclick="switchSubTab('my-cases')">案件列表</button>
-                            <button class="sub-tab" onclick="switchSubTab('send-records')">📤 发送记录</button>
-                        </div>
-                    </div>
+                <div class="cases-header" id="cases-filter-header">
                     <div class="cases-filter">
                         <button class="filter-btn active">全部</button>
                         <button class="filter-btn">进行中</button>
@@ -1467,8 +1545,8 @@
                     </div>
                 </div>
 
-            <!-- 我的案件子页面 -->
-            <div id="my-cases" class="sub-tab-content active">
+            <!-- 我的案件内容 -->
+            <div id="my-cases" class="cases-tab-content active">
                 <table class="cases-table">
                 <thead>
                     <tr>
@@ -1522,8 +1600,8 @@
                 </table>
             </div>
 
-            <!-- 发送记录子页面 -->
-            <div id="send-records" class="sub-tab-content">
+            <!-- 发送记录内容 -->
+            <div id="send-records" class="cases-tab-content">
                 <div id="sendRecordsContainer">
                     <!-- 发送记录内容将动态加载 -->
                     <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
@@ -1680,6 +1758,38 @@
         }
 
         // 子标签切换功能
+        function switchCasesTab(tabName) {
+            // 隐藏所有案件标签页内容
+            document.querySelectorAll('.cases-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 移除所有案件标签的激活状态
+            document.querySelectorAll('.cases-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 显示选中的标签页内容
+            const targetContent = document.getElementById(tabName);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+            
+            // 激活选中的标签
+            event.target.classList.add('active');
+            
+            // 根据标签显示/隐藏筛选器
+            const filterHeader = document.getElementById('cases-filter-header');
+            if (filterHeader) {
+                if (tabName === 'my-cases') {
+                    filterHeader.style.display = 'block';
+                } else if (tabName === 'send-records') {
+                    filterHeader.style.display = 'none';
+                    loadSendRecords();
+                }
+            }
+        }
+
         function switchSubTab(subTabName) {
             // 隐藏所有子标签页内容
             document.querySelectorAll('.sub-tab-content').forEach(content => {
