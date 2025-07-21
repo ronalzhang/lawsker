@@ -1449,27 +1449,27 @@
 
         <!-- 案件管理标签页 -->
         <div id="cases" class="tab-content">
-            <!-- 子标签导航 -->
-            <div class="sub-tabs" style="margin-bottom: 20px;">
-                <button class="sub-tab active" onclick="switchSubTab('my-cases')">我的案件</button>
-                <button class="sub-tab" onclick="switchSubTab('send-records')">📤 发送记录</button>
-            </div>
+            <!-- 案件列表 -->
+            <div class="cases-section">
+                <div class="cases-header">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <h3 class="cases-title">我的案件</h3>
+                        <div class="sub-tabs" style="margin: 0;">
+                            <button class="sub-tab active" onclick="switchSubTab('my-cases')">案件列表</button>
+                            <button class="sub-tab" onclick="switchSubTab('send-records')">📤 发送记录</button>
+                        </div>
+                    </div>
+                    <div class="cases-filter">
+                        <button class="filter-btn active">全部</button>
+                        <button class="filter-btn">进行中</button>
+                        <button class="filter-btn">待处理</button>
+                        <button class="filter-btn">已完成</button>
+                    </div>
+                </div>
 
             <!-- 我的案件子页面 -->
             <div id="my-cases" class="sub-tab-content active">
-                <!-- 案件列表 -->
-                <div class="cases-section">
-                    <div class="cases-header">
-                        <h3 class="cases-title">我的案件</h3>
-                        <div class="cases-filter">
-                            <button class="filter-btn active">全部</button>
-                            <button class="filter-btn">进行中</button>
-                            <button class="filter-btn">待处理</button>
-                            <button class="filter-btn">已完成</button>
-                        </div>
-                    </div>
-            
-            <table class="cases-table">
+                <table class="cases-table">
                 <thead>
                     <tr>
                         <th>案件编号</th>
@@ -1519,8 +1519,7 @@
                         <td>¥500</td>
                     </tr>
                 </tbody>
-            </table>
-        </div>
+                </table>
             </div>
 
             <!-- 发送记录子页面 -->
@@ -1533,6 +1532,7 @@
                         <p>正在加载发送记录...</p>
                     </div>
                 </div>
+            </div>
             </div>
         </div>
 

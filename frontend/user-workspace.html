@@ -1271,31 +1271,40 @@
                 </div>
             </div>
 
-            <!-- 收益统计 -->
-            <div class="earnings-summary">
-                <h3 class="earnings-title">收益统计</h3>
+        </div>
+
+        <!-- 提现管理标签页 -->
+        <div id="withdrawal" class="tab-content">
+            <!-- 收益统计（来源：批量上传业务分成） -->
+            <div class="earnings-summary" style="margin-bottom: 24px;">
+                <h3 class="earnings-title">💰 业务分成收益统计</h3>
+                <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                    <div style="font-size: 14px; color: var(--text-secondary);">
+                        📊 收益来源：数据上传业务佣金分成 | 分成比例：每笔业务50-70%
+                    </div>
+                </div>
                 <div class="earnings-grid">
                     <div class="earnings-item">
                         <div class="earnings-value">¥2,580</div>
-                        <div class="earnings-label">总收益</div>
+                        <div class="earnings-label">总分成收益</div>
                     </div>
                     <div class="earnings-item">
                         <div class="earnings-value">¥680</div>
-                        <div class="earnings-label">本月收益</div>
+                        <div class="earnings-label">本月分成</div>
                     </div>
                     <div class="earnings-item">
                         <div class="earnings-value">¥150</div>
-                        <div class="earnings-label">今日收益</div>
+                        <div class="earnings-label">今日分成</div>
                     </div>
                     <div class="earnings-item">
-                        <div class="earnings-value">8</div>
-                        <div class="earnings-label">完成任务</div>
+                        <div class="earnings-value">12</div>
+                        <div class="earnings-label">成功订单</div>
                     </div>
                 </div>
                 
                 <!-- 收益趋势图表 -->
                 <div class="earnings-chart">
-                    <h4 class="chart-title">本月收益趋势</h4>
+                    <h4 class="chart-title">本月分成收益趋势</h4>
                     <div class="chart-container">
                         <div class="chart-bar" style="height: 40%;" data-value="¥120"></div>
                         <div class="chart-bar" style="height: 60%;" data-value="¥180"></div>
@@ -1316,10 +1325,7 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- 提现管理标签页 -->
-        <div id="withdrawal" class="tab-content">
             <!-- 钱包信息 -->
             <div class="wallet-info" style="margin-bottom: 24px;">
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
@@ -2656,7 +2662,7 @@
                             <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border);">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                     <div style="font-weight: 600; color: var(--text-primary);">👩‍💼 律师信息</div>
-                                    <button class="btn btn-primary" onclick="viewLawyerDetails('${update.lawyerInfo.id || 'lawyer001'}')" style="padding: 2px 8px; font-size: 11px;">查看律师详情</button>
+                                    <button class="btn btn-primary" onclick="viewLawyerDetails('${update.lawyerInfo.id || 'lawyer001'}')" style="padding: 2px 8px; font-size: 11px; white-space: nowrap; flex-shrink: 0;">查看详情</button>
                                 </div>
                                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; font-size: 13px; color: var(--text-secondary);">
                                     <div><strong>姓名：</strong>${update.lawyerInfo.name}</div>
@@ -2668,7 +2674,7 @@
                                 </div>
                                 <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
                                     <div style="display: flex; gap: 8px; align-items: center;">
-                                        <button class="btn btn-success" onclick="contactLawyer('${update.lawyerInfo.id || 'lawyer001'}', '${update.lawyerInfo.phone || '138-0000-0001'}')" style="padding: 4px 8px; font-size: 11px;">📞 联系律师</button>
+                                        <button class="btn btn-success" onclick="contactLawyer('${update.lawyerInfo.id || 'lawyer001'}', '${update.lawyerInfo.phone || '138-0000-0001'}')" style="padding: 4px 8px; font-size: 11px; white-space: nowrap; flex-shrink: 0;">📞 联系</button>
                                         <div style="font-size: 11px; color: var(--text-tertiary);">
                                             ${update.lawyerInfo.case_count || '150+'} 个案件 · ${update.lawyerInfo.success_rate || '92'}% 成功率
                                         </div>
@@ -2676,8 +2682,8 @@
                                 </div>
                             </div>
                         </div>
-                        <div style="margin-left: 16px;">
-                            <button class="btn btn-secondary" onclick="viewTaskDetail('${update.taskId}')" style="padding: 6px 12px; font-size: 12px;">查看任务详情</button>
+                        <div style="margin-left: 16px; flex-shrink: 0;">
+                            <button class="btn btn-secondary" onclick="viewTaskDetail('${update.taskId}')" style="padding: 6px 12px; font-size: 12px; white-space: nowrap;">查看详情</button>
                         </div>
                     </div>
                 `;
@@ -2763,6 +2769,9 @@
         }
 
         // 创建演示用户任务
+        // 全局存储当前用户任务数据
+        let currentUserTasks = [];
+
         function createDemoUserTasks() {
             console.log('创建演示用户任务...');
             const taskListBody = document.getElementById('taskListBody');
@@ -2772,7 +2781,7 @@
             // 清空现有内容
             taskListBody.innerHTML = '';
             
-            // 演示用户发布的任务数据
+            // 演示用户发布的任务数据（完整版）
             const demoUserTasks = [
                 {
                     task_id: 'user-task-001',
@@ -2782,8 +2791,31 @@
                     budget: 650,
                     status: 'grabbed',
                     urgency: 'normal',
-                    created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2天前
-                    assigned_lawyer: '张律师'
+                    created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                    assigned_lawyer: {
+                        id: 'lawyer001',
+                        name: '张建国',
+                        firm: '北京律思客律师事务所',
+                        license: '11010201234567890',
+                        phone: '138-0000-0001',
+                        experience: '8年执业经验',
+                        specialties: ['债权债务', '合同纠纷', '公司法务'],
+                        rating: 4.8,
+                        case_count: 156,
+                        success_rate: 92
+                    },
+                    target_info: {
+                        target_name: '王某某',
+                        contact_phone: '138****5678',
+                        contact_address: '上海市浦东新区张江路123号',
+                        case_details: '拖欠货款15万元，已逾期3个月未付'
+                    },
+                    progress: [
+                        { time: '2025-01-15 14:30', status: '任务发布', description: '用户发布催收任务' },
+                        { time: '2025-01-15 16:45', status: '律师接单', description: '张建国律师接受任务' },
+                        { time: '2025-01-16 09:20', status: '文书生成', description: '已生成律师函，等待审核' },
+                        { time: '2025-01-16 14:15', status: '文书发送', description: '律师函已发送至债务人' }
+                    ]
                 },
                 {
                     task_id: 'user-task-002', 
@@ -2793,9 +2825,41 @@
                     budget: 1200,
                     status: 'completed',
                     urgency: 'urgent',
-                    created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5天前
-                    completed_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1天前完成
-                    assigned_lawyer: '李律师'
+                    created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+                    completed_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+                    assigned_lawyer: {
+                        id: 'lawyer002',
+                        name: '李明华',
+                        firm: '北京律思客律师事务所',
+                        license: '11010201234567891',
+                        phone: '138-0000-0002',
+                        experience: '12年执业经验',
+                        specialties: ['合同审查', '知识产权', '投资并购'],
+                        rating: 4.9,
+                        case_count: 243,
+                        success_rate: 95
+                    },
+                    target_info: {
+                        target_name: 'ABC科技有限公司',
+                        contact_phone: '021-12345678',
+                        contact_address: '上海市黄浦区南京路100号',
+                        case_details: '战略合作协议，涉及知识产权和技术转让'
+                    },
+                    completion_report: {
+                        summary: '合同审查完成，发现3处重要风险点，已提供修改建议',
+                        risk_points: [
+                            '知识产权归属条款存在歧义',
+                            '违约责任条款过于宽泛',
+                            '技术转让条款缺少保密约定'
+                        ],
+                        suggestions: '建议重新修订第3、7、12条款内容'
+                    },
+                    progress: [
+                        { time: '2025-01-10 09:00', status: '任务发布', description: '用户发布合同审查任务' },
+                        { time: '2025-01-10 10:30', status: '律师接单', description: '李明华律师接受任务' },
+                        { time: '2025-01-11 14:20', status: '合同审查', description: '正在进行详细审查' },
+                        { time: '2025-01-14 16:45', status: '审查完成', description: '已完成审查并提供报告' }
+                    ]
                 },
                 {
                     task_id: 'user-task-003',
@@ -2805,10 +2869,19 @@
                     budget: 400,
                     status: 'published',
                     urgency: 'low',
-                    created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3小时前
-                    assigned_lawyer: null
+                    created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+                    assigned_lawyer: null,
+                    target_info: {
+                        target_name: '员工小李',
+                        contact_phone: '150****9876',
+                        contact_address: '北京市朝阳区建国路88号',
+                        case_details: '劳动合同到期争议，涉及补偿金计算'
+                    }
                 }
             ];
+            
+            // 保存到全局变量
+            currentUserTasks = demoUserTasks;
             
             // 渲染演示任务
             demoUserTasks.forEach(task => {
@@ -2908,101 +2981,9 @@
                     }
                 }
                 
-                // 如果API失败，从演示数据中查找
-                if (!taskData) {
-                    const demoUserTasks = [
-                        {
-                            task_id: 'user-task-001',
-                            task_type: 'lawyer_letter',
-                            title: '债权催收律师函',
-                            description: '需要向欠款方发送律师函，催收货款15万元',
-                            budget: 650,
-                            status: 'grabbed',
-                            urgency: 'normal',
-                            created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-                            assigned_lawyer: {
-                                id: 'lawyer001',
-                                name: '张建国',
-                                firm: '北京律思客律师事务所',
-                                license: '11010201234567890',
-                                phone: '138-0000-0001',
-                                experience: '8年执业经验',
-                                specialties: ['债权债务', '合同纠纷', '公司法务'],
-                                rating: 4.8,
-                                case_count: 156,
-                                success_rate: 92
-                            },
-                            target_info: {
-                                target_name: '王某某',
-                                contact_phone: '138****5678',
-                                contact_address: '上海市浦东新区张江路123号',
-                                case_details: '拖欠货款15万元，已逾期3个月未付'
-                            },
-                            progress: [
-                                { time: '2025-01-15 14:30', status: '任务发布', description: '用户发布催收任务' },
-                                { time: '2025-01-15 16:45', status: '律师接单', description: '张建国律师接受任务' },
-                                { time: '2025-01-16 09:20', status: '文书生成', description: '已生成律师函，等待审核' },
-                                { time: '2025-01-16 14:15', status: '文书发送', description: '律师函已发送至债务人' }
-                            ]
-                        },
-                        {
-                            task_id: 'user-task-002', 
-                            task_type: 'contract_review',
-                            title: '商务合作合同审查',
-                            description: '重要合作协议需要法律专业审查，合同金额500万',
-                            budget: 1200,
-                            status: 'completed',
-                            urgency: 'urgent',
-                            created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-                            completed_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-                            assigned_lawyer: {
-                                id: 'lawyer002',
-                                name: '李明华',
-                                firm: '北京律思客律师事务所',
-                                license: '11010201234567891',
-                                phone: '138-0000-0002',
-                                experience: '12年执业经验',
-                                specialties: ['合同审查', '知识产权', '投资并购'],
-                                rating: 4.9,
-                                case_count: 243,
-                                success_rate: 95
-                            },
-                            target_info: {
-                                target_name: 'ABC科技有限公司',
-                                contact_phone: '021-12345678',
-                                contact_address: '上海市黄浦区南京路100号',
-                                case_details: '战略合作协议，涉及知识产权和技术转让'
-                            },
-                            completion_report: {
-                                summary: '合同审查完成，发现3处重要风险点，已提供修改建议',
-                                risk_points: [
-                                    '知识产权归属条款存在歧义',
-                                    '违约责任条款过于宽泛',
-                                    '技术转让条款缺少保密约定'
-                                ],
-                                suggestions: '建议重新修订第3、7、12条款内容'
-                            }
-                        },
-                        {
-                            task_id: 'user-task-003',
-                            task_type: 'legal_consultation',
-                            title: '劳动纠纷法律咨询',
-                            description: '公司员工劳动合同纠纷，需要专业法律建议',
-                            budget: 400,
-                            status: 'published',
-                            urgency: 'low',
-                            created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-                            assigned_lawyer: null,
-                            target_info: {
-                                target_name: '员工小李',
-                                contact_phone: '150****9876',
-                                contact_address: '北京市朝阳区建国路88号',
-                                case_details: '劳动合同到期争议，涉及补偿金计算'
-                            }
-                        }
-                    ];
-                    
-                    taskData = demoUserTasks.find(task => task.task_id === taskId);
+                // 如果API失败，从全局任务数据中查找
+                if (!taskData && currentUserTasks.length > 0) {
+                    taskData = currentUserTasks.find(task => task.task_id === taskId);
                 }
             
                 // 关闭加载模态框
@@ -3200,8 +3181,14 @@
             // 查找任务数据
             let taskData = null;
             
-            // 从演示数据中查找
-            const demoUserTasks = [
+            // 首先从全局任务数据中查找
+            if (currentUserTasks.length > 0) {
+                taskData = currentUserTasks.find(task => task.task_id === taskId);
+            }
+            
+            // 如果没找到，从演示数据中查找
+            if (!taskData) {
+                const demoUserTasks = [
                 {
                     task_id: 'user-task-001',
                     task_type: 'lawyer_letter',
@@ -3232,9 +3219,10 @@
                         case_details: '劳动合同到期争议，涉及补偿金计算'
                     }
                 }
-            ];
-            
-            taskData = demoUserTasks.find(task => task.task_id === taskId);
+                ];
+                
+                taskData = demoUserTasks.find(task => task.task_id === taskId);
+            }
             
             if (!taskData) {
                 alert('任务数据不存在');
