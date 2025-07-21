@@ -969,31 +969,32 @@
             border: 1px solid var(--glass-border);
         }
 
-        .cases-tab {
+        .cases-tabs .cases-tab {
             flex: 1;
-            padding: 12px 20px !important;
-            border: none !important;
-            background: transparent !important;
-            color: var(--text-secondary) !important;
-            border-radius: 8px !important;
-            cursor: pointer !important;
-            transition: all 0.3s ease !important;
-            font-weight: 500 !important;
-            display: flex !important;
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            font-size: 14px;
         }
 
-        .cases-tab.active {
-            background: var(--gradient-primary) !important;
-            color: white !important;
-            box-shadow: 0 2px 8px rgba(122, 160, 255, 0.3) !important;
+        .cases-tabs .cases-tab.active {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 2px 8px rgba(122, 160, 255, 0.3);
         }
 
-        .cases-tab:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.05) !important;
-            color: var(--text-primary) !important;
+        .cases-tabs .cases-tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
         }
 
         .cases-tab .tab-icon {
