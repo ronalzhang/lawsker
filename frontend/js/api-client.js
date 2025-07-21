@@ -51,7 +51,14 @@ class ApiClient {
         console.log(`🔗 API请求: ${config.method || 'GET'} ${url}`);
 
         try {
+            // 添加请求超时设置，特别对移动端重要
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+            
+            config.signal = controller.signal;
+            
             const response = await fetch(url, config);
+            clearTimeout(timeoutId);
             
             if (!response.ok) {
                 if (response.status === 401) {
@@ -65,7 +72,17 @@ class ApiClient {
                     return;
                 }
                 
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                try {
+                    const errorData = await response.json();
+                    if (errorData.message || errorData.detail) {
+                        errorMessage = errorData.message || errorData.detail;
+                    }
+                } catch (parseError) {
+                    console.warn('无法解析错误响应JSON:', parseError);
+                }
+                
+                throw new Error(errorMessage);
             }
             
             const data = await response.json();
@@ -73,8 +90,16 @@ class ApiClient {
             return data;
             
         } catch (error) {
-            console.error(`❌ API失败: ${endpoint}`, error);
-            throw error;
+            if (error.name === 'AbortError') {
+                console.error(`⏰ API超时: ${endpoint}`);
+                throw new Error('请求超时，请检查网络连接');
+            } else if (error.name === 'TypeError') {
+                console.error(`🌐 网络错误: ${endpoint}`, error);
+                throw new Error('网络连接失败，请检查网络设置');
+            } else {
+                console.error(`❌ API失败: ${endpoint}`, error);
+                throw error;
+            }
         }
     }
 
