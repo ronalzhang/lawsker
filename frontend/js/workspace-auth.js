@@ -137,7 +137,7 @@
         // 检查角色匹配
         const roleMapping = {
             'lawyer': 'lawyer',
-            'sales': 'user',
+            'sales': ['user', 'lawyer'],  // 销售角色可以访问用户和律师工作台
             'institution': 'institution',
             'admin': 'admin'
         };
@@ -150,7 +150,11 @@
         }
         
         // 检查工作台类型是否匹配用户角色
-        if (workspace.type !== expectedWorkspaceType) {
+        const hasAccess = Array.isArray(expectedWorkspaceType) 
+            ? expectedWorkspaceType.includes(workspace.type)
+            : workspace.type === expectedWorkspaceType;
+            
+        if (!hasAccess) {
             console.log('❌ 工作台类型与用户角色不匹配', {
                 userRole: user.role,
                 expectedType: expectedWorkspaceType,
