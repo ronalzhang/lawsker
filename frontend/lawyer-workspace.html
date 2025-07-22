@@ -947,12 +947,7 @@
             margin-bottom: 24px;
         }
 
-        /* Cases tabs styles moved to inline styles to ensure priority */
-        .cases-tabs .cases-tab:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.05) !important;
-            color: var(--text-primary) !important;
-        }
-
+        /* Cases tabs styles - removed conflicting hover rules */
         .cases-tabs .cases-tab .tab-icon {
             font-size: 16px;
         }
@@ -1479,12 +1474,12 @@
         <div id="cases" class="tab-content">
             <!-- 案件管理标签导航 -->
             <div class="cases-tabs-navigation">
-                <div class="cases-tabs" style="display: flex; gap: 4px; background: var(--glass-bg); border-radius: 12px; padding: 4px; border: 1px solid var(--glass-border);">
-                    <button class="cases-tab active" onclick="switchCasesTab('my-cases')" style="flex: 1; padding: 12px 20px; border: none; background: var(--gradient-primary); color: white; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; outline: none; box-shadow: 0 2px 8px rgba(122, 160, 255, 0.3); text-decoration: none; line-height: 1;">
+                <div class="cases-tabs" style="display: flex; gap: 4px; background: rgba(22, 28, 48, 0.75); border-radius: 12px; padding: 4px; border: 1px solid rgba(122, 160, 255, 0.25);">
+                    <button class="cases-tab active" onclick="switchCasesTab('my-cases')" style="flex: 1; padding: 12px 20px; border: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; outline: none; box-shadow: 0 2px 8px rgba(122, 160, 255, 0.3); text-decoration: none; line-height: 1;">
                         <span class="tab-icon" style="font-size: 16px;">📋</span>
                         <span>我的案件</span>
                     </button>
-                    <button class="cases-tab" onclick="switchCasesTab('send-records')" style="flex: 1; padding: 12px 20px; border: none; background: transparent; color: var(--text-secondary); border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; outline: none; box-shadow: none; text-decoration: none; line-height: 1;">
+                    <button class="cases-tab" onclick="switchCasesTab('send-records')" style="flex: 1; padding: 12px 20px; border: none; background: transparent; color: #a8b2d1; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; outline: none; box-shadow: none; text-decoration: none; line-height: 1;">
                         <span class="tab-icon" style="font-size: 16px;">📤</span>
                         <span>发送记录</span>
                     </button>
@@ -1738,6 +1733,27 @@
                 
                 // 设置非激活状态的内联样式 - 使用实际颜色值而不是CSS变量
                 tab.style.cssText = `flex: 1; padding: ${padding}; border: none; background: transparent; color: #a8b2d1; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: ${fontSize}; outline: none; box-shadow: none; text-decoration: none; line-height: 1;`;
+                
+                // 移除旧的事件监听器并添加新的hover效果
+                tab.removeEventListener('mouseenter', tab._hoverEnterHandler);
+                tab.removeEventListener('mouseleave', tab._hoverLeaveHandler);
+                
+                tab._hoverEnterHandler = function() {
+                    if (!this.classList.contains('active')) {
+                        this.style.background = 'rgba(255, 255, 255, 0.05)';
+                        this.style.color = '#f0f4ff';
+                    }
+                };
+                
+                tab._hoverLeaveHandler = function() {
+                    if (!this.classList.contains('active')) {
+                        this.style.background = 'transparent';
+                        this.style.color = '#a8b2d1';
+                    }
+                };
+                
+                tab.addEventListener('mouseenter', tab._hoverEnterHandler);
+                tab.addEventListener('mouseleave', tab._hoverLeaveHandler);
             });
             
             // 显示选中的标签页内容
@@ -4722,6 +4738,21 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
                     console.log('Inactive tab styles applied');
                 }
                 
+                // 添加hover事件监听器来处理悬停效果
+                tab.addEventListener('mouseenter', function() {
+                    if (!this.classList.contains('active')) {
+                        this.style.background = 'rgba(255, 255, 255, 0.05)';
+                        this.style.color = '#f0f4ff';
+                    }
+                });
+                
+                tab.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('active')) {
+                        this.style.background = 'transparent';
+                        this.style.color = '#a8b2d1';
+                    }
+                });
+                
                 // 更新图标样式
                 const icon = tab.querySelector('.tab-icon');
                 if (icon) {
@@ -4752,17 +4783,33 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
             console.log('Page loading - initializing tab styles...');
             initializeCasesTabsStyles();
             
-            // 添加调试信息
+            // 强制重置标签样式 - 确保样式生效
             setTimeout(() => {
+                console.log('=== 强制重置标签样式 ===');
                 const tabs = document.querySelectorAll('.cases-tab');
                 console.log('Found', tabs.length, 'cases tabs');
+                
                 tabs.forEach((tab, index) => {
+                    const isActive = tab.classList.contains('active');
+                    const isMobile = window.innerWidth <= 768;
+                    const padding = isMobile ? "10px 12px" : "12px 20px";
+                    const fontSize = isMobile ? "13px" : "14px";
+                    
+                    if (isActive) {
+                        tab.style.cssText = `flex: 1; padding: ${padding}; border: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; color: white !important; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: ${fontSize}; outline: none; box-shadow: 0 2px 8px rgba(122, 160, 255, 0.3); text-decoration: none; line-height: 1;`;
+                    } else {
+                        tab.style.cssText = `flex: 1; padding: ${padding}; border: none; background: transparent !important; color: #a8b2d1 !important; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: ${fontSize}; outline: none; box-shadow: none; text-decoration: none; line-height: 1;`;
+                    }
+                    
                     console.log(`Tab ${index}:`, {
                         classes: tab.className,
-                        styles: tab.style.cssText,
+                        isActive: isActive,
+                        styles: tab.style.cssText.substring(0, 100) + '...',
                         onclick: tab.getAttribute('onclick')
                     });
                 });
+                
+                console.log('=== 标签样式重置完成 ===');
             }, 1000);
             
             // 窗口大小改变时重新应用样式
