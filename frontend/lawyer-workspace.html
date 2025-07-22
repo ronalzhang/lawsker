@@ -1720,40 +1720,55 @@
 
         // 子标签切换功能
         function switchCasesTab(tabName) {
+            console.log('switchCasesTab called with:', tabName);
+            
             // 隐藏所有案件标签页内容
             document.querySelectorAll('.cases-tab-content').forEach(content => {
                 content.classList.remove('active');
             });
             
+            // 根据屏幕尺寸应用不同的样式
+            const isMobile = window.innerWidth <= 768;
+            const padding = isMobile ? "10px 12px" : "12px 20px";
+            const fontSize = isMobile ? "13px" : "14px";
+            
             // 重置所有案件标签的样式为非激活状态
             document.querySelectorAll('.cases-tab').forEach(tab => {
                 tab.classList.remove('active');
-                // 根据屏幕尺寸应用不同的样式
-                const isMobile = window.innerWidth <= 768;
-                const padding = isMobile ? "10px 12px" : "12px 20px";
-                const fontSize = isMobile ? "13px" : "14px";
                 
-                // 设置非激活状态的内联样式
-                tab.style.cssText = `flex: 1; padding: ${padding}; border: none; background: transparent; color: var(--text-secondary); border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: ${fontSize}; outline: none; box-shadow: none; text-decoration: none; line-height: 1;`;
+                // 设置非激活状态的内联样式 - 使用实际颜色值而不是CSS变量
+                tab.style.cssText = `flex: 1; padding: ${padding}; border: none; background: transparent; color: #a8b2d1; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: ${fontSize}; outline: none; box-shadow: none; text-decoration: none; line-height: 1;`;
             });
             
             // 显示选中的标签页内容
             const targetContent = document.getElementById(tabName);
             if (targetContent) {
                 targetContent.classList.add('active');
+                console.log('Content activated for:', tabName);
             }
             
-            // 激活选中的标签并设置激活样式
-            const clickedTab = event.target.closest('.cases-tab');
+            // 找到并激活正确的标签按钮
+            const tabButtons = document.querySelectorAll('.cases-tab');
+            let clickedTab = null;
+            
+            // 根据tabName找到对应的按钮
+            tabButtons.forEach(tab => {
+                const onclick = tab.getAttribute('onclick');
+                if (onclick && onclick.includes(`'${tabName}'`)) {
+                    clickedTab = tab;
+                }
+            });
+            
             if (clickedTab) {
                 clickedTab.classList.add('active');
-                // 根据屏幕尺寸应用不同的样式
-                const isMobile = window.innerWidth <= 768;
-                const padding = isMobile ? "10px 12px" : "12px 20px";
-                const fontSize = isMobile ? "13px" : "14px";
+                console.log('Activating tab for:', tabName);
                 
-                // 设置激活状态的内联样式
-                clickedTab.style.cssText = `flex: 1; padding: ${padding}; border: none; background: var(--gradient-primary); color: white; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: ${fontSize}; outline: none; box-shadow: 0 2px 8px rgba(122, 160, 255, 0.3); text-decoration: none; line-height: 1;`;
+                // 设置激活状态的内联样式 - 使用实际颜色值而不是CSS变量
+                clickedTab.style.cssText = `flex: 1; padding: ${padding}; border: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: ${fontSize}; outline: none; box-shadow: 0 2px 8px rgba(122, 160, 255, 0.3); text-decoration: none; line-height: 1;`;
+                
+                console.log('Applied styles to tab:', clickedTab.style.cssText);
+            } else {
+                console.error('Could not find tab button for:', tabName);
             }
             
             // 根据标签显示/隐藏筛选器
@@ -3470,9 +3485,10 @@ ${date}`;
             } catch (error) {
                 console.error('刷新任务列表失败:', error);
                 
-                // 移动端使用不同的错误处理策略
-                if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                    console.log('移动端错误处理: 使用演示数据作为回退');
+                // 移动端网络优化错误处理
+                const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                if (isMobile) {
+                    console.log('移动端网络错误处理: 提供重试选项和演示数据');
                     showMobileErrorWithFallback(error);
                 } else {
                     showNotification('刷新失败，请稍后重试', 'error');
@@ -3643,6 +3659,34 @@ ${date}`;
                         noAvailableTasks.style.display = 'block';
                     }
                 }
+            }
+        }
+
+        // 移动端网络错误处理
+        function showMobileErrorWithFallback(error) {
+            const availableTasksList = document.getElementById('availableTasksList');
+            const noAvailableTasks = document.getElementById('noAvailableTasks');
+            
+            let errorMessage = '网络连接失败';
+            if (error.name === 'AbortError') {
+                errorMessage = '请求超时';
+            } else if (error.message.includes('NetworkError')) {
+                errorMessage = '移动网络不稳定';
+            }
+            
+            if (noAvailableTasks) {
+                noAvailableTasks.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📱</div>
+                        <h3>${errorMessage}</h3>
+                        <p>建议切换到WiFi网络或稍后重试</p>
+                        <div style="margin-top: 20px;">
+                            <button class="btn btn-primary" onclick="loadAvailableTasks()" style="margin-right: 8px;">重新加载</button>
+                            <button class="btn btn-secondary" onclick="createDemoAvailableTasks()">查看演示数据</button>
+                        </div>
+                    </div>
+                `;
+                noAvailableTasks.style.display = 'block';
             }
         }
 
@@ -4654,23 +4698,28 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
 
         // 初始化案件标签样式
         function initializeCasesTabsStyles() {
+            console.log('Initializing cases tabs styles...');
+            
             const isMobile = window.innerWidth <= 768;
             const padding = isMobile ? "10px 12px" : "12px 20px";
             const fontSize = isMobile ? "13px" : "14px";
             
-            // 更新容器样式
+            // 更新容器样式 - 使用实际颜色值
             const casesTabsContainer = document.querySelector('.cases-tabs');
             if (casesTabsContainer) {
-                casesTabsContainer.style.cssText = "display: flex; gap: 4px; background: var(--glass-bg); border-radius: 12px; padding: 4px; border: 1px solid var(--glass-border);";
+                casesTabsContainer.style.cssText = "display: flex; gap: 4px; background: rgba(22, 28, 48, 0.75); border-radius: 12px; padding: 4px; border: 1px solid rgba(122, 160, 255, 0.25);";
+                console.log('Container styles applied');
             }
             
-            // 更新所有标签样式
+            // 更新所有标签样式 - 使用实际颜色值
             document.querySelectorAll('.cases-tab').forEach(tab => {
                 const isActive = tab.classList.contains('active');
                 if (isActive) {
-                    tab.style.cssText = `flex: 1; padding: ${padding}; border: none; background: var(--gradient-primary); color: white; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: ${fontSize}; outline: none; box-shadow: 0 2px 8px rgba(122, 160, 255, 0.3); text-decoration: none; line-height: 1;`;
+                    tab.style.cssText = `flex: 1; padding: ${padding}; border: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: ${fontSize}; outline: none; box-shadow: 0 2px 8px rgba(122, 160, 255, 0.3); text-decoration: none; line-height: 1;`;
+                    console.log('Active tab styles applied');
                 } else {
-                    tab.style.cssText = `flex: 1; padding: ${padding}; border: none; background: transparent; color: var(--text-secondary); border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: ${fontSize}; outline: none; box-shadow: none; text-decoration: none; line-height: 1;`;
+                    tab.style.cssText = `flex: 1; padding: ${padding}; border: none; background: transparent; color: #a8b2d1; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: ${fontSize}; outline: none; box-shadow: none; text-decoration: none; line-height: 1;`;
+                    console.log('Inactive tab styles applied');
                 }
                 
                 // 更新图标样式
@@ -4699,10 +4748,26 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
             await loadWithdrawalStats();
             
             // 初始化案件标签样式
+            // 初始化标签页样式
+            console.log('Page loading - initializing tab styles...');
             initializeCasesTabsStyles();
+            
+            // 添加调试信息
+            setTimeout(() => {
+                const tabs = document.querySelectorAll('.cases-tab');
+                console.log('Found', tabs.length, 'cases tabs');
+                tabs.forEach((tab, index) => {
+                    console.log(`Tab ${index}:`, {
+                        classes: tab.className,
+                        styles: tab.style.cssText,
+                        onclick: tab.getAttribute('onclick')
+                    });
+                });
+            }, 1000);
             
             // 窗口大小改变时重新应用样式
             window.addEventListener('resize', function() {
+                console.log('Window resized - reapplying tab styles...');
                 setTimeout(initializeCasesTabsStyles, 100);
             });
             await loadWithdrawalHistory();
@@ -4926,11 +4991,24 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
 
             try {
                 if (apiClient.isAuthenticated()) {
+                    console.log('Loading send records...');
+                    
+                    // 移动端网络优化：增加超时设置和重试机制
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+                    
                     const response = await fetch('https://156.236.74.200/api/v1/document-send/send-records', {
                         headers: {
                             'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                        }
+                        },
+                        signal: controller.signal
                     });
+
+                    clearTimeout(timeoutId);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
 
                     const result = await response.json();
                     
@@ -4951,10 +5029,27 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
                 }
             } catch (error) {
                 console.error('加载发送记录失败:', error);
+                
+                // 检测是否为移动端网络问题
+                const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                let errorMessage = '加载失败';
+                let errorIcon = '⚠️';
+                
+                if (error.name === 'AbortError') {
+                    errorMessage = '网络连接超时';
+                    errorIcon = '⏱️';
+                } else if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
+                    errorMessage = isMobile ? '移动网络连接不稳定' : '网络连接失败';
+                    errorIcon = '🌐';
+                } else if (error.message.includes('HTTP')) {
+                    errorMessage = '服务器响应错误';
+                    errorIcon = '🔧';
+                }
+                
                 container.innerHTML = `
                     <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
-                        <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
-                        <h3>加载失败</h3>
+                        <div style="font-size: 48px; margin-bottom: 16px;">${errorIcon}</div>
+                        <h3>${errorMessage}</h3>
                         <p>网络错误，请稍后重试</p>
                         <button class="btn btn-primary" onclick="loadSendRecords()" style="margin-top: 16px;">重新加载</button>
                     </div>
