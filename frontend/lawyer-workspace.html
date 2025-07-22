@@ -936,10 +936,10 @@
             display: flex;
             gap: 4px;
             margin-bottom: 24px;
-            background: var(--glass-bg);
+            background: rgba(22, 28, 48, 0.75);
             border-radius: 12px;
             padding: 4px;
-            border: 1px solid var(--glass-border);
+            border: 1px solid rgba(122, 160, 255, 0.25);
         }
 
         /* 案件管理标签导航样式 */
@@ -1010,7 +1010,7 @@
             padding: 12px 24px;
             border: none;
             background: transparent;
-            color: var(--text-secondary);
+            color: #a8b2d1;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -1018,14 +1018,14 @@
         }
 
         .tab.active {
-            background: var(--gradient-primary);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             box-shadow: 0 2px 8px rgba(122, 160, 255, 0.3);
         }
 
         .tab:hover:not(.active) {
             background: rgba(255, 255, 255, 0.05);
-            color: var(--text-primary);
+            color: #f0f4ff;
         }
 
         .tab-content {
