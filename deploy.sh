@@ -135,7 +135,7 @@ else
     echo "⚠️  API文档可能需要几秒钟才能响应"
 fi
 
-echo "🎉 Lawsker (律思客) 系统部署完成！"
+echo "🎉 Lawsker (律刻) 系统部署完成！"
 echo "📍 网站地址: https://$SERVER_IP/"
 echo "🔧 管理后台: https://$SERVER_IP/admin-pro"
 echo "🔑 管理密码: 123abc74531"
