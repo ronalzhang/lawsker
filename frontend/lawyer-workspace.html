@@ -707,36 +707,7 @@
                 font-size: 12px;
             }
 
-            /* 案件标签在移动端优化 */
-            .cases-tabs {
-                gap: 2px;
-                padding: 2px;
-            }
-            
-            .cases-tabs .cases-tab {
-                flex: 1 !important;
-                padding: 10px 12px !important;
-                font-size: 13px !important;
-                border: none !important;
-                background: transparent !important;
-                color: var(--text-secondary) !important;
-                border-radius: 8px !important;
-                cursor: pointer !important;
-                transition: all 0.3s ease !important;
-                font-weight: 500 !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                gap: 8px !important;
-                outline: none !important;
-                box-shadow: none !important;
-                text-decoration: none !important;
-                line-height: 1 !important;
-            }
-            
-            .cases-tabs .cases-tab .tab-icon {
-                font-size: 14px;
-            }
+            /* Mobile optimization for cases tabs - handled by inline styles */
             
             .page-info {
                 font-size: 11px;
@@ -976,42 +947,7 @@
             margin-bottom: 24px;
         }
 
-        .cases-tabs {
-            display: flex;
-            gap: 4px;
-            background: var(--glass-bg);
-            border-radius: 12px;
-            padding: 4px;
-            border: 1px solid var(--glass-border);
-        }
-
-        .cases-tabs .cases-tab {
-            flex: 1 !important;
-            padding: 12px 20px !important;
-            border: none !important;
-            background: transparent !important;
-            color: var(--text-secondary) !important;
-            border-radius: 8px !important;
-            cursor: pointer !important;
-            transition: all 0.3s ease !important;
-            font-weight: 500 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            gap: 8px !important;
-            font-size: 14px !important;
-            outline: none !important;
-            box-shadow: none !important;
-            text-decoration: none !important;
-            line-height: 1 !important;
-        }
-
-        .cases-tabs .cases-tab.active {
-            background: var(--gradient-primary) !important;
-            color: white !important;
-            box-shadow: 0 2px 8px rgba(122, 160, 255, 0.3) !important;
-        }
-
+        /* Cases tabs styles moved to inline styles to ensure priority */
         .cases-tabs .cases-tab:hover:not(.active) {
             background: rgba(255, 255, 255, 0.05) !important;
             color: var(--text-primary) !important;
@@ -1543,13 +1479,13 @@
         <div id="cases" class="tab-content">
             <!-- 案件管理标签导航 -->
             <div class="cases-tabs-navigation">
-                <div class="cases-tabs">
-                    <button class="cases-tab active" onclick="switchCasesTab('my-cases')">
-                        <span class="tab-icon">📋</span>
+                <div class="cases-tabs" style="display: flex; gap: 4px; background: var(--glass-bg); border-radius: 12px; padding: 4px; border: 1px solid var(--glass-border);">
+                    <button class="cases-tab active" onclick="switchCasesTab('my-cases')" style="flex: 1; padding: 12px 20px; border: none; background: var(--gradient-primary); color: white; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; outline: none; box-shadow: 0 2px 8px rgba(122, 160, 255, 0.3); text-decoration: none; line-height: 1;">
+                        <span class="tab-icon" style="font-size: 16px;">📋</span>
                         <span>我的案件</span>
                     </button>
-                    <button class="cases-tab" onclick="switchCasesTab('send-records')">
-                        <span class="tab-icon">📤</span>
+                    <button class="cases-tab" onclick="switchCasesTab('send-records')" style="flex: 1; padding: 12px 20px; border: none; background: transparent; color: var(--text-secondary); border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; outline: none; box-shadow: none; text-decoration: none; line-height: 1;">
+                        <span class="tab-icon" style="font-size: 16px;">📤</span>
                         <span>发送记录</span>
                     </button>
                 </div>
@@ -1789,9 +1725,16 @@
                 content.classList.remove('active');
             });
             
-            // 移除所有案件标签的激活状态
+            // 重置所有案件标签的样式为非激活状态
             document.querySelectorAll('.cases-tab').forEach(tab => {
                 tab.classList.remove('active');
+                // 根据屏幕尺寸应用不同的样式
+                const isMobile = window.innerWidth <= 768;
+                const padding = isMobile ? "10px 12px" : "12px 20px";
+                const fontSize = isMobile ? "13px" : "14px";
+                
+                // 设置非激活状态的内联样式
+                tab.style.cssText = `flex: 1; padding: ${padding}; border: none; background: transparent; color: var(--text-secondary); border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: ${fontSize}; outline: none; box-shadow: none; text-decoration: none; line-height: 1;`;
             });
             
             // 显示选中的标签页内容
@@ -1800,8 +1743,18 @@
                 targetContent.classList.add('active');
             }
             
-            // 激活选中的标签
-            event.target.classList.add('active');
+            // 激活选中的标签并设置激活样式
+            const clickedTab = event.target.closest('.cases-tab');
+            if (clickedTab) {
+                clickedTab.classList.add('active');
+                // 根据屏幕尺寸应用不同的样式
+                const isMobile = window.innerWidth <= 768;
+                const padding = isMobile ? "10px 12px" : "12px 20px";
+                const fontSize = isMobile ? "13px" : "14px";
+                
+                // 设置激活状态的内联样式
+                clickedTab.style.cssText = `flex: 1; padding: ${padding}; border: none; background: var(--gradient-primary); color: white; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: ${fontSize}; outline: none; box-shadow: 0 2px 8px rgba(122, 160, 255, 0.3); text-decoration: none; line-height: 1;`;
+            }
             
             // 根据标签显示/隐藏筛选器
             const filterHeader = document.getElementById('cases-filter-header');
@@ -4699,6 +4652,35 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
         // auth-guard-ascii.js 已经在页面加载时进行了权限验证
         // 如果能执行到这里说明权限验证已通过
 
+        // 初始化案件标签样式
+        function initializeCasesTabsStyles() {
+            const isMobile = window.innerWidth <= 768;
+            const padding = isMobile ? "10px 12px" : "12px 20px";
+            const fontSize = isMobile ? "13px" : "14px";
+            
+            // 更新容器样式
+            const casesTabsContainer = document.querySelector('.cases-tabs');
+            if (casesTabsContainer) {
+                casesTabsContainer.style.cssText = "display: flex; gap: 4px; background: var(--glass-bg); border-radius: 12px; padding: 4px; border: 1px solid var(--glass-border);";
+            }
+            
+            // 更新所有标签样式
+            document.querySelectorAll('.cases-tab').forEach(tab => {
+                const isActive = tab.classList.contains('active');
+                if (isActive) {
+                    tab.style.cssText = `flex: 1; padding: ${padding}; border: none; background: var(--gradient-primary); color: white; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: ${fontSize}; outline: none; box-shadow: 0 2px 8px rgba(122, 160, 255, 0.3); text-decoration: none; line-height: 1;`;
+                } else {
+                    tab.style.cssText = `flex: 1; padding: ${padding}; border: none; background: transparent; color: var(--text-secondary); border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: ${fontSize}; outline: none; box-shadow: none; text-decoration: none; line-height: 1;`;
+                }
+                
+                // 更新图标样式
+                const icon = tab.querySelector('.tab-icon');
+                if (icon) {
+                    icon.style.fontSize = isMobile ? "14px" : "16px";
+                }
+            });
+        }
+
         // 初始化页面
         document.addEventListener('DOMContentLoaded', async function() {
             // 获取URL中的律师ID
@@ -4715,6 +4697,14 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
             await loadLawyerStats();
             await loadCases();
             await loadWithdrawalStats();
+            
+            // 初始化案件标签样式
+            initializeCasesTabsStyles();
+            
+            // 窗口大小改变时重新应用样式
+            window.addEventListener('resize', function() {
+                setTimeout(initializeCasesTabsStyles, 100);
+            });
             await loadWithdrawalHistory();
             
             // 加载任务相关数据
