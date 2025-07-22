@@ -654,7 +654,7 @@ async def get_user_withdrawal_requests(
     status: Optional[str],
     current_user: Dict[str, Any],
     db: AsyncSession,
-    config_service: SystemConfigService = None
+    config_service: SystemConfigService
 ):
     """获取用户提现申请列表"""
     

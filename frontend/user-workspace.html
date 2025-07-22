@@ -1158,7 +1158,7 @@
             <div class="task-list" style="margin-bottom: 32px;">
                 <div class="task-list-header">
                     <h3 class="task-list-title">任务反馈状态</h3>
-                    <button class="btn btn-secondary" onclick="refreshTaskFeedback()" style="padding: 6px 12px; font-size: 12px;">刷新状态</button>
+                    <button class="btn btn-secondary" onclick="refreshTaskFeedback()" style="padding: 6px 12px; font-size: 12px; flex: 0 0 auto; white-space: nowrap;">刷新状态</button>
                 </div>
                 <div id="taskFeedbackBody">
                     <!-- 实时从数据库加载的任务反馈数据将在这里显示 -->
@@ -1457,30 +1457,27 @@
         // 显示退出登录确认模态框
         function showLogoutModal() {
             const modal = document.createElement('div');
-            modal.className = 'modal show';
-            modal.id = 'logoutModal';
-            
+            modal.className = 'modal';
+            modal.style.display = 'block';
             modal.innerHTML = `
-                <div class="modal-content" style="max-width: 400px;">
+                <div class="modal-content" style="max-width: 450px;">
                     <div class="modal-header">
-                        <h3>🚪 退出登录</h3>
-                        <button class="close" onclick="closeLogoutModal()">&times;</button>
+                        <h3>确认退出</h3>
+                        <span class="close" onclick="this.closest('.modal').remove();">&times;</span>
                     </div>
                     <div class="modal-body">
-                        <p style="color: var(--text-secondary); margin-bottom: 20px;">确定要退出当前账户登录吗？</p>
-                        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 20px;">
-                            <div style="color: #f59e0b; font-size: 14px;">
-                                ⚠️ 退出后需要重新输入账号密码才能登录
-                            </div>
-                        </div>
+                        <p style="margin: 20px 0; font-size: 16px; color: #666;">确定要退出登录吗？</p>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-secondary" onclick="closeLogoutModal()">取消</button>
-                        <button class="btn btn-primary" onclick="confirmLogout()">确认退出</button>
+                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove();">
+                            取消
+                        </button>
+                        <button class="btn btn-primary" onclick="confirmLogout(); this.closest('.modal').remove();">
+                            确认退出
+                        </button>
                     </div>
                 </div>
             `;
-            
             document.body.appendChild(modal);
         }
         
