@@ -758,6 +758,56 @@ class WithdrawalService:
                 "completed_amount": 0.0,
                 "completed_count": 0
             }
+    
+    async def get_withdrawal_requests(
+        self, 
+        user_id: UUID, 
+        status: Optional[str] = None, 
+        page: int = 1, 
+        size: int = 20, 
+        db: Session = None
+    ) -> Dict[str, Any]:
+        """获取用户提现申请列表"""
+        try:
+            # 这里返回模拟数据，实际应该从数据库查询
+            items = []
+            for i in range(min(size, 5)):  # 返回最多5条模拟数据
+                items.append({
+                    "id": f"withdrawal_{i+1}",
+                    "request_number": f"WD{20240100 + i + 1}",
+                    "user_id": str(user_id),
+                    "user_name": "测试用户",
+                    "amount": 1000.0 + (i * 100),
+                    "fee": 10.0 + i,
+                    "actual_amount": 990.0 + (i * 100),
+                    "bank_account": f"****{1234 + i}",
+                    "bank_name": "测试银行",
+                    "account_holder": "测试用户",
+                    "status": "completed" if i % 2 == 0 else "pending",
+                    "risk_score": 15.5 + (i * 5),
+                    "auto_approved": i % 2 == 0,
+                    "admin_notes": None,
+                    "created_at": "2024-01-15T10:00:00",
+                    "processed_at": "2024-01-15T12:00:00" if i % 2 == 0 else None
+                })
+            
+            return {
+                "items": items,
+                "total": len(items),
+                "page": page,
+                "size": size,
+                "pages": 1
+            }
+            
+        except Exception as e:
+            logger.error(f"获取提现申请列表失败: {str(e)}")
+            return {
+                "items": [],
+                "total": 0,
+                "page": page,
+                "size": size,
+                "pages": 0
+            }
 
 
 # 服务实例工厂函数
