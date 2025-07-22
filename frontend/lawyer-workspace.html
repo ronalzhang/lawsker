@@ -936,10 +936,10 @@
             display: flex;
             gap: 4px;
             margin-bottom: 24px;
-            background: rgba(22, 28, 48, 0.75);
+            background: var(--glass-bg);
             border-radius: 12px;
             padding: 4px;
-            border: 1px solid rgba(122, 160, 255, 0.25);
+            border: 1px solid var(--glass-border);
         }
 
         /* 案件管理标签导航样式 */
@@ -1001,16 +1001,13 @@
         .sub-tab-content.active {
             display: block;
         }
-            padding: 4px;
-            border: 1px solid var(--glass-border);
-        }
 
         .tab {
             flex: 1;
             padding: 12px 24px;
             border: none;
             background: transparent;
-            color: #a8b2d1;
+            color: var(--text-secondary);
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -1018,14 +1015,14 @@
         }
 
         .tab.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--gradient-primary);
             color: white;
             box-shadow: 0 2px 8px rgba(122, 160, 255, 0.3);
         }
 
         .tab:hover:not(.active) {
             background: rgba(255, 255, 255, 0.05);
-            color: #f0f4ff;
+            color: var(--text-primary);
         }
 
         .tab-content {
@@ -1696,21 +1693,25 @@
         // 标签页切换
         function switchTab(tabName) {
             console.log('律师工作台 switchTab called with:', tabName);
+            
             // 隐藏所有标签页内容
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });
             
             // 移除所有标签的激活状态
-            document.querySelectorAll('.tab').forEach(tab => {
+            document.querySelectorAll('.tabs .tab').forEach(tab => {
                 tab.classList.remove('active');
             });
             
             // 显示选中的标签页内容
             document.getElementById(tabName).classList.add('active');
             
-            // 激活选中的标签
-            event.target.classList.add('active');
+            // 激活选中的标签（使用稳定的查找方式）
+            const targetTab = document.querySelector(`.tab[onclick*="${tabName}"]`);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
         }
 
         // 子标签切换功能
@@ -4779,8 +4780,23 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
             await loadWithdrawalStats();
             
             // 初始化案件标签样式
-            // 初始化标签页样式
-            console.log('Page loading - initializing tab styles...');
+            // 检查主标签按钮状态
+            console.log('=== 检查主标签按钮状态 ===');
+            const mainTabs = document.querySelectorAll('.tabs .tab');
+            console.log('Found main tabs:', mainTabs.length);
+            
+            mainTabs.forEach((tab, index) => {
+                const isActive = tab.classList.contains('active');
+                console.log(`Main tab ${index}:`, {
+                    text: tab.textContent,
+                    isActive: isActive,
+                    classes: tab.className,
+                    computedStyle: window.getComputedStyle(tab).background
+                });
+            });
+            
+            // 初始化案件标签页样式
+            console.log('Page loading - initializing cases tab styles...');
             initializeCasesTabsStyles();
             
             // 强制重置标签样式 - 确保样式生效
