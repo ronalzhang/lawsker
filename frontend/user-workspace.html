@@ -1161,36 +1161,7 @@
                     <button class="btn btn-secondary" onclick="refreshTaskFeedback()" style="padding: 6px 12px; font-size: 12px;">刷新状态</button>
                 </div>
                 <div id="taskFeedbackBody">
-                    <!-- 演示数据：律师已接单的任务 -->
-                    <div class="task-item">
-                        <div class="task-info">
-                            <div>
-                                <div class="task-title">催收欠款律师函</div>
-                                <div class="task-details">接单律师：张律师 | 接单时间：2024-01-14 10:30</div>
-                                <div class="task-description">律师消息：已收到您的案件，需要交换联系方式详细沟通案件细节。</div>
-                    </div>
-                            <span class="task-status status-accepted">律师已接单</span>
-                        </div>
-                        <div class="task-actions">
-                            <button class="btn-small btn-primary" onclick="viewLawyerInfo('demo1')">查看律师信息</button>
-                            <button class="btn-small btn-success" onclick="markTaskComplete('demo1')">标记完成</button>
-                        </div>
-                    </div>
-
-                    <div class="task-item">
-                        <div class="task-info">
-                            <div>
-                                <div class="task-title">合同审查</div>
-                                <div class="task-details">接单律师：李律师 | 接单时间：2024-01-13 16:45</div>
-                                <div class="task-description">律师消息：正在审查合同条款，预计明天完成初步审查报告。</div>
-                            </div>
-                            <span class="task-status status-inprogress">进行中</span>
-                        </div>
-                        <div class="task-actions">
-                            <button class="btn-small btn-info" onclick="viewLawyerInfo('demo2')">查看律师信息</button>
-                            <button class="btn-small btn-success" onclick="markTaskComplete('demo2')">标记完成</button>
-                        </div>
-                    </div>
+                    <!-- 实时从数据库加载的任务反馈数据将在这里显示 -->
                 </div>
             </div>
 
@@ -2405,128 +2376,118 @@
         let currentRating = 5;
 
         // 查看律师信息
-        function viewLawyerInfo(taskId) {
-            // 根据任务ID获取律师信息（演示数据）
-            const lawyerData = getLawyerDataByTaskId(taskId);
-            
-            const modal = document.createElement('div');
-            modal.className = 'modal show';
-            modal.id = 'lawyerInfoModal';
-            
-            modal.innerHTML = `
-                <div class="modal-content" style="max-width: 700px;">
-                    <div class="modal-header">
-                        <h3>👩‍💼 律师详细信息</h3>
-                        <button class="close" onclick="this.closest('.modal').remove()">&times;</button>
-                    </div>
-                    <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
-                        <div style="display: grid; gap: 20px;">
-                            <!-- 基本信息 -->
-                            <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
-                                <h4 style="margin: 0 0 16px 0; color: var(--text-primary);">📄 基本信息</h4>
-                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-                                    <div><strong>姓名：</strong><span style="color: var(--text-secondary);">${lawyerData.name}</span></div>
-                                    <div><strong>执业律所：</strong><span style="color: var(--text-secondary);">${lawyerData.firm}</span></div>
-                                    <div><strong>执业证号：</strong><span style="color: var(--text-secondary);">${lawyerData.license}</span></div>
-                                    <div><strong>联系电话：</strong><span style="color: var(--text-secondary);">${lawyerData.phone}</span></div>
-                                    <div><strong>邮箱地址：</strong><span style="color: var(--text-secondary);">${lawyerData.email}</span></div>
-                                    <div><strong>执业经验：</strong><span style="color: var(--text-secondary);">${lawyerData.experience}</span></div>
-                                </div>
-                            </div>
-                            
-                            <!-- 执业统计 -->
-                            <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
-                                <h4 style="margin: 0 0 16px 0; color: var(--text-primary);">📊 执业统计</h4>
-                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px;">
-                                    <div style="text-align: center; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px;">
-                                        <div style="font-size: 24px; font-weight: 600; color: #FFD700;">${lawyerData.rating}</div>
-                                        <div style="color: var(--text-secondary); font-size: 14px;">客户评分</div>
+        async function viewLawyerInfo(taskId) {
+            try {
+                let lawyerData = null;
+                
+                // 从任务数据中获取律师信息
+                const task = currentUserTasks.find(t => t.task_id === taskId);
+                if (task && task.assigned_lawyer) {
+                    lawyerData = task.assigned_lawyer;
+                } else if (apiClient.isAuthenticated()) {
+                    // 如果本地没有找到，尝试从API获取
+                    try {
+                        const response = await apiClient.get(`/tasks/${taskId}/lawyer`);
+                        if (response && response.lawyer_id) {
+                            lawyerData = response;
+                        }
+                    } catch (error) {
+                        console.warn('API获取律师信息失败:', error);
+                    }
+                }
+                
+                if (!lawyerData) {
+                    alert('律师信息不可用');
+                    return;
+                }
+                
+                const modal = document.createElement('div');
+                modal.className = 'modal show';
+                modal.id = 'lawyerInfoModal';
+                
+                modal.innerHTML = `
+                    <div class="modal-content" style="max-width: 700px;">
+                        <div class="modal-header">
+                            <h3>👩‍💼 律师详细信息</h3>
+                            <button class="close" onclick="this.closest('.modal').remove()">&times;</button>
+                        </div>
+                        <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                            <div style="display: grid; gap: 20px;">
+                                <!-- 基本信息 -->
+                                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                                    <h4 style="margin: 0 0 16px 0; color: var(--text-primary);">📄 基本信息</h4>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                                        <div><strong>姓名：</strong><span style="color: var(--text-secondary);">${lawyerData.name || '未知'}</span></div>
+                                        <div><strong>执业律所：</strong><span style="color: var(--text-secondary);">${lawyerData.firm || '未知'}</span></div>
+                                        <div><strong>执业证号：</strong><span style="color: var(--text-secondary);">${lawyerData.license || '未知'}</span></div>
+                                        <div><strong>联系电话：</strong><span style="color: var(--text-secondary);">${lawyerData.phone || '未知'}</span></div>
+                                        <div><strong>邮箱地址：</strong><span style="color: var(--text-secondary);">${lawyerData.email || '未知'}</span></div>
+                                        <div><strong>执业经验：</strong><span style="color: var(--text-secondary);">${lawyerData.experience || '未知'}</span></div>
                                     </div>
-                                    <div style="text-align: center; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px;">
-                                        <div style="font-size: 24px; font-weight: 600; color: #4CAF50;">${lawyerData.case_count}</div>
-                                        <div style="color: var(--text-secondary); font-size: 14px;">处理案件</div>
-                                    </div>
-                                    <div style="text-align: center; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px;">
-                                        <div style="font-size: 24px; font-weight: 600; color: #2196F3;">${lawyerData.success_rate}%</div>
-                                        <div style="color: var(--text-secondary); font-size: 14px;">成功率</div>
-                                    </div>
                                 </div>
-                            </div>
-                            
-                            <!-- 专业领域 -->
-                            <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
-                                <h4 style="margin: 0 0 16px 0; color: var(--text-primary);">⚖️ 专业领域</h4>
-                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                    ${lawyerData.specialties.map(spec => `<span style="padding: 8px 16px; background: rgba(102, 126, 234, 0.2); color: #667eea; border-radius: 20px; font-size: 14px;">${spec}</span>`).join('')}
-                                </div>
-                            </div>
-                            
-                            <!-- 近期案例 -->
-                            <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
-                                <h4 style="margin: 0 0 16px 0; color: var(--text-primary);">📋 近期成功案例</h4>
-                                <div style="display: grid; gap: 12px;">
-                                    ${lawyerData.recent_cases.map(caseItem => `
-                                        <div style="padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
-                                            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">${caseItem.title}</div>
-                                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 14px;">
-                                                <div><strong>标的金额：</strong><span style="color: var(--text-secondary);">${caseItem.amount}</span></div>
-                                                <div><strong>处理结果：</strong><span style="color: #4CAF50;">${caseItem.result}</span></div>
-                                            </div>
+                                
+                                <!-- 执业统计 -->
+                                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                                    <h4 style="margin: 0 0 16px 0; color: var(--text-primary);">📊 执业统计</h4>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px;">
+                                        <div style="text-align: center; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                                            <div style="font-size: 24px; font-weight: 600; color: #FFD700;">${lawyerData.rating || 'N/A'}</div>
+                                            <div style="color: var(--text-secondary); font-size: 14px;">客户评分</div>
                                         </div>
-                                    `).join('')}
+                                        <div style="text-align: center; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                                            <div style="font-size: 24px; font-weight: 600; color: #4CAF50;">${lawyerData.case_count || 0}</div>
+                                            <div style="color: var(--text-secondary); font-size: 14px;">处理案件</div>
+                                        </div>
+                                        <div style="text-align: center; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                                            <div style="font-size: 24px; font-weight: 600; color: #2196F3;">${lawyerData.success_rate || 0}%</div>
+                                            <div style="color: var(--text-secondary); font-size: 14px;">成功率</div>
+                                        </div>
+                                    </div>
                                 </div>
+                                
+                                ${lawyerData.specialties && lawyerData.specialties.length > 0 ? `
+                                <!-- 专业领域 -->
+                                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                                    <h4 style="margin: 0 0 16px 0; color: var(--text-primary);">⚖️ 专业领域</h4>
+                                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                        ${lawyerData.specialties.map(spec => `<span style="padding: 8px 16px; background: rgba(102, 126, 234, 0.2); color: #667eea; border-radius: 20px; font-size: 14px;">${spec}</span>`).join('')}
+                                    </div>
+                                </div>
+                                ` : ''}
+                                
+                                ${lawyerData.recent_cases && lawyerData.recent_cases.length > 0 ? `
+                                <!-- 近期案例 -->
+                                <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                                    <h4 style="margin: 0 0 16px 0; color: var(--text-primary);">📋 近期成功案例</h4>
+                                    <div style="display: grid; gap: 12px;">
+                                        ${lawyerData.recent_cases.map(caseItem => `
+                                            <div style="padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                                                <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 8px;">${caseItem.title}</div>
+                                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 14px;">
+                                                    <div><strong>标的金额：</strong><span style="color: var(--text-secondary);">${caseItem.amount}</span></div>
+                                                    <div><strong>处理结果：</strong><span style="color: #4CAF50;">${caseItem.result}</span></div>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                                ` : ''}
                             </div>
                         </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">关闭</button>
+                            ${lawyerData.phone ? `<button class="btn btn-success" onclick="contactLawyerDirectly('${lawyerData.phone}', '${lawyerData.name || '律师'}')">📞 联系律师</button>` : ''}
+                        </div>
                     </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">关闭</button>
-                        <button class="btn btn-success" onclick="contactLawyerDirectly('${lawyerData.phone}', '${lawyerData.name}')">📞 联系律师</button>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
+                `;
+                
+                document.body.appendChild(modal);
+            } catch (error) {
+                console.error('查看律师信息失败:', error);
+                alert('获取律师信息失败');
+            }
         }
         
-        // 根据任务ID获取律师数据
-        function getLawyerDataByTaskId(taskId) {
-            const lawyers = {
-                'demo1': {
-                    name: '张建国',
-                    firm: '北京律思客律师事务所',
-                    license: '11010201234567890',
-                    phone: '138-0000-0001',
-                    email: 'zhang.jianguo@lawsker.com',
-                    experience: '8年执业经验',
-                    specialties: ['债权债务', '合同纠纷', '公司法务'],
-                    rating: 4.8,
-                    case_count: 156,
-                    success_rate: 92,
-                    recent_cases: [
-                        { title: '某科技公司债务追讨案', amount: '50万', result: '成功追回45万' },
-                        { title: '合同违约纠纷案', amount: '30万', result: '达成和解协议' }
-                    ]
-                },
-                'demo2': {
-                    name: '李明华',
-                    firm: '北京律思客律师事务所',
-                    license: '11010201234567891',
-                    phone: '138-0000-0002',
-                    email: 'li.minghua@lawsker.com',
-                    experience: '12年执业经验',
-                    specialties: ['合同审查', '知识产权', '投资并购'],
-                    rating: 4.9,
-                    case_count: 243,
-                    success_rate: 95,
-                    recent_cases: [
-                        { title: '某集团并购重组案', amount: '500万', result: '成功完成并购交易' },
-                        { title: '知识产权侵权案', amount: '200万', result: '获得赔偿150万' }
-                    ]
-                }
-            };
-            
-            return lawyers[taskId] || lawyers['demo1']; // 默认返回张建国律师信息
-        }
         
         // 直接联系律师
         function contactLawyerDirectly(phone, name) {
@@ -2780,30 +2741,23 @@
             try {
                 if (apiClient.isAuthenticated()) {
                     // 实际API调用获取任务反馈
-                    const response = await fetch('/api/v1/tasks/feedback', {
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                        }
-                    });
-                    
-                    const result = await response.json();
-                    if (result.success && result.tasks) {
-                        updateTaskFeedbackDisplay(result.tasks);
+                    const response = await apiClient.get('/tasks/feedback');
+                    if (response && response.length > 0) {
+                        displayTaskFeedback(response);
                     } else {
-                        loadDemoTaskFeedback();
+                        showEmptyTaskFeedback();
                     }
                 } else {
-                    loadDemoTaskFeedback();
+                    showEmptyTaskFeedback();
                 }
             } catch (error) {
                 console.error('刷新任务反馈失败:', error);
-                loadDemoTaskFeedback();
+                showEmptyTaskFeedback();
             }
         }
 
-        // 加载演示任务反馈数据
-        function loadDemoTaskFeedback() {
-            const taskUpdates = JSON.parse(localStorage.getItem('taskUpdates') || '[]');
+        // 显示任务反馈数据
+        function displayTaskFeedback(tasks) {
             const taskFeedbackBody = document.getElementById('taskFeedbackBody');
             
             if (!taskFeedbackBody) {
@@ -2811,61 +2765,41 @@
                 return;
             }
             
-            if (taskUpdates.length === 0) {
-                taskFeedbackBody.innerHTML = `
-                    <div class="task-item" style="text-align: center; padding: 40px; color: var(--text-secondary);">
-                        <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
-                        <div>暂无任务反馈信息</div>
-                        <div style="font-size: 12px; margin-top: 8px;">律师接单后会在此显示详细信息</div>
-                    </div>
-                `;
-                return;
-            }
-            
             taskFeedbackBody.innerHTML = '';
-            taskUpdates.forEach(update => {
+            tasks.forEach(task => {
                 const feedbackItem = document.createElement('div');
                 feedbackItem.className = 'task-item';
                 feedbackItem.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div style="flex: 1;">
-                            <div class="task-title" style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                                <span>任务 ${update.taskId}</span>
-                                <span class="task-status ${getStatusClass(update.status)}">${getStatusDisplayText(update.status)}</span>
-                            </div>
-                            <div class="task-details" style="margin-bottom: 12px;">
-                                接单时间：${new Date(update.timestamp).toLocaleString()}
-                            </div>
-                            <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border);">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                    <div style="font-weight: 600; color: var(--text-primary);">👩‍💼 律师信息</div>
-                                    <button class="btn btn-primary" onclick="viewLawyerDetails('${update.lawyerInfo.id || 'lawyer001'}')" style="padding: 2px 8px; font-size: 11px; white-space: nowrap; flex-shrink: 0;">查看详情</button>
-                                </div>
-                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; font-size: 13px; color: var(--text-secondary);">
-                                    <div><strong>姓名：</strong>${update.lawyerInfo.name}</div>
-                                    <div><strong>律所：</strong>${update.lawyerInfo.firm}</div>
-                                    <div><strong>经验：</strong>${update.lawyerInfo.experience}</div>
-                                    <div><strong>评分：</strong>⭐ ${update.lawyerInfo.rating}</div>
-                                    <div><strong>电话：</strong>${update.lawyerInfo.phone || '138-0000-0001'}</div>
-                                    <div><strong>专业：</strong>${update.lawyerInfo.specialties ? update.lawyerInfo.specialties.slice(0,2).join(', ') : '债务催收, 合同纠纷'}</div>
-                                </div>
-                                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
-                                    <div style="display: flex; gap: 8px; align-items: center;">
-                                        <button class="btn btn-success" onclick="contactLawyer('${update.lawyerInfo.id || 'lawyer001'}', '${update.lawyerInfo.phone || '138-0000-0001'}')" style="padding: 4px 8px; font-size: 11px; white-space: nowrap; flex-shrink: 0;">📞 联系</button>
-                                        <div style="font-size: 11px; color: var(--text-tertiary);">
-                                            ${update.lawyerInfo.case_count || '150+'} 个案件 · ${update.lawyerInfo.success_rate || '92'}% 成功率
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="task-info">
+                        <div>
+                            <div class="task-title">${task.title}</div>
+                            <div class="task-details">接单律师：${task.lawyer_name || '未知'} | 接单时间：${new Date(task.accepted_at || task.updated_at).toLocaleString()}</div>
+                            <div class="task-description">律师消息：${task.lawyer_message || '律师正在处理您的案件'}</div>
                         </div>
-                        <div style="margin-left: 16px; flex-shrink: 0;">
-                            <button class="btn btn-secondary" onclick="viewTaskDetail('${update.taskId}')" style="padding: 6px 12px; font-size: 12px; white-space: nowrap;">查看详情</button>
-                        </div>
+                        <span class="task-status status-${getStatusClass(task.status)}">${getStatusText(task.status)}</span>
+                    </div>
+                    <div class="task-actions" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                        <button class="btn-small btn-primary" onclick="viewTaskDetails('${task.task_id}')" style="flex: 0 0 auto; white-space: nowrap;">查看任务详情</button>
+                        ${task.lawyer_id ? `<button class="btn-small btn-info" onclick="viewLawyerInfo('${task.task_id}')" style="flex: 0 0 auto; white-space: nowrap;">查看律师信息</button>` : ''}
+                        <button class="btn-small btn-success" onclick="markTaskComplete('${task.task_id}')" style="flex: 0 0 auto; white-space: nowrap;">标记完成</button>
                     </div>
                 `;
                 taskFeedbackBody.appendChild(feedbackItem);
             });
+        }
+        
+        // 显示空任务反馈状态
+        function showEmptyTaskFeedback() {
+            const taskFeedbackBody = document.getElementById('taskFeedbackBody');
+            if (!taskFeedbackBody) return;
+            
+            taskFeedbackBody.innerHTML = `
+                <div class="task-item" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                    <div>暂无任务反馈信息</div>
+                    <div style="font-size: 12px; margin-top: 8px;">律师接单后会在此显示详细信息</div>
+                </div>
+            `;
         }
 
         // 获取状态显示文本
@@ -2895,16 +2829,16 @@
                         updateUserTasksList(response);
                         console.log(`已加载 ${response.length} 个用户任务`);
                     } else {
-                        console.log('暂无真实用户任务数据，创建演示数据');
-                        createDemoUserTasks();
+                        console.log('暂无用户任务数据');
+                        showEmptyUserTasks();
                     }
                 } else {
-                    console.log('演示模式 - 创建演示任务数据');
-                    createDemoUserTasks();
+                    console.log('未认证用户');
+                    showEmptyUserTasks();
                 }
             } catch (error) {
                 console.error('加载用户任务失败:', error);
-                createDemoUserTasks();
+                showEmptyUserTasks();
             }
         }
 
@@ -2948,168 +2882,8 @@
             });
         }
 
-        // 创建演示用户任务
         // 全局存储当前用户任务数据
         let currentUserTasks = [];
-
-        function createDemoUserTasks() {
-            console.log('创建演示用户任务...');
-            const taskListBody = document.getElementById('taskListBody');
-            
-            if (!taskListBody) return;
-            
-            // 清空现有内容
-            taskListBody.innerHTML = '';
-            
-            // 演示用户发布的任务数据（完整版）
-            const demoUserTasks = [
-                {
-                    task_id: 'user-task-001',
-                    task_type: 'lawyer_letter',
-                    title: '债权催收律师函',
-                    description: '需要向欠款方发送律师函，催收货款15万元',
-                    budget: 650,
-                    status: 'grabbed',
-                    urgency: 'normal',
-                    created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-                    assigned_lawyer: {
-                        id: 'lawyer001',
-                        name: '张建国',
-                        firm: '北京律思客律师事务所',
-                        license: '11010201234567890',
-                        phone: '138-0000-0001',
-                        experience: '8年执业经验',
-                        specialties: ['债权债务', '合同纠纷', '公司法务'],
-                        rating: 4.8,
-                        case_count: 156,
-                        success_rate: 92
-                    },
-                    target_info: {
-                        target_name: '王某某',
-                        contact_phone: '138****5678',
-                        contact_address: '上海市浦东新区张江路123号',
-                        case_details: '拖欠货款15万元，已逾期3个月未付'
-                    },
-                    progress: [
-                        { time: '2025-01-15 14:30', status: '任务发布', description: '用户发布催收任务' },
-                        { time: '2025-01-15 16:45', status: '律师接单', description: '张建国律师接受任务' },
-                        { time: '2025-01-16 09:20', status: '文书生成', description: '已生成律师函，等待审核' },
-                        { time: '2025-01-16 14:15', status: '文书发送', description: '律师函已发送至债务人' }
-                    ]
-                },
-                {
-                    task_id: 'user-task-002', 
-                    task_type: 'contract_review',
-                    title: '商务合作合同审查',
-                    description: '重要合作协议需要法律专业审查，合同金额500万',
-                    budget: 1200,
-                    status: 'completed',
-                    urgency: 'urgent',
-                    created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-                    completed_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-                    assigned_lawyer: {
-                        id: 'lawyer002',
-                        name: '李明华',
-                        firm: '北京律思客律师事务所',
-                        license: '11010201234567891',
-                        phone: '138-0000-0002',
-                        experience: '12年执业经验',
-                        specialties: ['合同审查', '知识产权', '投资并购'],
-                        rating: 4.9,
-                        case_count: 243,
-                        success_rate: 95
-                    },
-                    target_info: {
-                        target_name: 'ABC科技有限公司',
-                        contact_phone: '021-12345678',
-                        contact_address: '上海市黄浦区南京路100号',
-                        case_details: '战略合作协议，涉及知识产权和技术转让'
-                    },
-                    completion_report: {
-                        summary: '合同审查完成，发现3处重要风险点，已提供修改建议',
-                        risk_points: [
-                            '知识产权归属条款存在歧义',
-                            '违约责任条款过于宽泛',
-                            '技术转让条款缺少保密约定'
-                        ],
-                        suggestions: '建议重新修订第3、7、12条款内容'
-                    },
-                    progress: [
-                        { time: '2025-01-10 09:00', status: '任务发布', description: '用户发布合同审查任务' },
-                        { time: '2025-01-10 10:30', status: '律师接单', description: '李明华律师接受任务' },
-                        { time: '2025-01-11 14:20', status: '合同审查', description: '正在进行详细审查' },
-                        { time: '2025-01-14 16:45', status: '审查完成', description: '已完成审查并提供报告' }
-                    ]
-                },
-                {
-                    task_id: 'user-task-003',
-                    task_type: 'legal_consultation',
-                    title: '劳动纠纷法律咨询',
-                    description: '公司员工劳动合同纠纷，需要专业法律建议',
-                    budget: 400,
-                    status: 'published',
-                    urgency: 'low',
-                    created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-                    assigned_lawyer: null,
-                    target_info: {
-                        target_name: '员工小李',
-                        contact_phone: '150****9876',
-                        contact_address: '北京市朝阳区建国路88号',
-                        case_details: '劳动合同到期争议，涉及补偿金计算'
-                    }
-                }
-            ];
-            
-            // 保存到全局变量
-            currentUserTasks = demoUserTasks;
-            
-            // 渲染演示任务
-            demoUserTasks.forEach(task => {
-                const statusText = {
-                    'published': '等待律师接单',
-                    'grabbed': '律师已接单',
-                    'in_progress': '处理中',
-                    'completed': '已完成',
-                    'confirmed': '已确认'
-                };
-                
-                const statusClass = {
-                    'published': 'status-pending',
-                    'grabbed': 'status-processing', 
-                    'in_progress': 'status-processing',
-                    'completed': 'status-completed',
-                    'confirmed': 'status-completed'
-                };
-                
-                const taskItem = document.createElement('div');
-                taskItem.className = 'task-item';
-                taskItem.innerHTML = `
-                    <div class="task-info">
-                        <div>
-                            <div class="task-title">${task.title}</div>
-                            <div class="task-details">
-                                发布时间：${new Date(task.created_at).toLocaleDateString()} | 
-                                预算：¥${task.budget} | 
-                                类型：${task.task_type} |
-                                ${task.assigned_lawyer ? `律师：${task.assigned_lawyer}` : '等待律师接单'}
-                            </div>
-                            <div class="task-description" style="color: var(--text-secondary); font-size: 14px; margin-top: 4px;">
-                                ${task.description}
-                            </div>
-                        </div>
-                        <span class="task-status ${statusClass[task.status]}">${statusText[task.status]}</span>
-                    </div>
-                    <div class="task-actions">
-                        <button class="btn-small btn-primary" onclick="viewTaskDetails('${task.task_id}')">查看详情</button>
-                        ${task.status === 'published' ? `<button class="btn-small btn-secondary" onclick="editTask('${task.task_id}')">编辑任务</button>` : ''}
-                        ${task.status === 'grabbed' || task.status === 'in_progress' ? `<button class="btn-small btn-info" onclick="viewLawyerInfo('${task.task_id}')">查看律师信息</button>` : ''}
-                    </div>
-                `;
-                taskListBody.appendChild(taskItem);
-            });
-            
-            console.log(`已创建 ${demoUserTasks.length} 个演示用户任务`);
-        }
 
         // 显示空任务列表
         function showEmptyUserTasks() {
@@ -3149,28 +2923,29 @@
             try {
                 let taskData = null;
                 
-                // 尝试从API获取任务详情
-                if (apiClient.isAuthenticated()) {
-                    try {
-                        const response = await apiClient.getTaskDetail(taskId);
-                        if (response.success && response.task) {
-                            taskData = response.task;
-                        }
-                    } catch (error) {
-                        console.warn('API获取任务详情失败，使用演示数据:', error);
-                    }
+                // 首先从全局任务数据中查找（避免不必要的API调用）
+                if (currentUserTasks.length > 0) {
+                    taskData = currentUserTasks.find(task => task.task_id === taskId);
                 }
                 
-                // 如果API失败，从全局任务数据中查找
-                if (!taskData && currentUserTasks.length > 0) {
-                    taskData = currentUserTasks.find(task => task.task_id === taskId);
+                // 如果本地没有找到且已认证，才尝试从API获取
+                if (!taskData && apiClient.isAuthenticated()) {
+                    try {
+                        const response = await apiClient.get(`/tasks/${taskId}`);
+                        if (response && response.task_id) {
+                            taskData = response;
+                        }
+                    } catch (error) {
+                        console.warn('API获取任务详情失败:', error);
+                        // 不再继续尝试其他方法，直接使用本地数据
+                    }
                 }
             
                 // 关闭加载模态框
                 hideLoadingModal(loadingModal);
                 
                 if (!taskData) {
-                    alert('任务数据不存在');
+                    alert('任务数据不存在或已被删除');
                     return;
                 }
                 
@@ -3357,7 +3132,7 @@
         }
 
         // 编辑任务
-        function editTask(taskId) {
+        async function editTask(taskId) {
             // 查找任务数据
             let taskData = null;
             
@@ -3366,42 +3141,16 @@
                 taskData = currentUserTasks.find(task => task.task_id === taskId);
             }
             
-            // 如果没找到，从演示数据中查找
-            if (!taskData) {
-                const demoUserTasks = [
-                {
-                    task_id: 'user-task-001',
-                    task_type: 'lawyer_letter',
-                    title: '债权催收律师函',
-                    description: '需要向欠款方发送律师函，催收货款15万元',
-                    budget: 650,
-                    status: 'grabbed',
-                    urgency: 'normal',
-                    target_info: {
-                        target_name: '王某某',
-                        contact_phone: '138****5678',
-                        contact_address: '上海市浦东新区张江路123号',
-                        case_details: '拖欠货款15万元，已逾期3个月未付'
+            // 如果本地没有找到，尝试从API获取
+            if (!taskData && apiClient.isAuthenticated()) {
+                try {
+                    const response = await apiClient.get(`/tasks/${taskId}`);
+                    if (response && response.task_id) {
+                        taskData = response;
                     }
-                },
-                {
-                    task_id: 'user-task-003',
-                    task_type: 'legal_consultation',
-                    title: '劳动纠纷法律咨询',
-                    description: '公司员工劳动合同纠纷，需要专业法律建议',
-                    budget: 400,
-                    status: 'published',
-                    urgency: 'low',
-                    target_info: {
-                        target_name: '员工小李',
-                        contact_phone: '150****9876',
-                        contact_address: '北京市朝阳区建国路88号',
-                        case_details: '劳动合同到期争议，涉及补偿金计算'
-                    }
+                } catch (error) {
+                    console.warn('API获取任务数据失败:', error);
                 }
-                ];
-                
-                taskData = demoUserTasks.find(task => task.task_id === taskId);
             }
             
             if (!taskData) {
