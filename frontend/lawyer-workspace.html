@@ -872,6 +872,13 @@
                 margin-bottom: 6px;
             }
             
+            .task-description {
+                font-size: 12px;
+                line-height: 1.3;
+                color: var(--text-secondary);
+                margin-top: 4px;
+            }
+            
             .task-actions {
                 position: absolute;
                 bottom: 6px;
@@ -3614,25 +3621,30 @@ ${date}`;
             const budget = task.budget ? `¥${task.budget}` : '面议';
             const urgency = task.urgency === 'urgent' ? '🔥 紧急' : task.urgency === 'normal' ? '正常' : '普通';
             
+            // 简化描述文本 - 移动端只显示前30个字符
+            const shortDescription = task.description ? 
+                (task.description.length > 30 ? task.description.substring(0, 30) + '...' : task.description) 
+                : '点击查看详情';
+            
             taskItem.innerHTML = `
                 <div class="task-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                    <div class="task-info">
-                        <div class="task-title" style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 8px;">
+                    <div class="task-info" style="flex: 1; padding-right: 12px;">
+                        <div class="task-title" style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 8px; line-height: 1.3;">
                             ${task.urgency === 'urgent' ? '🔥 ' : ''}${task.title || '未命名任务'}
                         </div>
-                        <div class="task-meta" style="display: flex; gap: 16px; color: var(--text-secondary); font-size: 14px;">
+                        <div class="task-meta" style="display: flex; flex-wrap: wrap; gap: 8px 16px; color: var(--text-secondary); font-size: 13px; margin-bottom: 6px;">
                             <span>💰 ${budget}</span>
                             <span>📅 ${createdDate}</span>
-                            <span>⏰ ${urgency}</span>
+                            <span style="color: ${task.urgency === 'urgent' ? '#ef4444' : 'inherit'};">⏰ ${urgency}</span>
                             <span>👤 ${task.publisher_name || '匿名用户'}</span>
                         </div>
-                        <div class="task-description" style="color: var(--text-secondary); font-size: 13px; margin-top: 6px;">
-                            ${task.description || '暂无描述'}
+                        <div class="task-description" style="color: var(--text-secondary); font-size: 13px; line-height: 1.4;">
+                            ${shortDescription}
                         </div>
                     </div>
-                    <div class="task-actions" style="display: flex; gap: 8px;">
-                        <button class="btn-small btn-info" onclick="previewTaskDetail('${task.task_id || task.id}')" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(59, 130, 246, 0.1); color: #3b82f6; cursor: pointer;">预览详情</button>
-                        <button class="btn-small btn-primary grab-btn" onclick="grabTask('${task.task_id || task.id}')" style="padding: 6px 12px; border-radius: 6px; border: none; background: var(--gradient-primary); color: white; cursor: pointer; animation: pulse 2s infinite;">🎯 抢任务</button>
+                    <div class="task-actions" style="display: flex; flex-direction: column; gap: 6px; min-width: 90px;">
+                        <button class="btn-small btn-info" onclick="previewTaskDetail('${task.task_id || task.id}')" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(59, 130, 246, 0.1); color: #3b82f6; cursor: pointer; font-size: 12px; white-space: nowrap;">详情</button>
+                        <button class="btn-small btn-primary grab-btn" onclick="grabTask('${task.task_id || task.id}')" style="padding: 6px 12px; border-radius: 6px; border: none; background: var(--gradient-primary); color: white; cursor: pointer; font-size: 12px; white-space: nowrap;">🎯 抢单</button>
                     </div>
                 </div>
             `;
@@ -3794,20 +3806,30 @@ ${date}`;
             // 格式化数据
             const createdDate = task.created_at ? new Date(task.created_at).toLocaleDateString() : '未知';
             const budget = task.budget ? `¥${task.budget}` : '面议';
+            const status = task.status || 'in_progress';
+            const statusText = getStatusText(status);
+            
+            // 简化描述
+            const shortDescription = task.description ? 
+                (task.description.length > 25 ? task.description.substring(0, 25) + '...' : task.description) 
+                : '点击查看详情';
             
             taskItem.innerHTML = `
                 <div class="task-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                    <div class="task-info">
-                        <div class="task-title" style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 8px;">✨ ${task.title || '未命名任务'}</div>
-                        <div class="task-meta" style="display: flex; gap: 16px; color: var(--text-secondary); font-size: 14px;">
+                    <div class="task-info" style="flex: 1; padding-right: 12px;">
+                        <div class="task-title" style="color: var(--text-primary); font-size: 16px; font-weight: 600; margin-bottom: 8px; line-height: 1.3;">✨ ${task.title || '未命名任务'}</div>
+                        <div class="task-meta" style="display: flex; flex-wrap: wrap; gap: 8px 16px; color: var(--text-secondary); font-size: 13px; margin-bottom: 6px;">
                             <span>💰 ${budget}</span>
                             <span>📅 ${createdDate}</span>
-                            <span>🏃‍♂️ 已接单</span>
+                            <span>🔄 ${statusText}</span>
+                        </div>
+                        <div class="task-description" style="color: var(--text-secondary); font-size: 13px; line-height: 1.4;">
+                            ${shortDescription}
                         </div>
                     </div>
-                    <div class="task-actions" style="display: flex; gap: 8px;">
-                        <button class="btn-small btn-secondary" onclick="toggleTaskContent('real-${task.task_id || task.id || index}')" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.1); color: var(--text-primary); cursor: pointer;">预览</button>
-                        <button class="btn-small btn-success" onclick="confirmTask('real-${task.task_id || task.id || index}')" style="padding: 6px 12px; border-radius: 6px; border: none; background: var(--gradient-success); color: white; cursor: pointer;">确认发送</button>
+                    <div class="task-actions" style="display: flex; flex-direction: column; gap: 6px; min-width: 90px;">
+                        <button class="btn-small btn-secondary" onclick="toggleTaskContent('real-${task.task_id || task.id || index}')" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.1); color: var(--text-primary); cursor: pointer; font-size: 12px; white-space: nowrap;">详情</button>
+                        <button class="btn-small btn-success" onclick="confirmTask('real-${task.task_id || task.id || index}')" style="padding: 6px 12px; border-radius: 6px; border: none; background: var(--gradient-success); color: white; cursor: pointer; font-size: 12px; white-space: nowrap;">📤 发送</button>
                     </div>
                 </div>
                 <div class="task-content" id="task-content-real-${task.task_id || task.id || index}" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--glass-border);">
@@ -3820,9 +3842,9 @@ ${date}`;
 任务描述：${task.description || '无描述'}
 
 AI将根据以上信息生成专业的法律文书内容...</textarea>
-                            <div style="margin-top: 12px; display: flex; gap: 8px;">
-                                <button class="btn btn-secondary" onclick="regenerateContent('real-${task.task_id || task.id || index}')" style="padding: 8px 16px;">🔄 重新生成</button>
-                                <button class="btn btn-primary" onclick="saveContent('real-${task.task_id || task.id || index}')" style="padding: 8px 16px;">💾 保存修改</button>
+                            <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button class="btn btn-secondary" onclick="regenerateContent('real-${task.task_id || task.id || index}')" style="padding: 8px 16px; font-size: 13px;">🔄 重新生成</button>
+                                <button class="btn btn-primary" onclick="saveContent('real-${task.task_id || task.id || index}')" style="padding: 8px 16px; font-size: 13px;">💾 保存修改</button>
                             </div>
                         </div>
                     </div>
@@ -3830,6 +3852,18 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
             `;
             
             return taskItem;
+        }
+        
+        // 获取状态显示文本
+        function getStatusText(status) {
+            const statusMap = {
+                'accepted': '已接受',
+                'in_progress': '进行中', 
+                'completed': '已完成',
+                'delivered': '已交付',
+                'pending': '待处理'
+            };
+            return statusMap[status] || '未知状态';
         }
 
         // 抢任务功能 - 更新后的版本
@@ -4860,44 +4894,76 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
             const description = taskItem.querySelector('.task-description').textContent;
             const meta = taskItem.querySelector('.task-meta').textContent;
             
+            // 获取完整的任务信息以显示更多详情
+            const fullDescription = getFullTaskDescription(taskId);
+            
             const modal = document.createElement('div');
             modal.className = 'modal';
             modal.style.display = 'block';
             modal.innerHTML = `
-                <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-content" style="max-width: 90vw; width: 600px; max-height: 90vh; overflow-y: auto;">
                     <div class="modal-header">
-                        <h3>${title}</h3>
-                        <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
+                        <h3 style="font-size: 18px; margin: 0; line-height: 1.3;">${title}</h3>
+                        <span class="close" onclick="this.closest('.modal').remove()" style="font-size: 24px; cursor: pointer; color: var(--text-secondary);">&times;</span>
                     </div>
-                    <div class="modal-body">
-                        <div style="margin-bottom: 16px;">
-                            <strong>任务信息：</strong><br>
-                            ${meta}
+                    <div class="modal-body" style="padding: 20px; line-height: 1.6;">
+                        <div style="margin-bottom: 20px;">
+                            <div style="background: rgba(59, 130, 246, 0.1); padding: 12px; border-radius: 8px; border-left: 4px solid #3b82f6; margin-bottom: 16px;">
+                                <strong>📋 任务信息</strong><br>
+                                <div style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">${meta}</div>
+                            </div>
                         </div>
-                        <div style="margin-bottom: 16px;">
-                            <strong>详细描述：</strong><br>
-                            ${description}
+                        
+                        <div style="margin-bottom: 20px;">
+                            <strong style="color: var(--text-primary); font-size: 16px;">📝 详细描述</strong>
+                            <div style="margin-top: 8px; padding: 12px; background: var(--glass-bg); border-radius: 8px; border: 1px solid var(--glass-border); line-height: 1.6;">
+                                ${fullDescription || '暂无详细描述，请联系委托人获取更多信息'}
+                            </div>
                         </div>
-                        <div style="background: var(--glass-bg); padding: 16px; border-radius: 8px; border: 1px solid var(--glass-border);">
-                            <strong>📋 任务要求：</strong><br>
-                            • 按时完成任务内容<br>
-                            • 保证文书质量和法律准确性<br>
-                            • 及时与客户沟通进度<br>
-                            • 遵守平台服务规范<br><br>
-                            <strong>💰 费用说明：</strong><br>
-                            • 平台不收取任何佣金<br>
-                            • 全额收益归律师所有<br>
-                            • 支持多种提现方式<br>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
+                            <div style="background: var(--glass-bg); padding: 16px; border-radius: 8px; border: 1px solid var(--glass-border);">
+                                <strong style="color: var(--text-primary);">📋 任务要求</strong>
+                                <ul style="margin: 8px 0 0 0; padding-left: 20px; color: var(--text-secondary);">
+                                    <li>按时完成任务内容</li>
+                                    <li>保证文书质量和法律准确性</li>
+                                    <li>及时与客户沟通进度</li>
+                                    <li>遵守平台服务规范</li>
+                                </ul>
+                            </div>
+                            
+                            <div style="background: rgba(16, 185, 129, 0.1); padding: 16px; border-radius: 8px; border-left: 4px solid #10b981;">
+                                <strong style="color: #10b981;">💰 费用说明</strong>
+                                <ul style="margin: 8px 0 0 0; padding-left: 20px; color: var(--text-secondary);">
+                                    <li>平台不收取任何佣金</li>
+                                    <li>全额收益归律师所有</li>
+                                    <li>支持多种提现方式</li>
+                                    <li>完成即时到账</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">取消</button>
-                        <button class="btn btn-primary" onclick="this.closest('.modal').remove(); grabTask('${taskId}');">立即抢单</button>
+                    <div class="modal-footer" style="padding: 20px; border-top: 1px solid var(--glass-border); display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="this.closest('.modal').remove()" style="min-width: 80px;">取消</button>
+                        <button class="btn btn-primary" onclick="this.closest('.modal').remove(); grabTask('${taskId}');" style="min-width: 100px;">🎯 立即抢单</button>
                     </div>
                 </div>
             `;
             
             document.body.appendChild(modal);
+        }
+        
+        // 获取完整任务描述（用于详情页显示）
+        function getFullTaskDescription(taskId) {
+            // 模拟获取完整描述，实际可以从API获取
+            const descriptions = {
+                'demo-task-001': '本案涉及债权催收事宜，债务人张某于2023年10月向我公司借款人民币50,000元，约定于2024年1月31日前归还，现已逾期未还。需要律师起草正式的债权催收律师函，明确催告义务，要求债务人在收到函件后7日内履行还款义务，否则将采取法律手段追讨。',
+                'demo-task-002': '某科技公司与供应商之间存在货款纠纷，涉及金额较大。供应商按合同约定交付货物后，科技公司以质量问题为由拒绝付款。现需要专业律师介入处理，包括证据收集、法律分析、谈判协调等工作。',
+                'demo-task-003': '一份重要的商务合作合同需要专业律师进行全面审查，重点关注合同条款的合法性、风险点识别、权利义务分配是否合理等方面。合同金额较大，涉及长期合作关系，需要谨慎处理。',
+                'demo-task-004': '公司在经营过程中遇到了一些法律问题，需要专业律师提供咨询服务。主要包括：劳动关系处理、合同纠纷预防、知识产权保护等方面的法律建议。',
+                'demo-task-005': '合同一方当事人存在明显违约行为，需要发送法律函件追究其违约责任。要求律师根据合同条款和相关法律规定，起草专业的违约责任追究函，为后续可能的诉讼做好准备。'
+            };
+            return descriptions[taskId] || null;
         }
 
         // 从URL获取律师ID

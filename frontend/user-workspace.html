@@ -2712,21 +2712,28 @@
             tasks.forEach(task => {
                 const taskItem = document.createElement('div');
                 taskItem.className = 'task-item';
+                
+                // 简化律师消息显示
+                const shortMessage = task.lawyer_message && task.lawyer_message.length > 20 ? 
+                    task.lawyer_message.substring(0, 20) + '...' : 
+                    (task.lawyer_message || '点击查看详情');
+                
                 taskItem.innerHTML = `
-                    <div class="task-info">
-                        <div>
-                            <div class="task-title">${task.title}</div>
-                            <div class="task-details">接单律师：${task.lawyer_name} | 接单时间：${new Date(task.accepted_at).toLocaleString()}</div>
-                            <div class="task-description">律师消息：${task.lawyer_message || '律师正在处理您的案件'}</div>
+                    <div class="task-info" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="flex: 1; padding-right: 12px;">
+                            <div class="task-title" style="margin-bottom: 8px; line-height: 1.3;">${task.title}</div>
+                            <div class="task-details" style="font-size: 13px; margin-bottom: 6px;">接单律师：${task.lawyer_name} | ${new Date(task.accepted_at).toLocaleDateString()}</div>
+                            <div class="task-description" style="font-size: 13px; color: var(--text-secondary);">${shortMessage}</div>
                         </div>
-                        <span class="task-status status-${getStatusClass(task.status)}">${getStatusText(task.status)}</span>
+                        <span class="task-status status-${getStatusClass(task.status)}" style="flex: 0 0 auto; font-size: 11px; padding: 4px 8px;">${getStatusText(task.status)}</span>
                     </div>
-                    <div class="task-actions">
+                    <div class="task-actions" style="display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap;">
+                        <button class="btn-small btn-info" onclick="openContactExchange('${task.id}')" style="font-size: 12px; padding: 6px 10px;">详情</button>
                         ${task.contact_exchanged ? 
-                            '<button class="btn-small btn-secondary" disabled>已交换联系方式</button>' :
-                            `<button class="btn-small btn-primary" onclick="openContactExchange('${task.id}')">交换联系方式</button>`
+                            '<button class="btn-small btn-secondary" disabled style="font-size: 12px; padding: 6px 10px;">已交换</button>' :
+                            `<button class="btn-small btn-primary" onclick="openContactExchange('${task.id}')" style="font-size: 12px; padding: 6px 10px;">联系</button>`
                         }
-                        <button class="btn-small btn-success" onclick="markTaskComplete('${task.id}')">标记完成</button>
+                        <button class="btn-small btn-success" onclick="markTaskComplete('${task.id}')" style="font-size: 12px; padding: 6px 10px;">完成</button>
                     </div>
                 `;
                 feedbackBody.appendChild(taskItem);
@@ -2766,19 +2773,25 @@
             tasks.forEach(task => {
                 const feedbackItem = document.createElement('div');
                 feedbackItem.className = 'task-item';
+                
+                // 简化律师消息显示
+                const shortMessage = task.lawyer_message && task.lawyer_message.length > 20 ? 
+                    task.lawyer_message.substring(0, 20) + '...' : 
+                    (task.lawyer_message || '点击查看详情');
+                
                 feedbackItem.innerHTML = `
-                    <div class="task-info">
-                        <div>
-                            <div class="task-title">${task.title}</div>
-                            <div class="task-details">接单律师：${task.lawyer_name || '未知'} | 接单时间：${new Date(task.accepted_at || task.updated_at).toLocaleString()}</div>
-                            <div class="task-description">律师消息：${task.lawyer_message || '律师正在处理您的案件'}</div>
+                    <div class="task-info" style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="flex: 1; padding-right: 12px;">
+                            <div class="task-title" style="margin-bottom: 8px; line-height: 1.3;">${task.title}</div>
+                            <div class="task-details" style="font-size: 13px; margin-bottom: 6px;">接单律师：${task.lawyer_name || '未知'} | ${new Date(task.accepted_at || task.updated_at).toLocaleDateString()}</div>
+                            <div class="task-description" style="font-size: 13px; color: var(--text-secondary);">${shortMessage}</div>
                         </div>
-                        <span class="task-status status-${getStatusClass(task.status)}">${getStatusText(task.status)}</span>
+                        <span class="task-status status-${getStatusClass(task.status)}" style="flex: 0 0 auto; font-size: 11px; padding: 4px 8px;">${getStatusText(task.status)}</span>
                     </div>
-                    <div class="task-actions" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-                        <button class="btn-small btn-primary" onclick="viewTaskDetails('${task.task_id}')" style="flex: 0 0 auto; white-space: nowrap;">查看任务详情</button>
-                        ${task.lawyer_id ? `<button class="btn-small btn-info" onclick="viewLawyerInfo('${task.task_id}')" style="flex: 0 0 auto; white-space: nowrap;">查看律师信息</button>` : ''}
-                        <button class="btn-small btn-success" onclick="markTaskComplete('${task.task_id}')" style="flex: 0 0 auto; white-space: nowrap;">标记完成</button>
+                    <div class="task-actions" style="display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap;">
+                        <button class="btn-small btn-primary" onclick="viewTaskDetails('${task.task_id}')" style="font-size: 12px; padding: 6px 10px;">详情</button>
+                        ${task.lawyer_id ? `<button class="btn-small btn-info" onclick="viewLawyerInfo('${task.task_id}')" style="font-size: 12px; padding: 6px 10px;">律师</button>` : ''}
+                        <button class="btn-small btn-success" onclick="markTaskComplete('${task.task_id}')" style="font-size: 12px; padding: 6px 10px;">完成</button>
                     </div>
                 `;
                 taskFeedbackBody.appendChild(feedbackItem);
