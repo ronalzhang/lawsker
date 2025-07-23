@@ -7,7 +7,7 @@
 
 class ApiClient {
     constructor() {
-        this.baseURL = 'https://156.236.74.200/api/v1';
+        this.baseURL = 'https://lawsker.com/api/v1';
         // 兼容多种token存储方式
         this.token = localStorage.getItem('authToken') || localStorage.getItem('accessToken');
         this.version = '1.6'; // API客户端版本号
@@ -51,11 +51,20 @@ class ApiClient {
         console.log(`🔗 API请求: ${config.method || 'GET'} ${url}`);
 
         try {
-            // 添加请求超时设置，特别对移动端重要
+            // 移动端网络优化：调整超时时间
+            const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const timeoutDuration = isMobile ? 15000 : 30000; // 移动端15秒，桌面端30秒
+            
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+            const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
             
             config.signal = controller.signal;
+            
+            // 移动端额外的网络检测
+            if (isMobile && !navigator.onLine) {
+                clearTimeout(timeoutId);
+                throw new Error('移动设备离线，请检查网络连接');
+            }
             
             const response = await fetch(url, config);
             clearTimeout(timeoutId);
@@ -92,10 +101,20 @@ class ApiClient {
         } catch (error) {
             if (error.name === 'AbortError') {
                 console.error(`⏰ API超时: ${endpoint}`);
-                throw new Error('请求超时，请检查网络连接');
-            } else if (error.name === 'TypeError') {
+                const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                if (isMobile) {
+                    throw new Error('移动网络请求超时，请检查网络信号');
+                } else {
+                    throw new Error('请求超时，请检查网络连接');
+                }
+            } else if (error.name === 'TypeError' || error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
                 console.error(`🌐 网络错误: ${endpoint}`, error);
-                throw new Error('网络连接失败，请检查网络设置');
+                const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                if (isMobile) {
+                    throw new Error('移动网络连接失败，请切换到WiFi或检查网络设置');
+                } else {
+                    throw new Error('网络连接失败，请检查网络设置');
+                }
             } else {
                 console.error(`❌ API失败: ${endpoint}`, error);
                 throw error;
