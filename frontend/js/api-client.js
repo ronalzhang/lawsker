@@ -105,7 +105,7 @@ class ApiClient {
                 if (isMobile) {
                     throw new Error('移动网络请求超时，请检查网络信号');
                 } else {
-                    throw new Error('请求超时，请检查网络连接');
+                throw new Error('请求超时，请检查网络连接');
                 }
             } else if (error.name === 'TypeError' || error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
                 console.error(`🌐 网络错误: ${endpoint}`, error);
@@ -113,7 +113,7 @@ class ApiClient {
                 if (isMobile) {
                     throw new Error('移动网络连接失败，请切换到WiFi或检查网络设置');
                 } else {
-                    throw new Error('网络连接失败，请检查网络设置');
+                throw new Error('网络连接失败，请检查网络设置');
                 }
             } else {
                 console.error(`❌ API失败: ${endpoint}`, error);
