@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文书库管理测试</title>
+    <style>
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block !important;
+        }
+        .stat-card {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px;
+            display: inline-block;
+        }
+        .test-result {
+            background: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>文书库管理功能测试</h1>
+    
+    <button onclick="switchTab('documents')">点击加载文书库管理</button>
+    
+    <div id="test-results" class="test-result">
+        <h3>测试结果：</h3>
+        <div id="console-output"></div>
+    </div>
+
+    <!-- 文书库管理标签页 -->
+    <div class="tab-content" id="documents-tab">
+        <h3>📊 文书库概览</h3>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">文书总数</div>
+                <div class="stat-value" id="totalDocuments">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">今日使用</div>
+                <div class="stat-value" id="dailyUsage">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">平均评分</div>
+                <div class="stat-value" id="averageRating">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">库存命中率</div>
+                <div class="stat-value" id="hitRate">0%</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 重定向console.log到页面显示
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const outputDiv = document.getElementById('console-output');
+        
+        function logToPage(message, type = 'log') {
+            const p = document.createElement('p');
+            p.style.color = type === 'warn' ? 'red' : type === 'error' ? 'darkred' : 'black';
+            p.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            outputDiv.appendChild(p);
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            logToPage(args.join(' '), 'log');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            logToPage(args.join(' '), 'warn');
+        };
+
+        // 标签页切换功能
+        function switchTab(tabName) {
+            logToPage(`开始切换到标签页: ${tabName}`);
+            
+            // 隐藏所有标签页内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 显示选中的标签页内容
+            const activeContent = document.getElementById(`${tabName}-tab`);
+            if (activeContent) {
+                activeContent.classList.add('active');
+                logToPage(`✅ 标签页 ${tabName}-tab 已激活`);
+                
+                if (tabName === 'documents') {
+                    logToPage('开始初始化文书库管理');
+                    // 确保DOM完全渲染后再初始化
+                    setTimeout(() => {
+                        initDocumentLibrary();
+                    }, 100);
+                }
+            } else {
+                logToPage(`❌ 未找到标签页内容: ${tabName}-tab`, 'warn');
+            }
+        }
+
+        // 文书库管理功能
+        function initDocumentLibrary() {
+            console.log('🚀 初始化文书库管理');
+            
+            // 等待DOM元素完全加载
+            function waitForElements() {
+                const requiredElements = ['totalDocuments', 'dailyUsage', 'averageRating', 'hitRate'];
+                const allElementsExist = requiredElements.every(id => document.getElementById(id) !== null);
+                
+                if (allElementsExist) {
+                    console.log('✅ 所有必需的DOM元素已找到，开始加载数据');
+                    loadDocumentStats();
+                    loadDocumentTypes();
+                } else {
+                    console.log('⏳ 等待DOM元素加载...');
+                    // 如果元素还没有加载完成，继续等待
+                    setTimeout(waitForElements, 100);
+                }
+            }
+            
+            // 开始等待元素
+            waitForElements();
+        }
+
+        function loadDocumentStats() {
+            console.log('开始加载文书库统计数据');
+            
+            // 模拟加载文书库统计数据
+            const stats = {
+                totalDocuments: Math.floor(Math.random() * 200) + 100,
+                dailyUsage: Math.floor(Math.random() * 50) + 20,
+                averageRating: (Math.random() * 1 + 4).toFixed(1),
+                hitRate: Math.floor(Math.random() * 30 + 60) + '%'
+            };
+
+            // 安全更新DOM元素
+            const updateElement = (id, value) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = value;
+                    console.log(`✅ 已更新元素 ${id}: ${value}`);
+                } else {
+                    console.warn(`❌ 元素 ${id} 不存在`);
+                }
+            };
+
+            updateElement('totalDocuments', stats.totalDocuments);
+            updateElement('dailyUsage', stats.dailyUsage);
+            updateElement('averageRating', stats.averageRating);
+            updateElement('hitRate', stats.hitRate);
+            
+            console.log('✅ 文书库统计数据已更新:', stats);
+        }
+
+        function loadDocumentTypes() {
+            console.log('加载文书类型数据 - 完成');
+        }
+
+        // 页面加载完成后执行测试
+        document.addEventListener('DOMContentLoaded', function() {
+            logToPage('✅ 测试页面加载完成');
+            logToPage('请点击按钮测试文书库管理功能');
+        });
+    </script>
+</body>
+</html> 
