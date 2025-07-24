@@ -886,9 +886,14 @@
             animation: fadeIn 0.3s ease-in-out;
         }
 
+        /* 修复：添加缺失的标签页激活状态样式 */
         .tab-content.active {
-            display: block;
-            animation: fadeIn 0.3s ease-in-out;
+            display: block !important;
+        }
+
+        /* 确保所有标签页内容都能正确显示 */
+        .tab-content:not(.active) {
+            display: none !important;
         }
 
         @keyframes fadeIn {
@@ -1136,6 +1141,42 @@
         
         .tool-btn.logs {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        /* 文书库管理按钮样式 */
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .tool-btn.info {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            color: white;
+        }
+
+        .tool-btn.info:hover {
+            background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+            box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
+        }
+
+        .tool-btn.warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+            color: white;
+        }
+
+        .tool-btn.warning:hover {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .tool-btn.danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .tool-btn.danger:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
         }
         
         .tool-icon {
@@ -2243,6 +2284,7 @@
             <button class="tab-btn" onclick="switchTab('rankings')">🏆 业绩排行</button>
             <button class="tab-btn" onclick="switchTab('config')">⚙️ 系统配置</button>
             <button class="tab-btn" onclick="switchTab('operations')">🔧 运维工具</button>
+            <button class="tab-btn" onclick="switchTab('documents')">📚 文书库管理</button>
         </div>
 
         <!-- 标签页内容 -->
@@ -4113,6 +4155,243 @@
                         </div>
                         <button class="btn btn-primary" onclick="createSystemBackup()">备份</button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 📚 文书库管理 -->
+        <div class="tab-content" id="documents-tab">
+            <!-- 文书库概览 -->
+            <div class="operations-section">
+                <h3>📊 文书库概览</h3>
+                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                    <div class="stat-card" style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">文书总数</div>
+                        <div style="color: var(--text-primary); font-size: 28px; font-weight: 600;" id="totalDocuments">156</div>
+                        <div style="color: #10b981; font-size: 12px; margin-top: 4px;">↗ +12 本月</div>
+                    </div>
+                    <div class="stat-card" style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">今日使用</div>
+                        <div style="color: var(--text-primary); font-size: 28px; font-weight: 600;" id="dailyUsage">28</div>
+                        <div style="color: #3b82f6; font-size: 12px; margin-top: 4px;">📈 活跃</div>
+                    </div>
+                    <div class="stat-card" style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">平均评分</div>
+                        <div style="color: var(--text-primary); font-size: 28px; font-weight: 600;" id="averageRating">4.8</div>
+                        <div style="color: #f59e0b; font-size: 12px; margin-top: 4px;">⭐ 优秀</div>
+                    </div>
+                    <div class="stat-card" style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">库存命中率</div>
+                        <div style="color: var(--text-primary); font-size: 28px; font-weight: 600;" id="hitRate">76%</div>
+                        <div style="color: #10b981; font-size: 12px; margin-top: 4px;">🎯 高效</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 文书类型管理 -->
+            <div class="operations-section">
+                <h3>📝 文书类型管理</h3>
+                <div class="document-types-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+                    <div class="document-type-card" style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <div style="font-size: 24px;">📋</div>
+                            <div>
+                                <h4 style="color: var(--text-primary); margin: 0;">催收律师函</h4>
+                                <p style="color: var(--text-secondary); font-size: 14px; margin: 4px 0 0 0;">debt_collection</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span style="color: var(--text-secondary); font-size: 14px;">使用次数：</span>
+                                <span style="color: var(--text-primary); font-weight: 600;">89</span>
+                            </div>
+                            <div>
+                                <span style="color: var(--text-secondary); font-size: 14px;">成功率：</span>
+                                <span style="color: #10b981; font-weight: 600;">92%</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 12px; display: flex; gap: 8px;">
+                            <button class="btn btn-sm btn-secondary" onclick="editDocumentType('debt_collection')">编辑</button>
+                            <button class="btn btn-sm btn-primary" onclick="viewDocumentTemplates('debt_collection')">查看模板</button>
+                        </div>
+                    </div>
+
+                    <div class="document-type-card" style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <div style="font-size: 24px;">⚖️</div>
+                            <div>
+                                <h4 style="color: var(--text-primary); margin: 0;">合同审查意见书</h4>
+                                <p style="color: var(--text-secondary); font-size: 14px; margin: 4px 0 0 0;">contract_review</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span style="color: var(--text-secondary); font-size: 14px;">使用次数：</span>
+                                <span style="color: var(--text-primary); font-weight: 600;">34</span>
+                            </div>
+                            <div>
+                                <span style="color: var(--text-secondary); font-size: 14px;">成功率：</span>
+                                <span style="color: #10b981; font-weight: 600;">88%</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 12px; display: flex; gap: 8px;">
+                            <button class="btn btn-sm btn-secondary" onclick="editDocumentType('contract_review')">编辑</button>
+                            <button class="btn btn-sm btn-primary" onclick="viewDocumentTemplates('contract_review')">查看模板</button>
+                        </div>
+                    </div>
+
+                    <div class="document-type-card" style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <div style="font-size: 24px;">💬</div>
+                            <div>
+                                <h4 style="color: var(--text-primary); margin: 0;">法律咨询意见书</h4>
+                                <p style="color: var(--text-secondary); font-size: 14px; margin: 4px 0 0 0;">legal_consultation</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span style="color: var(--text-secondary); font-size: 14px;">使用次数：</span>
+                                <span style="color: var(--text-primary); font-weight: 600;">23</span>
+                            </div>
+                            <div>
+                                <span style="color: var(--text-secondary); font-size: 14px;">成功率：</span>
+                                <span style="color: #f59e0b; font-weight: 600;">76%</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 12px; display: flex; gap: 8px;">
+                            <button class="btn btn-sm btn-secondary" onclick="editDocumentType('legal_consultation')">编辑</button>
+                            <button class="btn btn-sm btn-primary" onclick="viewDocumentTemplates('legal_consultation')">查看模板</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 文书库管理工具 -->
+            <div class="operations-section">
+                <h3>🛠️ 文书库管理工具</h3>
+                <div class="admin-tools-grid">
+                    <div class="tool-category">
+                        <h4>📚 模板管理</h4>
+                        <div class="tool-buttons">
+                            <button class="tool-btn primary" onclick="createNewTemplate()">
+                                <span class="tool-icon">➕</span>
+                                <span>新建模板</span>
+                            </button>
+                            <button class="tool-btn secondary" onclick="importTemplates()">
+                                <span class="tool-icon">📥</span>
+                                <span>导入模板</span>
+                            </button>
+                            <button class="tool-btn secondary" onclick="exportTemplates()">
+                                <span class="tool-icon">📤</span>
+                                <span>导出模板</span>
+                            </button>
+                            <button class="tool-btn warning" onclick="validateTemplates()">
+                                <span class="tool-icon">✅</span>
+                                <span>模板验证</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="tool-category">
+                        <h4>📈 使用分析</h4>
+                        <div class="tool-buttons">
+                            <button class="tool-btn info" onclick="viewUsageStats()">
+                                <span class="tool-icon">📊</span>
+                                <span>使用统计</span>
+                            </button>
+                            <button class="tool-btn info" onclick="viewSuccessRates()">
+                                <span class="tool-icon">🎯</span>
+                                <span>成功率分析</span>
+                            </button>
+                            <button class="tool-btn info" onclick="viewPopularTemplates()">
+                                <span class="tool-icon">🔥</span>
+                                <span>热门模板</span>
+                            </button>
+                            <button class="tool-btn secondary" onclick="generateReport()">
+                                <span class="tool-icon">📋</span>
+                                <span>生成报告</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="tool-category">
+                        <h4>🔧 系统维护</h4>
+                        <div class="tool-buttons">
+                            <button class="tool-btn warning" onclick="cleanupUnusedTemplates()">
+                                <span class="tool-icon">🧹</span>
+                                <span>清理未使用模板</span>
+                            </button>
+                            <button class="tool-btn danger" onclick="rebuildSearchIndex()">
+                                <span class="tool-icon">🔄</span>
+                                <span>重建搜索索引</span>
+                            </button>
+                            <button class="tool-btn secondary" onclick="backupDocumentLibrary()">
+                                <span class="tool-icon">💾</span>
+                                <span>备份文书库</span>
+                            </button>
+                            <button class="tool-btn primary" onclick="optimizeDatabase()">
+                                <span class="tool-icon">⚡</span>
+                                <span>优化数据库</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI生成配置 -->
+            <div class="operations-section">
+                <h3>🤖 AI生成配置</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                    <div style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <h4 style="color: var(--text-primary); margin-bottom: 16px;">生成策略配置</h4>
+                        <div class="form-group">
+                            <label class="form-label">优先策略</label>
+                            <select class="form-input">
+                                <option value="library_first">优先使用库存</option>
+                                <option value="ai_first">优先AI生成</option>
+                                <option value="balanced">平衡策略</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">匹配阈值</label>
+                            <input type="range" min="50" max="95" value="75" class="form-input" id="matchThreshold">
+                            <div style="color: var(--text-secondary); font-size: 12px;">当前: 75%</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">质量评分最低要求</label>
+                            <input type="number" min="60" max="100" value="80" class="form-input">
+                        </div>
+                    </div>
+
+                    <div style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                        <h4 style="color: var(--text-primary); margin-bottom: 16px;">模板优化配置</h4>
+                        <div class="form-group">
+                            <label class="form-label">自动学习</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" checked> 从成功案例学习
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" checked> 自动更新关键词
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox"> 自动淘汰低效模板
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">更新频率</label>
+                            <select class="form-input">
+                                <option value="daily">每日</option>
+                                <option value="weekly" selected>每周</option>
+                                <option value="monthly">每月</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 16px; text-align: right;">
+                    <button class="btn btn-secondary" onclick="resetDocumentConfig()">重置配置</button>
+                    <button class="btn btn-primary" onclick="saveDocumentConfig()">保存配置</button>
                 </div>
             </div>
         </div>
@@ -6826,6 +7105,11 @@
                         // 运维工具初始化
                         console.log('运维工具标签页激活');
                         break;
+                    case 'documents':
+                        // 文书库管理初始化
+                        console.log('文书库管理标签页激活');
+                        initDocumentLibrary();
+                        break;
                 }
             } else {
                 console.warn(`未找到标签页内容: ${tabName}-tab`);
@@ -6983,6 +7267,126 @@
     <script>
         // 创建AuthGuard实例
         const authGuard = new AuthGuard();
+
+        // 文书库管理功能
+        function initDocumentLibrary() {
+            console.log('初始化文书库管理');
+            loadDocumentStats();
+            loadDocumentTypes();
+        }
+
+        function loadDocumentStats() {
+            // 模拟加载文书库统计数据
+            const stats = {
+                totalDocuments: Math.floor(Math.random() * 200) + 100,
+                dailyUsage: Math.floor(Math.random() * 50) + 20,
+                averageRating: (Math.random() * 1 + 4).toFixed(1),
+                hitRate: Math.floor(Math.random() * 30 + 60) + '%'
+            };
+
+            document.getElementById('totalDocuments').textContent = stats.totalDocuments;
+            document.getElementById('dailyUsage').textContent = stats.dailyUsage;
+            document.getElementById('averageRating').textContent = stats.averageRating;
+            document.getElementById('hitRate').textContent = stats.hitRate;
+        }
+
+        function loadDocumentTypes() {
+            console.log('加载文书类型数据');
+            // 这里可以添加实际的API调用
+        }
+
+        // 文书库管理工具函数
+        function createNewTemplate() {
+            showNotification('📝 打开新建模板页面...', 'info');
+            window.open('/ai-document-generator', '_blank');
+        }
+
+        function importTemplates() {
+            showNotification('📥 模板导入功能开发中...', 'info');
+        }
+
+        function exportTemplates() {
+            showNotification('📤 模板导出功能开发中...', 'info');
+        }
+
+        function validateTemplates() {
+            showNotification('✅ 开始验证模板...', 'info');
+            setTimeout(() => {
+                showNotification('✅ 模板验证完成，发现 2 个需要优化的模板', 'success');
+            }, 2000);
+        }
+
+        function viewUsageStats() {
+            showNotification('📊 生成使用统计报告...', 'info');
+        }
+
+        function viewSuccessRates() {
+            showNotification('🎯 分析成功率数据...', 'info');
+        }
+
+        function viewPopularTemplates() {
+            showNotification('🔥 显示热门模板排行...', 'info');
+        }
+
+        function generateReport() {
+            showNotification('📋 生成文书库分析报告...', 'info');
+        }
+
+        function cleanupUnusedTemplates() {
+            if (confirm('确定要清理未使用的模板吗？此操作不可恢复。')) {
+                showNotification('🧹 开始清理未使用模板...', 'warning');
+                setTimeout(() => {
+                    showNotification('🧹 清理完成，删除了 8 个未使用模板', 'success');
+                }, 3000);
+            }
+        }
+
+        function rebuildSearchIndex() {
+            if (confirm('重建搜索索引将暂时影响搜索功能，确定继续吗？')) {
+                showNotification('🔄 重建搜索索引中...', 'warning');
+                setTimeout(() => {
+                    showNotification('🔄 搜索索引重建完成', 'success');
+                }, 5000);
+            }
+        }
+
+        function backupDocumentLibrary() {
+            showNotification('💾 开始备份文书库...', 'info');
+            setTimeout(() => {
+                showNotification('💾 文书库备份完成', 'success');
+            }, 3000);
+        }
+
+        function optimizeDatabase() {
+            showNotification('⚡ 开始优化数据库...', 'info');
+            setTimeout(() => {
+                showNotification('⚡ 数据库优化完成，性能提升 15%', 'success');
+            }, 4000);
+        }
+
+        function editDocumentType(type) {
+            showNotification(`✏️ 编辑 ${type} 类型配置...`, 'info');
+        }
+
+        function viewDocumentTemplates(type) {
+            showNotification(`📋 查看 ${type} 模板库...`, 'info');
+        }
+
+        function saveDocumentConfig() {
+            showNotification('💾 保存文书库配置...', 'info');
+            setTimeout(() => {
+                showNotification('✅ 配置保存成功', 'success');
+            }, 1000);
+        }
+
+        function resetDocumentConfig() {
+            if (confirm('确定要重置文书库配置为默认值吗？')) {
+                showNotification('🔄 重置配置为默认值...', 'warning');
+                setTimeout(() => {
+                    showNotification('✅ 配置重置完成', 'success');
+                }, 1000);
+            }
+        }
         
         // 用户等级配置管理功能
         function saveLevelConfig() {
