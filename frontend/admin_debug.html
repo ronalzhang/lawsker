@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理调试 - Lawsker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1d35;
+            color: #f0f4ff;
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .debug-section {
+            background: rgba(22, 28, 48, 0.75);
+            border: 1px solid rgba(122, 160, 255, 0.25);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .debug-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .debug-result {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+        }
+        
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        .info { color: #3b82f6; }
+    </style>
+</head>
+<body>
+    <h1>🔧 后台管理页面调试工具</h1>
+    
+    <div class="debug-section">
+        <h3>🎯 JavaScript函数测试</h3>
+        <button class="debug-button" onclick="testSwitchTabFunction()">测试switchTab函数</button>
+        <button class="debug-button" onclick="testElementSelectors()">测试元素选择器</button>
+        <button class="debug-button" onclick="testCSSVariables()">测试CSS变量</button>
+        <button class="debug-button" onclick="clearResults()">清空结果</button>
+        <div id="functionResults" class="debug-result"></div>
+    </div>
+
+    <div class="debug-section">
+        <h3>🌐 实时页面测试</h3>
+        <button class="debug-button" onclick="openAdminPage()">打开后台管理页面</button>
+        <button class="debug-button" onclick="testOperationsTab()">测试运维工具标签</button>
+        <button class="debug-button" onclick="testDocumentsTab()">测试文书库管理标签</button>
+        <div id="pageResults" class="debug-result"></div>
+    </div>
+
+    <div class="debug-section">
+        <h3>📱 页面内容预览</h3>
+        <iframe src="https://lawsker.com/admin-pro" 
+                style="width: 100%; height: 400px; border: 1px solid rgba(122, 160, 255, 0.25); border-radius: 8px;"
+                id="adminFrame"></iframe>
+    </div>
+
+    <script>
+        function logResult(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const resultDiv = document.getElementById('functionResults');
+            const className = type;
+            resultDiv.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+        }
+
+        function logPageResult(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const resultDiv = document.getElementById('pageResults');
+            const className = type;
+            resultDiv.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+        }
+
+        function clearResults() {
+            document.getElementById('functionResults').innerHTML = '';
+            document.getElementById('pageResults').innerHTML = '';
+        }
+
+        function testSwitchTabFunction() {
+            logResult('开始测试switchTab函数...', 'info');
+            
+            // 测试函数是否存在
+            const adminFrame = document.getElementById('adminFrame');
+            try {
+                const adminWindow = adminFrame.contentWindow;
+                if (typeof adminWindow.switchTab === 'function') {
+                    logResult('✅ switchTab函数存在', 'success');
+                    
+                    // 测试函数调用
+                    adminWindow.switchTab('operations');
+                    setTimeout(() => {
+                        // 检查是否成功切换
+                        const operationsTab = adminWindow.document.getElementById('operations-tab');
+                        if (operationsTab && operationsTab.classList.contains('active')) {
+                            logResult('✅ switchTab(\'operations\') 成功执行', 'success');
+                        } else {
+                            logResult('❌ switchTab(\'operations\') 执行失败', 'error');
+                        }
+                    }, 500);
+                } else {
+                    logResult('❌ switchTab函数不存在', 'error');
+                }
+            } catch (error) {
+                logResult(`❌ 无法访问iframe内容: ${error.message}`, 'error');
+            }
+        }
+
+        function testElementSelectors() {
+            logResult('开始测试元素选择器...', 'info');
+            
+            const adminFrame = document.getElementById('adminFrame');
+            try {
+                const adminDoc = adminFrame.contentDocument || adminFrame.contentWindow.document;
+                
+                // 测试关键元素
+                const elements = [
+                    'operations-tab',
+                    'documents-tab', 
+                    'dashboard-tab'
+                ];
+                
+                elements.forEach(id => {
+                    const element = adminDoc.getElementById(id);
+                    if (element) {
+                        logResult(`✅ 元素 ${id} 存在`, 'success');
+                        logResult(`   classList: ${element.classList.toString()}`, 'info');
+                        logResult(`   display: ${window.getComputedStyle(element).display}`, 'info');
+                    } else {
+                        logResult(`❌ 元素 ${id} 不存在`, 'error');
+                    }
+                });
+                
+                // 测试按钮
+                const buttons = adminDoc.querySelectorAll('.tab-btn');
+                logResult(`✅ 找到 ${buttons.length} 个标签按钮`, 'success');
+                
+            } catch (error) {
+                logResult(`❌ 元素测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        function testCSSVariables() {
+            logResult('开始测试CSS变量...', 'info');
+            
+            const adminFrame = document.getElementById('adminFrame');
+            try {
+                const adminDoc = adminFrame.contentDocument || adminFrame.contentWindow.document;
+                const testElement = adminDoc.createElement('div');
+                testElement.style.background = 'var(--glass-bg)';
+                adminDoc.body.appendChild(testElement);
+                
+                const computedStyle = adminFrame.contentWindow.getComputedStyle(testElement);
+                const bgColor = computedStyle.backgroundColor;
+                
+                adminDoc.body.removeChild(testElement);
+                
+                if (bgColor !== 'rgba(0, 0, 0, 0)') {
+                    logResult(`✅ CSS变量正常: ${bgColor}`, 'success');
+                } else {
+                    logResult('❌ CSS变量未定义', 'error');
+                }
+            } catch (error) {
+                logResult(`❌ CSS测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        function openAdminPage() {
+            logPageResult('打开后台管理页面...', 'info');
+            window.open('https://lawsker.com/admin-pro', '_blank');
+        }
+
+        function testOperationsTab() {
+            logPageResult('测试运维工具标签切换...', 'info');
+            
+            const adminFrame = document.getElementById('adminFrame');
+            try {
+                const adminWindow = adminFrame.contentWindow;
+                
+                // 执行切换
+                adminWindow.switchTab('operations');
+                
+                // 等待并检查结果
+                setTimeout(() => {
+                    const operationsTab = adminWindow.document.getElementById('operations-tab');
+                    const dashboardTab = adminWindow.document.getElementById('dashboard-tab');
+                    
+                    if (operationsTab && operationsTab.classList.contains('active')) {
+                        logPageResult('✅ 运维工具标签成功激活', 'success');
+                        
+                        if (dashboardTab && !dashboardTab.classList.contains('active')) {
+                            logPageResult('✅ 数据概览标签正确隐藏', 'success');
+                        } else {
+                            logPageResult('⚠️ 数据概览标签未隐藏', 'warning');
+                        }
+                    } else {
+                        logPageResult('❌ 运维工具标签切换失败', 'error');
+                        if (operationsTab) {
+                            logPageResult(`   操作标签页状态: ${operationsTab.classList.toString()}`, 'info');
+                        }
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                logPageResult(`❌ 运维工具测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        function testDocumentsTab() {
+            logPageResult('测试文书库管理标签切换...', 'info');
+            
+            const adminFrame = document.getElementById('adminFrame');
+            try {
+                const adminWindow = adminFrame.contentWindow;
+                
+                // 执行切换
+                adminWindow.switchTab('documents');
+                
+                // 等待并检查结果
+                setTimeout(() => {
+                    const documentsTab = adminWindow.document.getElementById('documents-tab');
+                    const totalDocumentsElement = adminWindow.document.getElementById('totalDocuments');
+                    
+                    if (documentsTab && documentsTab.classList.contains('active')) {
+                        logPageResult('✅ 文书库管理标签成功激活', 'success');
+                        
+                        if (totalDocumentsElement) {
+                            logPageResult(`✅ 文书库元素存在: ${totalDocumentsElement.textContent}`, 'success');
+                        } else {
+                            logPageResult('❌ totalDocuments元素不存在', 'error');
+                        }
+                    } else {
+                        logPageResult('❌ 文书库管理标签切换失败', 'error');
+                        if (documentsTab) {
+                            logPageResult(`   文书库标签页状态: ${documentsTab.classList.toString()}`, 'info');
+                        }
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                logPageResult(`❌ 文书库测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 页面加载完成后自动开始基础测试
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                logResult('页面调试工具加载完成', 'success');
+                logResult('点击上方按钮开始测试各项功能', 'info');
+            }, 2000);
+        });
+    </script>
+</body>
+</html> 
