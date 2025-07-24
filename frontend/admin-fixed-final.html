@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2563eb">
+    <title>律刻 管理后台 - 系统配置</title>
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+    <link rel="stylesheet" href="/css/lawsker-glass.css">
+    <script src="/js/auth-guard-ascii.js?v=1735538500"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
+            
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            
+            --radius: 12px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            --glass-bg: rgba(22, 28, 48, 0.85);
+            --glass-border: rgba(122, 160, 255, 0.3);
+            --glass-shadow: rgba(0, 0, 0, 0.1);
+            --border-radius: 16px;
+            --blur-radius: 25px;
+            
+            --text-primary: #f0f4ff;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f1424 0%, #1a1f36 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .admin-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--glass-bg);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--glass-border);
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .tab-btn:hover {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: rgba(102, 126, 234, 0.4);
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            background: var(--glass-bg);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(var(--blur-radius));
+            min-height: 500px;
+        }
+
+        .tab-content.active {
+            display: block !important;
+        }
+
+        .operations-section {
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .operations-section h3 {
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .level-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .level-card:hover {
+            border-color: rgba(102, 126, 234, 0.3);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .level-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .level-icon {
+            font-size: 24px;
+        }
+
+        .level-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            text-align: center;
+            backdrop-filter: blur(var(--blur-radius));
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--success);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .test-indicator {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(240, 147, 251, 0.3);
+        }
+
+        .test-indicator.blue {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            box-shadow: 0 8px 32px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(239, 68, 68, 0.8);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 1);
+        }
+    </style>
+</head>
+<body>
+    <button class="logout-btn" onclick="logout()">退出登录</button>
+    
+    <div class="container">
+        <div class="admin-header">
+            <h1>🔧 律刻管理后台</h1>
+            <p>系统配置与管理中心</p>
+        </div>
+        
+        <!-- 导航标签页 -->
+        <div class="admin-tabs">
+            <button class="tab-btn active" onclick="switchTab('dashboard')">📊 数据概览</button>
+            <button class="tab-btn" onclick="switchTab('operations')">🔧 运维工具</button>
+            <button class="tab-btn" onclick="switchTab('documents')">📚 文书库管理</button>
+        </div>
+        
+        <!-- 标签页内容 -->
+        
+        <!-- 数据概览 -->
+        <div class="tab-content active" id="dashboard-tab">
+            <div class="test-indicator">
+                ✅ 数据概览标签页显示正常！
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">1,234</div>
+                    <div class="stat-label">总用户数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">156</div>
+                    <div class="stat-label">今日活跃</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">89</div>
+                    <div class="stat-label">待处理任务</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">98.5%</div>
+                    <div class="stat-label">系统健康度</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 运维工具 -->
+        <div class="tab-content" id="operations-tab">
+            <div class="test-indicator">
+                🚨 运维工具标签页 - 如果你能看到这个粉色区域，说明运维工具显示正常！
+            </div>
+            
+            <div class="operations-section">
+                <h3>👤 用户等级升级配置</h3>
+                <div class="level-card">
+                    <div class="level-header">
+                        <span class="level-icon">🌱</span>
+                        <h4>律客新人</h4>
+                        <span class="level-badge">Lv.1</span>
+                    </div>
+                    <p>平台初始等级，注册即可获得</p>
+                </div>
+                
+                <div class="level-card">
+                    <div class="level-header">
+                        <span class="level-icon">⚡</span>
+                        <h4>律客学徒</h4>
+                        <span class="level-badge">Lv.2</span>
+                    </div>
+                    <p>需要发布2个任务或平台消费500元</p>
+                </div>
+                
+                <div class="level-card">
+                    <div class="level-header">
+                        <span class="level-icon">🏆</span>
+                        <h4>律客专家</h4>
+                        <span class="level-badge">Lv.3</span>
+                    </div>
+                    <p>需要发布10个任务或平台消费2000元</p>
+                </div>
+            </div>
+            
+            <div class="operations-section">
+                <h3>📊 系统监控</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">99.8%</div>
+                        <div class="stat-label">服务可用性</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">45ms</div>
+                        <div class="stat-label">平均响应时间</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">1,248</div>
+                        <div class="stat-label">在线用户数</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="operations-section">
+                <h3>🔧 管理员工具</h3>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <button class="btn btn-primary">清理缓存</button>
+                    <button class="btn btn-primary">重启服务</button>
+                    <button class="btn btn-primary">数据备份</button>
+                    <button class="btn btn-primary">日志查看</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 文书库管理 -->
+        <div class="tab-content" id="documents-tab">
+            <div class="test-indicator blue">
+                🚨 文书库管理标签页 - 如果你能看到这个蓝色区域，说明文书库管理显示正常！
+            </div>
+            
+            <div class="operations-section">
+                <h3>📊 文书库概览</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">156</div>
+                        <div class="stat-label">文书总数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">28</div>
+                        <div class="stat-label">今日使用</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">4.8</div>
+                        <div class="stat-label">平均评分</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">76%</div>
+                        <div class="stat-label">库存命中率</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="operations-section">
+                <h3>📝 文书类型管理</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <div class="level-card">
+                        <div class="level-header">
+                            <span class="level-icon">📋</span>
+                            <div>
+                                <h4>催收律师函</h4>
+                                <p style="color: var(--text-secondary); font-size: 14px;">debt_collection</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>使用次数：<strong>89</strong></span>
+                            <span style="color: var(--success);">成功率：<strong>92%</strong></span>
+                        </div>
+                    </div>
+                    
+                    <div class="level-card">
+                        <div class="level-header">
+                            <span class="level-icon">⚖️</span>
+                            <div>
+                                <h4>劳动仲裁申请书</h4>
+                                <p style="color: var(--text-secondary); font-size: 14px;">labor_arbitration</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>使用次数：<strong>67</strong></span>
+                            <span style="color: var(--success);">成功率：<strong>88%</strong></span>
+                        </div>
+                    </div>
+                    
+                    <div class="level-card">
+                        <div class="level-header">
+                            <span class="level-icon">🏠</span>
+                            <div>
+                                <h4>房屋租赁合同</h4>
+                                <p style="color: var(--text-secondary); font-size: 14px;">rental_agreement</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>使用次数：<strong>134</strong></span>
+                            <span style="color: var(--success);">成功率：<strong>95%</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="operations-section">
+                <h3>🔧 文书库管理</h3>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <button class="btn btn-primary">添加新文书</button>
+                    <button class="btn btn-primary">批量导入</button>
+                    <button class="btn btn-primary">导出数据</button>
+                    <button class="btn btn-primary">使用统计</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        console.log('🚀 新版管理后台已加载');
+        
+        function switchTab(tabName) {
+            console.log(`🔄 切换到标签页: ${tabName}`);
+            
+            // 移除所有按钮的active状态
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 隐藏所有标签页内容  
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+                console.log(`🙈 隐藏标签页: ${content.id}`);
+            });
+            
+            // 激活选中的按钮
+            const activeBtn = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+                console.log(`✅ 按钮已激活: ${tabName}`);
+            }
+            
+            // 显示选中的标签页内容
+            const activeContent = document.getElementById(`${tabName}-tab`);
+            if (activeContent) {
+                activeContent.classList.add('active');
+                
+                // 强制显示
+                activeContent.style.display = 'block';
+                activeContent.style.visibility = 'visible';
+                activeContent.style.opacity = '1';
+                
+                console.log(`✅ 标签页已激活: ${tabName}`);
+                console.log(`📏 标签页高度: ${activeContent.offsetHeight}px`);
+                console.log(`👁️ 计算样式:`, window.getComputedStyle(activeContent).display);
+                console.log(`🔢 子元素数量: ${activeContent.children.length}`);
+                
+                // 检查测试指示器
+                const testIndicator = activeContent.querySelector('.test-indicator');
+                if (testIndicator) {
+                    console.log(`🎯 测试指示器存在且可见:`, window.getComputedStyle(testIndicator).display);
+                }
+                
+                // 检查operations-section
+                const sections = activeContent.querySelectorAll('.operations-section');
+                console.log(`📋 找到 ${sections.length} 个功能区块`);
+                sections.forEach((section, index) => {
+                    console.log(`📋 区块 ${index + 1} 可见性:`, window.getComputedStyle(section).display);
+                });
+                
+            } else {
+                console.error(`❌ 未找到标签页: ${tabName}-tab`);
+            }
+        }
+        
+        function logout() {
+            console.log('执行退出操作');
+            sessionStorage.removeItem('adminAuth');
+            localStorage.clear();
+            window.location.href = '/';
+        }
+        
+        // 页面加载完成检查
+        window.addEventListener('load', function() {
+            console.log('📋 新版管理后台页面加载完成');
+            
+            // 验证所有标签页存在
+            const allTabs = ['dashboard', 'operations', 'documents'];
+            allTabs.forEach(tabName => {
+                const tabElement = document.getElementById(`${tabName}-tab`);
+                if (tabElement) {
+                    console.log(`✅ ${tabName} 标签页存在，内容长度: ${tabElement.innerHTML.length} 字符`);
+                } else {
+                    console.error(`❌ ${tabName} 标签页不存在`);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
