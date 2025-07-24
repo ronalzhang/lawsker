@@ -7177,6 +7177,8 @@
             const activeContent = document.getElementById(`${tabName}-tab`);
             if (activeContent) {
                 activeContent.classList.add('active');
+                console.log(`✅ 标签页 ${tabName} 已激活，当前类名:`, activeContent.className);
+                console.log(`✅ 标签页 ${tabName} 计算样式 display:`, window.getComputedStyle(activeContent).display);
                 
                 // 根据不同标签页执行特定的初始化
                 switch (tabName) {
@@ -7204,8 +7206,12 @@
                         console.log('🔧 运维工具标签页激活');
                         const operationsContent = document.getElementById('operations-tab');
                         if (operationsContent) {
-                            console.log('✅ 运维工具内容已找到，确保显示');
-                            operationsContent.style.display = 'block';
+                            console.log('✅ 运维工具内容已找到');
+                            const operationsSections = operationsContent.querySelectorAll('.operations-section');
+                            console.log(`📋 运维工具区块数量: ${operationsSections.length}`);
+                            operationsSections.forEach((section, index) => {
+                                console.log(`📋 区块 ${index + 1} 可见性:`, window.getComputedStyle(section).display);
+                            });
                         } else {
                             console.error('❌ 运维工具内容未找到');
                         }
@@ -7215,8 +7221,7 @@
                         console.log('📚 文书库管理标签页激活');
                         const documentsContent = document.getElementById('documents-tab');
                         if (documentsContent) {
-                            console.log('✅ 文书库管理内容已找到，确保显示');
-                            documentsContent.style.display = 'block';
+                            console.log('✅ 文书库管理内容已找到');
                             // 确保DOM完全渲染后再初始化
                             setTimeout(() => {
                                 initDocumentLibrary();
@@ -7387,24 +7392,10 @@
         function initDocumentLibrary() {
             console.log('🚀 初始化文书库管理');
             
-            // 等待DOM元素完全加载
-            function waitForElements() {
-                const requiredElements = ['totalDocuments', 'dailyUsage', 'averageRating', 'hitRate'];
-                const allElementsExist = requiredElements.every(id => document.getElementById(id) !== null);
-                
-                if (allElementsExist) {
-                    console.log('✅ 所有必需的DOM元素已找到，开始加载数据');
-                    loadDocumentStats();
-                    loadDocumentTypes();
-                } else {
-                    console.log('⏳ 等待DOM元素加载...');
-                    // 如果元素还没有加载完成，继续等待
-                    setTimeout(waitForElements, 100);
-                }
-            }
-            
-            // 开始等待元素
-            waitForElements();
+            // 直接加载数据，不需要等待DOM元素（它们已经存在）
+            console.log('✅ 文书库标签页已激活，开始加载数据');
+            loadDocumentStats();
+            loadDocumentTypes();
         }
 
         function loadDocumentStats() {
