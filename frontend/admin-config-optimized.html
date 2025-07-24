@@ -147,7 +147,7 @@
     </script>
     <script src="/js/auth-guard-ascii.js?v=1735538500"></script>
     <style>
-        /* 现代化CSS变量设计系统 */
+        /* 仅保留管理后台特有的CSS变量 */
         :root {
             --primary: #2563eb;
             --primary-dark: #1d4ed8;
@@ -169,15 +169,6 @@
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
             --transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-            
-            /* 修复：添加缺失的玻璃效果和文本颜色变量 */
-            --glass-bg: rgba(22, 28, 48, 0.75);
-            --glass-border: rgba(122, 160, 255, 0.25);
-            --glass-shadow: rgba(0, 0, 0, 0.3);
-            --text-primary: #f0f4ff;
-            --text-secondary: #a8b2d1;
-            --blur-radius: 25px;
-            --border-radius: 20px;
         }
 
         * {
@@ -918,21 +909,28 @@
             font-weight: 600;
         }
 
-        /* 修复：添加stat-card和document-type-card样式 */
-        .stat-card,
+        /* 确保文书库卡片样式正确继承 */
         .document-type-card {
-            background: var(--glass-bg) !important;
-            border: 1px solid var(--glass-border) !important;
-            border-radius: 12px !important;
-            padding: 20px !important;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 20px;
             backdrop-filter: blur(var(--blur-radius));
             -webkit-backdrop-filter: blur(var(--blur-radius));
+            box-shadow: 0 8px 32px var(--glass-shadow);
+            transition: transform 0.3s ease;
         }
 
-        .stats-grid,
-        .document-types-grid {
+        .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .document-types-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 16px;
             margin-bottom: 24px;
         }
@@ -4240,25 +4238,25 @@
             <!-- 文书库概览 -->
             <div class="operations-section">
                 <h3>📊 文书库概览</h3>
-                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-                    <div class="stat-card" style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
-                        <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">文书总数</div>
-                        <div style="color: var(--text-primary); font-size: 28px; font-weight: 600;" id="totalDocuments">156</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">文书总数</div>
+                        <div class="stat-value" id="totalDocuments">156</div>
                         <div style="color: #10b981; font-size: 12px; margin-top: 4px;">↗ +12 本月</div>
                     </div>
-                    <div class="stat-card" style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
-                        <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">今日使用</div>
-                        <div style="color: var(--text-primary); font-size: 28px; font-weight: 600;" id="dailyUsage">28</div>
+                    <div class="stat-card">
+                        <div class="stat-label">今日使用</div>
+                        <div class="stat-value" id="dailyUsage">28</div>
                         <div style="color: #3b82f6; font-size: 12px; margin-top: 4px;">📈 活跃</div>
                     </div>
-                    <div class="stat-card" style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
-                        <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">平均评分</div>
-                        <div style="color: var(--text-primary); font-size: 28px; font-weight: 600;" id="averageRating">4.8</div>
+                    <div class="stat-card">
+                        <div class="stat-label">平均评分</div>
+                        <div class="stat-value" id="averageRating">4.8</div>
                         <div style="color: #f59e0b; font-size: 12px; margin-top: 4px;">⭐ 优秀</div>
                     </div>
-                    <div class="stat-card" style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
-                        <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">库存命中率</div>
-                        <div style="color: var(--text-primary); font-size: 28px; font-weight: 600;" id="hitRate">76%</div>
+                    <div class="stat-card">
+                        <div class="stat-label">库存命中率</div>
+                        <div class="stat-value" id="hitRate">76%</div>
                         <div style="color: #10b981; font-size: 12px; margin-top: 4px;">🎯 高效</div>
                     </div>
                 </div>
@@ -4267,8 +4265,8 @@
             <!-- 文书类型管理 -->
             <div class="operations-section">
                 <h3>📝 文书类型管理</h3>
-                <div class="document-types-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
-                    <div class="document-type-card" style="background: var(--glass-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--glass-border);">
+                <div class="document-types-grid">
+                    <div class="document-type-card">
                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                             <div style="font-size: 24px;">📋</div>
                             <div>
@@ -7133,42 +7131,28 @@
             }
         });
 
-        // 标签页切换功能 - 增加调试信息
+        // 标签页切换功能
         function switchTab(tabName) {
-            console.log(`🚀 切换到标签页: ${tabName}`);
-            
             // 移除所有按钮的active状态
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            console.log('✅ 已移除所有按钮的active状态');
             
             // 隐藏所有标签页内容
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });
-            console.log('✅ 已隐藏所有标签页内容');
             
             // 激活选中的按钮
             const activeBtn = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
             if (activeBtn) {
                 activeBtn.classList.add('active');
-                console.log('✅ 按钮激活成功:', activeBtn.textContent);
-            } else {
-                console.error('❌ 找不到按钮:', tabName);
             }
             
             // 显示选中的标签页内容
             const activeContent = document.getElementById(`${tabName}-tab`);
             if (activeContent) {
                 activeContent.classList.add('active');
-                console.log('✅ 标签页内容激活成功:', activeContent.id);
-                console.log('   内容元素classList:', activeContent.classList.toString());
-                
-                // 强制设置display样式
-                activeContent.style.display = 'block';
-                activeContent.style.visibility = 'visible';
-                console.log('💪 强制设置display: block, visibility: visible');
                 
                 // 根据不同标签页执行特定的初始化
                 switch (tabName) {
@@ -7202,11 +7186,7 @@
                         break;
                 }
             } else {
-                console.error(`❌ 未找到标签页内容: ${tabName}-tab`);
-                console.log('📋 当前页面所有tab-content元素:');
-                document.querySelectorAll('.tab-content').forEach(tab => {
-                    console.log(`   - ${tab.id}, classList: ${tab.classList.toString()}`);
-                });
+                console.warn(`未找到标签页内容: ${tabName}-tab`);
             }
         }
 
