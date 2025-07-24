@@ -3,11 +3,16 @@
  * 系统配置、参数设置、基础数据管理
  */
 
+import settingsAPI from '../api/SettingsAPI.js';
+
 export class SettingsModule extends BaseModule {
     constructor(eventBus) {
         super(eventBus);
         this.currentTab = 'general';
         this.settings = {};
+        this.settingsAPI = settingsAPI;
+        this.isLoading = false;
+        this.hasUnsavedChanges = false;
     }
 
     async render() {
@@ -254,7 +259,113 @@ export class SettingsModule extends BaseModule {
                         </div>
                     </div>
 
-                    <!-- 其他面板... -->
+                    <!-- 邮件配置 -->
+                    <div class="settings-panel" id="email-panel">
+                        <div class="panel-header">
+                            <h2>邮件配置</h2>
+                            <p>配置SMTP邮件服务</p>
+                        </div>
+                        <div class="settings-form">
+                            <div class="form-section">
+                                <h3>SMTP设置</h3>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label">SMTP服务器</label>
+                                        <input type="text" class="form-input" id="smtp-host" placeholder="smtp.exmail.qq.com">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">端口</label>
+                                        <input type="number" class="form-input" id="smtp-port" value="465">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">用户名</label>
+                                        <input type="text" class="form-input" id="smtp-user" placeholder="noreply@lawsker.com">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">密码</label>
+                                        <input type="password" class="form-input" id="smtp-password" placeholder="邮箱密码或授权码">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">发件人邮箱</label>
+                                        <input type="email" class="form-input" id="from-email" placeholder="noreply@lawsker.com">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">发件人名称</label>
+                                        <input type="text" class="form-input" id="from-name" placeholder="律刻法律服务平台">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-section">
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="smtp-secure" checked>
+                                        <span>启用SSL/TLS加密</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button class="btn btn-primary" id="save-email">保存设置</button>
+                                <button class="btn btn-secondary" id="test-email">测试连接</button>
+                                <button class="btn btn-secondary" id="reset-email">重置</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 安全设置 -->
+                    <div class="settings-panel" id="security-panel">
+                        <div class="panel-header">
+                            <h2>安全设置</h2>
+                            <p>配置系统安全策略</p>
+                        </div>
+                        <div class="settings-form">
+                            <div class="form-section">
+                                <h3>密码策略</h3>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label">最小密码长度</label>
+                                        <input type="number" class="form-input" id="password-min-length" value="8" min="6" max="32">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">最大登录尝试次数</label>
+                                        <input type="number" class="form-input" id="max-login-attempts" value="5" min="3" max="10">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">锁定时长(分钟)</label>
+                                        <input type="number" class="form-input" id="lockout-duration" value="5" min="1" max="60">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">会话超时(小时)</label>
+                                        <input type="number" class="form-input" id="session-max-age" value="2" min="1" max="24">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-section">
+                                <h3>密码要求</h3>
+                                <div class="checkbox-list">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="require-uppercase" checked>
+                                        <span>要求包含大写字母</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="require-numbers" checked>
+                                        <span>要求包含数字</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="require-symbols">
+                                        <span>要求包含特殊字符</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="enable-two-factor">
+                                        <span>启用双因素认证</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button class="btn btn-primary" id="save-security">保存设置</button>
+                                <button class="btn btn-secondary" id="reset-security">重置</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -269,31 +380,34 @@ export class SettingsModule extends BaseModule {
             .settings-container {
                 max-width: 1200px;
                 margin: 0 auto;
-                display: grid;
-                grid-template-columns: 250px 1fr;
-                gap: 32px;
             }
 
             .settings-navigation {
                 background: var(--bg-card);
+                backdrop-filter: blur(20px);
                 border: 1px solid var(--border-primary);
                 border-radius: var(--radius-lg);
-                padding: 16px;
-                height: fit-content;
-                position: sticky;
-                top: 96px;
+                padding: 8px;
+                margin-bottom: 32px;
+                display: flex;
+                gap: 4px;
+                overflow-x: auto;
             }
 
             .nav-item {
                 display: flex;
                 align-items: center;
-                gap: 12px;
-                padding: 12px 16px;
+                gap: 8px;
+                padding: 12px 20px;
                 border-radius: var(--radius-md);
                 cursor: pointer;
                 transition: all var(--transition-fast);
-                margin-bottom: 4px;
                 color: var(--text-secondary);
+                white-space: nowrap;
+                font-size: 14px;
+                font-weight: 500;
+                min-width: 140px;
+                justify-content: center;
             }
 
             .nav-item:hover {
@@ -302,12 +416,15 @@ export class SettingsModule extends BaseModule {
             }
 
             .nav-item.active {
-                background: rgba(59, 130, 246, 0.1);
-                color: var(--primary);
+                background: var(--primary);
+                color: white;
+                box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
             }
 
             .nav-item svg {
                 flex-shrink: 0;
+                width: 16px;
+                height: 16px;
             }
 
             .settings-content {
@@ -317,13 +434,16 @@ export class SettingsModule extends BaseModule {
             .settings-panel {
                 display: none;
                 background: var(--bg-card);
+                backdrop-filter: blur(20px);
                 border: 1px solid var(--border-primary);
                 border-radius: var(--radius-lg);
                 padding: 32px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             }
 
             .settings-panel.active {
                 display: block;
+                animation: fadeIn 0.3s ease-in-out;
             }
 
             .panel-header {
@@ -587,23 +707,42 @@ export class SettingsModule extends BaseModule {
                 background: var(--bg-hover);
             }
 
-            @media (max-width: 768px) {
-                .settings-container {
-                    grid-template-columns: 1fr;
-                    gap: 20px;
+            @keyframes fadeIn {
+                from { 
+                    opacity: 0; 
+                    transform: translateY(10px); 
                 }
+                to { 
+                    opacity: 1; 
+                    transform: translateY(0); 
+                }
+            }
 
+            .checkbox-group {
+                margin-bottom: 16px;
+            }
+
+            .checkbox-list {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .checkbox-list .checkbox-label {
+                margin-bottom: 0;
+            }
+
+            @media (max-width: 768px) {
                 .settings-navigation {
-                    position: static;
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-                    gap: 8px;
+                    flex-wrap: wrap;
+                    justify-content: center;
                 }
 
                 .nav-item {
+                    min-width: 120px;
                     flex-direction: column;
-                    text-align: center;
-                    padding: 12px 8px;
+                    gap: 4px;
+                    padding: 8px 12px;
                 }
 
                 .nav-item span {
@@ -651,34 +790,124 @@ export class SettingsModule extends BaseModule {
         document.getElementById('save-payment')?.addEventListener('click', () => {
             this.savePaymentSettings();
         });
+
+        // 重置按钮
+        document.getElementById('reset-general')?.addEventListener('click', () => {
+            this.resetSettings('general');
+        });
+
+        document.getElementById('reset-business')?.addEventListener('click', () => {
+            this.resetSettings('business');
+        });
+
+        // 测试连接按钮
+        document.getElementById('test-payment')?.addEventListener('click', () => {
+            this.testPaymentConnection();
+        });
+
+        // 监听表单变化以标记未保存状态
+        this.bindFormChangeEvents();
     }
 
     async loadData() {
-        // 模拟加载配置数据
-        this.settings = {
-            general: {
-                siteName: '律刻法律服务平台',
-                siteDescription: '专业的法律服务平台，连接用户与律师',
-                contactEmail: 'contact@lawsker.com',
-                contactPhone: '400-123-4567',
-                pageSize: 20,
-                sessionTimeout: 30,
-                timezone: 'Asia/Shanghai',
-                language: 'zh-CN'
-            },
-            business: {
-                consultingFee: 20,
-                documentFee: 100,
-                minimumFee: 50,
-                requireRealName: true,
-                requireLawyerVerification: true,
-                autoAssignTasks: false
-            },
-            payment: {
-                wechatEnabled: true,
-                alipayEnabled: true
+        try {
+            this.showLoading();
+            this.settings = await this.settingsAPI.loadSettings();
+            this.populateFormFields();
+            this.hideLoading();
+        } catch (error) {
+            console.error('加载设置失败:', error);
+            this.showError('加载设置失败，请刷新页面重试');
+        }
+    }
+
+    showLoading() {
+        this.isLoading = true;
+        const panels = document.querySelectorAll('.settings-panel');
+        panels.forEach(panel => {
+            panel.style.opacity = '0.6';
+            panel.style.pointerEvents = 'none';
+        });
+    }
+
+    hideLoading() {
+        this.isLoading = false;
+        const panels = document.querySelectorAll('.settings-panel');
+        panels.forEach(panel => {
+            panel.style.opacity = '1';
+            panel.style.pointerEvents = 'auto';
+        });
+    }
+
+    populateFormFields() {
+        // 填充基础设置表单
+        if (this.settings.general) {
+            const general = this.settings.general;
+            const fields = {
+                'site-name': general.siteName,
+                'site-description': general.siteDescription,
+                'contact-email': general.contactEmail,
+                'contact-phone': general.contactPhone,
+                'page-size': general.pageSize,
+                'session-timeout': general.sessionTimeout,
+                'timezone': general.timezone,
+                'language': general.language
+            };
+
+            Object.entries(fields).forEach(([id, value]) => {
+                const element = document.getElementById(id);
+                if (element && value !== undefined) {
+                    element.value = value;
+                }
+            });
+        }
+
+        // 填充业务设置表单
+        if (this.settings.business) {
+            this.populateBusinessFields();
+        }
+
+        // 填充支付设置表单
+        if (this.settings.payment) {
+            this.populatePaymentFields();
+        }
+    }
+
+    populateBusinessFields() {
+        const business = this.settings.business;
+        
+        // 更新业务规则复选框
+        const ruleElements = document.querySelectorAll('.rule-item input[type="checkbox"]');
+        ruleElements.forEach((checkbox, index) => {
+            switch (index) {
+                case 0:
+                    checkbox.checked = business.requireRealName;
+                    break;
+                case 1:
+                    checkbox.checked = business.requireLawyerVerification;
+                    break;
+                case 2:
+                    checkbox.checked = business.autoAssignTasks;
+                    break;
             }
-        };
+        });
+    }
+
+    populatePaymentFields() {
+        const payment = this.settings.payment;
+        
+        // 更新支付方式开关
+        const paymentSwitches = document.querySelectorAll('.method-card .switch input');
+        paymentSwitches.forEach((switchInput, index) => {
+            switch (index) {
+                case 0:
+                    switchInput.checked = payment.wechatEnabled;
+                    break;
+                case 1:
+                    switchInput.checked = payment.alipayEnabled;
+                    break;
+            }
+        });
     }
 
     switchPanel(tab) {
@@ -695,49 +924,205 @@ export class SettingsModule extends BaseModule {
         });
     }
 
-    saveGeneralSettings() {
-        const formData = {
-            siteName: document.getElementById('site-name').value,
-            siteDescription: document.getElementById('site-description').value,
-            contactEmail: document.getElementById('contact-email').value,
-            contactPhone: document.getElementById('contact-phone').value,
-            pageSize: parseInt(document.getElementById('page-size').value),
-            sessionTimeout: parseInt(document.getElementById('session-timeout').value),
-            timezone: document.getElementById('timezone').value,
-            language: document.getElementById('language').value
-        };
+    async saveGeneralSettings() {
+        if (this.isLoading) return;
 
-        // 模拟保存
-        console.log('保存基础设置:', formData);
-        this.showNotification('基础设置保存成功', 'success');
+        try {
+            this.showLoading();
+            
+            const formData = {
+                siteName: document.getElementById('site-name').value,
+                siteDescription: document.getElementById('site-description').value,
+                contactEmail: document.getElementById('contact-email').value,
+                contactPhone: document.getElementById('contact-phone').value,
+                pageSize: parseInt(document.getElementById('page-size').value),
+                sessionTimeout: parseInt(document.getElementById('session-timeout').value),
+                timezone: document.getElementById('timezone').value,
+                language: document.getElementById('language').value
+            };
 
-        // 更新本地设置
-        this.settings.general = { ...this.settings.general, ...formData };
+            const result = await this.settingsAPI.saveSettings('general', formData);
+            
+            if (result.success) {
+                this.settings.general = { ...this.settings.general, ...formData };
+                this.hasUnsavedChanges = false;
+                this.showNotification(
+                    result.fromLocal ? '基础设置已保存到本地' : '基础设置保存成功', 
+                    'success'
+                );
+            } else {
+                this.showNotification(result.error || '保存失败', 'error');
+            }
+        } catch (error) {
+            console.error('保存基础设置失败:', error);
+            this.showNotification('保存失败: ' + error.message, 'error');
+        } finally {
+            this.hideLoading();
+        }
     }
 
-    saveBusinessSettings() {
-        // 收集业务配置数据
-        const businessData = {
-            // 这里可以收集业务配置表单数据
-        };
+    async saveBusinessSettings() {
+        if (this.isLoading) return;
 
-        console.log('保存业务设置:', businessData);
-        this.showNotification('业务设置保存成功', 'success');
+        try {
+            this.showLoading();
+            
+            // 收集业务配置数据
+            const ruleElements = document.querySelectorAll('.rule-item input[type="checkbox"]');
+            const businessData = {
+                consultingFeeRate: parseFloat(document.querySelector('.pricing-item input[step="0.01"]')?.value) || 20,
+                documentFee: parseFloat(document.querySelector('.pricing-item input[step="1"]')?.value) || 100,
+                minimumFee: parseFloat(document.querySelectorAll('.pricing-item input[step="1"]')[1]?.value) || 50,
+                requireRealName: ruleElements[0]?.checked || false,
+                requireLawyerVerification: ruleElements[1]?.checked || false,
+                autoAssignTasks: ruleElements[2]?.checked || false,
+                maxTasksPerLawyer: 10,
+                taskTimeoutHours: 72
+            };
+
+            const result = await this.settingsAPI.saveSettings('business', businessData);
+            
+            if (result.success) {
+                this.settings.business = { ...this.settings.business, ...businessData };
+                this.hasUnsavedChanges = false;
+                this.showNotification(
+                    result.fromLocal ? '业务设置已保存到本地' : '业务设置保存成功', 
+                    'success'
+                );
+            } else {
+                this.showNotification(result.error || '保存失败', 'error');
+            }
+        } catch (error) {
+            console.error('保存业务设置失败:', error);
+            this.showNotification('保存失败: ' + error.message, 'error');
+        } finally {
+            this.hideLoading();
+        }
     }
 
-    savePaymentSettings() {
-        // 收集支付配置数据
-        const paymentData = {
-            // 这里可以收集支付配置表单数据
+    async savePaymentSettings() {
+        if (this.isLoading) return;
+
+        try {
+            this.showLoading();
+            
+            // 收集支付配置数据
+            const paymentSwitches = document.querySelectorAll('.method-card .switch input');
+            const paymentInputs = document.querySelectorAll('.method-config .form-input');
+            
+            const paymentData = {
+                wechatEnabled: paymentSwitches[0]?.checked || false,
+                alipayEnabled: paymentSwitches[1]?.checked || false,
+                wechatMerchantId: paymentInputs[0]?.value || '',
+                wechatApiKey: paymentInputs[1]?.value || '',
+                alipayAppId: paymentInputs[2]?.value || '',
+                alipayPrivateKey: paymentInputs[3]?.value || '',
+                paymentTimeout: 30
+            };
+
+            const result = await this.settingsAPI.saveSettings('payment', paymentData);
+            
+            if (result.success) {
+                this.settings.payment = { ...this.settings.payment, ...paymentData };
+                this.hasUnsavedChanges = false;
+                this.showNotification(
+                    result.fromLocal ? '支付设置已保存到本地' : '支付设置保存成功', 
+                    'success'
+                );
+            } else {
+                this.showNotification(result.error || '保存失败', 'error');
+            }
+        } catch (error) {
+            console.error('保存支付设置失败:', error);
+            this.showNotification('保存失败: ' + error.message, 'error');
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    async testPaymentConnection() {
+        if (this.isLoading) return;
+
+        try {
+            this.showLoading();
+            
+            const paymentSwitches = document.querySelectorAll('.method-card .switch input');
+            const paymentInputs = document.querySelectorAll('.method-config .form-input');
+            
+            const paymentData = {
+                wechatEnabled: paymentSwitches[0]?.checked || false,
+                alipayEnabled: paymentSwitches[1]?.checked || false,
+                wechatMerchantId: paymentInputs[0]?.value || '',
+                wechatApiKey: paymentInputs[1]?.value || '',
+                alipayAppId: paymentInputs[2]?.value || '',
+                alipayPrivateKey: paymentInputs[3]?.value || ''
+            };
+
+            const result = await this.settingsAPI.testPaymentConfig(paymentData);
+            
+            if (result.success) {
+                this.showNotification('支付服务连接测试成功', 'success');
+            } else {
+                this.showNotification(result.error || '支付服务连接测试失败', 'error');
+            }
+        } catch (error) {
+            console.error('测试支付连接失败:', error);
+            this.showNotification('测试失败: ' + error.message, 'error');
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    async resetSettings(category) {
+        if (this.isLoading) return;
+
+        const categoryNames = {
+            general: '基础设置',
+            business: '业务设置',
+            payment: '支付设置',
+            email: '邮件设置',
+            security: '安全设置'
         };
 
-        console.log('保存支付设置:', paymentData);
-        this.showNotification('支付设置保存成功', 'success');
+        if (!confirm(`确定要重置${categoryNames[category] || category}为默认值吗？此操作不可撤销。`)) {
+            return;
+        }
+
+        try {
+            this.showLoading();
+            
+            const result = await this.settingsAPI.resetSettings(category);
+            
+            if (result.success) {
+                await this.loadData(); // 重新加载数据
+                this.showNotification(`${categoryNames[category]}已重置为默认值`, 'success');
+            } else {
+                this.showNotification(result.error || '重置失败', 'error');
+            }
+        } catch (error) {
+            console.error('重置设置失败:', error);
+            this.showNotification('重置失败: ' + error.message, 'error');
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    bindFormChangeEvents() {
+        const formInputs = document.querySelectorAll('.settings-form input, .settings-form select, .settings-form textarea');
+        formInputs.forEach(input => {
+            input.addEventListener('change', () => {
+                this.hasUnsavedChanges = true;
+            });
+        });
     }
 
     showNotification(message, type) {
         if (this.eventBus) {
             this.eventBus.emit('notification', { message, type });
         }
+    }
+
+    showError(message) {
+        this.showNotification(message, 'error');
     }
 }

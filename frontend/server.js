@@ -62,14 +62,8 @@ app.get('/demo/business-flow', routeHandler('business-flow-demo.html'));
 app.get('/test/flow', routeHandler('flow-test.html'));
 
 // 管理后台路由
-app.get('/admin-pro', routeHandler('admin-config-optimized.html')); // 旧版后台
-app.get('/admin', routeHandler('admin/index.html')); // 新版后台
+app.get('/admin', routeHandler('admin/index.html'));
 app.get('/console', routeHandler('dashboard.html'));
-
-// 禁止直接访问HTML文件
-app.get('/admin-config-optimized.html', (req, res) => {
-    res.status(404).send('Not Found');
-});
 
 // 兼容性重定向
 app.get('/sales', (req, res) => {
