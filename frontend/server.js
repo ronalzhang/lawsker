@@ -63,6 +63,7 @@ app.get('/test/flow', routeHandler('flow-test.html'));
 
 // 管理后台路由 - 只允许admin-pro访问
 app.get('/admin-pro', routeHandler('admin-config-optimized.html'));
+app.get('/admin-test', routeHandler('admin-test-minimal.html'));
 app.get('/console', routeHandler('dashboard.html'));
 
 // 禁止直接访问HTML文件
