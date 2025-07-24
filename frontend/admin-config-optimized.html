@@ -7277,17 +7277,12 @@
             setTimeout(() => {
                 loadDocumentStats();
                 loadDocumentTypes();
-            }, 100);
+            }, 200);
         }
 
         function loadDocumentStats() {
-            // 检查文书库标签页是否可见
-            const documentsTab = document.getElementById('documents-tab');
-            if (!documentsTab || !documentsTab.classList.contains('active')) {
-                console.log('文书库标签页未激活，跳过数据加载');
-                return;
-            }
-
+            console.log('开始加载文书库统计数据');
+            
             // 模拟加载文书库统计数据
             const stats = {
                 totalDocuments: Math.floor(Math.random() * 200) + 100,
@@ -7301,6 +7296,7 @@
                 const element = document.getElementById(id);
                 if (element) {
                     element.textContent = value;
+                    console.log(`已更新元素 ${id}: ${value}`);
                 } else {
                     console.warn(`元素 ${id} 不存在`);
                 }
