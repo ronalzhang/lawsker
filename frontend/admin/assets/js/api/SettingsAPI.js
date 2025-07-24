@@ -58,6 +58,108 @@ class SettingsAPI {
                 lockoutDuration: 300000, // 5分钟
                 enableTwoFactor: false,
                 allowedIpWhitelist: []
+            },
+            ai: {
+                engines: {
+                    openai: {
+                        enabled: true,
+                        apiKey: '',
+                        model: 'gpt-4',
+                        baseUrl: 'https://api.openai.com/v1',
+                        status: 'active'
+                    },
+                    deepseek: {
+                        enabled: true,
+                        apiKey: '',
+                        model: 'deepseek-chat',
+                        baseUrl: 'https://api.deepseek.com/v1',
+                        status: 'active'
+                    },
+                    claude: {
+                        enabled: false,
+                        apiKey: '',
+                        model: 'claude-3-5-sonnet-20241022',
+                        baseUrl: 'https://api.anthropic.com',
+                        status: 'backup'
+                    }
+                },
+                strategy: {
+                    primaryEngine: 'openai',
+                    backupEngine: 'deepseek',
+                    timeout: 60,
+                    retryAttempts: 3
+                },
+                prompts: {
+                    lawyer_letter: `你是一位专业的律师，请根据以下信息生成一份正式的律师函：
+案件类型：{case_type}
+当事人：{client_name}
+对方：{target_name}
+争议金额：{amount}
+案件描述：{description}
+法律依据：{legal_basis}
+请确保律师函包含以下要素：
+1. 正式的开头称谓
+2. 事实陈述
+3. 法律分析
+4. 具体要求
+5. 截止期限
+6. 法律后果警告`,
+                    debt_collection: `你是一位专业的律师，请生成一份债务催收律师函：
+债务人：{debtor_name}
+债权人：{creditor_name}
+欠款金额：{debt_amount}
+逾期天数：{overdue_days}
+合同编号：{contract_number}
+要求：语气严厉但合法合规，明确还款期限和法律后果`,
+                    contract_review: `你是一位专业的律师，请对以下合同进行法律审查：
+合同类型：{contract_type}
+合同名称：{contract_name}
+当事方：{parties}
+合同金额：{contract_amount}
+履行期限：{performance_deadline}
+特殊条款：{special_clauses}
+请从以下角度进行审查：
+1. 合同主体资格
+2. 合同条款完整性
+3. 法律风险识别
+4. 合规性检查`,
+                    legal_consultation: `你是一位专业的律师，请针对以下法律问题提供咨询意见：
+咨询类别：{consultation_category}
+问题描述：{problem_description}
+相关背景：{background_info}
+期望结果：{expected_outcome}
+请提供：
+1. 问题的法律性质分析
+2. 适用的法律法规
+3. 处理建议和操作步骤`,
+                    legal_document: `你是一位专业的律师，请根据以下信息生成相应的法律文书：
+文书类型：{document_type}
+案件标题：{case_title}
+基本事实：{basic_facts}
+法律依据：{legal_basis}
+处理要求：{processing_requirements}
+请确保文书内容：
+1. 事实描述客观准确
+2. 法律依据充分有效
+3. 格式规范专业`
+                },
+                stats: {
+                    openai: {
+                        todayCalls: 1247,
+                        monthCalls: 28569,
+                        balance: '$87.45'
+                    },
+                    deepseek: {
+                        todayCalls: 892,
+                        monthCalls: 19765,
+                        balance: '¥156.80'
+                    },
+                    claude: {
+                        todayCalls: 0,
+                        monthCalls: 0,
+                        balance: '--'
+                    }
+                }
             }
         };
     }
@@ -189,6 +291,47 @@ class SettingsAPI {
                 details: error.message 
             };
         }
+    }
+
+    /**
+     * 测试AI引擎配置
+     */
+    async testAIConfig(aiSettings) {
+        try {
+            const response = await this.fetch('/ai/test', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(aiSettings)
+            });
+
+            const result = await response.json();
+            return { success: response.ok, ...result };
+        } catch (error) {
+            return { 
+                success: false, 
+                error: 'AI服务连接失败',
+                details: error.message 
+            };
+        }
+    }
+
+    /**
+     * 获取AI引擎统计数据
+     */
+    async getAIStats() {
+        try {
+            const response = await this.fetch('/ai/stats');
+            if (response.ok) {
+                return await response.json();
+            }
+        } catch (error) {
+            console.warn('获取AI统计数据失败:', error);
+        }
+
+        // 回退到默认统计数据
+        return this.defaultSettings.ai.stats;
     }
 
     /**
@@ -324,6 +467,31 @@ class SettingsAPI {
                 validated.sessionMaxAge = Math.max(300000, Math.min(86400000, parseInt(validated.sessionMaxAge) || 7200000));
                 validated.maxLoginAttempts = Math.max(3, Math.min(10, parseInt(validated.maxLoginAttempts) || 5));
                 validated.lockoutDuration = Math.max(60000, Math.min(3600000, parseInt(validated.lockoutDuration) || 300000));
+                
+                return validated;
+            },
+            
+            ai: (data) => {
+                const validated = { ...data };
+                
+                // 验证引擎配置
+                if (validated.engines) {
+                    Object.keys(validated.engines).forEach(engine => {
+                        const config = validated.engines[engine];
+                        if (config.enabled && !config.apiKey) {
+                            throw new Error(`${engine}引擎已启用但API Key为空`);
+                        }
+                        if (config.enabled && !config.baseUrl) {
+                            throw new Error(`${engine}引擎已启用但Base URL为空`);
+                        }
+                    });
+                }
+                
+                // 验证引擎策略
+                if (validated.strategy) {
+                    validated.strategy.timeout = Math.max(10, Math.min(300, parseInt(validated.strategy.timeout) || 60));
+                    validated.strategy.retryAttempts = Math.max(1, Math.min(5, parseInt(validated.strategy.retryAttempts) || 3));
+                }
                 
                 return validated;
             }

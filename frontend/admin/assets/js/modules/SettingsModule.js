@@ -48,6 +48,13 @@ export class SettingsModule extends BaseModule {
                         </svg>
                         <span>支付设置</span>
                     </div>
+                    <div class="nav-item" data-tab="ai">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1m15.5-6.5L17 8.5m-10 7L3.5 19m15.5.5L17 15.5m-10-7L3.5 4.5"></path>
+                        </svg>
+                        <span>AI配置</span>
+                    </div>
                     <div class="nav-item" data-tab="email">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
@@ -255,6 +262,237 @@ export class SettingsModule extends BaseModule {
                             <div class="form-actions">
                                 <button class="btn btn-primary" id="save-payment">保存设置</button>
                                 <button class="btn btn-secondary" id="test-payment">测试连接</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI配置 -->
+                    <div class="settings-panel" id="ai-panel">
+                        <div class="panel-header">
+                            <h2>AI配置</h2>
+                            <p>配置AI服务提供商和参数</p>
+                        </div>
+                        <div class="settings-form">
+                            <!-- AI引擎配置 -->
+                            <div class="form-section">
+                                <h3>AI引擎配置</h3>
+                                <div class="ai-engines-grid">
+                                    <!-- OpenAI GPT -->
+                                    <div class="ai-engine-card">
+                                        <div class="engine-header">
+                                            <div class="engine-info">
+                                                <h4>OpenAI GPT</h4>
+                                                <span class="status-indicator status-active" id="openai-status">运行中</span>
+                                            </div>
+                                            <label class="switch">
+                                                <input type="checkbox" id="openai-enabled" checked>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                        <div class="engine-config">
+                                            <div class="form-group">
+                                                <label class="form-label">API Key</label>
+                                                <input type="password" class="form-input" id="openai-api-key" placeholder="sk-...">
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">模型</label>
+                                                <select class="form-input" id="openai-model">
+                                                    <option value="gpt-4" selected>GPT-4</option>
+                                                    <option value="gpt-3.5-turbo">GPT-3.5-Turbo</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">Base URL</label>
+                                                <input type="url" class="form-input" id="openai-base-url" value="https://api.openai.com/v1">
+                                            </div>
+                                        </div>
+                                        <div class="engine-stats">
+                                            <div class="stat-item">
+                                                <span class="stat-label">今日调用</span>
+                                                <span class="stat-value" id="openai-today">1,247</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-label">月度调用</span>
+                                                <span class="stat-value" id="openai-month">28,569</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-label">账户余额</span>
+                                                <span class="stat-value" id="openai-balance">$87.45</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Deepseek -->
+                                    <div class="ai-engine-card">
+                                        <div class="engine-header">
+                                            <div class="engine-info">
+                                                <h4>Deepseek Chat</h4>
+                                                <span class="status-indicator status-active" id="deepseek-status">运行中</span>
+                                            </div>
+                                            <label class="switch">
+                                                <input type="checkbox" id="deepseek-enabled" checked>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                        <div class="engine-config">
+                                            <div class="form-group">
+                                                <label class="form-label">API Key</label>
+                                                <input type="password" class="form-input" id="deepseek-api-key" placeholder="sk-...">
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">模型</label>
+                                                <select class="form-input" id="deepseek-model">
+                                                    <option value="deepseek-chat" selected>deepseek-chat</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">Base URL</label>
+                                                <input type="url" class="form-input" id="deepseek-base-url" value="https://api.deepseek.com/v1">
+                                            </div>
+                                        </div>
+                                        <div class="engine-stats">
+                                            <div class="stat-item">
+                                                <span class="stat-label">今日调用</span>
+                                                <span class="stat-value" id="deepseek-today">892</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-label">月度调用</span>
+                                                <span class="stat-value" id="deepseek-month">19,765</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-label">账户余额</span>
+                                                <span class="stat-value" id="deepseek-balance">¥156.80</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Claude -->
+                                    <div class="ai-engine-card">
+                                        <div class="engine-header">
+                                            <div class="engine-info">
+                                                <h4>Claude 3.5</h4>
+                                                <span class="status-indicator status-backup" id="claude-status">备用</span>
+                                            </div>
+                                            <label class="switch">
+                                                <input type="checkbox" id="claude-enabled">
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                        <div class="engine-config">
+                                            <div class="form-group">
+                                                <label class="form-label">API Key</label>
+                                                <input type="password" class="form-input" id="claude-api-key" placeholder="sk-ant-...">
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">模型</label>
+                                                <select class="form-input" id="claude-model">
+                                                    <option value="claude-3-5-sonnet-20241022" selected>Claude 3.5 Sonnet</option>
+                                                    <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">Base URL</label>
+                                                <input type="url" class="form-input" id="claude-base-url" value="https://api.anthropic.com">
+                                            </div>
+                                        </div>
+                                        <div class="engine-stats">
+                                            <div class="stat-item">
+                                                <span class="stat-label">今日调用</span>
+                                                <span class="stat-value" id="claude-today">0</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-label">月度调用</span>
+                                                <span class="stat-value" id="claude-month">0</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-label">账户余额</span>
+                                                <span class="stat-value" id="claude-balance">--</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 引擎策略配置 -->
+                            <div class="form-section">
+                                <h3>引擎策略</h3>
+                                <div class="strategy-grid">
+                                    <div class="form-group">
+                                        <label class="form-label">主引擎</label>
+                                        <select class="form-input" id="primary-engine">
+                                            <option value="openai" selected>OpenAI GPT-4</option>
+                                            <option value="deepseek">Deepseek Chat</option>
+                                            <option value="claude">Claude 3.5</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">备用引擎</label>
+                                        <select class="form-input" id="backup-engine">
+                                            <option value="deepseek" selected>Deepseek Chat</option>
+                                            <option value="openai">OpenAI GPT-4</option>
+                                            <option value="claude">Claude 3.5</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">超时时间(秒)</label>
+                                        <input type="number" class="form-input" id="ai-timeout" value="60" min="10" max="300">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">重试次数</label>
+                                        <input type="number" class="form-input" id="ai-retry" value="3" min="1" max="5">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Prompt模板管理 -->
+                            <div class="form-section">
+                                <h3>Prompt模板管理</h3>
+                                <div class="prompt-templates">
+                                    <div class="template-selector">
+                                        <label class="form-label">选择模板类型</label>
+                                        <select class="form-input" id="template-type">
+                                            <option value="lawyer_letter">律师函</option>
+                                            <option value="debt_collection">债务催收函</option>
+                                            <option value="contract_review">合同审查</option>
+                                            <option value="legal_consultation">法律咨询</option>
+                                            <option value="legal_document">通用法律文书</option>
+                                        </select>
+                                    </div>
+                                    <div class="template-editor">
+                                        <label class="form-label">Prompt模板内容</label>
+                                        <textarea class="form-input prompt-textarea" id="prompt-content" rows="12" placeholder="请输入Prompt模板内容...">你是一位专业的律师，请根据以下信息生成一份正式的律师函：
+案件类型：{case_type}
+当事人：{client_name}
+对方：{target_name}
+争议金额：{amount}
+案件描述：{description}
+法律依据：{legal_basis}
+请确保律师函包含以下要素：
+1. 正式的开头称谓
+2. 事实陈述
+3. 法律分析
+4. 具体要求
+5. 截止期限
+6. 法律后果警告</textarea>
+                                    </div>
+                                    <div class="template-variables">
+                                        <label class="form-label">可用变量</label>
+                                        <div class="variables-list">
+                                            <span class="variable-tag">{case_type}</span>
+                                            <span class="variable-tag">{client_name}</span>
+                                            <span class="variable-tag">{target_name}</span>
+                                            <span class="variable-tag">{amount}</span>
+                                            <span class="variable-tag">{description}</span>
+                                            <span class="variable-tag">{legal_basis}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button class="btn btn-primary" id="save-ai">保存设置</button>
+                                <button class="btn btn-secondary" id="test-ai">测试连接</button>
+                                <button class="btn btn-secondary" id="reset-ai">重置</button>
                             </div>
                         </div>
                     </div>
@@ -732,6 +970,155 @@ export class SettingsModule extends BaseModule {
                 margin-bottom: 0;
             }
 
+            /* AI配置样式 */
+            .ai-engines-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                gap: 24px;
+                margin-bottom: 32px;
+            }
+
+            .ai-engine-card {
+                background: var(--bg-tertiary);
+                border: 1px solid var(--border-primary);
+                border-radius: var(--radius-lg);
+                padding: 20px;
+                transition: all var(--transition-fast);
+            }
+
+            .ai-engine-card:hover {
+                border-color: var(--border-accent);
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-md);
+            }
+
+            .engine-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 16px;
+                padding-bottom: 16px;
+                border-bottom: 1px solid var(--border-secondary);
+            }
+
+            .engine-info h4 {
+                color: var(--text-primary);
+                font-size: 16px;
+                font-weight: 600;
+                margin: 0 0 4px 0;
+            }
+
+            .status-indicator {
+                padding: 2px 8px;
+                border-radius: var(--radius-sm);
+                font-size: 12px;
+                font-weight: 500;
+            }
+
+            .status-active {
+                background: rgba(16, 185, 129, 0.1);
+                color: var(--success);
+            }
+
+            .status-backup {
+                background: rgba(251, 191, 36, 0.1);
+                color: var(--warning);
+            }
+
+            .status-inactive {
+                background: rgba(156, 163, 175, 0.1);
+                color: var(--text-muted);
+            }
+
+            .engine-config {
+                margin-bottom: 16px;
+            }
+
+            .engine-config .form-group {
+                margin-bottom: 12px;
+            }
+
+            .engine-stats {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px;
+                padding-top: 16px;
+                border-top: 1px solid var(--border-secondary);
+            }
+
+            .stat-item {
+                text-align: center;
+            }
+
+            .stat-label {
+                display: block;
+                color: var(--text-secondary);
+                font-size: 12px;
+                margin-bottom: 4px;
+            }
+
+            .stat-value {
+                display: block;
+                color: var(--text-primary);
+                font-size: 14px;
+                font-weight: 600;
+            }
+
+            .strategy-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+            }
+
+            .prompt-templates {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .template-selector {
+                max-width: 300px;
+            }
+
+            .template-editor {
+                flex: 1;
+            }
+
+            .prompt-textarea {
+                min-height: 200px;
+                font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+                font-size: 13px;
+                line-height: 1.4;
+                resize: vertical;
+            }
+
+            .template-variables {
+                margin-top: 12px;
+            }
+
+            .variables-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 8px;
+            }
+
+            .variable-tag {
+                background: rgba(16, 185, 129, 0.1);
+                color: var(--success);
+                font-size: 12px;
+                padding: 4px 8px;
+                border-radius: var(--radius-sm);
+                font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+                cursor: pointer;
+                transition: all var(--transition-fast);
+            }
+
+            .variable-tag:hover {
+                background: rgba(16, 185, 129, 0.2);
+                transform: scale(1.05);
+            }
+
             @media (max-width: 768px) {
                 .settings-navigation {
                     flex-wrap: wrap;
@@ -791,6 +1178,18 @@ export class SettingsModule extends BaseModule {
             this.savePaymentSettings();
         });
 
+        document.getElementById('save-email')?.addEventListener('click', () => {
+            this.saveEmailSettings();
+        });
+
+        document.getElementById('save-security')?.addEventListener('click', () => {
+            this.saveSecuritySettings();
+        });
+
+        document.getElementById('save-ai')?.addEventListener('click', () => {
+            this.saveAISettings();
+        });
+
         // 重置按钮
         document.getElementById('reset-general')?.addEventListener('click', () => {
             this.resetSettings('general');
@@ -800,9 +1199,34 @@ export class SettingsModule extends BaseModule {
             this.resetSettings('business');
         });
 
+        document.getElementById('reset-email')?.addEventListener('click', () => {
+            this.resetSettings('email');
+        });
+
+        document.getElementById('reset-security')?.addEventListener('click', () => {
+            this.resetSettings('security');
+        });
+
+        document.getElementById('reset-ai')?.addEventListener('click', () => {
+            this.resetSettings('ai');
+        });
+
         // 测试连接按钮
         document.getElementById('test-payment')?.addEventListener('click', () => {
             this.testPaymentConnection();
+        });
+
+        document.getElementById('test-email')?.addEventListener('click', () => {
+            this.testEmailConnection();
+        });
+
+        document.getElementById('test-ai')?.addEventListener('click', () => {
+            this.testAIConnection();
+        });
+
+        // Prompt模板切换
+        document.getElementById('template-type')?.addEventListener('change', (e) => {
+            this.loadPromptTemplate(e.target.value);
         });
 
         // 监听表单变化以标记未保存状态
@@ -870,6 +1294,21 @@ export class SettingsModule extends BaseModule {
         // 填充支付设置表单
         if (this.settings.payment) {
             this.populatePaymentFields();
+        }
+
+        // 填充邮件设置表单
+        if (this.settings.email) {
+            this.populateEmailFields();
+        }
+
+        // 填充安全设置表单
+        if (this.settings.security) {
+            this.populateSecurityFields();
+        }
+
+        // 填充AI设置表单
+        if (this.settings.ai) {
+            this.populateAIFields();
         }
     }
 
@@ -1081,7 +1520,8 @@ export class SettingsModule extends BaseModule {
             business: '业务设置',
             payment: '支付设置',
             email: '邮件设置',
-            security: '安全设置'
+            security: '安全设置',
+            ai: 'AI配置'
         };
 
         if (!confirm(`确定要重置${categoryNames[category] || category}为默认值吗？此操作不可撤销。`)) {
@@ -1119,6 +1559,177 @@ export class SettingsModule extends BaseModule {
     showNotification(message, type) {
         if (this.eventBus) {
             this.eventBus.emit('notification', { message, type });
+        }
+    }
+
+    populateAIFields() {
+        const ai = this.settings.ai;
+        
+        // 填充AI引擎配置
+        Object.entries(ai.engines).forEach(([engine, config]) => {
+            const enabledElement = document.getElementById(`${engine}-enabled`);
+            const apiKeyElement = document.getElementById(`${engine}-api-key`);
+            const modelElement = document.getElementById(`${engine}-model`);
+            const baseUrlElement = document.getElementById(`${engine}-base-url`);
+            const statusElement = document.getElementById(`${engine}-status`);
+
+            if (enabledElement) enabledElement.checked = config.enabled;
+            if (apiKeyElement) apiKeyElement.value = config.apiKey;
+            if (modelElement) modelElement.value = config.model;
+            if (baseUrlElement) baseUrlElement.value = config.baseUrl;
+            if (statusElement) {
+                statusElement.textContent = config.status === 'active' ? '运行中' : 
+                                          config.status === 'backup' ? '备用' : '停用';
+                statusElement.className = `status-indicator status-${config.status}`;
+            }
+        });
+
+        // 填充引擎策略
+        const primaryEngine = document.getElementById('primary-engine');
+        const backupEngine = document.getElementById('backup-engine');
+        const aiTimeout = document.getElementById('ai-timeout');
+        const aiRetry = document.getElementById('ai-retry');
+
+        if (primaryEngine) primaryEngine.value = ai.strategy.primaryEngine;
+        if (backupEngine) backupEngine.value = ai.strategy.backupEngine;
+        if (aiTimeout) aiTimeout.value = ai.strategy.timeout;
+        if (aiRetry) aiRetry.value = ai.strategy.retryAttempts;
+
+        // 填充统计数据
+        Object.entries(ai.stats).forEach(([engine, stats]) => {
+            const todayElement = document.getElementById(`${engine}-today`);
+            const monthElement = document.getElementById(`${engine}-month`);
+            const balanceElement = document.getElementById(`${engine}-balance`);
+
+            if (todayElement) todayElement.textContent = stats.todayCalls.toLocaleString();
+            if (monthElement) monthElement.textContent = stats.monthCalls.toLocaleString();
+            if (balanceElement) balanceElement.textContent = stats.balance;
+        });
+
+        // 加载默认Prompt模板
+        this.loadPromptTemplate('lawyer_letter');
+    }
+
+    loadPromptTemplate(templateType) {
+        const ai = this.settings.ai;
+        const promptContent = document.getElementById('prompt-content');
+        const variablesList = document.querySelector('.variables-list');
+
+        if (promptContent && ai.prompts[templateType]) {
+            promptContent.value = ai.prompts[templateType];
+        }
+
+        // 更新可用变量列表
+        const variableMap = {
+            lawyer_letter: ['{case_type}', '{client_name}', '{target_name}', '{amount}', '{description}', '{legal_basis}'],
+            debt_collection: ['{debtor_name}', '{creditor_name}', '{debt_amount}', '{overdue_days}', '{contract_number}'],
+            contract_review: ['{contract_type}', '{contract_name}', '{parties}', '{contract_amount}', '{performance_deadline}', '{special_clauses}'],
+            legal_consultation: ['{consultation_category}', '{problem_description}', '{background_info}', '{expected_outcome}'],
+            legal_document: ['{document_type}', '{case_title}', '{basic_facts}', '{legal_basis}', '{processing_requirements}']
+        };
+
+        if (variablesList && variableMap[templateType]) {
+            variablesList.innerHTML = variableMap[templateType]
+                .map(variable => `<span class="variable-tag">${variable}</span>`)
+                .join('');
+        }
+    }
+
+    async saveAISettings() {
+        if (this.isLoading) return;
+
+        try {
+            this.showLoading();
+            
+            // 收集AI引擎配置
+            const engines = {};
+            ['openai', 'deepseek', 'claude'].forEach(engine => {
+                engines[engine] = {
+                    enabled: document.getElementById(`${engine}-enabled`)?.checked || false,
+                    apiKey: document.getElementById(`${engine}-api-key`)?.value || '',
+                    model: document.getElementById(`${engine}-model`)?.value || '',
+                    baseUrl: document.getElementById(`${engine}-base-url`)?.value || '',
+                    status: document.getElementById(`${engine}-enabled`)?.checked ? 'active' : 'inactive'
+                };
+            });
+
+            // 收集引擎策略
+            const strategy = {
+                primaryEngine: document.getElementById('primary-engine')?.value || 'openai',
+                backupEngine: document.getElementById('backup-engine')?.value || 'deepseek',
+                timeout: parseInt(document.getElementById('ai-timeout')?.value) || 60,
+                retryAttempts: parseInt(document.getElementById('ai-retry')?.value) || 3
+            };
+
+            // 收集Prompt模板
+            const templateType = document.getElementById('template-type')?.value || 'lawyer_letter';
+            const promptContent = document.getElementById('prompt-content')?.value || '';
+            const prompts = { ...this.settings.ai.prompts };
+            prompts[templateType] = promptContent;
+
+            const aiData = {
+                engines,
+                strategy,
+                prompts,
+                stats: this.settings.ai.stats // 保持统计数据
+            };
+
+            const result = await this.settingsAPI.saveSettings('ai', aiData);
+            
+            if (result.success) {
+                this.settings.ai = { ...this.settings.ai, ...aiData };
+                this.hasUnsavedChanges = false;
+                this.showNotification(
+                    result.fromLocal ? 'AI配置已保存到本地' : 'AI配置保存成功', 
+                    'success'
+                );
+            } else {
+                this.showNotification(result.error || '保存失败', 'error');
+            }
+        } catch (error) {
+            console.error('保存AI设置失败:', error);
+            this.showNotification('保存失败: ' + error.message, 'error');
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    async testAIConnection() {
+        if (this.isLoading) return;
+
+        try {
+            this.showLoading();
+            
+            // 收集启用的AI引擎配置进行测试
+            const enabledEngines = {};
+            ['openai', 'deepseek', 'claude'].forEach(engine => {
+                const enabled = document.getElementById(`${engine}-enabled`)?.checked;
+                if (enabled) {
+                    enabledEngines[engine] = {
+                        apiKey: document.getElementById(`${engine}-api-key`)?.value || '',
+                        model: document.getElementById(`${engine}-model`)?.value || '',
+                        baseUrl: document.getElementById(`${engine}-base-url`)?.value || ''
+                    };
+                }
+            });
+
+            if (Object.keys(enabledEngines).length === 0) {
+                this.showNotification('请至少启用一个AI引擎进行测试', 'warning');
+                return;
+            }
+
+            const result = await this.settingsAPI.testAIConfig(enabledEngines);
+            
+            if (result.success) {
+                this.showNotification('AI服务连接测试成功', 'success');
+            } else {
+                this.showNotification(result.error || 'AI服务连接测试失败', 'error');
+            }
+        } catch (error) {
+            console.error('测试AI连接失败:', error);
+            this.showNotification('测试失败: ' + error.message, 'error');
+        } finally {
+            this.hideLoading();
         }
     }
 
