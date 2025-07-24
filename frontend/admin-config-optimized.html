@@ -3662,6 +3662,11 @@
         <!-- 🔧 运维工具中心 -->
         <div class="tab-content" id="operations-tab">
             
+            <!-- 测试内容 - 验证标签页是否显示 -->
+            <div style="background: red; color: white; padding: 20px; margin: 10px; font-size: 24px; font-weight: bold;">
+                🚨 测试：如果你能看到这个红色区域，说明运维工具标签页可以显示内容
+            </div>
+            
             <!-- 用户等级配置管理 -->
             <div class="operations-section">
                 <h3>👤 用户等级升级配置</h3>
@@ -4271,6 +4276,12 @@
 
         <!-- 📚 文书库管理 -->
         <div class="tab-content" id="documents-tab">
+            
+            <!-- 测试内容 - 验证标签页是否显示 -->
+            <div style="background: blue; color: white; padding: 20px; margin: 10px; font-size: 24px; font-weight: bold;">
+                🚨 测试：如果你能看到这个蓝色区域，说明文书库管理标签页可以显示内容
+            </div>
+            
             <!-- 文书库概览 -->
             <div class="operations-section">
                 <h3>📊 文书库概览</h3>
@@ -7191,6 +7202,10 @@
                 activeContent.classList.add('active');
                 console.log(`✅ 标签页 ${tabName} 已激活，当前类名:`, activeContent.className);
                 console.log(`✅ 标签页 ${tabName} 计算样式 display:`, window.getComputedStyle(activeContent).display);
+                console.log(`✅ 标签页 ${tabName} offsetHeight:`, activeContent.offsetHeight);
+                console.log(`✅ 标签页 ${tabName} scrollHeight:`, activeContent.scrollHeight);
+                console.log(`✅ 标签页 ${tabName} innerHTML长度:`, activeContent.innerHTML.length);
+                console.log(`✅ 标签页 ${tabName} 子元素数量:`, activeContent.children.length);
                 
                 // 根据不同标签页执行特定的初始化
                 switch (tabName) {
@@ -7219,10 +7234,19 @@
                         const operationsContent = document.getElementById('operations-tab');
                         if (operationsContent) {
                             console.log('✅ 运维工具内容已找到');
+                            // 强制设置显示样式
+                            operationsContent.style.display = 'block';
+                            operationsContent.style.visibility = 'visible';
+                            operationsContent.style.opacity = '1';
+                            console.log('🔧 强制设置运维工具显示样式');
+                            
                             const operationsSections = operationsContent.querySelectorAll('.operations-section');
                             console.log(`📋 运维工具区块数量: ${operationsSections.length}`);
                             operationsSections.forEach((section, index) => {
                                 console.log(`📋 区块 ${index + 1} 可见性:`, window.getComputedStyle(section).display);
+                                // 强制显示每个section
+                                section.style.display = 'block';
+                                section.style.visibility = 'visible';
                             });
                         } else {
                             console.error('❌ 运维工具内容未找到');
@@ -7234,6 +7258,21 @@
                         const documentsContent = document.getElementById('documents-tab');
                         if (documentsContent) {
                             console.log('✅ 文书库管理内容已找到');
+                            // 强制设置显示样式
+                            documentsContent.style.display = 'block';
+                            documentsContent.style.visibility = 'visible';
+                            documentsContent.style.opacity = '1';
+                            console.log('🔧 强制设置文书库显示样式');
+                            
+                            const documentSections = documentsContent.querySelectorAll('.operations-section');
+                            console.log(`📋 文书库区块数量: ${documentSections.length}`);
+                            documentSections.forEach((section, index) => {
+                                console.log(`📋 区块 ${index + 1} 可见性:`, window.getComputedStyle(section).display);
+                                // 强制显示每个section
+                                section.style.display = 'block';
+                                section.style.visibility = 'visible';
+                            });
+                            
                             // 确保DOM完全渲染后再初始化
                             setTimeout(() => {
                                 initDocumentLibrary();
