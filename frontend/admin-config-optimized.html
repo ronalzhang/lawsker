@@ -147,56 +147,7 @@
     </script>
     <script src="/js/auth-guard-ascii.js?v=1735538500"></script>
     <script>
-        // 强制初始化认证检查
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 强制执行管理员认证检查');
-            console.log('当前页面路径:', window.location.pathname);
-            console.log('当前完整URL:', window.location.href);
-            
-            // 检查是否已有密码验证
-            const adminAuth = sessionStorage.getItem('adminAuth');
-            console.log('SessionStorage中的adminAuth:', adminAuth);
-            
-            if (!adminAuth) {
-                console.log('❌ 未找到管理员认证，强制显示密码框');
-                // 隐藏页面内容
-                document.body.style.visibility = 'hidden';
-                // 强制显示密码验证
-                if (window.AuthGuard) {
-                    new AuthGuard();
-                } else {
-                    // 如果AuthGuard还没加载，等待加载
-                    setTimeout(function() {
-                        if (window.AuthGuard) {
-                            new AuthGuard();
-                        } else {
-                            console.error('AuthGuard类未找到');
-                        }
-                    }, 1000);
-                }
-            } else {
-                try {
-                    const authData = JSON.parse(adminAuth);
-                    const isValid = Date.now() - authData.timestamp < 30 * 60 * 1000;
-                    if (!isValid) {
-                        console.log('❌ 认证已过期，清除并重新验证');
-                        sessionStorage.removeItem('adminAuth');
-                        document.body.style.visibility = 'hidden';
-                        location.reload();
-                    } else {
-                        console.log('✅ 认证有效，显示页面');
-                        document.body.style.visibility = 'visible';
-                    }
-                } catch (e) {
-                    console.log('❌ 认证数据格式错误，清除并重新验证');
-                    sessionStorage.removeItem('adminAuth');
-                    document.body.style.visibility = 'hidden';
-                    location.reload();
-                }
-            }
-        });
-        
-        // 添加logout函数
+        // 仅添加logout函数（原有auth-guard-ascii.js处理认证）
         function logout() {
             console.log('执行退出操作');
             // 清除认证信息

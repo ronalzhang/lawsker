@@ -73,9 +73,6 @@ class AuthGuard {
 
     // Check if current page is admin-pro page
     isAdminProPage(currentPath) {
-        console.log('Checking if admin-pro page for path:', currentPath);
-        console.log('Full URL:', window.location.href);
-        
         // Check both URL path and file name
         const adminProPaths = [
             '/admin-pro',
@@ -86,7 +83,6 @@ class AuthGuard {
         
         // Check direct path match
         if (adminProPaths.includes(currentPath)) {
-            console.log('Direct path match found:', currentPath);
             return true;
         }
         
@@ -94,11 +90,9 @@ class AuthGuard {
         if (currentPath.includes('admin-pro') || 
             currentPath.includes('admin-config-optimized') ||
             window.location.href.includes('admin-pro')) {
-            console.log('URL contains admin-pro:', true);
             return true;
         }
         
-        console.log('Not an admin-pro page');
         return false;
     }
 
@@ -116,39 +110,24 @@ class AuthGuard {
 
     // Check admin access permissions
     checkAdminAccess() {
-        console.log('🔒 Checking admin access...');
-        
-        // Force clean start - clear any conflicting auth data
-        const currentUrl = window.location.href;
-        console.log('Current URL:', currentUrl);
-        
         // Check if admin password has been verified recently
         const adminAuth = sessionStorage.getItem('adminAuth');
-        console.log('AdminAuth from sessionStorage:', adminAuth);
-        
         if (adminAuth) {
             try {
                 const authData = JSON.parse(adminAuth);
-                console.log('Parsed auth data:', authData);
-                
                 // Check if within 30 minutes and for correct page
-                const timeValid = Date.now() - authData.timestamp < 30 * 60 * 1000;
-                const pageValid = authData.page === 'admin-pro';
-                console.log('Time valid:', timeValid, 'Page valid:', pageValid);
-                
-                if (timeValid && pageValid) {
-                    console.log('✅ Admin auth found and valid');
+                if (Date.now() - authData.timestamp < 30 * 60 * 1000 && authData.page === 'admin-pro') {
+                    console.log('Admin auth found and valid');
                     return true;
                 }
             } catch (e) {
-                console.log('❌ Invalid auth data, clearing:', e);
                 // Invalid auth data, clear it
                 sessionStorage.removeItem('adminAuth');
             }
         }
 
         // Show custom password modal
-        console.log('🚨 No valid admin auth found, showing password modal');
+        console.log('No valid admin auth found, showing password modal');
         this.showPasswordModal();
         return false;
     }
@@ -381,9 +360,6 @@ class AuthGuard {
         }
     }
 }
-
-// Export AuthGuard to global scope
-window.AuthGuard = AuthGuard;
 
 // Initialize auth guard
 new AuthGuard(); 
