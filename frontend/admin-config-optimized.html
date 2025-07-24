@@ -7128,6 +7128,10 @@
 
         // 标签页切换功能
         function switchTab(tabName) {
+            // 添加调试信息
+            console.log(`🚀 switchTab函数被调用，参数: ${tabName}`);
+            alert(`调试：点击了${tabName}标签页`);
+            
             // 移除所有按钮的active状态
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('active');
