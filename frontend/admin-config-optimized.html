@@ -7133,28 +7133,42 @@
             }
         });
 
-        // 标签页切换功能
+        // 标签页切换功能 - 增加调试信息
         function switchTab(tabName) {
+            console.log(`🚀 切换到标签页: ${tabName}`);
+            
             // 移除所有按钮的active状态
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
+            console.log('✅ 已移除所有按钮的active状态');
             
             // 隐藏所有标签页内容
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
             });
+            console.log('✅ 已隐藏所有标签页内容');
             
             // 激活选中的按钮
             const activeBtn = document.querySelector(`[onclick="switchTab('${tabName}')"]`);
             if (activeBtn) {
                 activeBtn.classList.add('active');
+                console.log('✅ 按钮激活成功:', activeBtn.textContent);
+            } else {
+                console.error('❌ 找不到按钮:', tabName);
             }
             
             // 显示选中的标签页内容
             const activeContent = document.getElementById(`${tabName}-tab`);
             if (activeContent) {
                 activeContent.classList.add('active');
+                console.log('✅ 标签页内容激活成功:', activeContent.id);
+                console.log('   内容元素classList:', activeContent.classList.toString());
+                
+                // 强制设置display样式
+                activeContent.style.display = 'block';
+                activeContent.style.visibility = 'visible';
+                console.log('💪 强制设置display: block, visibility: visible');
                 
                 // 根据不同标签页执行特定的初始化
                 switch (tabName) {
@@ -7188,7 +7202,11 @@
                         break;
                 }
             } else {
-                console.warn(`未找到标签页内容: ${tabName}-tab`);
+                console.error(`❌ 未找到标签页内容: ${tabName}-tab`);
+                console.log('📋 当前页面所有tab-content元素:');
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    console.log(`   - ${tab.id}, classList: ${tab.classList.toString()}`);
+                });
             }
         }
 
