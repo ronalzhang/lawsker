@@ -7359,9 +7359,11 @@
         function initDocumentLibrary() {
             console.log('🚀 初始化文书库管理');
             
-            // 立即加载数据，CSS变量已修复
-            loadDocumentStats();
-            loadDocumentTypes();
+            // 延迟加载数据，确保DOM元素已经显示
+            setTimeout(() => {
+                loadDocumentStats();
+                loadDocumentTypes();
+            }, 300);
         }
 
         function loadDocumentStats() {
