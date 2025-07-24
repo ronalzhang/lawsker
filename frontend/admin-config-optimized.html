@@ -7195,7 +7195,10 @@
                     case 'documents':
                         // 文书库管理初始化
                         console.log('文书库管理标签页激活');
-                        initDocumentLibrary();
+                        // 确保DOM完全渲染后再初始化
+                        setTimeout(() => {
+                            initDocumentLibrary();
+                        }, 100);
                         break;
                 }
             } else {
@@ -7359,11 +7362,24 @@
         function initDocumentLibrary() {
             console.log('🚀 初始化文书库管理');
             
-            // 延迟加载数据，确保DOM元素已经显示
-            setTimeout(() => {
-                loadDocumentStats();
-                loadDocumentTypes();
-            }, 300);
+            // 等待DOM元素完全加载
+            function waitForElements() {
+                const requiredElements = ['totalDocuments', 'dailyUsage', 'averageRating', 'hitRate'];
+                const allElementsExist = requiredElements.every(id => document.getElementById(id) !== null);
+                
+                if (allElementsExist) {
+                    console.log('✅ 所有必需的DOM元素已找到，开始加载数据');
+                    loadDocumentStats();
+                    loadDocumentTypes();
+                } else {
+                    console.log('⏳ 等待DOM元素加载...');
+                    // 如果元素还没有加载完成，继续等待
+                    setTimeout(waitForElements, 100);
+                }
+            }
+            
+            // 开始等待元素
+            waitForElements();
         }
 
         function loadDocumentStats() {
