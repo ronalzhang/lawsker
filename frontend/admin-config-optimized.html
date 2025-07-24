@@ -169,6 +169,15 @@
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
             --transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* 修复：添加缺失的玻璃效果和文本颜色变量 */
+            --glass-bg: rgba(22, 28, 48, 0.75);
+            --glass-border: rgba(122, 160, 255, 0.25);
+            --glass-shadow: rgba(0, 0, 0, 0.3);
+            --text-primary: #f0f4ff;
+            --text-secondary: #a8b2d1;
+            --blur-radius: 25px;
+            --border-radius: 20px;
         }
 
         * {
@@ -895,6 +904,72 @@
         /* 确保所有标签页内容都能正确显示 */
         .tab-content:not(.active) {
             display: none !important;
+        }
+
+        /* 修复：添加operations-section样式 */
+        .operations-section {
+            margin-bottom: 2rem;
+        }
+
+        .operations-section h3 {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        /* 修复：添加stat-card和document-type-card样式 */
+        .stat-card,
+        .document-type-card {
+            background: var(--glass-bg) !important;
+            border: 1px solid var(--glass-border) !important;
+            border-radius: 12px !important;
+            padding: 20px !important;
+            backdrop-filter: blur(var(--blur-radius));
+            -webkit-backdrop-filter: blur(var(--blur-radius));
+        }
+
+        .stats-grid,
+        .document-types-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text-primary);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+            margin-right: 8px;
         }
 
         @keyframes fadeIn {
@@ -7271,52 +7346,15 @@
 
         // 文书库管理功能
         function initDocumentLibrary() {
-            console.log('初始化文书库管理');
+            console.log('🚀 初始化文书库管理');
             
-            // 首先立即检查documents-tab状态
-            const documentsTab = document.getElementById('documents-tab');
-            console.log('initDocumentLibrary - documents-tab状态:', {
-                exists: !!documentsTab,
-                isActive: documentsTab ? documentsTab.classList.contains('active') : false
-            });
-            
-            // 延迟执行，确保DOM元素完全可见
-            setTimeout(() => {
-                console.log('延迟执行开始 - 500ms后');
-                loadDocumentStats();
-                loadDocumentTypes();
-            }, 500);
+            // 立即加载数据，CSS变量已修复
+            loadDocumentStats();
+            loadDocumentTypes();
         }
 
         function loadDocumentStats() {
             console.log('开始加载文书库统计数据');
-            
-            // 调试：检查documents-tab是否可见
-            const documentsTab = document.getElementById('documents-tab');
-            console.log('文书库标签页状态:', {
-                exists: !!documentsTab,
-                isActive: documentsTab ? documentsTab.classList.contains('active') : false,
-                display: documentsTab ? window.getComputedStyle(documentsTab).display : 'N/A',
-                visibility: documentsTab ? window.getComputedStyle(documentsTab).visibility : 'N/A'
-            });
-            
-            // 调试：检查目标元素
-            const targetIds = ['totalDocuments', 'dailyUsage', 'averageRating', 'hitRate'];
-            targetIds.forEach(id => {
-                const element = document.getElementById(id);
-                console.log(`元素 ${id} 状态:`, {
-                    exists: !!element,
-                    display: element ? window.getComputedStyle(element).display : 'N/A',
-                    visibility: element ? window.getComputedStyle(element).visibility : 'N/A',
-                    parent: element ? element.parentElement.id : 'N/A'
-                });
-            });
-            
-            // 如果documents-tab不可见，强制显示
-            if (documentsTab && !documentsTab.classList.contains('active')) {
-                console.log('强制激活文书库标签页');
-                documentsTab.classList.add('active');
-            }
             
             // 模拟加载文书库统计数据
             const stats = {
@@ -7331,9 +7369,9 @@
                 const element = document.getElementById(id);
                 if (element) {
                     element.textContent = value;
-                    console.log(`已更新元素 ${id}: ${value}`);
+                    console.log(`✅ 已更新元素 ${id}: ${value}`);
                 } else {
-                    console.warn(`元素 ${id} 不存在`);
+                    console.warn(`❌ 元素 ${id} 不存在`);
                 }
             };
 
@@ -7342,7 +7380,7 @@
             updateElement('averageRating', stats.averageRating);
             updateElement('hitRate', stats.hitRate);
             
-            console.log('文书库统计数据已更新:', stats);
+            console.log('✅ 文书库统计数据已更新:', stats);
         }
 
         function loadDocumentTypes() {
