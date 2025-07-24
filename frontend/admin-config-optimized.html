@@ -147,40 +147,7 @@
     </script>
     <script src="/js/auth-guard-ascii.js?v=1735538500"></script>
     <script>
-        // 页面加载时强制清除过期的认证信息
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔍 检查管理员认证状态...');
-            
-            // 检查当前路径是否为admin-pro
-            if (window.location.pathname === '/admin-pro' || window.location.href.includes('admin-pro')) {
-                console.log('🚨 检测到admin-pro页面访问');
-                
-                const adminAuth = sessionStorage.getItem('adminAuth');
-                if (adminAuth) {
-                    try {
-                        const authData = JSON.parse(adminAuth);
-                        const isExpired = Date.now() - authData.timestamp > 30 * 60 * 1000; // 30分钟
-                        
-                        if (isExpired) {
-                            console.log('⏰ 认证已过期，强制清除');
-                            sessionStorage.removeItem('adminAuth');
-                            // 强制重新加载页面以触发密码验证
-                            window.location.reload();
-                        } else {
-                            console.log('✅ 认证有效，继续访问');
-                        }
-                    } catch (e) {
-                        console.log('❌ 认证数据损坏，清除并重新验证');
-                        sessionStorage.removeItem('adminAuth');
-                        window.location.reload();
-                    }
-                } else {
-                    console.log('❌ 未找到认证信息，应该触发密码验证');
-                }
-            }
-        });
-        
-        // 仅添加logout函数（原有auth-guard-ascii.js处理认证）
+        // 仅添加logout函数，移除重复的认证检查逻辑避免冲突
         function logout() {
             console.log('执行退出操作');
             // 清除认证信息

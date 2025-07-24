@@ -7,6 +7,9 @@ class AuthGuard {
     }
 
     init() {
+        // Ensure page is visible initially
+        document.body.style.visibility = 'visible';
+        
         // Wait for DOM to be ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => this.checkPageAccess());
@@ -91,10 +94,8 @@ class AuthGuard {
             return true;
         }
         
-        // Check if URL contains admin-pro parameter or file name
-        if (currentPath.includes('admin-pro') || 
-            currentPath.includes('admin-config-optimized') ||
-            window.location.href.includes('admin-pro')) {
+        // Check if file name matches admin-config-optimized
+        if (currentPath.includes('admin-config-optimized')) {
             return true;
         }
         
@@ -133,14 +134,21 @@ class AuthGuard {
 
         // Show custom password modal
         console.log('No valid admin auth found, showing password modal');
+        console.log('Current document ready state:', document.readyState);
+        console.log('Current body visibility:', document.body.style.visibility);
         this.showPasswordModal();
         return false;
     }
 
     // Show glassmorphism password modal
     showPasswordModal() {
-        // Hide page content immediately
-        document.body.style.visibility = 'hidden';
+        console.log('🔐 Starting to show password modal');
+        
+        // Remove any existing modal first
+        const existingModal = document.getElementById('admin-password-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
         
         // Create modal overlay
         const modalOverlay = document.createElement('div');
@@ -249,11 +257,14 @@ class AuthGuard {
 
         modalOverlay.appendChild(modalContainer);
         document.body.appendChild(modalOverlay);
+        
+        console.log('✅ Password modal created and added to DOM');
 
         // Animation in
         setTimeout(() => {
             modalOverlay.style.opacity = '1';
             modalContainer.style.transform = 'translateY(0)';
+            console.log('✅ Password modal animation started');
         }, 10);
 
         // Add CSS for input focus effects
@@ -304,7 +315,14 @@ class AuthGuard {
                         document.body.removeChild(modalOverlay);
                         document.head.removeChild(style);
                         // Show page content
-                        document.body.style.visibility = 'visible';
+                        const mainContent = document.querySelector('main') || document.querySelector('.container');
+                        if (mainContent) {
+                            mainContent.style.visibility = 'visible';
+                            console.log('👁️ Main content restored');
+                        } else {
+                            document.body.style.visibility = 'visible';
+                            console.log('👁️ Body visibility restored');
+                        }
                     }, 300);
                 }, 200);
             } else {
@@ -363,8 +381,23 @@ class AuthGuard {
             `;
             document.head.appendChild(shakeStyle);
         }
+        
+        // Hide page content after modal is created
+        setTimeout(() => {
+            const mainContent = document.querySelector('main') || document.querySelector('.container');
+            if (mainContent) {
+                mainContent.style.visibility = 'hidden';
+                console.log('🙈 Main content hidden');
+            } else {
+                // Fallback: hide body but keep modal visible
+                document.body.style.visibility = 'hidden';
+                modalOverlay.style.visibility = 'visible';
+                console.log('🙈 Body hidden, modal kept visible');
+            }
+        }, 50);
     }
 }
 
-// Initialize auth guard
+// Initialize auth guard and export to global scope
+window.AuthGuard = AuthGuard;
 new AuthGuard(); 
