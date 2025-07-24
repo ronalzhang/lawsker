@@ -382,5 +382,8 @@ class AuthGuard {
     }
 }
 
+// Export AuthGuard to global scope
+window.AuthGuard = AuthGuard;
+
 // Initialize auth guard
 new AuthGuard(); 
