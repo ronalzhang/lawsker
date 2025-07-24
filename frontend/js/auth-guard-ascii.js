@@ -18,7 +18,23 @@ class AuthGuard {
     // Check if current page requires authentication
     checkPageAccess() {
         const currentPath = window.location.pathname;
-        console.log('Checking access for:', currentPath);
+        const currentUrl = window.location.href;
+        console.log('🔐 Auth Guard: Checking access for:', currentPath);
+        console.log('🔗 Full URL:', currentUrl);
+
+        // Check for admin routes FIRST (password verification)
+        const isAdminProRoute = this.isAdminProPage(currentPath);
+        console.log('🔍 Is admin-pro page:', isAdminProRoute);
+        
+        if (isAdminProRoute) {
+            console.log('🚨 Admin-pro route detected, checking admin access');
+            if (!this.checkAdminAccess()) {
+                console.log('❌ Admin access denied');
+                return;
+            }
+            console.log('✅ Admin access granted');
+            return;
+        }
         
         // Public pages that don't require authentication
         const publicPaths = [
@@ -43,32 +59,21 @@ class AuthGuard {
         });
 
         if (isPublicPath) {
-            console.log('Public path detected, allowing access');
+            console.log('📖 Public path detected, allowing access');
             return;
         }
 
-        // Check for admin routes (password verification)
-        const isAdminProRoute = this.isAdminProPage(currentPath);
-        
-        if (isAdminProRoute) {
-            console.log('Admin-pro route detected, checking admin access');
-            if (!this.checkAdminAccess()) {
-                console.log('Admin access denied');
-                return;
-            }
-        } else {
-            // Regular authentication check
-            console.log('Protected route detected, checking authentication');
-            const accessAllowed = this.checkAuthentication();
-            if (!accessAllowed) {
-                console.log('Authentication failed, redirecting to login');
-                const returnUrl = encodeURIComponent(currentPath);
-                window.location.href = `/login.html?returnUrl=${returnUrl}`;
-                return;
-            }
+        // Regular authentication check
+        console.log('🔒 Protected route detected, checking authentication');
+        const accessAllowed = this.checkAuthentication();
+        if (!accessAllowed) {
+            console.log('❌ Authentication failed, redirecting to login');
+            const returnUrl = encodeURIComponent(currentPath);
+            window.location.href = `/login.html?returnUrl=${returnUrl}`;
+            return;
         }
 
-        console.log('Access granted');
+        console.log('✅ Access granted');
     }
 
     // Check if current page is admin-pro page

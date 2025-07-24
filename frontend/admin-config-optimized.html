@@ -147,6 +147,39 @@
     </script>
     <script src="/js/auth-guard-ascii.js?v=1735538500"></script>
     <script>
+        // 页面加载时强制清除过期的认证信息
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔍 检查管理员认证状态...');
+            
+            // 检查当前路径是否为admin-pro
+            if (window.location.pathname === '/admin-pro' || window.location.href.includes('admin-pro')) {
+                console.log('🚨 检测到admin-pro页面访问');
+                
+                const adminAuth = sessionStorage.getItem('adminAuth');
+                if (adminAuth) {
+                    try {
+                        const authData = JSON.parse(adminAuth);
+                        const isExpired = Date.now() - authData.timestamp > 30 * 60 * 1000; // 30分钟
+                        
+                        if (isExpired) {
+                            console.log('⏰ 认证已过期，强制清除');
+                            sessionStorage.removeItem('adminAuth');
+                            // 强制重新加载页面以触发密码验证
+                            window.location.reload();
+                        } else {
+                            console.log('✅ 认证有效，继续访问');
+                        }
+                    } catch (e) {
+                        console.log('❌ 认证数据损坏，清除并重新验证');
+                        sessionStorage.removeItem('adminAuth');
+                        window.location.reload();
+                    }
+                } else {
+                    console.log('❌ 未找到认证信息，应该触发密码验证');
+                }
+            }
+        });
+        
         // 仅添加logout函数（原有auth-guard-ascii.js处理认证）
         function logout() {
             console.log('执行退出操作');
@@ -7201,15 +7234,29 @@
                         break;
                     case 'operations':
                         // 运维工具初始化
-                        console.log('运维工具标签页激活');
+                        console.log('🔧 运维工具标签页激活');
+                        const operationsContent = document.getElementById('operations-tab');
+                        if (operationsContent) {
+                            console.log('✅ 运维工具内容已找到，确保显示');
+                            operationsContent.style.display = 'block';
+                        } else {
+                            console.error('❌ 运维工具内容未找到');
+                        }
                         break;
                     case 'documents':
                         // 文书库管理初始化
-                        console.log('文书库管理标签页激活');
-                        // 确保DOM完全渲染后再初始化
-                        setTimeout(() => {
-                            initDocumentLibrary();
-                        }, 100);
+                        console.log('📚 文书库管理标签页激活');
+                        const documentsContent = document.getElementById('documents-tab');
+                        if (documentsContent) {
+                            console.log('✅ 文书库管理内容已找到，确保显示');
+                            documentsContent.style.display = 'block';
+                            // 确保DOM完全渲染后再初始化
+                            setTimeout(() => {
+                                initDocumentLibrary();
+                            }, 100);
+                        } else {
+                            console.error('❌ 文书库管理内容未找到');
+                        }
                         break;
                 }
             } else {
