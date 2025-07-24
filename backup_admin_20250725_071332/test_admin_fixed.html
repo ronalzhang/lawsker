@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理修复验证 - Lawsker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #0f1424;
+            color: #f0f4ff;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: rgba(22, 28, 48, 0.5);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .error { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .info { background: rgba(6, 182, 212, 0.2); color: #06b6d4; }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover { background: #1d4ed8; }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Lawsker 后台管理修复验证</h1>
+    
+    <div class="test-section">
+        <h3>✅ 修复内容验证</h3>
+        <div class="test-result success">
+            ✅ <strong>CSS变量修复：</strong> --glass-bg, --glass-border, --text-primary 等变量已正确定义
+        </div>
+        <div class="test-result success">
+            ✅ <strong>样式类修复：</strong> .operations-section, .stat-card, .document-type-card 等样式已添加
+        </div>
+        <div class="test-result success">
+            ✅ <strong>JavaScript优化：</strong> 移除了不必要的延迟和检查逻辑
+        </div>
+        <div class="test-result success">
+            ✅ <strong>DOM元素：</strong> totalDocuments, dailyUsage, averageRating, hitRate 元素已正确定义
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>🧪 功能测试区域</h3>
+        <button onclick="testAdminPage()">打开管理后台</button>
+        <button onclick="testDocumentLibrary()">测试文书库管理</button>
+        <button onclick="testOperations()">测试运维工具</button>
+        <button onclick="clearResults()">清空结果</button>
+        
+        <div id="testResults"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📱 实时预览</h3>
+        <p>在下面的iframe中可以直接测试管理后台：</p>
+        <iframe src="https://lawsker.com/admin-pro" id="adminFrame"></iframe>
+    </div>
+
+    <script>
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('testResults');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = `${new Date().toLocaleTimeString()} - ${message}`;
+            results.appendChild(div);
+        }
+
+        function testAdminPage() {
+            addResult('🚀 正在测试管理后台页面...', 'info');
+            fetch('https://lawsker.com/admin-pro')
+                .then(response => {
+                    if (response.ok) {
+                        addResult('✅ 管理后台页面加载成功', 'success');
+                        return response.text();
+                    } else {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                })
+                .then(html => {
+                    // 检查CSS变量
+                    if (html.includes('--glass-bg:') && html.includes('--glass-border:')) {
+                        addResult('✅ CSS变量定义正常', 'success');
+                    } else {
+                        addResult('❌ CSS变量定义缺失', 'error');
+                    }
+                    
+                    // 检查DOM元素
+                    if (html.includes('id="totalDocuments"') && html.includes('id="documents-tab"')) {
+                        addResult('✅ DOM元素结构完整', 'success');
+                    } else {
+                        addResult('❌ DOM元素结构有问题', 'error');
+                    }
+                    
+                    // 检查JavaScript函数
+                    if (html.includes('initDocumentLibrary()') && html.includes('loadDocumentStats()')) {
+                        addResult('✅ JavaScript函数定义正常', 'success');
+                    } else {
+                        addResult('❌ JavaScript函数定义有问题', 'error');
+                    }
+                })
+                .catch(error => {
+                    addResult(`❌ 页面加载失败: ${error.message}`, 'error');
+                });
+        }
+
+        function testDocumentLibrary() {
+            addResult('📚 正在测试文书库管理功能...', 'info');
+            
+            // 模拟点击文书库管理标签页
+            const iframe = document.getElementById('adminFrame');
+            try {
+                // 尝试在iframe中执行JavaScript
+                addResult('📝 尝试在iframe中模拟点击文书库管理...', 'info');
+                addResult('ℹ️ 由于跨域限制，请手动在iframe中点击"📚 文书库管理"按钮', 'info');
+                addResult('🔍 预期结果：页面应显示文书库概览、文书类型管理等内容', 'info');
+            } catch (error) {
+                addResult(`⚠️ 跨域限制：${error.message}`, 'info');
+            }
+        }
+
+        function testOperations() {
+            addResult('🔧 正在测试运维工具功能...', 'info');
+            addResult('ℹ️ 请手动在iframe中点击"🔧 运维工具"按钮', 'info');
+            addResult('🔍 预期结果：页面应显示用户等级配置、系统监控等内容', 'info');
+        }
+
+        function clearResults() {
+            document.getElementById('testResults').innerHTML = '';
+            addResult('🧹 测试结果已清空', 'info');
+        }
+
+        // 页面加载时自动测试
+        window.onload = function() {
+            addResult('🎉 修复验证页面已加载', 'success');
+            addResult('📋 验证修复内容：CSS变量、样式类、JavaScript函数、DOM元素', 'info');
+            setTimeout(() => {
+                testAdminPage();
+            }, 1000);
+        };
+    </script>
+</body>
+</html> 

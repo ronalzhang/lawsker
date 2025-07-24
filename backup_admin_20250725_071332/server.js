@@ -61,9 +61,8 @@ app.get('/demo/business-flow', routeHandler('business-flow-demo.html'));
 // 测试和维护页面路由
 app.get('/test/flow', routeHandler('flow-test.html'));
 
-// 管理后台路由
-app.get('/admin-pro', routeHandler('admin-config-optimized.html')); // 旧版后台
-app.get('/admin', routeHandler('admin/index.html')); // 新版后台
+// 管理后台路由 - 只允许admin-pro访问
+app.get('/admin-pro', routeHandler('admin-config-optimized.html'));
 app.get('/console', routeHandler('dashboard.html'));
 
 // 禁止直接访问HTML文件
