@@ -26,14 +26,14 @@ export class SettingsModule extends BaseModule {
 
                 <!-- 设置导航 -->
                 <div class="settings-navigation">
-                    <div class="nav-item active" data-tab="general">
+                    <div class="settings-nav-item active" data-tab="general">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="3"></circle>
                             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                         </svg>
                         <span>基础设置</span>
                     </div>
-                    <div class="nav-item" data-tab="business">
+                    <div class="settings-nav-item" data-tab="business">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
                             <line x1="8" y1="21" x2="16" y2="21"></line>
@@ -41,28 +41,28 @@ export class SettingsModule extends BaseModule {
                         </svg>
                         <span>业务配置</span>
                     </div>
-                    <div class="nav-item" data-tab="payment">
+                    <div class="settings-nav-item" data-tab="payment">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
                             <line x1="1" y1="10" x2="23" y2="10"></line>
                         </svg>
                         <span>支付设置</span>
                     </div>
-                    <div class="nav-item" data-tab="ai">
+                    <div class="settings-nav-item" data-tab="ai">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="3"></circle>
                             <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1m15.5-6.5L17 8.5m-10 7L3.5 19m15.5.5L17 15.5m-10-7L3.5 4.5"></path>
                         </svg>
                         <span>AI配置</span>
                     </div>
-                    <div class="nav-item" data-tab="email">
+                    <div class="settings-nav-item" data-tab="email">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                             <polyline points="22,6 12,13 2,6"></polyline>
                         </svg>
                         <span>邮件配置</span>
                     </div>
-                    <div class="nav-item" data-tab="security">
+                    <div class="settings-nav-item" data-tab="security">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                         </svg>
@@ -632,7 +632,7 @@ export class SettingsModule extends BaseModule {
                 overflow-x: auto;
             }
 
-            .nav-item {
+            .settings-nav-item {
                 display: flex;
                 align-items: center;
                 gap: 8px;
@@ -648,18 +648,18 @@ export class SettingsModule extends BaseModule {
                 justify-content: center;
             }
 
-            .nav-item:hover {
+            .settings-nav-item:hover {
                 background: var(--bg-hover);
                 color: var(--text-primary);
             }
 
-            .nav-item.active {
+            .settings-nav-item.active {
                 background: var(--primary);
                 color: white;
                 box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
             }
 
-            .nav-item svg {
+            .settings-nav-item svg {
                 flex-shrink: 0;
                 width: 16px;
                 height: 16px;
@@ -1125,14 +1125,14 @@ export class SettingsModule extends BaseModule {
                     justify-content: center;
                 }
 
-                .nav-item {
+                .settings-nav-item {
                     min-width: 120px;
                     flex-direction: column;
                     gap: 4px;
                     padding: 8px 12px;
                 }
 
-                .nav-item span {
+                .settings-nav-item span {
                     font-size: 12px;
                 }
 
@@ -1158,7 +1158,7 @@ export class SettingsModule extends BaseModule {
 
     bindEvents() {
         // 导航切换
-        document.querySelectorAll('.nav-item').forEach(item => {
+        document.querySelectorAll('.settings-nav-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 const tab = e.currentTarget.dataset.tab;
                 this.switchPanel(tab);
@@ -1353,7 +1353,7 @@ export class SettingsModule extends BaseModule {
         this.currentTab = tab;
 
         // 更新导航状态
-        document.querySelectorAll('.nav-item').forEach(item => {
+        document.querySelectorAll('.settings-nav-item').forEach(item => {
             item.classList.toggle('active', item.dataset.tab === tab);
         });
 
