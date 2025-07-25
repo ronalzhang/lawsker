@@ -466,8 +466,10 @@ body::before {
 }
 
 .nav-link.active {
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(59, 130, 246, 0.15);
   color: var(--primary);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.1);
 }
 
 .nav-link.active::before {
@@ -477,9 +479,19 @@ body::before {
   top: 50%;
   transform: translateY(-50%);
   width: 3px;
-  height: 16px;
+  height: 20px;
   background: var(--primary);
   border-radius: 0 2px 2px 0;
+  box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+}
+
+.nav-link.active svg {
+  color: var(--primary);
+}
+
+.nav-link.active span {
+  color: var(--primary);
+  font-weight: 600;
 }
 
 .sidebar-footer {
