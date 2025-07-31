@@ -1,0 +1,22 @@
+{
+  "test_summary": {
+    "total_tests": 11,
+    "passed_tests": 3,
+    "failed_tests": 8,
+    "success_rate": 27.27
+  },
+  "test_results": {
+    "File Creation: auto_deploy.py": "\u274c MISSING",
+    "File Creation: health_monitor.py": "\u274c MISSING",
+    "File Creation: alert_automation.py": "\u274c MISSING",
+    "File Creation: automation.py": "\u274c MISSING",
+    "File Creation: automation_config.py": "\u274c MISSING",
+    "File Creation: start_automation_services.py": "\u274c MISSING",
+    "Configuration Loading": "\u274c Configuration loading failed: [Errno 30] Read-only file system: '/backups'",
+    "Deployment Config": "\u274c Deployment configuration test failed: [Errno 2] No such file or directory: 'backend/deploy_config.yaml'",
+    "Backup Directory": "\u2705 Backup directory and file operations work",
+    "Automation Rules": "\u2705 Automation rule structure is valid",
+    "Health Check Structure": "\u2705 Health check data structure is valid"
+  },
+  "generated_at": "2025-07-31T19:55:53.641586"
+}

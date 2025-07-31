@@ -1,0 +1,33 @@
+environments:
+  staging:
+    servers:
+      - staging.lawsker.com
+    database_url: postgresql://user:pass@staging-db:5432/lawsker
+    redis_url: redis://staging-redis:6379/0
+    backup_retention_days: 7
+  production:
+    servers:
+      - prod1.lawsker.com
+      - prod2.lawsker.com
+    database_url: postgresql://user:pass@prod-db:5432/lawsker
+    redis_url: redis://prod-redis:6379/0
+    backup_retention_days: 30
+
+deployment:
+  strategy: blue_green
+  health_check_url: /api/v1/health
+  health_check_timeout: 30
+  rollback_on_failure: true
+  pre_deploy_hooks: []
+  post_deploy_hooks: []
+
+backup:
+  enabled: true
+  storage_path: /backups
+  compression: true
+  encryption: true
+
+monitoring:
+  enabled: true
+  webhook_url: null
+  slack_channel: null

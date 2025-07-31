@@ -1,0 +1,77 @@
+{
+  "test_suite": "Simple Performance Test",
+  "start_time": "2025-07-31T15:33:14.040105",
+  "base_url": "http://httpbin.org",
+  "system_metrics_before": {
+    "cpu_percent": 20.3,
+    "memory_percent": 77.5,
+    "memory_available_gb": 3.6025543212890625,
+    "disk_percent": 3.0022987767140177,
+    "disk_free_gb": 68.371826171875
+  },
+  "test_results": [
+    {
+      "endpoint": "/api/v1/health",
+      "concurrent_users": 5,
+      "total_requests": 50,
+      "successful_requests": 0,
+      "failed_requests": 50,
+      "success_rate": 0.0,
+      "duration": 12.013260841369629,
+      "requests_per_second": 4.162067290490923,
+      "average_response_time": 0,
+      "min_response_time": 0,
+      "max_response_time": 0,
+      "errors": [],
+      "test_name": "Health Check - Light Load"
+    },
+    {
+      "endpoint": "/api/v1/health",
+      "concurrent_users": 20,
+      "total_requests": 100,
+      "successful_requests": 0,
+      "failed_requests": 100,
+      "success_rate": 0.0,
+      "duration": 7.791049957275391,
+      "requests_per_second": 12.835240506527443,
+      "average_response_time": 0,
+      "min_response_time": 0,
+      "max_response_time": 0,
+      "errors": [],
+      "test_name": "Health Check - Medium Load"
+    },
+    {
+      "endpoint": "/api/v1/health",
+      "concurrent_users": 50,
+      "total_requests": 200,
+      "successful_requests": 0,
+      "failed_requests": 200,
+      "success_rate": 0.0,
+      "duration": 7.460675239562988,
+      "requests_per_second": 26.80722502695548,
+      "average_response_time": 0,
+      "min_response_time": 0,
+      "max_response_time": 0,
+      "errors": [],
+      "test_name": "Health Check - High Load"
+    }
+  ],
+  "system_metrics_after": {
+    "cpu_percent": 20.5,
+    "memory_percent": 77.5,
+    "memory_available_gb": 3.5921173095703125,
+    "disk_percent": 3.0022987767140177,
+    "disk_free_gb": 68.3808708190918
+  },
+  "end_time": "2025-07-31T15:33:49.320501",
+  "summary": {
+    "overall_status": "FAIL",
+    "successful_tests": 3,
+    "total_tests": 3,
+    "total_requests": 350,
+    "total_successful_requests": 0,
+    "total_failed_requests": 350,
+    "overall_success_rate": 0.0,
+    "overall_avg_response_time": 0
+  }
+}

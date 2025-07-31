@@ -1,0 +1,78 @@
+# 灰度发布配置文件
+canary_deployment:
+  # 发布策略
+  strategy: "blue_green"  # blue_green | rolling | canary
+  
+  # 分批发布配置
+  phases:
+    - name: "alpha"
+      description: "内部测试用户"
+      percentage: 5
+      duration: "24h"
+      criteria:
+        - user_type: "admin"
+        - user_type: "internal_tester"
+      
+    - name: "beta"
+      description: "活跃律师用户"
+      percentage: 20
+      duration: "48h"
+      criteria:
+        - user_type: "lawyer"
+        - last_login: ">= 7 days"
+        - case_count: ">= 10"
+      
+    - name: "gamma"
+      description: "普通用户"
+      percentage: 50
+      duration: "72h"
+      criteria:
+        - user_type: "user"
+        - registration_date: ">= 30 days"
+      
+    - name: "production"
+      description: "全量发布"
+      percentage: 100
+      duration: "indefinite"
+      criteria: []
+
+  # 监控指标阈值
+  monitoring:
+    error_rate_threshold: 0.05  # 5%
+    response_time_threshold: 3000  # 3秒
+    availability_threshold: 0.995  # 99.5%
+    
+  # 自动回滚条件
+  rollback_conditions:
+    - metric: "error_rate"
+      threshold: 0.1
+      duration: "5m"
+    - metric: "response_time_p95"
+      threshold: 5000
+      duration: "10m"
+    - metric: "availability"
+      threshold: 0.99
+      duration: "5m"
+
+  # 通知配置
+  notifications:
+    channels:
+      - type: "email"
+        recipients: ["devops@lawsker.com", "tech-lead@lawsker.com"]
+      - type: "slack"
+        webhook: "${SLACK_WEBHOOK_URL}"
+      - type: "sms"
+        recipients: ["+86-138-xxxx-xxxx"]
+    
+    events:
+      - "phase_start"
+      - "phase_complete"
+      - "rollback_triggered"
+      - "deployment_complete"
+
+  # 功能开关配置
+  feature_flags:
+    new_ui_enabled: false
+    new_payment_flow: false
+    enhanced_search: false
+    real_time_notifications: false

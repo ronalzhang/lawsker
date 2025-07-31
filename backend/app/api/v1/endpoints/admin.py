@@ -11,8 +11,15 @@ import logging
 
 from app.core.deps import get_current_user, get_db
 from app.services.config_service import SystemConfigService
+from app.services.access_log_processor import get_access_log_queue_status
+from app.services.user_activity_processor import get_user_activity_queue_status
+from app.services.user_activity_tracker import get_user_activity_stats
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
+import redis
+import psutil
+import asyncio
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -795,3 +802,753 @@ async def get_daily_limits_statistics(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="获取统计信息失败"
         )
+
+# ==================== 访问日志监控接口 ====================
+
+@router.get("/access-logs/queue-status", response_model=dict)
+async def get_access_log_queue_status_api(
+    current_user = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """获取访问日志队列状态"""
+    try:
+        # 获取队列状态
+        queue_status = await get_access_log_queue_status()
+        
+        # 获取数据库中的访问日志统计
+        today_logs_query = text("""
+            SELECT COUNT(*) as today_count
+            FROM access_logs 
+            WHERE DATE(created_at) = CURRENT_DATE
+        """)
+        today_result = await db.execute(today_logs_query)
+        today_count = today_result.scalar() or 0
+        
+        total_logs_query = text("SELECT COUNT(*) FROM access_logs")
+        total_result = await db.execute(total_logs_query)
+        total_count = total_result.scalar() or 0
+        
+        # 获取最近的访问日志
+        recent_logs_query = text("""
+            SELECT request_path, ip_address, status_code, response_time, created_at
+            FROM access_logs 
+            ORDER BY created_at DESC 
+            LIMIT 10
+        """)
+        recent_result = await db.execute(recent_logs_query)
+        recent_logs = [
+            {
+                "path": row.request_path,
+                "ip": str(row.ip_address),
+                "status": row.status_code,
+                "response_time": row.response_time,
+                "time": row.created_at.isoformat() if row.created_at else None
+            }
+            for row in recent_result.fetchall()
+        ]
+        
+        return {
+            "code": 200,
+            "message": "获取访问日志队列状态成功",
+            "data": {
+                "queue_status": queue_status,
+                "database_stats": {
+                    "today_count": today_count,
+                    "total_count": total_count
+                },
+                "recent_logs": recent_logs
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"获取访问日志队列状态失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取访问日志队列状态失败: {str(e)}"
+        )
+
+@router.get("/access-logs/statistics", response_model=dict)
+async def get_access_log_statistics(
+    current_user = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    days: int = Query(7, description="统计天数", ge=1, le=30)
+):
+    """获取访问日志统计数据"""
+    try:
+        # 按天统计访问量
+        daily_stats_query = text("""
+            SELECT 
+                DATE(created_at) as date,
+                COUNT(*) as total_visits,
+                COUNT(DISTINCT ip_address) as unique_visitors,
+                COUNT(DISTINCT user_id) as logged_users,
+                AVG(response_time) as avg_response_time,
+                COUNT(CASE WHEN device_type = 'mobile' THEN 1 END) as mobile_visits,
+                COUNT(CASE WHEN device_type = 'desktop' THEN 1 END) as desktop_visits
+            FROM access_logs 
+            WHERE created_at >= CURRENT_DATE - INTERVAL '%s days'
+            GROUP BY DATE(created_at)
+            ORDER BY date DESC
+        """ % days)
+        
+        daily_result = await db.execute(daily_stats_query)
+        daily_stats = [
+            {
+                "date": row.date.isoformat() if row.date else None,
+                "total_visits": row.total_visits or 0,
+                "unique_visitors": row.unique_visitors or 0,
+                "logged_users": row.logged_users or 0,
+                "avg_response_time": float(row.avg_response_time) if row.avg_response_time else 0,
+                "mobile_visits": row.mobile_visits or 0,
+                "desktop_visits": row.desktop_visits or 0
+            }
+            for row in daily_result.fetchall()
+        ]
+        
+        # 热门页面统计
+        popular_pages_query = text("""
+            SELECT 
+                request_path,
+                COUNT(*) as visit_count,
+                AVG(response_time) as avg_response_time
+            FROM access_logs 
+            WHERE created_at >= CURRENT_DATE - INTERVAL '%s days'
+            AND request_path NOT LIKE '/static/%%'
+            AND request_path NOT LIKE '/css/%%'
+            AND request_path NOT LIKE '/js/%%'
+            GROUP BY request_path
+            ORDER BY visit_count DESC
+            LIMIT 10
+        """ % days)
+        
+        popular_result = await db.execute(popular_pages_query)
+        popular_pages = [
+            {
+                "path": row.request_path,
+                "visit_count": row.visit_count,
+                "avg_response_time": float(row.avg_response_time) if row.avg_response_time else 0
+            }
+            for row in popular_result.fetchall()
+        ]
+        
+        # IP地址统计
+        ip_stats_query = text("""
+            SELECT 
+                ip_address,
+                COUNT(*) as visit_count,
+                country,
+                city
+            FROM access_logs 
+            WHERE created_at >= CURRENT_DATE - INTERVAL '%s days'
+            GROUP BY ip_address, country, city
+            ORDER BY visit_count DESC
+            LIMIT 20
+        """ % days)
+        
+        ip_result = await db.execute(ip_stats_query)
+        ip_stats = [
+            {
+                "ip": str(row.ip_address),
+                "visit_count": row.visit_count,
+                "country": row.country,
+                "city": row.city
+            }
+            for row in ip_result.fetchall()
+        ]
+        
+        return {
+            "code": 200,
+            "message": "获取访问日志统计成功",
+            "data": {
+                "daily_stats": daily_stats,
+                "popular_pages": popular_pages,
+                "ip_stats": ip_stats,
+                "period_days": days
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"获取访问日志统计失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取访问日志统计失败: {str(e)}"
+        )
+# ===
+================= 用户行为监控接口 ====================
+
+@router.get("/user-activities/queue-status", response_model=dict)
+async def get_user_activity_queue_status_api(
+    current_user = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """获取用户活动队列状态"""
+    try:
+        # 获取队列状态
+        queue_status = await get_user_activity_queue_status()
+        
+        # 获取数据库中的用户活动统计
+        today_activities_query = text("""
+            SELECT COUNT(*) as today_count
+            FROM user_activity_logs 
+            WHERE DATE(created_at) = CURRENT_DATE
+        """)
+        today_result = await db.execute(today_activities_query)
+        today_count = today_result.scalar() or 0
+        
+        total_activities_query = text("SELECT COUNT(*) FROM user_activity_logs")
+        total_result = await db.execute(total_activities_query)
+        total_count = total_result.scalar() or 0
+        
+        # 获取最近的用户活动
+        recent_activities_query = text("""
+            SELECT action, resource_type, resource_id, ip_address, created_at
+            FROM user_activity_logs 
+            ORDER BY created_at DESC 
+            LIMIT 10
+        """)
+        recent_result = await db.execute(recent_activities_query)
+        recent_activities = [
+            {
+                "action": row.action,
+                "resource_type": row.resource_type,
+                "resource_id": str(row.resource_id) if row.resource_id else None,
+                "ip": row.ip_address,
+                "time": row.created_at.isoformat() if row.created_at else None
+            }
+            for row in recent_result.fetchall()
+        ]
+        
+        return {
+            "code": 200,
+            "message": "获取用户活动队列状态成功",
+            "data": {
+                "queue_status": queue_status,
+                "database_stats": {
+                    "today_count": today_count,
+                    "total_count": total_count
+                },
+                "recent_activities": recent_activities
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"获取用户活动队列状态失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取用户活动队列状态失败: {str(e)}"
+        )
+
+@router.get("/user-activities/statistics", response_model=dict)
+async def get_user_activity_statistics(
+    current_user = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    days: int = Query(7, description="统计天数", ge=1, le=30)
+):
+    """获取用户活动统计数据"""
+    try:
+        # 按天统计用户活动
+        daily_stats_query = text("""
+            SELECT 
+                DATE(created_at) as date,
+                COUNT(*) as total_activities,
+                COUNT(DISTINCT user_id) as active_users,
+                COUNT(CASE WHEN action = 'login' THEN 1 END) as login_count,
+                COUNT(CASE WHEN action LIKE 'case_%%' THEN 1 END) as case_activities,
+                COUNT(CASE WHEN action LIKE 'payment_%%' THEN 1 END) as payment_activities
+            FROM user_activity_logs 
+            WHERE created_at >= CURRENT_DATE - INTERVAL '%s days'
+            GROUP BY DATE(created_at)
+            ORDER BY date DESC
+        """ % days)
+        
+        daily_result = await db.execute(daily_stats_query)
+        daily_stats = [
+            {
+                "date": row.date.isoformat() if row.date else None,
+                "total_activities": row.total_activities or 0,
+                "active_users": row.active_users or 0,
+                "login_count": row.login_count or 0,
+                "case_activities": row.case_activities or 0,
+                "payment_activities": row.payment_activities or 0
+            }
+            for row in daily_result.fetchall()
+        ]
+        
+        # 热门活动类型统计
+        popular_actions_query = text("""
+            SELECT 
+                action,
+                COUNT(*) as activity_count,
+                COUNT(DISTINCT user_id) as user_count
+            FROM user_activity_logs 
+            WHERE created_at >= CURRENT_DATE - INTERVAL '%s days'
+            GROUP BY action
+            ORDER BY activity_count DESC
+            LIMIT 10
+        """ % days)
+        
+        popular_result = await db.execute(popular_actions_query)
+        popular_actions = [
+            {
+                "action": row.action,
+                "activity_count": row.activity_count,
+                "user_count": row.user_count
+            }
+            for row in popular_result.fetchall()
+        ]
+        
+        # 最活跃用户统计
+        active_users_query = text("""
+            SELECT 
+                user_id,
+                COUNT(*) as activity_count,
+                COUNT(DISTINCT action) as action_types,
+                MAX(created_at) as last_activity
+            FROM user_activity_logs 
+            WHERE created_at >= CURRENT_DATE - INTERVAL '%s days'
+            GROUP BY user_id
+            ORDER BY activity_count DESC
+            LIMIT 10
+        """ % days)
+        
+        active_result = await db.execute(active_users_query)
+        active_users = [
+            {
+                "user_id": str(row.user_id),
+                "activity_count": row.activity_count,
+                "action_types": row.action_types,
+                "last_activity": row.last_activity.isoformat() if row.last_activity else None
+            }
+            for row in active_result.fetchall()
+        ]
+        
+        return {
+            "code": 200,
+            "message": "获取用户活动统计成功",
+            "data": {
+                "daily_stats": daily_stats,
+                "popular_actions": popular_actions,
+                "active_users": active_users,
+                "period_days": days
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"获取用户活动统计失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取用户活动统计失败: {str(e)}"
+        )
+
+@router.get("/user-activities/user/{user_id}", response_model=dict)
+async def get_user_activity_detail(
+    user_id: str,
+    current_user = Depends(get_current_user),
+    days: int = Query(30, description="统计天数", ge=1, le=90)
+):
+    """获取特定用户的活动详情"""
+    try:
+        # 获取用户活动统计
+        user_stats = await get_user_activity_stats(user_id, days)
+        
+        return {
+            "code": 200,
+            "message": "获取用户活动详情成功",
+            "data": user_stats
+        }
+        
+    except Exception as e:
+        logger.error(f"获取用户活动详情失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取用户活动详情失败: {str(e)}"
+        )
+# =
+=================== 增强的健康检查系统 ====================
+
+class HealthCheckResult(BaseModel):
+    """健康检查结果模型"""
+    service: str
+    healthy: bool
+    response_time: float
+    details: Dict[str, Any]
+    error: Optional[str] = None
+
+class SystemHealthResponse(BaseModel):
+    """系统健康检查响应模型"""
+    overall_healthy: bool
+    timestamp: str
+    version: str
+    checks: List[HealthCheckResult]
+    summary: Dict[str, Any]
+
+async def check_database_connection(db: AsyncSession) -> HealthCheckResult:
+    """检查数据库连接"""
+    start_time = time.time()
+    try:
+        # 执行简单查询测试连接
+        result = await db.execute(text("SELECT 1 as test"))
+        test_value = result.scalar()
+        
+        # 检查连接池状态
+        pool_info = {
+            "pool_size": db.bind.pool.size() if hasattr(db.bind, 'pool') else "unknown",
+            "checked_out": db.bind.pool.checkedout() if hasattr(db.bind, 'pool') else "unknown"
+        }
+        
+        response_time = time.time() - start_time
+        
+        return HealthCheckResult(
+            service="database",
+            healthy=test_value == 1,
+            response_time=response_time,
+            details=pool_info
+        )
+    except Exception as e:
+        response_time = time.time() - start_time
+        return HealthCheckResult(
+            service="database",
+            healthy=False,
+            response_time=response_time,
+            details={},
+            error=str(e)
+        )
+
+async def check_redis_connection() -> HealthCheckResult:
+    """检查Redis连接"""
+    start_time = time.time()
+    try:
+        redis_client = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+        
+        # 测试连接
+        await asyncio.get_event_loop().run_in_executor(None, redis_client.ping)
+        
+        # 获取Redis信息
+        info = await asyncio.get_event_loop().run_in_executor(None, redis_client.info)
+        
+        response_time = time.time() - start_time
+        
+        return HealthCheckResult(
+            service="redis",
+            healthy=True,
+            response_time=response_time,
+            details={
+                "version": info.get("redis_version", "unknown"),
+                "connected_clients": info.get("connected_clients", 0),
+                "used_memory": info.get("used_memory_human", "unknown"),
+                "uptime": info.get("uptime_in_seconds", 0)
+            }
+        )
+    except Exception as e:
+        response_time = time.time() - start_time
+        return HealthCheckResult(
+            service="redis",
+            healthy=False,
+            response_time=response_time,
+            details={},
+            error=str(e)
+        )
+
+async def check_system_resources() -> HealthCheckResult:
+    """检查系统资源"""
+    start_time = time.time()
+    try:
+        # CPU使用率
+        cpu_percent = psutil.cpu_percent(interval=1)
+        
+        # 内存使用情况
+        memory = psutil.virtual_memory()
+        
+        # 磁盘使用情况
+        disk = psutil.disk_usage('/')
+        
+        # 网络连接数
+        connections = len(psutil.net_connections())
+        
+        response_time = time.time() - start_time
+        
+        # 判断系统是否健康
+        healthy = (
+            cpu_percent < 80 and
+            memory.percent < 85 and
+            disk.percent < 90
+        )
+        
+        return HealthCheckResult(
+            service="system_resources",
+            healthy=healthy,
+            response_time=response_time,
+            details={
+                "cpu_percent": cpu_percent,
+                "memory_percent": memory.percent,
+                "memory_available_gb": round(memory.available / (1024**3), 2),
+                "disk_percent": disk.percent,
+                "disk_free_gb": round(disk.free / (1024**3), 2),
+                "network_connections": connections
+            }
+        )
+    except Exception as e:
+        response_time = time.time() - start_time
+        return HealthCheckResult(
+            service="system_resources",
+            healthy=False,
+            response_time=response_time,
+            details={},
+            error=str(e)
+        )
+
+async def check_critical_services() -> HealthCheckResult:
+    """检查关键服务状态"""
+    start_time = time.time()
+    try:
+        services_status = {}
+        
+        # 检查访问日志队列
+        try:
+            queue_status = await get_access_log_queue_status()
+            services_status["access_log_queue"] = {
+                "healthy": queue_status.get("status") == "running",
+                "details": queue_status
+            }
+        except Exception as e:
+            services_status["access_log_queue"] = {
+                "healthy": False,
+                "error": str(e)
+            }
+        
+        # 检查用户活动队列
+        try:
+            activity_status = await get_user_activity_queue_status()
+            services_status["user_activity_queue"] = {
+                "healthy": activity_status.get("status") == "running",
+                "details": activity_status
+            }
+        except Exception as e:
+            services_status["user_activity_queue"] = {
+                "healthy": False,
+                "error": str(e)
+            }
+        
+        response_time = time.time() - start_time
+        
+        # 判断所有服务是否健康
+        all_healthy = all(
+            service.get("healthy", False) 
+            for service in services_status.values()
+        )
+        
+        return HealthCheckResult(
+            service="critical_services",
+            healthy=all_healthy,
+            response_time=response_time,
+            details=services_status
+        )
+    except Exception as e:
+        response_time = time.time() - start_time
+        return HealthCheckResult(
+            service="critical_services",
+            healthy=False,
+            response_time=response_time,
+            details={},
+            error=str(e)
+        )
+
+@router.get("/health/comprehensive", response_model=SystemHealthResponse)
+async def comprehensive_health_check(
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    全面的系统健康检查
+    检查数据库、Redis、系统资源和关键服务的状态
+    """
+    try:
+        # 并行执行所有健康检查
+        health_checks = await asyncio.gather(
+            check_database_connection(db),
+            check_redis_connection(),
+            check_system_resources(),
+            check_critical_services(),
+            return_exceptions=True
+        )
+        
+        # 处理检查结果
+        results = []
+        for check in health_checks:
+            if isinstance(check, Exception):
+                results.append(HealthCheckResult(
+                    service="unknown",
+                    healthy=False,
+                    response_time=0,
+                    details={},
+                    error=str(check)
+                ))
+            else:
+                results.append(check)
+        
+        # 计算整体健康状态
+        overall_healthy = all(result.healthy for result in results)
+        
+        # 生成摘要
+        summary = {
+            "total_checks": len(results),
+            "healthy_checks": sum(1 for r in results if r.healthy),
+            "unhealthy_checks": sum(1 for r in results if not r.healthy),
+            "average_response_time": sum(r.response_time for r in results) / len(results) if results else 0,
+            "status": "healthy" if overall_healthy else "degraded"
+        }
+        
+        return SystemHealthResponse(
+            overall_healthy=overall_healthy,
+            timestamp=datetime.now().isoformat(),
+            version="1.0.0",
+            checks=results,
+            summary=summary
+        )
+        
+    except Exception as e:
+        logger.error(f"系统健康检查失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"健康检查失败: {str(e)}"
+        )
+
+@router.get("/health/quick")
+async def quick_health_check():
+    """
+    快速健康检查
+    仅检查基本的服务可用性
+    """
+    try:
+        start_time = time.time()
+        
+        # 简单的响应测试
+        response_time = time.time() - start_time
+        
+        return {
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "response_time": response_time,
+            "version": "1.0.0",
+            "service": "lawsker-api"
+        }
+        
+    except Exception as e:
+        logger.error(f"快速健康检查失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Service unavailable"
+        )
+
+# ==================== 错误处理标准化 ====================
+
+class ErrorResponse(BaseModel):
+    """标准化错误响应模型"""
+    error: Dict[str, Any]
+
+@router.get("/test/error-handling")
+async def test_error_handling():
+    """测试错误处理机制"""
+    try:
+        # 模拟不同类型的错误
+        error_type = "validation"  # 可以是 validation, database, permission, rate_limit
+        
+        if error_type == "validation":
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "code": 422,
+                    "message": "Validation failed",
+                    "type": "validation_error",
+                    "details": [
+                        {
+                            "field": "email",
+                            "message": "Invalid email format"
+                        }
+                    ],
+                    "timestamp": datetime.now().isoformat(),
+                    "path": "/api/v1/admin/test/error-handling"
+                }
+            )
+        
+        return {"message": "Error handling test completed"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"错误处理测试失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "code": 500,
+                "message": "Internal server error",
+                "type": "server_error",
+                "timestamp": datetime.now().isoformat(),
+                "path": "/api/v1/admin/test/error-handling"
+            }
+        )
+
+# ==================== 性能监控接口 ====================
+
+@router.get("/performance/metrics")
+async def get_performance_metrics(
+    db: AsyncSession = Depends(get_db)
+):
+    """获取性能指标"""
+    try:
+        # API响应时间统计
+        api_stats_query = text("""
+            SELECT 
+                AVG(response_time) as avg_response_time,
+                MIN(response_time) as min_response_time,
+                MAX(response_time) as max_response_time,
+                COUNT(*) as total_requests,
+                COUNT(CASE WHEN response_time > 1000 THEN 1 END) as slow_requests
+            FROM access_logs 
+            WHERE created_at >= NOW() - INTERVAL '1 hour'
+        """)
+        
+        api_result = await db.execute(api_stats_query)
+        api_stats = api_result.first()
+        
+        # 系统资源使用情况
+        cpu_percent = psutil.cpu_percent()
+        memory = psutil.virtual_memory()
+        disk = psutil.disk_usage('/')
+        
+        # 数据库连接池状态
+        pool_info = {
+            "size": db.bind.pool.size() if hasattr(db.bind, 'pool') else 0,
+            "checked_out": db.bind.pool.checkedout() if hasattr(db.bind, 'pool') else 0,
+            "overflow": db.bind.pool.overflow() if hasattr(db.bind, 'pool') else 0
+        }
+        
+        return {
+            "timestamp": datetime.now().isoformat(),
+            "api_performance": {
+                "avg_response_time": float(api_stats.avg_response_time) if api_stats.avg_response_time else 0,
+                "min_response_time": float(api_stats.min_response_time) if api_stats.min_response_time else 0,
+                "max_response_time": float(api_stats.max_response_time) if api_stats.max_response_time else 0,
+                "total_requests": api_stats.total_requests or 0,
+                "slow_requests": api_stats.slow_requests or 0,
+                "slow_request_ratio": (api_stats.slow_requests / api_stats.total_requests * 100) if api_stats.total_requests else 0
+            },
+            "system_resources": {
+                "cpu_percent": cpu_percent,
+                "memory_percent": memory.percent,
+                "memory_used_gb": round((memory.total - memory.available) / (1024**3), 2),
+                "memory_total_gb": round(memory.total / (1024**3), 2),
+                "disk_percent": disk.percent,
+                "disk_used_gb": round((disk.total - disk.free) / (1024**3), 2),
+                "disk_total_gb": round(disk.total / (1024**3), 2)
+            },
+            "database_pool": pool_info
+        }
+        
+    except Exception as e:
+        logger.error(f"获取性能指标失败: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"获取性能指标失败: {str(e)}"
+        )
+
+import time

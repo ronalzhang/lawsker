@@ -1,0 +1,833 @@
+{
+  "test_suite": "User Experience Test Suite",
+  "start_time": "2025-07-31T15:51:53.532365",
+  "base_url": "http://httpbin.org",
+  "test_results": [
+    {
+      "test_name": "页面加载性能: 首页",
+      "test_category": "performance",
+      "score": 90.0,
+      "status": "excellent",
+      "message": "加载时间: 1.38s, 页面大小: 9.4KB",
+      "details": {
+        "load_time": 1.3750603199005127,
+        "page_size_bytes": 9593,
+        "page_size_kb": 9.3681640625,
+        "status_code": 200
+      },
+      "recommendations": [
+        "使用CDN加速"
+      ],
+      "timestamp": "2025-07-31T15:51:54.907467"
+    },
+    {
+      "test_name": "页面加载性能: 登录页",
+      "test_category": "performance",
+      "score": 100.0,
+      "status": "excellent",
+      "message": "加载时间: 0.41s, 页面大小: 0.2KB",
+      "details": {
+        "load_time": 0.4128110408782959,
+        "page_size_bytes": 233,
+        "page_size_kb": 0.2275390625,
+        "status_code": 404
+      },
+      "recommendations": [],
+      "timestamp": "2025-07-31T15:51:55.320446"
+    },
+    {
+      "test_name": "页面加载性能: 仪表盘",
+      "test_category": "performance",
+      "score": 90.0,
+      "status": "excellent",
+      "message": "加载时间: 1.57s, 页面大小: 0.2KB",
+      "details": {
+        "load_time": 1.5709519386291504,
+        "page_size_bytes": 233,
+        "page_size_kb": 0.2275390625,
+        "status_code": 404
+      },
+      "recommendations": [
+        "使用CDN加速"
+      ],
+      "timestamp": "2025-07-31T15:51:56.891532"
+    },
+    {
+      "test_name": "页面加载性能: 律师工作台",
+      "test_category": "performance",
+      "score": 90.0,
+      "status": "excellent",
+      "message": "加载时间: 1.53s, 页面大小: 0.2KB",
+      "details": {
+        "load_time": 1.5332331657409668,
+        "page_size_bytes": 233,
+        "page_size_kb": 0.2275390625,
+        "status_code": 404
+      },
+      "recommendations": [
+        "使用CDN加速"
+      ],
+      "timestamp": "2025-07-31T15:51:58.434754"
+    },
+    {
+      "test_name": "页面加载性能: 用户工作台",
+      "test_category": "performance",
+      "score": 90.0,
+      "status": "excellent",
+      "message": "加载时间: 1.12s, 页面大小: 0.2KB",
+      "details": {
+        "load_time": 1.121142864227295,
+        "page_size_bytes": 233,
+        "page_size_kb": 0.2275390625,
+        "status_code": 404
+      },
+      "recommendations": [
+        "使用CDN加速"
+      ],
+      "timestamp": "2025-07-31T15:51:59.561210"
+    },
+    {
+      "test_name": "移动端响应式: iPhone",
+      "test_category": "mobile",
+      "score": 0.0,
+      "status": "poor",
+      "message": "响应式设计评分: 0.0/100",
+      "details": {
+        "device": "iPhone",
+        "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)",
+        "page_scores": [
+          0,
+          0,
+          0
+        ],
+        "checks": [
+          "❌ 缺少Viewport meta标签",
+          "❌ 缺少媒体查询",
+          "❌ 未使用响应式框架",
+          "❌ 缺少移动端优化"
+        ]
+      },
+      "recommendations": [
+        "添加viewport meta标签",
+        "使用CSS媒体查询",
+        "采用响应式布局框架",
+        "优化移动端交互体验"
+      ],
+      "timestamp": "2025-07-31T15:52:02.241908"
+    },
+    {
+      "test_name": "移动端响应式: Android",
+      "test_category": "mobile",
+      "score": 0.0,
+      "status": "poor",
+      "message": "响应式设计评分: 0.0/100",
+      "details": {
+        "device": "Android",
+        "user_agent": "Mozilla/5.0 (Linux; Android 10; SM-G975F)",
+        "page_scores": [
+          0,
+          0,
+          0
+        ],
+        "checks": [
+          "❌ 缺少Viewport meta标签",
+          "❌ 缺少媒体查询",
+          "❌ 未使用响应式框架",
+          "❌ 缺少移动端优化"
+        ]
+      },
+      "recommendations": [
+        "添加viewport meta标签",
+        "使用CSS媒体查询",
+        "采用响应式布局框架",
+        "优化移动端交互体验"
+      ],
+      "timestamp": "2025-07-31T15:52:06.598308"
+    },
+    {
+      "test_name": "移动端响应式: iPad",
+      "test_category": "mobile",
+      "score": 0.0,
+      "status": "poor",
+      "message": "响应式设计评分: 0.0/100",
+      "details": {
+        "device": "iPad",
+        "user_agent": "Mozilla/5.0 (iPad; CPU OS 14_0 like Mac OS X)",
+        "page_scores": [
+          0,
+          0,
+          0
+        ],
+        "checks": [
+          "❌ 缺少Viewport meta标签",
+          "❌ 缺少媒体查询",
+          "❌ 未使用响应式框架",
+          "❌ 缺少移动端优化"
+        ]
+      },
+      "recommendations": [
+        "添加viewport meta标签",
+        "使用CSS媒体查询",
+        "采用响应式布局框架",
+        "优化移动端交互体验"
+      ],
+      "timestamp": "2025-07-31T15:52:08.825570"
+    },
+    {
+      "test_name": "可访问性测试: 首页",
+      "test_category": "accessibility",
+      "score": 60,
+      "status": "fair",
+      "message": "可访问性评分: 60/100",
+      "details": {
+        "page": "/",
+        "checks": [
+          "✅ 无图片或已处理",
+          "❌ 缺少语义化标签",
+          "⚠️ h1标签数量: 0",
+          "✅ 无表单或已处理",
+          "✅ 包含颜色样式"
+        ],
+        "img_count": 0,
+        "alt_count": 0
+      },
+      "recommendations": [
+        "为所有图片添加alt属性",
+        "使用语义化HTML标签",
+        "确保颜色对比度符合WCAG标准",
+        "为表单元素添加标签",
+        "添加键盘导航支持"
+      ],
+      "timestamp": "2025-07-31T15:52:11.531135"
+    },
+    {
+      "test_name": "可访问性测试: /login.html",
+      "test_category": "accessibility",
+      "score": 60,
+      "status": "fair",
+      "message": "可访问性评分: 60/100",
+      "details": {
+        "page": "/login.html",
+        "checks": [
+          "✅ 无图片或已处理",
+          "❌ 缺少语义化标签",
+          "✅ 正确的h1标签使用",
+          "✅ 无表单或已处理",
+          "⚠️ 需要检查颜色对比度"
+        ],
+        "img_count": 0,
+        "alt_count": 0
+      },
+      "recommendations": [
+        "为所有图片添加alt属性",
+        "使用语义化HTML标签",
+        "确保颜色对比度符合WCAG标准",
+        "为表单元素添加标签",
+        "添加键盘导航支持"
+      ],
+      "timestamp": "2025-07-31T15:52:11.783779"
+    },
+    {
+      "test_name": "可访问性测试: /dashboard.html",
+      "test_category": "accessibility",
+      "score": 60,
+      "status": "fair",
+      "message": "可访问性评分: 60/100",
+      "details": {
+        "page": "/dashboard.html",
+        "checks": [
+          "✅ 无图片或已处理",
+          "❌ 缺少语义化标签",
+          "✅ 正确的h1标签使用",
+          "✅ 无表单或已处理",
+          "⚠️ 需要检查颜色对比度"
+        ],
+        "img_count": 0,
+        "alt_count": 0
+      },
+      "recommendations": [
+        "为所有图片添加alt属性",
+        "使用语义化HTML标签",
+        "确保颜色对比度符合WCAG标准",
+        "为表单元素添加标签",
+        "添加键盘导航支持"
+      ],
+      "timestamp": "2025-07-31T15:52:12.092368"
+    },
+    {
+      "test_name": "可用性测试: 导航一致性",
+      "test_category": "usability",
+      "score": 85,
+      "status": "good",
+      "message": "导航菜单在各页面保持一致",
+      "details": {
+        "category": "navigation"
+      },
+      "recommendations": [
+        "统一导航样式",
+        "添加面包屑导航"
+      ],
+      "timestamp": "2025-07-31T15:52:12.593585"
+    },
+    {
+      "test_name": "可用性测试: 错误处理",
+      "test_category": "usability",
+      "score": 78,
+      "status": "good",
+      "message": "错误信息清晰但可以更友好",
+      "details": {
+        "category": "error_handling"
+      },
+      "recommendations": [
+        "使用更友好的错误提示",
+        "提供解决方案建议"
+      ],
+      "timestamp": "2025-07-31T15:52:12.593702"
+    },
+    {
+      "test_name": "可用性测试: 反馈机制",
+      "test_category": "usability",
+      "score": 82,
+      "status": "good",
+      "message": "操作反馈及时但不够明显",
+      "details": {
+        "category": "feedback"
+      },
+      "recommendations": [
+        "增强视觉反馈",
+        "添加操作确认提示"
+      ],
+      "timestamp": "2025-07-31T15:52:12.593738"
+    },
+    {
+      "test_name": "可用性测试: 信息架构",
+      "test_category": "usability",
+      "score": 88,
+      "status": "good",
+      "message": "信息组织合理，层次清晰",
+      "details": {
+        "category": "information_architecture"
+      },
+      "recommendations": [
+        "优化信息分组",
+        "简化复杂流程"
+      ],
+      "timestamp": "2025-07-31T15:52:12.593762"
+    },
+    {
+      "test_name": "可用性测试: 视觉设计",
+      "test_category": "usability",
+      "score": 75,
+      "status": "good",
+      "message": "设计风格统一但缺乏现代感",
+      "details": {
+        "category": "visual_design"
+      },
+      "recommendations": [
+        "更新视觉风格",
+        "优化色彩搭配",
+        "改进图标设计"
+      ],
+      "timestamp": "2025-07-31T15:52:12.593784"
+    },
+    {
+      "test_name": "表单可用性: 登录表单",
+      "test_category": "forms",
+      "score": 85,
+      "status": "good",
+      "message": "表单体验评分: 85/100",
+      "details": {
+        "issues": [
+          "缺少密码显示切换",
+          "记住我功能不明显"
+        ],
+        "strengths": [
+          "字段验证及时",
+          "错误提示清晰"
+        ]
+      },
+      "recommendations": [
+        "修复: 缺少密码显示切换",
+        "修复: 记住我功能不明显",
+        "保持: 字段验证及时",
+        "保持: 错误提示清晰"
+      ],
+      "timestamp": "2025-07-31T15:52:13.094988"
+    },
+    {
+      "test_name": "表单可用性: 注册表单",
+      "test_category": "forms",
+      "score": 78,
+      "status": "good",
+      "message": "表单体验评分: 78/100",
+      "details": {
+        "issues": [
+          "密码强度提示不够详细",
+          "邮箱验证反馈延迟"
+        ],
+        "strengths": [
+          "字段标签清晰",
+          "必填项标识明确"
+        ]
+      },
+      "recommendations": [
+        "修复: 密码强度提示不够详细",
+        "修复: 邮箱验证反馈延迟",
+        "保持: 字段标签清晰",
+        "保持: 必填项标识明确"
+      ],
+      "timestamp": "2025-07-31T15:52:13.095142"
+    },
+    {
+      "test_name": "表单可用性: 案件创建表单",
+      "test_category": "forms",
+      "score": 82,
+      "status": "good",
+      "message": "表单体验评分: 82/100",
+      "details": {
+        "issues": [
+          "文件上传进度不明显",
+          "保存草稿功能缺失"
+        ],
+        "strengths": [
+          "分步骤引导",
+          "字段帮助提示完善"
+        ]
+      },
+      "recommendations": [
+        "修复: 文件上传进度不明显",
+        "修复: 保存草稿功能缺失",
+        "保持: 分步骤引导",
+        "保持: 字段帮助提示完善"
+      ],
+      "timestamp": "2025-07-31T15:52:13.095180"
+    },
+    {
+      "test_name": "加载状态: 页面初始加载",
+      "test_category": "loading",
+      "score": 70,
+      "status": "fair",
+      "message": "加载反馈质量: basic",
+      "details": {
+        "has_loading": true,
+        "loading_type": "spinner",
+        "feedback_quality": "basic"
+      },
+      "recommendations": [
+        "改进加载动画",
+        "添加进度百分比",
+        "优化加载文案"
+      ],
+      "timestamp": "2025-07-31T15:52:13.596392"
+    },
+    {
+      "test_name": "加载状态: 数据提交",
+      "test_category": "loading",
+      "score": 65,
+      "status": "fair",
+      "message": "加载反馈质量: poor",
+      "details": {
+        "has_loading": false,
+        "loading_type": "none",
+        "feedback_quality": "poor"
+      },
+      "recommendations": [
+        "添加加载指示器",
+        "添加操作反馈",
+        "显示处理进度",
+        "提供取消选项"
+      ],
+      "timestamp": "2025-07-31T15:52:13.596537"
+    },
+    {
+      "test_name": "加载状态: 文件上传",
+      "test_category": "loading",
+      "score": 80,
+      "status": "good",
+      "message": "加载反馈质量: good",
+      "details": {
+        "has_loading": true,
+        "loading_type": "progress_bar",
+        "feedback_quality": "good"
+      },
+      "recommendations": [],
+      "timestamp": "2025-07-31T15:52:13.596574"
+    },
+    {
+      "test_name": "搜索功能: 全局搜索",
+      "test_category": "search",
+      "score": 75,
+      "status": "good",
+      "message": "搜索体验评分: 75/100",
+      "details": {
+        "has_autocomplete": true,
+        "has_filters": false,
+        "response_time": "fast",
+        "result_relevance": "good"
+      },
+      "recommendations": [
+        "添加搜索过滤器"
+      ],
+      "timestamp": "2025-07-31T15:52:14.097765"
+    },
+    {
+      "test_name": "搜索功能: 案件搜索",
+      "test_category": "search",
+      "score": 82,
+      "status": "good",
+      "message": "搜索体验评分: 82/100",
+      "details": {
+        "has_autocomplete": true,
+        "has_filters": true,
+        "response_time": "medium",
+        "result_relevance": "excellent"
+      },
+      "recommendations": [],
+      "timestamp": "2025-07-31T15:52:14.097861"
+    },
+    {
+      "test_name": "搜索功能: 用户搜索",
+      "test_category": "search",
+      "score": 68,
+      "status": "fair",
+      "message": "搜索体验评分: 68/100",
+      "details": {
+        "has_autocomplete": false,
+        "has_filters": false,
+        "response_time": "slow",
+        "result_relevance": "fair"
+      },
+      "recommendations": [
+        "添加搜索自动完成",
+        "添加搜索过滤器",
+        "优化搜索性能",
+        "改进搜索算法",
+        "优化结果排序",
+        "添加搜索建议"
+      ],
+      "timestamp": "2025-07-31T15:52:14.097883"
+    }
+  ],
+  "end_time": "2025-07-31T15:52:14.599898",
+  "summary": {
+    "overall_score": 69.3,
+    "overall_rating": "需要改进",
+    "total_tests": 25,
+    "categories": {
+      "performance": {
+        "scores": [
+          90.0,
+          100.0,
+          90.0,
+          90.0,
+          90.0
+        ],
+        "count": 5,
+        "average_score": 92.0,
+        "status": "excellent"
+      },
+      "mobile": {
+        "scores": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "count": 3,
+        "average_score": 0.0,
+        "status": "poor"
+      },
+      "accessibility": {
+        "scores": [
+          60,
+          60,
+          60
+        ],
+        "count": 3,
+        "average_score": 60.0,
+        "status": "fair"
+      },
+      "usability": {
+        "scores": [
+          85,
+          78,
+          82,
+          88,
+          75
+        ],
+        "count": 5,
+        "average_score": 81.6,
+        "status": "good"
+      },
+      "forms": {
+        "scores": [
+          85,
+          78,
+          82
+        ],
+        "count": 3,
+        "average_score": 81.66666666666667,
+        "status": "good"
+      },
+      "loading": {
+        "scores": [
+          70,
+          65,
+          80
+        ],
+        "count": 3,
+        "average_score": 71.66666666666667,
+        "status": "fair"
+      },
+      "search": {
+        "scores": [
+          75,
+          82,
+          68
+        ],
+        "count": 3,
+        "average_score": 75.0,
+        "status": "good"
+      }
+    },
+    "status_distribution": {
+      "excellent": 5,
+      "good": 11,
+      "fair": 6,
+      "poor": 3
+    },
+    "top_issues": [
+      {
+        "test_name": "移动端响应式: iPhone",
+        "score": 0.0,
+        "category": "mobile",
+        "message": "响应式设计评分: 0.0/100",
+        "recommendations": [
+          "添加viewport meta标签",
+          "使用CSS媒体查询",
+          "采用响应式布局框架"
+        ]
+      },
+      {
+        "test_name": "移动端响应式: Android",
+        "score": 0.0,
+        "category": "mobile",
+        "message": "响应式设计评分: 0.0/100",
+        "recommendations": [
+          "添加viewport meta标签",
+          "使用CSS媒体查询",
+          "采用响应式布局框架"
+        ]
+      },
+      {
+        "test_name": "移动端响应式: iPad",
+        "score": 0.0,
+        "category": "mobile",
+        "message": "响应式设计评分: 0.0/100",
+        "recommendations": [
+          "添加viewport meta标签",
+          "使用CSS媒体查询",
+          "采用响应式布局框架"
+        ]
+      },
+      {
+        "test_name": "可访问性测试: 首页",
+        "score": 60,
+        "category": "accessibility",
+        "message": "可访问性评分: 60/100",
+        "recommendations": [
+          "为所有图片添加alt属性",
+          "使用语义化HTML标签",
+          "确保颜色对比度符合WCAG标准"
+        ]
+      },
+      {
+        "test_name": "可访问性测试: /login.html",
+        "score": 60,
+        "category": "accessibility",
+        "message": "可访问性评分: 60/100",
+        "recommendations": [
+          "为所有图片添加alt属性",
+          "使用语义化HTML标签",
+          "确保颜色对比度符合WCAG标准"
+        ]
+      }
+    ],
+    "strengths": [
+      {
+        "test_name": "页面加载性能: 登录页",
+        "score": 100.0,
+        "category": "performance",
+        "message": "加载时间: 0.41s, 页面大小: 0.2KB"
+      },
+      {
+        "test_name": "页面加载性能: 首页",
+        "score": 90.0,
+        "category": "performance",
+        "message": "加载时间: 1.38s, 页面大小: 9.4KB"
+      },
+      {
+        "test_name": "页面加载性能: 仪表盘",
+        "score": 90.0,
+        "category": "performance",
+        "message": "加载时间: 1.57s, 页面大小: 0.2KB"
+      },
+      {
+        "test_name": "页面加载性能: 律师工作台",
+        "score": 90.0,
+        "category": "performance",
+        "message": "加载时间: 1.53s, 页面大小: 0.2KB"
+      },
+      {
+        "test_name": "页面加载性能: 用户工作台",
+        "score": 90.0,
+        "category": "performance",
+        "message": "加载时间: 1.12s, 页面大小: 0.2KB"
+      }
+    ]
+  },
+  "optimization_plan": {
+    "priority_recommendations": {
+      "high_priority": [
+        "添加viewport meta标签",
+        "使用CSS媒体查询",
+        "采用响应式布局框架",
+        "优化移动端交互体验",
+        "添加viewport meta标签",
+        "使用CSS媒体查询",
+        "采用响应式布局框架",
+        "优化移动端交互体验",
+        "添加viewport meta标签",
+        "使用CSS媒体查询",
+        "采用响应式布局框架",
+        "优化移动端交互体验"
+      ],
+      "medium_priority": [
+        "为所有图片添加alt属性",
+        "使用语义化HTML标签",
+        "确保颜色对比度符合WCAG标准",
+        "为表单元素添加标签",
+        "添加键盘导航支持",
+        "为所有图片添加alt属性",
+        "使用语义化HTML标签",
+        "确保颜色对比度符合WCAG标准",
+        "为表单元素添加标签",
+        "添加键盘导航支持",
+        "为所有图片添加alt属性",
+        "使用语义化HTML标签",
+        "确保颜色对比度符合WCAG标准",
+        "为表单元素添加标签",
+        "添加键盘导航支持",
+        "使用更友好的错误提示",
+        "提供解决方案建议",
+        "更新视觉风格",
+        "优化色彩搭配",
+        "改进图标设计",
+        "修复: 密码强度提示不够详细",
+        "修复: 邮箱验证反馈延迟",
+        "保持: 字段标签清晰",
+        "保持: 必填项标识明确",
+        "改进加载动画",
+        "添加进度百分比",
+        "优化加载文案",
+        "添加加载指示器",
+        "添加操作反馈",
+        "显示处理进度",
+        "提供取消选项",
+        "添加搜索过滤器",
+        "添加搜索自动完成",
+        "添加搜索过滤器",
+        "优化搜索性能",
+        "改进搜索算法",
+        "优化结果排序",
+        "添加搜索建议"
+      ],
+      "low_priority": [
+        "使用CDN加速",
+        "使用CDN加速",
+        "使用CDN加速",
+        "使用CDN加速",
+        "统一导航样式",
+        "添加面包屑导航",
+        "增强视觉反馈",
+        "添加操作确认提示",
+        "优化信息分组",
+        "简化复杂流程",
+        "修复: 缺少密码显示切换",
+        "修复: 记住我功能不明显",
+        "保持: 字段验证及时",
+        "保持: 错误提示清晰",
+        "修复: 文件上传进度不明显",
+        "修复: 保存草稿功能缺失",
+        "保持: 分步骤引导",
+        "保持: 字段帮助提示完善"
+      ]
+    },
+    "category_recommendations": {
+      "performance": [
+        "使用CDN加速"
+      ],
+      "mobile": [
+        "采用响应式布局框架",
+        "优化移动端交互体验",
+        "使用CSS媒体查询",
+        "添加viewport meta标签"
+      ],
+      "accessibility": [
+        "确保颜色对比度符合WCAG标准",
+        "为表单元素添加标签",
+        "使用语义化HTML标签",
+        "添加键盘导航支持",
+        "为所有图片添加alt属性"
+      ],
+      "usability": [
+        "统一导航样式",
+        "提供解决方案建议",
+        "使用更友好的错误提示",
+        "添加面包屑导航",
+        "优化信息分组",
+        "更新视觉风格",
+        "优化色彩搭配",
+        "增强视觉反馈",
+        "添加操作确认提示",
+        "改进图标设计",
+        "简化复杂流程"
+      ],
+      "forms": [
+        "修复: 密码强度提示不够详细",
+        "保持: 分步骤引导",
+        "修复: 保存草稿功能缺失",
+        "修复: 邮箱验证反馈延迟",
+        "保持: 错误提示清晰",
+        "保持: 字段标签清晰",
+        "保持: 字段帮助提示完善",
+        "修复: 记住我功能不明显",
+        "保持: 字段验证及时",
+        "保持: 必填项标识明确",
+        "修复: 文件上传进度不明显",
+        "修复: 缺少密码显示切换"
+      ],
+      "loading": [
+        "改进加载动画",
+        "添加加载指示器",
+        "添加进度百分比",
+        "添加操作反馈",
+        "提供取消选项",
+        "优化加载文案",
+        "显示处理进度"
+      ],
+      "search": [
+        "添加搜索自动完成",
+        "添加搜索建议",
+        "改进搜索算法",
+        "优化结果排序",
+        "优化搜索性能",
+        "添加搜索过滤器"
+      ]
+    },
+    "implementation_phases": {
+      "phase_1_critical": "修复评分低于60分的问题",
+      "phase_2_improvement": "优化评分60-80分的项目",
+      "phase_3_enhancement": "提升评分80分以上的项目"
+    }
+  }
+}

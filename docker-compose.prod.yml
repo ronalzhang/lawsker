@@ -1,0 +1,255 @@
+version: '3.8'
+
+services:
+  # NGINX 负载均衡和SSL终端
+  nginx:
+    image: nginx:alpine
+    container_name: lawsker_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/logs:/var/log/nginx
+      - frontend_dist:/usr/share/nginx/html/user
+      - admin_dist:/usr/share/nginx/html/admin
+    depends_on:
+      - backend
+      - frontend-user
+      - frontend-admin
+    restart: unless-stopped
+    networks:
+      - lawsker_network
+
+  # 用户端前端
+  frontend-user:
+    build:
+      context: ./frontend-vue
+      dockerfile: Dockerfile.prod
+    container_name: lawsker_frontend_user
+    volumes:
+      - frontend_dist:/app/dist
+    environment:
+      - NODE_ENV=production
+      - VITE_API_BASE_URL=https://api.lawsker.com
+      - VITE_WS_URL=wss://api.lawsker.com/ws
+    networks:
+      - lawsker_network
+
+  # 管理后台前端
+  frontend-admin:
+    build:
+      context: ./frontend-admin
+      dockerfile: Dockerfile.prod
+    container_name: lawsker_frontend_admin
+    volumes:
+      - admin_dist:/app/dist
+    environment:
+      - NODE_ENV=production
+      - VITE_API_BASE_URL=https://api.lawsker.com
+      - VITE_WS_URL=wss://api.lawsker.com/ws
+    networks:
+      - lawsker_network
+
+  # 后端API服务
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: lawsker_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=postgresql://lawsker_user:${DB_PASSWORD}@postgres:5432/lawsker_prod
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - CSRF_SECRET_KEY=${CSRF_SECRET_KEY}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - ALIYUN_ACCESS_KEY=${ALIYUN_ACCESS_KEY}
+      - ALIYUN_SECRET_KEY=${ALIYUN_SECRET_KEY}
+      - WECHAT_PAY_MCH_ID=${WECHAT_PAY_MCH_ID}
+      - WECHAT_PAY_KEY=${WECHAT_PAY_KEY}
+      - ALIPAY_APP_ID=${ALIPAY_APP_ID}
+      - ALIPAY_PRIVATE_KEY=${ALIPAY_PRIVATE_KEY}
+    volumes:
+      - ./backend/logs:/app/logs
+      - ./backend/uploads:/app/uploads
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    networks:
+      - lawsker_network
+
+  # PostgreSQL 主数据库
+  postgres:
+    image: postgres:14-alpine
+    container_name: lawsker_postgres
+    environment:
+      - POSTGRES_DB=lawsker_prod
+      - POSTGRES_USER=lawsker_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+      - ./database/backups:/backups
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - lawsker_network
+    command: >
+      postgres
+      -c max_connections=200
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+      -c maintenance_work_mem=64MB
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c default_statistics_target=100
+      -c random_page_cost=1.1
+      -c effective_io_concurrency=200
+      -c work_mem=4MB
+      -c min_wal_size=1GB
+      -c max_wal_size=4GB
+
+  # Redis 缓存和会话存储
+  redis:
+    image: redis:7-alpine
+    container_name: lawsker_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    restart: unless-stopped
+    networks:
+      - lawsker_network
+
+  # Prometheus 监控
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: lawsker_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus/rules:/etc/prometheus/rules
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - lawsker_network
+
+  # Grafana 可视化
+  grafana:
+    image: grafana/grafana:latest
+    container_name: lawsker_grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_DOMAIN=monitor.lawsker.com
+      - GF_SMTP_ENABLED=true
+      - GF_SMTP_HOST=${SMTP_HOST}:${SMTP_PORT}
+      - GF_SMTP_USER=${SMTP_USERNAME}
+      - GF_SMTP_PASSWORD=${SMTP_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - lawsker_network
+
+  # Elasticsearch (ELK Stack)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    container_name: lawsker_elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    restart: unless-stopped
+    networks:
+      - lawsker_network
+
+  # Logstash
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.8.0
+    container_name: lawsker_logstash
+    volumes:
+      - ./monitoring/logstash/pipeline:/usr/share/logstash/pipeline
+      - ./monitoring/logstash/config:/usr/share/logstash/config
+      - ./backend/logs:/var/log/lawsker
+    ports:
+      - "5044:5044"
+    environment:
+      - LS_JAVA_OPTS=-Xmx512m -Xms512m
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+    networks:
+      - lawsker_network
+
+  # Kibana
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.0
+    container_name: lawsker_kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - SERVER_NAME=logs.lawsker.com
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+    networks:
+      - lawsker_network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  frontend_dist:
+    driver: local
+  admin_dist:
+    driver: local
+
+networks:
+  lawsker_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

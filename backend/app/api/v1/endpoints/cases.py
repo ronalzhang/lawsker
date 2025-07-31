@@ -5,7 +5,7 @@
 
 from typing import List, Optional, Dict, Any
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field
 from datetime import datetime, date
@@ -13,6 +13,7 @@ from datetime import datetime, date
 from app.core.deps import get_current_user, get_db, require_roles
 from app.services.case_service import CaseService
 from app.models.case import CaseStatus
+from app.services.user_activity_tracker import track_case_action
 
 
 router = APIRouter()
@@ -91,6 +92,7 @@ class CaseListResponse(BaseModel):
 @router.post("/", response_model=CaseResponse)
 async def create_case(
     request: CaseCreateRequest,
+    http_request: Request,
     current_user: Dict[str, Any] = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -122,6 +124,23 @@ async def create_case(
             case_data=case_data,
             creator_id=current_user["id"]
         )
+        
+        # 记录案件创建行为
+        try:
+            ip_address = http_request.client.host if http_request.client else "unknown"
+            await track_case_action(
+                user_id=str(current_user["id"]),
+                action="create",
+                case_id=str(case.id),
+                details={
+                    "case_amount": float(request.case_amount),
+                    "debtor_name": request.debtor_info.name
+                },
+                ip_address=ip_address
+            )
+        except Exception as e:
+            # 记录行为失败不影响主要业务
+            pass
         
         return CaseResponse.from_orm(case)
         

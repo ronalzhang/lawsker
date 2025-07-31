@@ -43,10 +43,39 @@ async def lifespan(app: FastAPI):
     await create_tables()
     logger.info("✅ 数据库表创建完成")
     
+    # 启动访问日志处理器
+    from app.services.access_log_processor import start_access_log_processor
+    await start_access_log_processor()
+    logger.info("✅ 访问日志处理器启动完成")
+    
+    # 启动用户活动处理器
+    from app.services.user_activity_processor import start_user_activity_processor
+    await start_user_activity_processor()
+    logger.info("✅ 用户活动处理器启动完成")
+    
+    # 启动WebSocket管理器
+    from app.services.websocket_manager import start_websocket_manager
+    await start_websocket_manager()
+    logger.info("✅ WebSocket管理器启动完成")
+    
+    # 启动实时数据聚合器
+    from app.services.realtime_data_aggregator import start_realtime_data_aggregator
+    await start_realtime_data_aggregator()
+    logger.info("✅ 实时数据聚合器启动完成")
+    
     yield
     
     # 关闭时执行
     logger.info("👋 Lawsker Backend 关闭中...")
+    from app.services.access_log_processor import stop_access_log_processor
+    from app.services.user_activity_processor import stop_user_activity_processor
+    from app.services.websocket_manager import stop_websocket_manager
+    from app.services.realtime_data_aggregator import stop_realtime_data_aggregator
+    await stop_access_log_processor()
+    await stop_user_activity_processor()
+    await stop_websocket_manager()
+    await stop_realtime_data_aggregator()
+    logger.info("✅ 所有处理器已停止")
 
 
 # 创建FastAPI应用

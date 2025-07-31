@@ -1,0 +1,165 @@
+# Lawsker系统告警规则配置
+# 基于Prometheus告警规则格式
+
+groups:
+  - name: lawsker_system_alerts
+    rules:
+      # 高错误率告警
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+          service: lawsker-api
+        annotations:
+          summary: "系统错误率过高"
+          description: "过去5分钟内错误率为 {{ $value | humanizePercentage }}，超过10%阈值"
+          runbook_url: "https://docs.lawsker.com/runbooks/high-error-rate"
+
+      # 数据库连接数过高
+      - alert: DatabaseConnectionHigh
+        expr: database_connections_active > 80
+        for: 1m
+        labels:
+          severity: warning
+          service: lawsker-db
+        annotations:
+          summary: "数据库连接数过高"
+          description: "当前数据库连接数: {{ $value }}，接近最大连接数限制"
+          runbook_url: "https://docs.lawsker.com/runbooks/db-connections"
+
+      # 磁盘空间不足
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+          service: lawsker-system
+        annotations:
+          summary: "磁盘空间不足"
+          description: "根分区可用空间低于10%，当前可用: {{ $value | humanizePercentage }}"
+          runbook_url: "https://docs.lawsker.com/runbooks/disk-space"
+
+      # API响应时间过长
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 3
+        for: 3m
+        labels:
+          severity: warning
+          service: lawsker-api
+        annotations:
+          summary: "API响应时间过长"
+          description: "95%分位数响应时间为 {{ $value }}秒，超过3秒阈值"
+          runbook_url: "https://docs.lawsker.com/runbooks/slow-api"
+
+      # 内存使用率过高
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          service: lawsker-system
+        annotations:
+          summary: "内存使用率过高"
+          description: "内存使用率为 {{ $value | humanizePercentage }}，超过90%阈值"
+          runbook_url: "https://docs.lawsker.com/runbooks/high-memory"
+
+      # CPU使用率过高
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: lawsker-system
+        annotations:
+          summary: "CPU使用率过高"
+          description: "CPU使用率为 {{ $value }}%，超过80%阈值"
+          runbook_url: "https://docs.lawsker.com/runbooks/high-cpu"
+
+  - name: lawsker_business_alerts
+    rules:
+      # 用户注册异常
+      - alert: UserRegistrationAnomaly
+        expr: increase(user_registrations_total[1h]) > 100
+        for: 0m
+        labels:
+          severity: warning
+          service: lawsker-business
+        annotations:
+          summary: "用户注册数量异常"
+          description: "过去1小时内注册用户数: {{ $value }}，可能存在异常注册行为"
+          runbook_url: "https://docs.lawsker.com/runbooks/registration-anomaly"
+
+      # 支付失败率过高
+      - alert: HighPaymentFailureRate
+        expr: rate(payment_failures_total[10m]) / rate(payment_attempts_total[10m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+          service: lawsker-payment
+        annotations:
+          summary: "支付失败率过高"
+          description: "支付失败率为 {{ $value | humanizePercentage }}，超过10%阈值"
+          runbook_url: "https://docs.lawsker.com/runbooks/payment-failures"
+
+      # 律师响应时间过长
+      - alert: SlowLawyerResponse
+        expr: avg(lawyer_response_time_seconds) > 3600
+        for: 10m
+        labels:
+          severity: warning
+          service: lawsker-business
+        annotations:
+          summary: "律师平均响应时间过长"
+          description: "律师平均响应时间为 {{ $value | humanizeDuration }}，超过1小时"
+          runbook_url: "https://docs.lawsker.com/runbooks/slow-lawyer-response"
+
+      # 活跃用户数异常下降
+      - alert: ActiveUsersDropped
+        expr: active_users_total < 50
+        for: 15m
+        labels:
+          severity: warning
+          service: lawsker-business
+        annotations:
+          summary: "活跃用户数异常下降"
+          description: "当前活跃用户数: {{ $value }}，低于正常水平"
+          runbook_url: "https://docs.lawsker.com/runbooks/low-active-users"
+
+  - name: lawsker_security_alerts
+    rules:
+      # 异常登录尝试
+      - alert: SuspiciousLoginAttempts
+        expr: increase(failed_login_attempts_total[5m]) > 20
+        for: 0m
+        labels:
+          severity: warning
+          service: lawsker-security
+        annotations:
+          summary: "检测到异常登录尝试"
+          description: "过去5分钟内失败登录尝试: {{ $value }}次，可能存在暴力破解攻击"
+          runbook_url: "https://docs.lawsker.com/runbooks/suspicious-logins"
+
+      # 异常IP访问
+      - alert: SuspiciousIPActivity
+        expr: increase(suspicious_ip_requests_total[10m]) > 100
+        for: 2m
+        labels:
+          severity: critical
+          service: lawsker-security
+        annotations:
+          summary: "检测到可疑IP活动"
+          description: "可疑IP在过去10分钟内请求数: {{ $value }}，可能存在攻击行为"
+          runbook_url: "https://docs.lawsker.com/runbooks/suspicious-ip"
+
+      # CSRF攻击检测
+      - alert: CSRFAttackDetected
+        expr: increase(csrf_attack_attempts_total[5m]) > 5
+        for: 0m
+        labels:
+          severity: critical
+          service: lawsker-security
+        annotations:
+          summary: "检测到CSRF攻击尝试"
+          description: "过去5分钟内CSRF攻击尝试: {{ $value }}次"
+          runbook_url: "https://docs.lawsker.com/runbooks/csrf-attacks"

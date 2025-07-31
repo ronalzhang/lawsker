@@ -28,6 +28,7 @@ structlog==25.4.0
 
 # Redis
 redis==5.0.1
+redis[hiredis]==5.0.1  # 异步Redis支持
 
 # HTTP客户端
 httpx==0.25.2

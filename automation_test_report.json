@@ -1,0 +1,22 @@
+{
+  "test_summary": {
+    "total_tests": 11,
+    "passed_tests": 10,
+    "failed_tests": 1,
+    "success_rate": 90.91
+  },
+  "test_results": {
+    "File Creation: auto_deploy.py": "\u2705 EXISTS",
+    "File Creation: health_monitor.py": "\u2705 EXISTS",
+    "File Creation: alert_automation.py": "\u2705 EXISTS",
+    "File Creation: automation.py": "\u2705 EXISTS",
+    "File Creation: automation_config.py": "\u2705 EXISTS",
+    "File Creation: start_automation_services.py": "\u2705 EXISTS",
+    "Configuration Loading": "\u274c Configuration loading failed: `BaseSettings` has been moved to the `pydantic-settings` package. See https://docs.pydantic.dev/2.0.3/migration/#basesettings-has-moved-to-pydantic-settings for more details.\n\nFor further information visit https://errors.pydantic.dev/2.0.3/u/import-error",
+    "Deployment Config": "\u2705 Deployment configuration created",
+    "Backup Directory": "\u2705 Backup directory and file operations work",
+    "Automation Rules": "\u2705 Automation rule structure is valid",
+    "Health Check Structure": "\u2705 Health check data structure is valid"
+  },
+  "generated_at": "2025-07-31T15:24:16.980435"
+}

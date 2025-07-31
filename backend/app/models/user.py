@@ -11,6 +11,7 @@ import uuid
 import enum
 
 from app.core.database import Base
+from app.core.encryption import create_encrypted_field, encryption_manager
 
 
 class UserStatus(enum.Enum):
@@ -126,8 +127,12 @@ class Profile(Base):
     __tablename__ = "profiles"
 
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True)
-    full_name = Column(String(255), nullable=True)
-    id_card_number = Column(String(18), nullable=True, index=True)
+    
+    # 敏感字段使用加密存储
+    _encrypted_full_name = Column("full_name_encrypted", Text, nullable=True)
+    _encrypted_id_card_number = Column("id_card_number_encrypted", Text, nullable=True)
+    
+    # 非敏感字段保持原样
     qualification_details = Column(JSONB, nullable=True)  # 资质详情JSON
     did = Column(String(255), unique=True, nullable=True)  # Web3去中心化身份
     verification_status = Column(SQLEnum(VerificationStatus), default=VerificationStatus.UNVERIFIED, nullable=False)
@@ -140,9 +145,13 @@ class Profile(Base):
     
     # 关联关系
     user = relationship("User", back_populates="profile")
+    
+    # 加密字段属性
+    full_name = create_encrypted_field("full_name")
+    id_card_number = create_encrypted_field("id_card_number")
 
     def __repr__(self):
-        return f"<Profile(user_id={self.user_id}, full_name={self.full_name}, verification_status={self.verification_status.value})>"
+        return f"<Profile(user_id={self.user_id}, verification_status={self.verification_status.value})>"
 
 
 class LawyerQualification(Base):
@@ -152,10 +161,10 @@ class LawyerQualification(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False)
     
-    # 律师基本信息（从律师证上识别）
-    lawyer_name = Column(String(100), nullable=False)    # 律师姓名
+    # 律师基本信息（从律师证上识别）- 敏感字段加密
+    _encrypted_lawyer_name = Column("lawyer_name_encrypted", Text, nullable=True)
     gender = Column(String(10), nullable=True)           # 性别
-    id_card_number = Column(String(18), nullable=True, index=True)  # 身份证号
+    _encrypted_id_card_number = Column("id_card_number_encrypted", Text, nullable=True)
     
     # 执业证书信息
     license_number = Column(String(50), unique=True, nullable=False, index=True)  # 执业证书编号
@@ -199,6 +208,10 @@ class LawyerQualification(Base):
     # 关联关系
     user = relationship("User", foreign_keys=[user_id], back_populates="lawyer_qualification")
     reviewer = relationship("User", foreign_keys=[reviewer_id])
+    
+    # 加密字段属性
+    lawyer_name = create_encrypted_field("lawyer_name")
+    id_card_number = create_encrypted_field("id_card_number")
 
     def __repr__(self):
         return f"<LawyerQualification(id={self.id}, user_id={self.user_id}, license_number={self.license_number}, status={self.qualification_status.value})>"
