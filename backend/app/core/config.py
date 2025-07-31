@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     ALLOWED_HOSTS: List[str] = ["*"]
     
     # 数据库配置
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:password@localhost:5432/lawsker"
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/lawsker"
     DATABASE_ECHO: bool = False
     
     # Redis配置
