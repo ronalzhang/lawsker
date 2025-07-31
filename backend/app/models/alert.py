@@ -6,8 +6,26 @@ from sqlalchemy import Column, String, Text, DateTime, JSON, Index
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 from datetime import datetime
+import enum
 
 from app.core.database import Base
+
+
+class AlertStatus(enum.Enum):
+    """告警状态枚举"""
+    ACTIVE = "active"
+    RESOLVED = "resolved"
+    PENDING = "pending"
+    SILENCED = "silenced"
+
+
+class AlertSeverity(enum.Enum):
+    """告警严重级别枚举"""
+    CRITICAL = "critical"
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
+    INFO = "info"
 
 
 class Alert(Base):
