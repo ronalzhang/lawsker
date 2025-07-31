@@ -1162,8 +1162,7 @@ async def get_user_activity_detail(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"获取用户活动详情失败: {str(e)}"
         )
-# =
-=================== 增强的健康检查系统 ====================
+# =================== 增强的健康检查系统 ====================
 
 class HealthCheckResult(BaseModel):
     """健康检查结果模型"""
