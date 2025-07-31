@@ -6,8 +6,9 @@
 set -e
 
 # 配置变量
-REMOTE_SERVER="your-server-ip"
+REMOTE_SERVER="156.236.74.200"
 REMOTE_USER="root"
+REMOTE_PASSWORD="Pr971V3j"
 DEPLOY_DIR="/root/lawsker"
 LOCAL_BRANCH="main"
 REMOTE_BRANCH="main"
@@ -147,7 +148,7 @@ deploy_to_server() {
     log "开始部署到服务器..."
     
     # 检查SSH连接
-    if ! ssh -o ConnectTimeout=10 $REMOTE_USER@$REMOTE_SERVER "echo 'SSH连接正常'" > /dev/null 2>&1; then
+    if ! sshpass -p "$REMOTE_PASSWORD" ssh -o ConnectTimeout=10 $REMOTE_USER@$REMOTE_SERVER "echo 'SSH连接正常'" > /dev/null 2>&1; then
         error "无法连接到服务器 $REMOTE_USER@$REMOTE_SERVER"
         error "请检查SSH配置和网络连接"
         exit 1
@@ -155,7 +156,7 @@ deploy_to_server() {
     
     # 在服务器上执行更新
     log "在服务器上执行更新..."
-    ssh $REMOTE_USER@$REMOTE_SERVER << EOF
+    sshpass -p "$REMOTE_PASSWORD" ssh $REMOTE_USER@$REMOTE_SERVER << EOF
         set -e
         
         # 检查部署目录
@@ -182,21 +183,21 @@ verify_deployment() {
     log "验证部署结果..."
     
     # 检查服务器健康状态
-    if ssh $REMOTE_USER@$REMOTE_SERVER "curl -f http://localhost:8000/health" > /dev/null 2>&1; then
+    if sshpass -p "$REMOTE_PASSWORD" ssh $REMOTE_USER@$REMOTE_SERVER "curl -f http://localhost:8000/health" > /dev/null 2>&1; then
         log "后端服务运行正常"
     else
         error "后端服务健康检查失败"
         return 1
     fi
     
-    if ssh $REMOTE_USER@$REMOTE_SERVER "curl -f http://localhost/" > /dev/null 2>&1; then
+    if sshpass -p "$REMOTE_PASSWORD" ssh $REMOTE_USER@$REMOTE_SERVER "curl -f http://localhost/" > /dev/null 2>&1; then
         log "前端服务运行正常"
     else
         warning "前端服务可能存在问题"
     fi
     
     # 获取部署信息
-    DEPLOY_INFO=$(ssh $REMOTE_USER@$REMOTE_SERVER "cd $DEPLOY_DIR && git log --oneline -1")
+    DEPLOY_INFO=$(sshpass -p "$REMOTE_PASSWORD" ssh $REMOTE_USER@$REMOTE_SERVER "cd $DEPLOY_DIR && git log --oneline -1")
     log "当前部署版本: $DEPLOY_INFO"
     
     log "部署验证完成"
@@ -343,10 +344,10 @@ show_status() {
     echo ""
     
     echo "=== 远程服务器状态 ==="
-    if ssh $REMOTE_USER@$REMOTE_SERVER "cd $DEPLOY_DIR && pwd && git log --oneline -5" 2>/dev/null; then
+    if sshpass -p "$REMOTE_PASSWORD" ssh $REMOTE_USER@$REMOTE_SERVER "cd $DEPLOY_DIR && pwd && git log --oneline -5" 2>/dev/null; then
         echo ""
         echo "=== 服务状态 ==="
-        ssh $REMOTE_USER@$REMOTE_SERVER "systemctl is-active lawsker-backend nginx" 2>/dev/null || echo "无法获取服务状态"
+        sshpass -p "$REMOTE_PASSWORD" ssh $REMOTE_USER@$REMOTE_SERVER "pm2 status" 2>/dev/null || echo "无法获取PM2服务状态"
     else
         echo "无法连接到远程服务器或部署目录不存在"
     fi
