@@ -191,4 +191,16 @@ async def require_admin_role(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="需要管理员权限"
         )
+    return current_user
+
+
+async def get_current_admin_user(
+    current_user: Dict[str, Any] = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """获取当前管理员用户"""
+    if "admin" not in current_user.get("roles", []):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="需要管理员权限"
+        )
     return current_user 
