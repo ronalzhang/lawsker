@@ -311,3 +311,29 @@ def create_refresh_token(data: Dict[str, Any]) -> str:
 def verify_token(token: str, token_type: str = "access") -> Optional[Dict[str, Any]]:
     """验证令牌"""
     return security_manager.verify_token(token, token_type)
+
+def generate_token_data(user: Dict[str, Any]) -> Dict[str, Any]:
+    """生成令牌数据"""
+    return {
+        "sub": str(user.get("id")),
+        "email": user.get("email"),
+        "username": user.get("username"),
+        "role": user.get("role"),
+        "tenant_id": str(user.get("tenant_id")),
+        "permissions": user.get("permissions", [])
+    }
+
+def extract_user_from_token(token: str) -> Optional[Dict[str, Any]]:
+    """从令牌中提取用户信息"""
+    return security_manager.verify_token(token)
+
+def validate_password_strength(password: str) -> bool:
+    """验证密码强度"""
+    if len(password) < 8:
+        return False
+    
+    has_upper = any(c.isupper() for c in password)
+    has_lower = any(c.islower() for c in password)
+    has_digit = any(c.isdigit() for c in password)
+    
+    return has_upper and has_lower and has_digit
