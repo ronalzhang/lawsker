@@ -34,8 +34,8 @@ fi
 if ! command -v redis_exporter &> /dev/null; then
     wget https://github.com/oliver006/redis_exporter/releases/download/v1.55.0/redis_exporter-v1.55.0.linux-amd64.tar.gz
     tar -xzf redis_exporter-v1.55.0.linux-amd64.tar.gz
-    cp redis_exporter /usr/local/bin/
-    rm redis_exporter redis_exporter-v1.55.0.linux-amd64.tar.gz
+    cp redis_exporter-v1.55.0.linux-amd64/redis_exporter /usr/local/bin/
+    rm -rf redis_exporter-v1.55.0.linux-amd64*
 fi
 
 # 安装Nginx Exporter
