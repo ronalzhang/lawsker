@@ -973,8 +973,7 @@ async def get_access_log_statistics(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"获取访问日志统计失败: {str(e)}"
         )
-# ===
-================= 用户行为监控接口 ====================
+# ================= 用户行为监控接口 ====================
 
 @router.get("/user-activities/queue-status", response_model=dict)
 async def get_user_activity_queue_status_api(
