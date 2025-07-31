@@ -299,3 +299,15 @@ def get_password_hash(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """验证密码"""
     return security_manager.verify_password(plain_password, hashed_password)
+
+def create_access_token(data: Dict[str, Any]) -> str:
+    """创建访问令牌"""
+    return security_manager.create_access_token(data)
+
+def create_refresh_token(data: Dict[str, Any]) -> str:
+    """创建刷新令牌"""
+    return security_manager.create_refresh_token(data)
+
+def verify_token(token: str, token_type: str = "access") -> Optional[Dict[str, Any]]:
+    """验证令牌"""
+    return security_manager.verify_token(token, token_type)
