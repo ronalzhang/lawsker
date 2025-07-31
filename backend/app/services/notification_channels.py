@@ -430,3 +430,57 @@ class SlackNotifier(NotificationChannel):
                 }
             ]
         }
+
+
+class NotificationManager:
+    """通知管理器"""
+    
+    def __init__(self):
+        self.channels: List[NotificationChannel] = []
+        self._setup_channels()
+    
+    def _setup_channels(self):
+        """设置通知渠道"""
+        # 邮件通知
+        if settings.SMTP_HOST and settings.SMTP_USER and settings.SMTP_PASSWORD:
+            email_notifier = EmailNotifier(
+                smtp_host=settings.SMTP_HOST,
+                smtp_port=settings.SMTP_PORT or 587,
+                smtp_user=settings.SMTP_USER,
+                smtp_password=settings.SMTP_PASSWORD,
+                from_email=settings.SMTP_USER
+            )
+            self.channels.append(email_notifier)
+        
+        # WebSocket通知
+        websocket_notifier = WebSocketNotifier()
+        self.channels.append(websocket_notifier)
+        
+        # 钉钉通知（如果配置了）
+        if hasattr(settings, 'DINGTALK_WEBHOOK_URL') and settings.DINGTALK_WEBHOOK_URL:
+            dingtalk_notifier = DingTalkNotifier(settings.DINGTALK_WEBHOOK_URL)
+            self.channels.append(dingtalk_notifier)
+        
+        # Slack通知（如果配置了）
+        if hasattr(settings, 'SLACK_WEBHOOK_URL') and settings.SLACK_WEBHOOK_URL:
+            slack_notifier = SlackNotifier(settings.SLACK_WEBHOOK_URL)
+            self.channels.append(slack_notifier)
+    
+    async def send_notification(self, alert_data) -> bool:
+        """发送通知到所有渠道"""
+        success_count = 0
+        total_channels = len(self.channels)
+        
+        for channel in self.channels:
+            try:
+                if await channel.send_notification(alert_data):
+                    success_count += 1
+            except Exception as e:
+                logger.error(f"通知渠道 {channel.__class__.__name__} 发送失败: {e}")
+        
+        logger.info(f"通知发送完成: {success_count}/{total_channels} 成功")
+        return success_count > 0
+
+
+# 创建全局通知管理器实例
+notification_manager = NotificationManager()
