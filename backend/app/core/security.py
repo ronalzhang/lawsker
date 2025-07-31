@@ -287,3 +287,15 @@ def require_role(required_role: str):
             return await func(request, *args, **kwargs)
         return wrapper
     return decorator
+
+# 创建全局安全管理器实例
+security_manager = SecurityManager()
+
+# 导出便捷函数
+def get_password_hash(password: str) -> str:
+    """获取密码哈希"""
+    return security_manager.get_password_hash(password)
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """验证密码"""
+    return security_manager.verify_password(plain_password, hashed_password)
