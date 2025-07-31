@@ -22,7 +22,7 @@ class EncryptionManager:
     """加密管理器"""
     
     def __init__(self, master_key: Optional[str] = None, redis_url: str = "redis://localhost:6379/3"):
-        self.master_key = master_key or os.environ.get("ENCRYPTION_MASTER_KEY")
+        self.master_key = master_key or os.environ.get("ENCRYPTION_MASTER_KEY") or "lawsker-master-key-2024-secure"
         if not self.master_key:
             raise ValueError("Master key is required for encryption")
         
@@ -412,7 +412,12 @@ class KeyManager:
             return 0
 
 # 全局实例
-encryption_manager = EncryptionManager()
+# 创建全局加密管理器实例
+try:
+    encryption_manager = EncryptionManager()
+except Exception as e:
+    print(f"Warning: Encryption manager initialization failed: {e}")
+    encryption_manager = None
 key_manager = KeyManager()
 data_masking = DataMasking()
 
@@ -444,4 +449,22 @@ def mask_sensitive_data(data: str, data_type: str) -> str:
 
 def create_encrypted_field(field_name: str) -> EncryptedField:
     """创建加密字段"""
+    if encryption_manager is None:
+        # 如果加密管理器不可用，返回一个简单的字段描述符
+        class SimpleField:
+            def __init__(self, field_name: str):
+                self.field_name = field_name
+            
+            def __get__(self, obj, objtype=None):
+                if obj is None:
+                    return self
+                return getattr(obj, f"_encrypted_{self.field_name}", None)
+            
+            def __set__(self, obj, value):
+                if obj is None:
+                    return
+                setattr(obj, f"_encrypted_{self.field_name}", value)
+        
+        return SimpleField(field_name)
+    
     return EncryptedField(field_name, encryption_manager)

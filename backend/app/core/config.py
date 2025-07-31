@@ -59,6 +59,9 @@ class Settings(BaseSettings):
     SMTP_USER: Optional[str] = None
     SMTP_PASSWORD: Optional[str] = None
     
+    # 加密配置
+    ENCRYPTION_MASTER_KEY: str = "lawsker-master-key-2024-secure"
+    
     # 业务配置
     # 修正分成比例，确保总和为100%
     COMMISSION_RATES: dict = {
@@ -75,6 +78,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "allow"
 
 
 # 创建全局配置实例

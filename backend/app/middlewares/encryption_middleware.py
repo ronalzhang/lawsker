@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
-from app.core.encryption import encryption_manager, mask_sensitive_data
+from app.core.encryption import mask_sensitive_data
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
@@ -80,7 +80,8 @@ class EncryptionMiddleware(BaseHTTPMiddleware):
             # 解密请求体
             encrypted_data = json.loads(body.decode())
             if "encrypted_payload" in encrypted_data:
-                decrypted_data = encryption_manager.decrypt_json(
+                from app.core.encryption import encryption_manager
+            decrypted_data = encryption_manager.decrypt_json(
                     encrypted_data["encrypted_payload"]
                 )
                 
@@ -114,7 +115,8 @@ class EncryptionMiddleware(BaseHTTPMiddleware):
                     response_data = json.loads(body.decode())
                     
                     # 加密响应数据
-                    encrypted_payload = encryption_manager.encrypt_json(response_data)
+                    from app.core.encryption import encryption_manager
+            encrypted_payload = encryption_manager.encrypt_json(response_data)
                     
                     # 构建加密响应
                     encrypted_response = {
@@ -213,6 +215,7 @@ class TransmissionEncryption:
     def encrypt_request_payload(data: Dict[str, Any]) -> Dict[str, Any]:
         """加密请求载荷"""
         try:
+            from app.core.encryption import encryption_manager
             encrypted_payload = encryption_manager.encrypt_json(data)
             return {
                 "encrypted_payload": encrypted_payload,
@@ -227,7 +230,8 @@ class TransmissionEncryption:
         """解密响应载荷"""
         try:
             if encrypted_response.get("encrypted") and "payload" in encrypted_response:
-                return encryption_manager.decrypt_json(encrypted_response["payload"])
+                from app.core.encryption import encryption_manager
+        return encryption_manager.decrypt_json(encrypted_response["payload"])
             return encrypted_response
         except Exception as e:
             logger.error(f"Response payload decryption failed: {str(e)}")

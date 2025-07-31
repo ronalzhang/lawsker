@@ -11,7 +11,7 @@ import uuid
 import enum
 
 from app.core.database import Base
-from app.core.encryption import create_encrypted_field, encryption_manager
+from app.core.encryption import create_encrypted_field
 
 
 class UserStatus(enum.Enum):

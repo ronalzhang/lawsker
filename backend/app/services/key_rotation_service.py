@@ -10,7 +10,7 @@ from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.encryption import encryption_manager, key_manager
+from app.core.encryption import key_manager
 from app.core.logging import get_logger
 from app.models.user import Profile, LawyerQualification
 
@@ -75,7 +75,8 @@ class KeyRotationService:
             await self._backup_field_key(field_name)
             
             # 轮换密钥
-            success = encryption_manager.rotate_field_key(field_name)
+            from app.core.encryption import encryption_manager
+        success = encryption_manager.rotate_field_key(field_name)
             
             if success:
                 logger.info(f"Successfully rotated key for field: {field_name}")
@@ -91,7 +92,8 @@ class KeyRotationService:
             backup_key_id = f"backup_{field_name}_{int(datetime.now().timestamp())}"
             
             # 获取当前密钥
-            current_key = encryption_manager._get_field_key(field_name)
+            from app.core.encryption import encryption_manager
+        current_key = encryption_manager._get_field_key(field_name)
             
             # 存储备份密钥
             key_manager.store_key(
@@ -174,7 +176,8 @@ class KeyRotationService:
             field_keys = ["full_name", "id_card_number", "lawyer_name"]
             for field_name in field_keys:
                 try:
-                    key = encryption_manager._get_field_key(field_name)
+                    from app.core.encryption import encryption_manager
+        key = encryption_manager._get_field_key(field_name)
                     status["field_keys"][field_name] = {
                         "exists": True,
                         "length": len(key)
