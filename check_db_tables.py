@@ -7,10 +7,10 @@ import asyncio
 import sys
 import os
 
-# 添加项目根目录到Python路径
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# 添加backend目录到Python路径
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'backend'))
 
-from backend.app.core.database import engine
+from app.core.database import engine
 
 async def check_tables():
     """检查数据库表"""
