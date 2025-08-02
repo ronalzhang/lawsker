@@ -12,7 +12,7 @@ from sqlalchemy import select, func, and_
 from app.core.database import get_db
 from app.core.deps import get_current_user
 from app.models.case import Case
-from app.models.finance import CommissionSplit
+from app.models.finance import Payment
 from app.models.statistics import DataUploadRecord, TaskPublishRecord
 
 router = APIRouter()
@@ -53,19 +53,19 @@ async def get_user_stats(
             
             # 总收入
             total_earnings = await db.scalar(
-                select(func.sum(CommissionSplit.amount)).where(
-                    and_(CommissionSplit.user_id == user_id, CommissionSplit.status == "paid")
+                select(func.sum(Payment.amount)).where(
+                    and_(Payment.user_id == user_id, Payment.status == "success")
                 )
             ) or 0
             
             # 本月收入
             this_month_start = date.today().replace(day=1)
             monthly_earnings = await db.scalar(
-                select(func.sum(CommissionSplit.amount)).where(
+                select(func.sum(Payment.amount)).where(
                     and_(
-                        CommissionSplit.user_id == user_id,
-                        CommissionSplit.status == "paid",
-                        func.date(CommissionSplit.paid_at) >= this_month_start
+                        Payment.user_id == user_id,
+                        Payment.status == "success",
+                        func.date(Payment.paid_at) >= this_month_start
                     )
                 )
             ) or 0
@@ -101,19 +101,19 @@ async def get_user_stats(
             
             # 总收入
             total_earnings = await db.scalar(
-                select(func.sum(CommissionSplit.amount)).where(
-                    and_(CommissionSplit.user_id == user_id, CommissionSplit.status == "paid")
+                select(func.sum(Payment.amount)).where(
+                    and_(Payment.user_id == user_id, Payment.status == "success")
                 )
             ) or 0
             
             # 本月收入
             this_month_start = date.today().replace(day=1)
             monthly_earnings = await db.scalar(
-                select(func.sum(CommissionSplit.amount)).where(
+                select(func.sum(Payment.amount)).where(
                     and_(
-                        CommissionSplit.user_id == user_id,
-                        CommissionSplit.status == "paid",
-                        func.date(CommissionSplit.paid_at) >= this_month_start
+                        Payment.user_id == user_id,
+                        Payment.status == "success",
+                        func.date(Payment.paid_at) >= this_month_start
                     )
                 )
             ) or 0
