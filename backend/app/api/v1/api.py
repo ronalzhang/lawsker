@@ -3,7 +3,8 @@ API路由主文件
 整合所有API端点路由
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Response
+from app.middlewares.csrf_middleware import get_csrf_token
 
 from app.api.v1.endpoints import auth, users, cases, finance, admin, ai, tasks, admin_analytics, document_library, document_send, websocket, automation
 from app.api.v1 import statistics, file_upload, ai_assignment, lawyer_verification
@@ -28,6 +29,30 @@ api_router.include_router(document_library.router, prefix="/document-library", t
 api_router.include_router(document_send.router, prefix="/document-send", tags=["文书发送"])
 api_router.include_router(websocket.router, prefix="/websocket", tags=["实时通信"])
 api_router.include_router(automation.router, prefix="/automation", tags=["自动化运维"])
+
+# 直接添加CSRF端点
+@api_router.get("/csrf/csrf-token")
+async def get_csrf_token_endpoint(response: Response):
+    """
+    获取CSRF Token
+    用于前端在发送POST/PUT/DELETE请求时包含CSRF保护
+    """
+    token_data = get_csrf_token()
+    
+    # 设置CSRF token到Cookie
+    response.set_cookie(
+        key="csrf_token",
+        value=token_data["cookie_token"],
+        max_age=3600,  # 1小时
+        httponly=False,  # 需要被JavaScript访问
+        secure=True,     # 生产环境必须为True
+        samesite="strict"
+    )
+    
+    return {
+        "csrf_token": token_data["token"],
+        "expires_in": 3600
+    }
 
 # 健康检查路由
 @api_router.get("/health")

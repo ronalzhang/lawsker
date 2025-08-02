@@ -43,6 +43,9 @@ class UserLogin(BaseModel):
     username: str  # 支持用户名或邮箱
     password: str
 
+class AdminLogin(BaseModel):
+    password: str  # 管理员密码
+
 
 class SMSCodeRequest(BaseModel):
     phone: str
@@ -329,6 +332,80 @@ async def login(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="用户名或密码错误"
+        )
+
+
+@router.post("/admin/login")
+async def admin_login(
+    request: Request,
+    response: Response,
+    admin_data: AdminLogin,
+    auth_service: AuthService = Depends(get_auth_service)
+):
+    """
+    管理员登录 - 只需密码验证
+    验证管理员密码并设置安全Cookie
+    """
+    try:
+        # 获取客户端信息
+        ip_address = request.client.host if request.client else "unknown"
+        user_agent = request.headers.get("user-agent", "")
+        
+        # 验证管理员密码
+        if admin_data.password != "123abc74531":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="管理员密码错误"
+            )
+        
+        # 创建管理员用户信息
+        admin_info = {
+            "id": "admin-001",
+            "email": "admin@lawsker.com",
+            "role": "admin",
+            "status": "active",
+            "permissions": ["admin:all"]
+        }
+        
+        # 创建令牌数据
+        token_data = {
+            "sub": admin_info.get("email"),
+            "user_id": admin_info.get("id"),
+            "role": admin_info.get("role"),
+            "permissions": admin_info.get("permissions", [])
+        }
+        
+        # 创建访问令牌和刷新令牌
+        access_token = security_manager.create_access_token(token_data)
+        refresh_token = security_manager.create_refresh_token(token_data)
+        
+        # 设置HttpOnly Cookie
+        security_manager.set_auth_cookies(response, access_token, refresh_token)
+        
+        # 记录登录行为
+        try:
+            await track_login(
+                user_id=admin_info.get("id"),
+                ip_address=ip_address,
+                user_agent=user_agent
+            )
+        except Exception as e:
+            logger.warning("记录管理员登录行为失败", error=str(e))
+        
+        logger.info("管理员登录成功", admin_id=admin_info.get("id"))
+        
+        return {
+            "message": "管理员登录成功",
+            "user": admin_info
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("管理员登录失败", error=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="管理员登录失败"
         )
 
 

@@ -356,4 +356,51 @@ class UserService:
             logger.info("更新最后登录时间", user_id=user_id)
             
         except Exception as e:
-            logger.error("更新最后登录时间失败", error=str(e), user_id=user_id) 
+            logger.error("更新最后登录时间失败", error=str(e), user_id=user_id)
+    
+    async def create_role(
+        self,
+        name: str,
+        description: str,
+        permissions: List[str],
+        tenant_id: str
+    ) -> Role:
+        """
+        创建角色
+        
+        Args:
+            name: 角色名称
+            description: 角色描述
+            permissions: 权限列表
+            tenant_id: 租户ID
+        
+        Returns:
+            创建的角色对象
+        """
+        try:
+            # 检查角色是否已存在
+            existing_role = await self.get_role_by_name(name)
+            if existing_role:
+                return existing_role
+            
+            # 创建角色
+            role = Role(
+                id=str(uuid.uuid4()),
+                name=name,
+                description=description,
+                permissions=permissions,
+                tenant_id=tenant_id
+            )
+            
+            self.db.add(role)
+            await self.db.commit()
+            await self.db.refresh(role)
+            
+            logger.info("角色创建成功", role_name=name)
+            return role
+        except Exception as e:
+            logger.error("创建角色失败", name=name, error=str(e))
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"创建角色失败: {str(e)}"
+            ) 
