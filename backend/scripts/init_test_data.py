@@ -20,7 +20,7 @@ from app.core.database import AsyncSessionLocal, engine
 from app.models.user import User, Role, UserRole, Profile, UserStatus
 from app.models.tenant import Tenant, SystemConfig
 from app.models.case import Case, Client, CaseStatus, LegalStatus
-from app.models.finance import Transaction, CommissionSplit, Wallet
+from app.models.finance import Transaction, Wallet
 from app.models.lawyer_review import DocumentReviewTask, ReviewStatus
 from app.models.statistics import SystemStatistics, UserActivityLog, DataUploadRecord, TaskPublishRecord
 

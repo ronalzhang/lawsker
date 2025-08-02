@@ -13,7 +13,7 @@ from sqlalchemy.orm import selectinload
 from app.models.statistics import SystemStatistics, UserActivityLog, DataUploadRecord, TaskPublishRecord
 from app.models.case import Case, CaseStatus
 from app.models.user import User, Role
-from app.models.finance import Transaction, CommissionSplit, Wallet
+from app.models.finance import Transaction, Wallet
 from app.models.lawyer_review import DocumentReviewTask, ReviewStatus
 
 

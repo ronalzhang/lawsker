@@ -15,7 +15,7 @@ from app.core.database import get_db
 from app.core.deps import get_current_user
 from app.models.user import User
 from app.models.case import Case, CaseStatus
-from app.models.finance import Transaction, CommissionSplit
+from app.models.finance import Transaction
 from app.models.statistics import SystemStatistics, UserActivityLog, DataUploadRecord, TaskPublishRecord
 from app.models.lawyer_review import DocumentReviewTask, ReviewStatus
 
@@ -68,7 +68,6 @@ async def _get_admin_dashboard_stats(db: AsyncSession) -> Dict[str, Any]:
     # 财务统计
     total_transactions = await db.scalar(select(func.count(Transaction.id))) or 0
     total_amount = await db.scalar(select(func.sum(Transaction.amount))) or 0
-    total_commissions = await db.scalar(select(func.sum(CommissionSplit.amount))) or 0
     
     # 今日数据
     today = date.today()
@@ -88,7 +87,6 @@ async def _get_admin_dashboard_stats(db: AsyncSession) -> Dict[str, Any]:
         "active_sales": active_sales,
         "total_transactions": total_transactions,
         "total_amount": float(total_amount),
-        "total_commissions": float(total_commissions),
         "today_cases": today_cases,
         "today_transactions": today_transactions,
         "success_rate": round((completed_cases / total_cases * 100) if total_cases > 0 else 0, 2),
@@ -116,25 +114,25 @@ async def _get_lawyer_dashboard_stats(db: AsyncSession, user_id: UUID) -> Dict[s
     
     # 收入统计
     total_earnings = await db.scalar(
-        select(func.sum(CommissionSplit.amount)).where(
-            and_(CommissionSplit.user_id == user_id, CommissionSplit.status == "paid")
+        select(func.sum(Transaction.amount)).where(
+            and_(Transaction.user_id == user_id, Transaction.status == "paid")
         )
     ) or 0
     
     pending_earnings = await db.scalar(
-        select(func.sum(CommissionSplit.amount)).where(
-            and_(CommissionSplit.user_id == user_id, CommissionSplit.status == "pending")
+        select(func.sum(Transaction.amount)).where(
+            and_(Transaction.user_id == user_id, Transaction.status == "pending")
         )
     ) or 0
     
     # 本月收入
     this_month_start = date.today().replace(day=1)
     this_month_earnings = await db.scalar(
-        select(func.sum(CommissionSplit.amount)).where(
+        select(func.sum(Transaction.amount)).where(
             and_(
-                CommissionSplit.user_id == user_id,
-                CommissionSplit.status == "paid",
-                func.date(CommissionSplit.paid_at) >= this_month_start
+                Transaction.user_id == user_id,
+                Transaction.status == "paid",
+                func.date(Transaction.paid_at) >= this_month_start
             )
         )
     ) or 0
@@ -183,25 +181,25 @@ async def _get_sales_dashboard_stats(db: AsyncSession, user_id: UUID) -> Dict[st
     
     # 收入统计
     total_earnings = await db.scalar(
-        select(func.sum(CommissionSplit.amount)).where(
-            and_(CommissionSplit.user_id == user_id, CommissionSplit.status == "paid")
+        select(func.sum(Transaction.amount)).where(
+            and_(Transaction.user_id == user_id, Transaction.status == "paid")
         )
     ) or 0
     
     pending_earnings = await db.scalar(
-        select(func.sum(CommissionSplit.amount)).where(
-            and_(CommissionSplit.user_id == user_id, CommissionSplit.status == "pending")
+        select(func.sum(Transaction.amount)).where(
+            and_(Transaction.user_id == user_id, Transaction.status == "pending")
         )
     ) or 0
     
     # 本月收入
     this_month_start = date.today().replace(day=1)
     this_month_earnings = await db.scalar(
-        select(func.sum(CommissionSplit.amount)).where(
+        select(func.sum(Transaction.amount)).where(
             and_(
-                CommissionSplit.user_id == user_id,
-                CommissionSplit.status == "paid",
-                func.date(CommissionSplit.paid_at) >= this_month_start
+                Transaction.user_id == user_id,
+                Transaction.status == "paid",
+                func.date(Transaction.paid_at) >= this_month_start
             )
         )
     ) or 0
@@ -523,8 +521,8 @@ async def get_user_level(
             ) or 0
             
             total_earnings = await db.scalar(
-                select(func.sum(CommissionSplit.amount)).where(
-                    and_(CommissionSplit.user_id == user_id, CommissionSplit.status == "paid")
+                select(func.sum(Transaction.amount)).where(
+                    and_(Transaction.user_id == user_id, Transaction.status == "paid")
                 )
             ) or 0
             

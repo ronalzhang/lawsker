@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import AsyncSessionLocal
 from app.models.user import User, UserStatus
 from app.models.case import Case, Client, CaseStatus, LegalStatus
-from app.models.finance import Transaction, CommissionSplit, Wallet
+from app.models.finance import Transaction, Wallet
 from app.models.lawyer_review import DocumentReviewTask, ReviewStatus
 from app.models.statistics import SystemStatistics, UserActivityLog
 from sqlalchemy import text
