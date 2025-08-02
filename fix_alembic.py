@@ -17,12 +17,12 @@ async def fix_alembic():
     """修复alembic版本"""
     try:
         async with engine.begin() as conn:
-            # 删除错误的版本记录
-            await conn.execute(text("DELETE FROM alembic_version WHERE version_num = '009_add_admin_analytics_tables'"))
-            print("删除错误的版本记录")
+            # 删除所有版本记录
+            await conn.execute(text("DELETE FROM alembic_version"))
+            print("删除所有版本记录")
             
             # 插入正确的版本记录
-            await conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('008_enhance_lawyer_qualification') ON CONFLICT (version_num) DO NOTHING"))
+            await conn.execute(text("INSERT INTO alembic_version (version_num) VALUES ('008_enhance_lawyer_qualification')"))
             print("插入正确的版本记录")
             
             # 验证修复结果
