@@ -11,7 +11,7 @@ from fastapi import HTTPException, status
 import structlog
 import uuid
 
-from app.models.user import User, Role, UserRole, Profile, UserStatus
+from app.models.user import User, Role, UserRole, UserStatus
 from app.models.tenant import Tenant
 from app.core.security import get_password_hash, verify_password
 
@@ -88,13 +88,11 @@ class UserService:
             )
             self.db.add(user_role)
             
-            # 创建用户档案
-            if full_name or phone_number:
-                profile = Profile(
-                    user_id=user.id,
-                    full_name=full_name
-                )
-                self.db.add(profile)
+            # 更新用户基本信息
+            if full_name:
+                user.full_name = full_name
+            if phone_number:
+                user.phone_number = phone_number
             
             await self.db.commit()
             await self.db.refresh(user)
@@ -318,22 +316,22 @@ class UserService:
             logger.error("获取用户角色失败", error=str(e), user_id=user_id)
             return []
     
-    async def get_user_profile(self, user_id: str) -> Optional[Profile]:
+    async def get_user_profile(self, user_id: str) -> Optional[User]:
         """
-        获取用户档案
+        获取用户信息
         
         Args:
             user_id: 用户ID
         
         Returns:
-            用户档案对象或None
+            用户对象或None
         """
         try:
-            stmt = select(Profile).where(Profile.user_id == user_id)
+            stmt = select(User).where(User.id == user_id)
             result = await self.db.execute(stmt)
             return result.scalar_one_or_none()
         except Exception as e:
-            logger.error("获取用户档案失败", error=str(e), user_id=user_id)
+            logger.error("获取用户信息失败", error=str(e), user_id=user_id)
             return None
     
     async def update_last_login(self, user_id: str) -> None:
@@ -348,7 +346,7 @@ class UserService:
             stmt = (
                 update(User)
                 .where(User.id == user_id)
-                .values(last_login=datetime.utcnow())
+                .values(last_login_at=datetime.utcnow())
             )
             await self.db.execute(stmt)
             await self.db.commit()

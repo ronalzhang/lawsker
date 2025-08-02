@@ -56,11 +56,10 @@ async def generate_document(
         # 获取律师信息
         try:
             lawyer_user = await user_service.get_user_by_id(current_user["id"])
-            lawyer_profile = await user_service.get_user_profile(current_user["id"])
             
             lawyer_info = {
-                'name': lawyer_profile.full_name if lawyer_profile and lawyer_profile.full_name else lawyer_user.username if lawyer_user else '张律师',
-                'license_number': getattr(lawyer_profile, 'license_number', None) if lawyer_profile else None or '11010201234567890',
+                'name': lawyer_user.full_name if lawyer_user and lawyer_user.full_name else lawyer_user.username if lawyer_user else '张律师',
+                'license_number': '11010201234567890',  # 默认律师证号
                 'phone': lawyer_user.phone_number if lawyer_user and lawyer_user.phone_number else '138-0000-0000',
                 'email': lawyer_user.email if lawyer_user else 'lawyer@lawfirm.com'
             }

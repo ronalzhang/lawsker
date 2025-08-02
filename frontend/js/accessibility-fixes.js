@@ -460,7 +460,7 @@ function observeContentChanges() {
 initAccessibilityFixes();
 
 // 监听内容变化
-if (typeof MutationObserver !== 'undefined') {
+if (typeof MutationObserver !== 'undefined' && document.body) {
   observeContentChanges();
 }
 

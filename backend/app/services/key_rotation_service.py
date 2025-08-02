@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.encryption import key_manager
 from app.core.logging import get_logger
-from app.models.user import Profile, LawyerQualification
+from app.models.user import LawyerQualification
 
 logger = get_logger(__name__)
 
@@ -208,9 +208,7 @@ class DataMigrationService:
             
             db = next(get_db())
             
-            if field_name in ["full_name", "id_card_number"]:
-                await self._migrate_profile_data(db, field_name, old_key, new_key)
-            elif field_name in ["lawyer_name"]:
+            if field_name in ["lawyer_name"]:
                 await self._migrate_lawyer_data(db, field_name, old_key, new_key)
             
             logger.info(f"Data migration completed for field: {field_name}")
@@ -218,45 +216,7 @@ class DataMigrationService:
         except Exception as e:
             logger.error(f"Data migration failed for {field_name}: {str(e)}")
     
-    async def _migrate_profile_data(self, db: Session, field_name: str, old_key: str, new_key: str):
-        """迁移用户资料数据"""
-        try:
-            # 分批处理数据
-            offset = 0
-            while True:
-                profiles = db.query(Profile).offset(offset).limit(self.batch_size).all()
-                
-                if not profiles:
-                    break
-                
-                for profile in profiles:
-                    # 使用旧密钥解密数据
-                    if field_name == "full_name" and profile._encrypted_full_name:
-                        decrypted_data = self._decrypt_with_key(
-                            profile._encrypted_full_name, old_key
-                        )
-                        # 使用新密钥重新加密
-                        profile._encrypted_full_name = self._encrypt_with_key(
-                            decrypted_data, new_key
-                        )
-                    
-                    elif field_name == "id_card_number" and profile._encrypted_id_card_number:
-                        decrypted_data = self._decrypt_with_key(
-                            profile._encrypted_id_card_number, old_key
-                        )
-                        profile._encrypted_id_card_number = self._encrypt_with_key(
-                            decrypted_data, new_key
-                        )
-                
-                db.commit()
-                offset += self.batch_size
-                
-                # 避免长时间占用数据库连接
-                await asyncio.sleep(0.1)
-                
-        except Exception as e:
-            db.rollback()
-            raise e
+
     
     async def _migrate_lawyer_data(self, db: Session, field_name: str, old_key: str, new_key: str):
         """迁移律师资质数据"""

@@ -187,9 +187,8 @@ class AuthService:
                     detail="用户账户已停用"
                 )
             
-            # 获取用户角色和档案
+            # 获取用户角色
             roles = await self.user_service.get_user_roles(user.id)
-            profile = await self.user_service.get_user_profile(user.id)
             
             return {
                 "id": str(user.id),
@@ -199,7 +198,7 @@ class AuthService:
                 "status": user.status.value,
                 "tenant_id": str(user.tenant_id),
                 "profile": {
-                    "full_name": profile.full_name if profile else None,
+                    "full_name": user.full_name,
                     "phone_number": user.phone_number
                 }
             }
