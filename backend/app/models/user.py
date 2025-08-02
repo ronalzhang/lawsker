@@ -1,51 +1,32 @@
 """
 用户相关数据模型
-包含用户、角色、权限、用户资料等模型
+支持多租户用户管理和权限控制
 """
 
-from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Text, Enum as SQLEnum, Date, Integer
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Text, Integer, Enum as SQLEnum
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
 import enum
 
 from app.core.database import Base
-from app.core.encryption import create_encrypted_field
 
 
 class UserStatus(enum.Enum):
     """用户状态枚举"""
-    PENDING = "pending"        # 待审核
-    ACTIVE = "active"          # 活跃
-    INACTIVE = "inactive"      # 非活跃
-    BANNED = "banned"          # 被禁用
+    PENDING = "pending"      # 待审核
+    ACTIVE = "active"        # 活跃
+    SUSPENDED = "suspended"  # 暂停
+    BANNED = "banned"        # 封禁
 
 
-class VerificationStatus(enum.Enum):
-    """认证状态枚举"""
-    UNVERIFIED = "unverified"  # 未认证
-    PENDING = "pending"        # 认证中
-    VERIFIED = "verified"      # 已认证
-    FAILED = "failed"          # 认证失败
-
-
-class LawyerLevel(enum.Enum):
-    """律师等级枚举"""
-    JUNIOR = "junior"          # 初级律师
-    INTERMEDIATE = "intermediate"  # 中级律师
-    SENIOR = "senior"          # 高级律师
-    PARTNER = "partner"        # 合伙人级别
-
-
-class QualificationStatus(enum.Enum):
-    """资质状态枚举"""
-    DRAFT = "draft"            # 草稿
-    SUBMITTED = "submitted"    # 已提交
-    REVIEWING = "reviewing"    # 审核中
-    APPROVED = "approved"      # 已通过
-    REJECTED = "rejected"      # 已拒绝
-    EXPIRED = "expired"        # 已过期
+class UserRole(enum.Enum):
+    """用户角色枚举"""
+    ADMIN = "admin"          # 管理员
+    LAWYER = "lawyer"        # 律师
+    SALES = "sales"          # 律客用户
+    INSTITUTION = "institution"  # 机构用户
 
 
 class User(Base):
@@ -54,32 +35,45 @@ class User(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False)
-    username = Column(String(255), unique=True, nullable=False, index=True)
-    password_hash = Column(String(255), nullable=False)
-    email = Column(String(255), unique=True, nullable=True, index=True)
+    username = Column(String(50), unique=True, nullable=False, index=True)
+    email = Column(String(255), unique=True, nullable=False, index=True)
     phone_number = Column(String(20), unique=True, nullable=True, index=True)
-    status = Column(SQLEnum(UserStatus), default=UserStatus.PENDING, nullable=False)
+    password_hash = Column(String(255), nullable=False)
     
-    # 时间戳
+    # 基本信息
+    full_name = Column(String(100), nullable=True)
+    avatar_url = Column(String(500), nullable=True)
+    bio = Column(Text, nullable=True)
+    
+    # 状态和角色
+    status = Column(SQLEnum(UserStatus), nullable=False, default=UserStatus.PENDING)
+    role = Column(SQLEnum(UserRole), nullable=False, default=UserRole.SALES)
+    
+    # 权限和配置
+    permissions = Column(Text, nullable=True)  # 权限配置JSON (字符串)
+    is_verified = Column(Boolean, default=False, nullable=False)
+    is_premium = Column(Boolean, default=False, nullable=False)
+    
+    # 统计信息
+    login_count = Column(Integer, default=0, nullable=False)
+    last_login_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
-    last_login = Column(DateTime(timezone=True), nullable=True)
     
     # 关联关系
     tenant = relationship("Tenant", back_populates="users")
-    profile = relationship("Profile", back_populates="user", uselist=False)
-    user_roles = relationship("UserRole", back_populates="user")
-    cases_assigned = relationship("Case", foreign_keys="Case.assigned_to_user_id", back_populates="assigned_user")
-    cases_uploaded = relationship("Case", foreign_keys="Case.sales_user_id", back_populates="sales_user")
-    clients_owned = relationship("Client", back_populates="sales_owner")
-    wallet = relationship("Wallet", back_populates="user", uselist=False)
-    lawyer_qualification = relationship("LawyerQualification", foreign_keys="LawyerQualification.user_id", back_populates="user", uselist=False)
-    workload = relationship("LawyerWorkload", back_populates="lawyer", uselist=False)
-    assigned_review_tasks = relationship("DocumentReviewTask", foreign_keys="DocumentReviewTask.lawyer_id", back_populates="lawyer")
-    created_review_tasks = relationship("DocumentReviewTask", foreign_keys="DocumentReviewTask.creator_id", back_populates="creator")
+    cases = relationship("Case", back_populates="user")
+    tasks = relationship("Task", back_populates="user")
+    lawyer_qualifications = relationship("LawyerQualification", back_populates="user")
+    lawyer_letters = relationship("LawyerLetter", back_populates="user")
+    document_sends = relationship("DocumentSend", back_populates="user")
+    payments = relationship("Payment", back_populates="user")
+    withdrawal_requests = relationship("WithdrawalRequest", back_populates="user")
+    access_logs = relationship("AccessLog", back_populates="user")
+    system_logs = relationship("SystemLog", back_populates="user")
 
     def __repr__(self):
-        return f"<User(id={self.id}, username={self.username}, status={self.status.value})>"
+        return f"<User(id={self.id}, username={self.username}, role={self.role.value})>"
 
 
 class Role(Base):
@@ -90,167 +84,58 @@ class Role(Base):
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=True)  # NULL表示全局角色
     name = Column(String(50), nullable=False)
     description = Column(Text, nullable=True)
-    permissions = Column(JSONB, nullable=True)  # 权限配置JSON
-    
-    # 时间戳
+    permissions = Column(Text, nullable=True)  # 权限配置JSON (字符串)
+    is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     
     # 关联关系
     tenant = relationship("Tenant", back_populates="roles")
-    user_roles = relationship("UserRole", back_populates="role")
 
     def __repr__(self):
-        return f"<Role(id={self.id}, name={self.name}, tenant_id={self.tenant_id})>"
-
-
-class UserRole(Base):
-    """用户角色关联表"""
-    __tablename__ = "user_roles"
-
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True)
-    role_id = Column(UUID(as_uuid=True), ForeignKey("roles.id"), primary_key=True)
-    
-    # 时间戳
-    assigned_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    
-    # 关联关系
-    user = relationship("User", back_populates="user_roles")
-    role = relationship("Role", back_populates="user_roles")
-
-    def __repr__(self):
-        return f"<UserRole(user_id={self.user_id}, role_id={self.role_id})>"
-
-
-class Profile(Base):
-    """用户资料表"""
-    __tablename__ = "profiles"
-
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), primary_key=True)
-    
-    # 敏感字段使用加密存储
-    _encrypted_full_name = Column("full_name_encrypted", Text, nullable=True)
-    _encrypted_id_card_number = Column("id_card_number_encrypted", Text, nullable=True)
-    
-    # 非敏感字段保持原样
-    qualification_details = Column(JSONB, nullable=True)  # 资质详情JSON
-    did = Column(String(255), unique=True, nullable=True)  # Web3去中心化身份
-    verification_status = Column(SQLEnum(VerificationStatus), default=VerificationStatus.UNVERIFIED, nullable=False)
-    avatar_url = Column(String(500), nullable=True)
-    bio = Column(Text, nullable=True)
-    
-    # 时间戳
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
-    
-    # 关联关系
-    user = relationship("User", back_populates="profile")
-    
-    # 加密字段属性
-    full_name = create_encrypted_field("full_name")
-    id_card_number = create_encrypted_field("id_card_number")
-
-    def __repr__(self):
-        return f"<Profile(user_id={self.user_id}, verification_status={self.verification_status.value})>"
+        return f"<Role(id={self.id}, name={self.name})>"
 
 
 class LawyerQualification(Base):
-    """律师资质表"""
+    """律师资质认证表"""
     __tablename__ = "lawyer_qualifications"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     
-    # 律师基本信息（从律师证上识别）- 敏感字段加密
-    _encrypted_lawyer_name = Column("lawyer_name_encrypted", Text, nullable=True)
-    gender = Column(String(10), nullable=True)           # 性别
-    _encrypted_id_card_number = Column("id_card_number_encrypted", Text, nullable=True)
+    # 基本信息
+    license_number = Column(String(100), unique=True, nullable=False, index=True)
+    law_firm = Column(String(200), nullable=True)
+    practice_years = Column(Integer, nullable=True)
     
-    # 执业证书信息
-    license_number = Column(String(50), unique=True, nullable=False, index=True)  # 执业证书编号
-    license_authority = Column(String(100), nullable=False)  # 发证机关
-    license_issued_date = Column(Date, nullable=False)  # 发证日期
-    license_expiry_date = Column(Date, nullable=True)   # 到期日期
+    # 资质详情
+    qualification_details = Column(Text, nullable=True)  # 资质详情JSON (字符串)
     
-    # 律师事务所信息
-    law_firm_name = Column(String(200), nullable=False)  # 律师事务所名称
-    law_firm_license = Column(String(50), nullable=True)  # 律师事务所执业许可证号
-    law_firm_address = Column(Text, nullable=True)        # 律师事务所地址
+    # 认证状态
+    verification_status = Column(String(20), default="pending", nullable=False)  # pending, approved, rejected
+    verification_notes = Column(Text, nullable=True)
+    verified_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    verified_at = Column(DateTime(timezone=True), nullable=True)
     
-    # 专业信息
-    practice_areas = Column(JSONB, nullable=True)        # 执业领域JSON数组
-    lawyer_level = Column(SQLEnum(LawyerLevel), default=LawyerLevel.JUNIOR, nullable=False)
-    years_of_practice = Column(Integer, default=0)       # 执业年限（从发证日期计算）
-    specializations = Column(JSONB, nullable=True)       # 专业特长JSON数组
+    # 执业信息
+    practice_areas = Column(Text, nullable=True)        # 执业领域JSON数组 (字符串)
+    specializations = Column(Text, nullable=True)       # 专业特长JSON数组 (字符串)
     
-    # 认证文件信息
-    license_image_url = Column(String(500), nullable=True)  # 律师证图片URL
-    license_image_metadata = Column(JSONB, nullable=True)   # 图片元数据（AI识别结果）
-    certification_documents = Column(JSONB, nullable=True)  # 其他认证文件JSON
+    # 文件信息
+    license_image_url = Column(String(500), nullable=True)
+    license_image_metadata = Column(Text, nullable=True)   # 图片元数据（AI识别结果）(字符串)
+    certification_documents = Column(Text, nullable=True)  # 其他认证文件JSON (字符串)
     
-    # 认证信息
-    qualification_status = Column(SQLEnum(QualificationStatus), default=QualificationStatus.DRAFT, nullable=False)
-    ai_verification_score = Column(Integer, default=0)    # AI验证置信度（0-100）
-    ai_extraction_result = Column(JSONB, nullable=True)   # AI提取结果JSON
-    reviewer_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)  # 审核人ID
-    review_notes = Column(Text, nullable=True)            # 审核备注
-    reviewed_at = Column(DateTime(timezone=True), nullable=True)  # 审核时间
-    
-    # 统计信息
-    total_cases_handled = Column(Integer, default=0)      # 处理案件总数
-    success_rate = Column(Integer, default=0)             # 成功率（百分比）
-    average_rating = Column(Integer, default=0)           # 平均评分（1-5分）
+    # AI识别结果
+    ai_extraction_result = Column(Text, nullable=True)   # AI提取结果JSON (字符串)
     
     # 时间戳
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     
     # 关联关系
-    user = relationship("User", foreign_keys=[user_id], back_populates="lawyer_qualification")
-    reviewer = relationship("User", foreign_keys=[reviewer_id])
-    
-    # 加密字段属性
-    lawyer_name = create_encrypted_field("lawyer_name")
-    id_card_number = create_encrypted_field("id_card_number")
+    user = relationship("User", back_populates="lawyer_qualifications")
+    verifier = relationship("User", foreign_keys=[verified_by])
 
     def __repr__(self):
-        return f"<LawyerQualification(id={self.id}, user_id={self.user_id}, license_number={self.license_number}, status={self.qualification_status.value})>"
-
-
-class CollectionRecord(Base):
-    """催收记录表"""
-    __tablename__ = "collection_records"
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    case_id = Column(UUID(as_uuid=True), ForeignKey("cases.id"), nullable=False)
-    lawyer_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    
-    # 催收信息
-    action_type = Column(String(50), nullable=False)     # 催收方式：电话、短信、邮件、律师函等
-    contact_method = Column(String(50), nullable=True)   # 联系方式
-    content = Column(Text, nullable=True)                # 催收内容
-    response = Column(Text, nullable=True)               # 债务人回应
-    result = Column(String(50), nullable=True)           # 催收结果
-    
-    # AI辅助信息
-    ai_template_used = Column(String(100), nullable=True)  # 使用的AI模板
-    ai_generated_content = Column(Text, nullable=True)     # AI生成的内容
-    ai_success_prediction = Column(Integer, nullable=True) # AI预测成功率（百分比）
-    
-    # 时间和状态
-    scheduled_time = Column(DateTime(timezone=True), nullable=True)  # 预定时间
-    completed_time = Column(DateTime(timezone=True), nullable=True)  # 完成时间
-    is_successful = Column(Boolean, default=False)        # 是否成功
-    follow_up_required = Column(Boolean, default=False)   # 是否需要跟进
-    next_follow_up_date = Column(DateTime(timezone=True), nullable=True)  # 下次跟进时间
-    
-    # 时间戳
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
-    
-    # 关联关系
-    case = relationship("Case")
-    lawyer = relationship("User")
-
-    def __repr__(self):
-        return f"<CollectionRecord(id={self.id}, case_id={self.case_id}, action_type={self.action_type}, is_successful={self.is_successful})>" 
+        return f"<LawyerQualification(id={self.id}, user_id={self.user_id}, license_number={self.license_number})>" 

@@ -4,11 +4,12 @@
 """
 
 from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Text, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
 import enum
+import json
 
 from app.core.database import Base
 
@@ -39,10 +40,10 @@ class Tenant(Base):
     
     # 配置信息
     domain = Column(String(255), unique=True, nullable=True)  # 自定义域名
-    feature_flags = Column(JSONB, nullable=True)  # 功能开关配置
-    system_config = Column(JSONB, nullable=True)  # 系统配置
-    api_limits = Column(JSONB, nullable=True)     # API使用限制
-    billing_info = Column(JSONB, nullable=True)   # 计费信息
+    feature_flags = Column(Text, nullable=True)  # 功能开关配置 (JSON字符串)
+    system_config = Column(Text, nullable=True)  # 系统配置 (JSON字符串)
+    api_limits = Column(Text, nullable=True)     # API使用限制 (JSON字符串)
+    billing_info = Column(Text, nullable=True)   # 计费信息 (JSON字符串)
     
     # 业务配置
     subscription_plan = Column(String(50), nullable=True)  # 订阅计划
@@ -73,7 +74,7 @@ class SystemConfig(Base):
     tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=True)  # NULL表示全局配置
     category = Column(String(50), nullable=False)  # 配置类别
     key = Column(String(255), nullable=False)      # 配置键
-    value = Column(JSONB, nullable=False)          # 配置值
+    value = Column(Text, nullable=False)           # 配置值 (JSON字符串)
     description = Column(Text, nullable=True)      # 配置描述
     is_active = Column(Boolean, default=True, nullable=False)
     is_editable = Column(Boolean, default=True, nullable=False)  # 是否可编辑
