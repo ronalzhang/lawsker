@@ -40,7 +40,7 @@ HOST=0.0.0.0
 PORT=8000
 
 # 数据库配置（使用SQLite作为临时方案）
-DATABASE_URL=sqlite:///./lawsker.db
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/lawsker
 
 # Redis配置
 REDIS_URL=redis://localhost:6379/0

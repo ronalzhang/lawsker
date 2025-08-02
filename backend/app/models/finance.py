@@ -67,7 +67,7 @@ class Payment(Base):
     paid_at = Column(DateTime(timezone=True), nullable=True)  # 支付时间
     
     # 关联关系
-    user = relationship("User", back_populates="payments")
+    user = relationship("User")
     case = relationship("Case")
 
     def __repr__(self):
@@ -159,7 +159,7 @@ class WithdrawalRequest(Base):
     processed_at = Column(DateTime(timezone=True), nullable=True)  # 处理时间
     
     # 关联关系
-    user = relationship("User", back_populates="withdrawal_requests")
+    user = relationship("User")
 
     def __repr__(self):
         return f"<WithdrawalRequest(id={self.id}, request_number={self.request_number}, status={self.status.value})>"

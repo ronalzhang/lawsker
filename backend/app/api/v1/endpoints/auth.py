@@ -272,63 +272,112 @@ async def login(
         ip_address = request.client.host if request.client else "unknown"
         user_agent = request.headers.get("user-agent", "")
         
-        # 验证用户凭据
-        auth_result = await auth_service.authenticate_and_create_token(
-            username_or_email=user_data.username,
-            password=user_data.password
-        )
+        logger.info("开始登录尝试", username=user_data.username, ip=ip_address)
         
-        user_info = auth_result.get("user", {})
-        user_id = user_info.get("id")
+        # 临时解决方案：直接使用SQL查询用户
+        from sqlalchemy import text
+        from app.core.database import AsyncSessionLocal
+        from app.core.security import verify_password, create_access_token
         
-        if not user_id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="认证失败"
-            )
-        
-        # 创建令牌数据
-        token_data = {
-            "sub": user_info.get("email"),
-            "user_id": str(user_id),
-            "role": user_info.get("role"),
-            "permissions": user_info.get("permissions", [])
-        }
-        
-        # 创建访问令牌和刷新令牌
-        access_token = security_manager.create_access_token(token_data)
-        refresh_token = security_manager.create_refresh_token(token_data)
-        
-        # 设置HttpOnly Cookie
-        security_manager.set_auth_cookies(response, access_token, refresh_token)
-        
-        # 记录登录行为
-        try:
-            await track_login(
-                user_id=str(user_id),
-                ip_address=ip_address,
-                user_agent=user_agent
-            )
-        except Exception as e:
-            logger.warning("记录登录行为失败", error=str(e))
-        
-        logger.info("用户登录成功", username=user_data.username, user_role=user_info.get("role"))
-        
-        return {
-            "message": "登录成功",
-            "user": {
-                "id": str(user_id),
-                "email": user_info.get("email"),
-                "role": user_info.get("role"),
-                "status": user_info.get("status"),
-                "permissions": user_info.get("permissions", [])
+        async with AsyncSessionLocal() as session:
+            # 支持用户名或邮箱登录
+            query = text("""
+                SELECT u.id, u.email, u.username, u.status, u.password_hash, r.name as role_name
+                FROM users u
+                LEFT JOIN user_roles ur ON u.id = ur.user_id
+                LEFT JOIN roles r ON ur.role_id = r.id
+                WHERE u.email = :login_id OR u.username = :login_id
+            """)
+            
+            logger.info("执行用户查询", login_id=user_data.username)
+            
+            result = await session.execute(query, {"login_id": user_data.username})
+            user_row = result.fetchone()
+            
+            if not user_row:
+                logger.warning("用户不存在", username=user_data.username)
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="用户名或密码错误"
+                )
+            
+            logger.info("找到用户", 
+                       user_id=str(user_row.id),
+                       username=user_row.username,
+                       email=user_row.email,
+                       status=user_row.status,
+                       role=user_row.role_name)
+            
+            # 验证密码
+            logger.info("开始密码验证")
+            if not verify_password(user_data.password, user_row.password_hash):
+                logger.warning("密码验证失败", username=user_data.username)
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="用户名或密码错误"
+                )
+            
+            logger.info("密码验证成功")
+            
+            # 检查用户状态
+            if user_row.status != "ACTIVE":
+                logger.warning("用户状态不是ACTIVE", username=user_data.username, status=user_row.status)
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="用户账户已停用"
+                )
+            
+            # 获取用户角色，如果没有角色则默认为user
+            user_role = user_row.role_name if user_row.role_name else "user"
+            
+            logger.info("用户角色", username=user_data.username, role=user_role)
+            
+            # 创建令牌数据
+            token_data = {
+                "sub": user_row.email,
+                "user_id": str(user_row.id),
+                "role": user_role,
+                "permissions": []
             }
-        }
+            
+            # 创建访问令牌和刷新令牌
+            access_token = security_manager.create_access_token(token_data)
+            refresh_token = security_manager.create_refresh_token(token_data)
+            
+            # 设置HttpOnly Cookie
+            security_manager.set_auth_cookies(response, access_token, refresh_token)
+            
+            # 记录登录行为
+            try:
+                await track_login(
+                    user_id=str(user_row.id),
+                    ip_address=ip_address,
+                    user_agent=user_agent
+                )
+            except Exception as e:
+                logger.warning("记录登录行为失败", error=str(e))
+            
+            logger.info("用户登录成功", username=user_data.username, user_role=user_role)
+            
+            return {
+                "message": "登录成功",
+                "access_token": access_token,
+                "token_type": "bearer",
+                "expires_in": 1800,
+                "user": {
+                    "id": str(user_row.id),
+                    "email": user_row.email,
+                    "username": user_row.username,
+                    "role": user_role,
+                    "status": user_row.status,
+                    "permissions": []
+                }
+            }
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("用户登录失败", error=str(e))
+        logger.error("用户登录失败", error=str(e), username=user_data.username)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="用户名或密码错误"

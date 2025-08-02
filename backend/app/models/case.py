@@ -15,11 +15,12 @@ from app.core.database import Base
 
 class CaseStatus(enum.Enum):
     """案件状态枚举"""
-    PENDING = "pending"      # 待处理
-    ASSIGNED = "assigned"    # 已分配
-    IN_PROGRESS = "in_progress"  # 处理中
-    COMPLETED = "completed"  # 已完成
-    CANCELLED = "cancelled"  # 已取消
+    PENDING = "PENDING"      # 待处理
+    ASSIGNED = "ASSIGNED"    # 已分配
+    IN_PROGRESS = "IN_PROGRESS"  # 处理中
+    COMPLETED = "COMPLETED"  # 已完成
+    CLOSED = "CLOSED"        # 已关闭
+    EXPIRED = "EXPIRED"      # 已过期
 
 
 class CasePriority(enum.Enum):
@@ -76,9 +77,8 @@ class Case(Base):
     
     # 关联关系
     tenant = relationship("Tenant", back_populates="cases")
-    user = relationship("User", back_populates="cases")
+    user = relationship("User")
     tasks = relationship("Task", back_populates="case")
-    lawyer_letters = relationship("LawyerLetter", back_populates="case")
 
     def __repr__(self):
         return f"<Case(id={self.id}, case_number={self.case_number}, status={self.status.value})>"
@@ -114,7 +114,7 @@ class Task(Base):
     
     # 关联关系
     case = relationship("Case", back_populates="tasks")
-    user = relationship("User", back_populates="tasks")
+    user = relationship("User")
 
     def __repr__(self):
         return f"<Task(id={self.id}, title={self.title}, status={self.status})>"

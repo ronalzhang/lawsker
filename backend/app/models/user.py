@@ -62,15 +62,7 @@ class User(Base):
     
     # 关联关系
     tenant = relationship("Tenant", back_populates="users")
-    cases = relationship("Case", back_populates="user")
-    tasks = relationship("Task", back_populates="user")
-    lawyer_qualifications = relationship("LawyerQualification", back_populates="user")
-    lawyer_letters = relationship("LawyerLetter", back_populates="user")
-    document_sends = relationship("DocumentSend", back_populates="user")
-    payments = relationship("Payment", back_populates="user")
-    withdrawal_requests = relationship("WithdrawalRequest", back_populates="user")
-    access_logs = relationship("AccessLog", back_populates="user")
-    system_logs = relationship("SystemLog", back_populates="user")
+    lawyer_qualifications = relationship("LawyerQualification", back_populates="user", foreign_keys="LawyerQualification.user_id")
 
     def __repr__(self):
         return f"<User(id={self.id}, username={self.username}, role={self.role.value})>"
@@ -134,7 +126,7 @@ class LawyerQualification(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
     
     # 关联关系
-    user = relationship("User", back_populates="lawyer_qualifications")
+    user = relationship("User", back_populates="lawyer_qualifications", foreign_keys=[user_id])
     verifier = relationship("User", foreign_keys=[verified_by])
 
     def __repr__(self):

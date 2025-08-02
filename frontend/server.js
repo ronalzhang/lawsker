@@ -84,6 +84,42 @@ app.use((err, req, res, next) => {
     res.status(500).send('Internal Server Error');
 });
 
+// 用户工作台路由 - 基于用户哈希
+app.get('/:userHash', async (req, res) => {
+    const userHash = req.params.userHash;
+    
+    // 检查是否为已知的静态路由
+    const staticRoutes = ['admin', 'login', 'legal', 'user', 'institution', 'api', 'docs', 'health'];
+    if (staticRoutes.includes(userHash)) {
+        return next();
+    }
+    
+    try {
+        // 这里应该根据userHash查询用户信息
+        // 暂时使用简单的映射逻辑
+        const userMapping = {
+            'lawyer1': 'lawyer',
+            'lawyer2': 'lawyer', 
+            'user1': 'user',
+            'user2': 'user'
+        };
+        
+        const userRole = userMapping[userHash];
+        
+        if (userRole === 'lawyer') {
+            res.sendFile(path.join(__dirname, 'lawyer-workspace.html'));
+        } else if (userRole === 'user') {
+            res.sendFile(path.join(__dirname, 'user-workspace.html'));
+        } else {
+            // 未知用户哈希，返回404
+            res.status(404).sendFile(path.join(__dirname, '404.html'));
+        }
+    } catch (error) {
+        console.error('用户工作台路由错误:', error);
+        res.status(500).send('服务器错误');
+    }
+});
+
 app.listen(port, '0.0.0.0', () => {
     console.log(`Lawsker frontend server running on port ${port}`);
     console.log(`Static files served from: ${__dirname}`);

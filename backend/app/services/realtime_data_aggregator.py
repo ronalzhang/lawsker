@@ -173,9 +173,9 @@ class RealtimeDataAggregator:
             query = text("""
                 SELECT 
                     COUNT(*) as total_cases,
-                    COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_cases,
-                    COUNT(CASE WHEN status = 'assigned' THEN 1 END) as assigned_cases,
-                    COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_cases,
+                    COUNT(CASE WHEN status = 'PENDING' THEN 1 END) as pending_cases,
+                    COUNT(CASE WHEN status = 'ASSIGNED' THEN 1 END) as assigned_cases,
+                    COUNT(CASE WHEN status = 'COMPLETED' THEN 1 END) as completed_cases,
                     COUNT(CASE WHEN DATE(created_at) = CURRENT_DATE THEN 1 END) as today_new_cases
                 FROM cases
             """)

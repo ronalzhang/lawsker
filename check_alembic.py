@@ -18,7 +18,7 @@ async def check_alembic():
     try:
         async with engine.begin() as conn:
             # 检查alembic_version表是否存在（SQLite语法）
-            result = await conn.execute(text("SELECT name FROM sqlite_master WHERE type='table' AND name='alembic_version'"))
+            result = await conn.execute(text("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND name='alembic_version'"))
             if result.fetchone():
                 result = await conn.execute(text("SELECT version_num FROM alembic_version"))
                 version = result.fetchone()

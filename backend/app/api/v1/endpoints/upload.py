@@ -567,7 +567,7 @@ async def grab_task(
         grab_query = text("""
             UPDATE task_publish_records 
             SET assigned_to = :lawyer_id, 
-                status = 'assigned',
+                status = 'ASSIGNED',
                 updated_at = NOW()
             WHERE id = :task_id 
             AND status = 'published' 
@@ -1011,7 +1011,7 @@ async def send_document(
         # 更新任务状态为已完成
         update_task_query = text("""
             UPDATE task_grab_records 
-            SET status = 'completed', completed_at = NOW()
+            SET status = 'COMPLETED', completed_at = NOW()
             WHERE task_id = :task_id AND lawyer_id = :lawyer_id
         """)
         

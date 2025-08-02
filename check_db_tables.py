@@ -18,7 +18,7 @@ async def check_tables():
     try:
         async with engine.begin() as conn:
             # 获取所有表（SQLite语法）
-            result = await conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))
+            result = await conn.execute(text("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"))
             tables = [row[0] for row in result.fetchall()]
             print("数据库中的表:")
             for table in sorted(tables):
