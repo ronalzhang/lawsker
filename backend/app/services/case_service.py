@@ -11,7 +11,7 @@ from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
 
 from app.models.case import Case, CaseStatus, Client
-from app.models.user import User, LawyerQualification, QualificationStatus
+from app.models.user import User, LawyerQualification
 
 
 class CaseService:
@@ -199,7 +199,7 @@ class CaseService:
         
         # 检查律师资质是否存在并且已审核通过
         if (lawyer.lawyer_qualification is None or 
-            lawyer.lawyer_qualification.qualification_status != QualificationStatus.APPROVED):
+            lawyer.lawyer_qualification.verification_status != "approved"):
             raise ValueError("律师资质未通过审核")
         
         # 记录原值
@@ -360,7 +360,7 @@ class CaseService:
         qualified_lawyers = []
         for lawyer in lawyers:
             if (lawyer.lawyer_qualification is not None and 
-                lawyer.lawyer_qualification.qualification_status == QualificationStatus.APPROVED):
+                lawyer.lawyer_qualification.verification_status == "approved"):
                 qualified_lawyers.append(lawyer)
         
         if not qualified_lawyers:
