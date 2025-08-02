@@ -15,7 +15,6 @@ from app.core.database import engine
 from app.models.user import User
 from app.models.tenant import Tenant
 from app.models.case import Case
-from app.models.finance import Finance
 from app.core.database import Base
 
 async def create_tables():
