@@ -19,8 +19,8 @@ from sqlalchemy.orm import sessionmaker
 from app.core.deps import get_db, get_current_user, get_config_service
 from app.core.config import settings
 # User model import removed as we now use Dict[str, Any] for current_user
-from app.models.finance import Transaction, CommissionSplit, Wallet, WithdrawalRequest, TransactionStatus, CommissionStatus, PaymentOrder, WithdrawalStatus
-from app.services.payment_service import WeChatPayService, CommissionSplitService, WithdrawalService, WeChatPayError, WithdrawalError
+from app.models.finance import Transaction, Wallet, WithdrawalRequest, PaymentStatus, WithdrawalStatus
+from app.services.payment_service import WeChatPayService, WithdrawalService, WeChatPayError, WithdrawalError
 from app.services.config_service import SystemConfigService
 
 router = APIRouter()
@@ -324,23 +324,16 @@ async def get_financial_summary(
             ).where(
                 Transaction.user_id == current_user["id"],
                 Transaction.created_at >= start_date,
-                Transaction.status == TransactionStatus.completed
+                Transaction.status == "success"
             )
         )
         stats = transaction_stats.first()
         
-        # 获取佣金统计
-        commission_stats = await db.execute(
-            select(
-                func.count(CommissionSplit.id).label('commission_count'),
-                func.sum(CommissionSplit.amount).label('commission_amount')
-            ).where(
-                CommissionSplit.user_id == current_user["id"],
-                CommissionSplit.created_at >= start_date,
-                CommissionSplit.status == CommissionStatus.paid
-            )
-        )
-        comm_stats = commission_stats.first()
+        # 获取佣金统计（暂时使用默认值）
+        comm_stats = type('obj', (object,), {
+            'commission_count': 0,
+            'commission_amount': 0
+        })()
         
         return {
             "timeRange": timeRange,
@@ -430,7 +423,7 @@ async def get_commission_summary(
     """获取分成汇总信息"""
     
     try:
-        commission_service = CommissionSplitService(config_service)
+        # commission_service = CommissionSplitService(config_service)  # 暂时注释掉
         
         # 使用同步数据库会话
         sync_session = SyncSessionLocal()
