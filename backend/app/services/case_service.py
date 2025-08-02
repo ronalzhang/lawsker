@@ -10,7 +10,7 @@ from sqlalchemy import select, update, delete, func, and_, or_
 from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
 
-from app.models.case import Case, CaseStatus, Client, CaseLog
+from app.models.case import Case, CaseStatus, Client
 from app.models.user import User, LawyerQualification, QualificationStatus
 
 
@@ -49,14 +49,8 @@ class CaseService:
         self.db.add(case)
         await self.db.flush()
         
-        # 获取生成的ID后记录日志
+        # 获取生成的ID
         await self.db.refresh(case)
-        await self._create_case_log(
-            case.id,
-            creator_id,
-            "CREATE_CASE",
-            {"message": "案件创建", "case_data": case_data}
-        )
         
         await self.db.commit()
         return case
@@ -223,21 +217,7 @@ class CaseService:
         await self.db.execute(update_stmt)
         
         # 记录日志
-        await self._create_case_log(
-            case_id,
-            assigner_id,
-            "ASSIGN_CASE",
-            {
-                "message": f"案件分配给律师 {lawyer.username}",
-                "lawyer_id": str(lawyer_id),
-                "lawyer_name": lawyer.username
-            },
-            old_values,
-            {
-                "assigned_to_user_id": str(lawyer_id),
-                "status": CaseStatus.ASSIGNED.value
-            }
-        )
+
         
         await self.db.commit()
         
@@ -272,18 +252,7 @@ class CaseService:
         update_stmt = update(Case).where(Case.id == case_id).values(**update_values)
         await self.db.execute(update_stmt)
         
-        # 记录日志
-        await self._create_case_log(
-            case_id,
-            user_id,
-            "UPDATE_STATUS",
-            {
-                "message": f"状态从 {old_status.value} 更改为 {new_status.value}",
-                "notes": notes
-            },
-            {"status": old_status.value},
-            {"status": new_status.value}
-        )
+        # 记录状态更新
         
         await self.db.commit()
         
@@ -432,25 +401,7 @@ class CaseService:
         
         return f"{prefix}{(count + 1):04d}"
     
-    async def _create_case_log(
-        self,
-        case_id: UUID,
-        user_id: UUID,
-        action: str,
-        details: Dict[str, Any],
-        old_values: Optional[Dict[str, Any]] = None,
-        new_values: Optional[Dict[str, Any]] = None
-    ):
-        """创建案件日志"""
-        log = CaseLog(
-            case_id=case_id,
-            user_id=user_id,
-            action=action,
-            details=details,
-            old_values=old_values,
-            new_values=new_values
-        )
-        self.db.add(log)
+
     
     def _calculate_workload_level(self, active_cases: int, total_amount: float) -> str:
         """计算工作负荷等级"""
