@@ -666,26 +666,20 @@
                             // 如果有redirect参数，直接跳转到目标页面
                             window.location.href = decodeURIComponent(redirectUrl);
                         } else {
-                            // 使用用户哈希系统进行重定向
-                            if (window.userHashSystem) {
-                                window.userHashSystem.handleLoginRedirect({
-                                    username: username,
-                                    role: userRole
-                                });
+                            // 根据用户角色跳转到对应工作台
+                            const workspaceMap = {
+                                'admin': '/admin-config-optimized.html',
+                                'lawyer': '/lawyer-workspace.html',
+                                'user': '/user-workspace.html',
+                                'sales': '/user-workspace.html'
+                            };
+                            const targetUrl = workspaceMap[userRole];
+                            if (targetUrl) {
+                                console.log('跳转到:', targetUrl, '用户角色:', userRole);
+                                window.location.href = targetUrl;
                             } else {
-                                // 备用方案：根据用户角色跳转
-                                const workspaceMap = {
-                                    'admin': '/admin-config-optimized.html',
-                                    'lawyer': `/lawyer1`, // 使用哈希URL
-                                    'user': `/user1`, // 使用哈希URL
-                                    'sales': `/user1` // 销售角色也使用用户工作台
-                                };
-                                const targetUrl = workspaceMap[userRole];
-                                if (targetUrl) {
-                                    window.location.href = targetUrl;
-                                } else {
-                                    showMessage('未知用户角色，请联系管理员', 'error');
-                                }
+                                console.error('未知用户角色:', userRole);
+                                showMessage('未知用户角色，请联系管理员', 'error');
                             }
                         }
                     }, 1000);
