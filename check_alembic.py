@@ -6,6 +6,7 @@
 import asyncio
 import sys
 import os
+from sqlalchemy import text
 
 # 添加backend目录到Python路径
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'backend'))
@@ -17,9 +18,9 @@ async def check_alembic():
     try:
         async with engine.begin() as conn:
             # 检查alembic_version表是否存在
-            result = await conn.execute("SELECT table_name FROM information_schema.tables WHERE table_name = 'alembic_version'")
+            result = await conn.execute(text("SELECT table_name FROM information_schema.tables WHERE table_name = 'alembic_version'"))
             if result.fetchone():
-                result = await conn.execute("SELECT version_num FROM alembic_version")
+                result = await conn.execute(text("SELECT version_num FROM alembic_version"))
                 version = result.fetchone()
                 print(f"当前alembic版本: {version[0] if version else 'None'}")
             else:
