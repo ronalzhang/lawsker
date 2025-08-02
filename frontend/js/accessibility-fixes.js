@@ -411,6 +411,12 @@ function runAccessibilityFixes() {
 
 // 监听动态内容变化
 function observeContentChanges() {
+  // 检查document.body是否存在
+  if (!document.body) {
+    console.warn('document.body not available for MutationObserver');
+    return;
+  }
+  
   const observer = new MutationObserver((mutations) => {
     let shouldReapplyFixes = false;
     
@@ -440,10 +446,14 @@ function observeContentChanges() {
     }
   });
   
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true
-  });
+  try {
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  } catch (error) {
+    console.error('Failed to observe content changes:', error);
+  }
 }
 
 // 自动初始化
