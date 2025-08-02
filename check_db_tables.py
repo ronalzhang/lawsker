@@ -1,35 +1,44 @@
 #!/usr/bin/env python3
+"""
+检查数据库表
+"""
+
 import asyncio
 import sys
 import os
-from sqlalchemy import text
 
-# 添加backend目录到Python路径
-sys.path.append('/root/lawsker/backend')
+# 添加项目根目录到Python路径
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from backend.app.core.database import engine
 
 async def check_tables():
+    """检查数据库表"""
     try:
-        from app.core.database import engine
-        
-        # 检查access_logs表是否存在
         async with engine.begin() as conn:
-            result = await conn.execute(
-                text("SELECT name FROM sqlite_master WHERE type='table' AND name='access_logs'")
-            )
-            access_logs_exists = result.fetchone() is not None
-            print(f"access_logs table exists: {access_logs_exists}")
+            result = await conn.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'")
+            tables = [row[0] for row in result.fetchall()]
+            print("数据库中的表:")
+            for table in sorted(tables):
+                print(f"  - {table}")
             
-            # 检查其他重要表
-            tables_to_check = ['users', 'cases', 'tasks', 'alerts']
-            for table in tables_to_check:
-                result = await conn.execute(
-                    text(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table}'")
-                )
-                exists = result.fetchone() is not None
-                print(f"{table} table exists: {exists}")
-            
+            # 检查用户表
+            if 'users' in tables:
+                result = await conn.execute("SELECT COUNT(*) FROM users")
+                count = result.fetchone()[0]
+                print(f"\n用户表中有 {count} 个用户")
+                
+                if count > 0:
+                    result = await conn.execute("SELECT username, email, role FROM users LIMIT 5")
+                    users = result.fetchall()
+                    print("前5个用户:")
+                    for user in users:
+                        print(f"  - {user[0]} ({user[1]}) - {user[2]}")
+            else:
+                print("\n用户表不存在")
+                
     except Exception as e:
-        print(f"Error checking tables: {e}")
+        print(f"检查数据库失败: {e}")
 
 if __name__ == "__main__":
     asyncio.run(check_tables()) 
