@@ -92,8 +92,12 @@ async def get_current_user(
             algorithms=[settings.JWT_ALGORITHM]
         )
         
-        user_id = payload.get("sub")
-        if not user_id:
+        # 从token中获取用户信息
+        user_id = payload.get("user_id")  # 使用user_id字段而不是sub
+        email = payload.get("sub")  # sub字段存储的是email
+        role = payload.get("role", "user")
+        
+        if not user_id or not email:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="无效的令牌"
@@ -102,8 +106,8 @@ async def get_current_user(
         # 返回用户信息
         return {
             "id": user_id,
-            "email": payload.get("email"),
-            "roles": payload.get("roles", []),
+            "email": email,
+            "roles": [role],  # 将role转换为roles数组
             "tenant_id": payload.get("tenant_id"),
             "status": payload.get("status", "active")
         }
