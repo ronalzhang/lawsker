@@ -179,7 +179,7 @@ class UserActivityTracker:
                 ) VALUES (
                     :user_id, :action, :resource_type, :resource_id,
                     :details, :ip_address, :user_agent,
-                    COALESCE(:created_at::timestamp, NOW())
+                    COALESCE(:created_at, NOW())
                 )
             """)
             
