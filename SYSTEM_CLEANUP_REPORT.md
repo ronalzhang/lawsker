@@ -146,9 +146,16 @@ scripts/
 - `workspace.html` - 通用工作台页面
 - `test-personalized-workspace.html` - 测试页面
 - `test-login.html` - 登录测试页面
+- `package-full.json` - 完整包配置
+- `package-simple.json` - 简单包配置
 
-### 备份目录
+### 备份和临时文件
 - `backup_admin_20250725_*` - 所有备份目录
+- `user-workspace-fix.tar.gz` - 工作台修复压缩包
+- `lawsker_flowchart.html` - 流程图文件
+- `API-KEY` - API密钥文件
+- `test_login_api.py` - 登录API测试
+- `create_test_tasks_via_api.py` - API任务创建测试
 
 ## ✅ 保留的核心文件
 
