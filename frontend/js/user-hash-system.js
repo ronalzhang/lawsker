@@ -6,7 +6,7 @@
 
 class UserHashSystem {
     constructor() {
-        this.baseURL = 'http://156.236.74.200/api/v1';
+        this.baseURL = 'https://lawsker.com/api/v1';
         this.hashMapping = new Map();
         this.init();
     }
