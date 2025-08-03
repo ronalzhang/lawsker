@@ -1,444 +1,942 @@
 /**
- * Lawsker API 客户端 v1.5
- * 统一管理前端API调用
- * 更新时间: 2025-01-19
- * 改进: 移除演示模式，专注真实环境
+ * API客户端 - 支持个人化数据加载
+ * 确保所有数据请求都基于当前用户ID进行过滤
  */
 
 class ApiClient {
     constructor() {
-        this.baseURL = 'https://lawsker.com/api/v1';
-        // 兼容多种token存储方式
-        this.token = localStorage.getItem('authToken') || localStorage.getItem('accessToken');
-        this.version = '1.6'; // API客户端版本号
+        this.baseUrl = 'https://156.236.74.200/api/v1';
+        this.authToken = localStorage.getItem('authToken');
+        this.currentUser = this.getCurrentUser();
     }
 
-    /**
-     * 刷新token
-     */
-    refreshToken() {
-        this.token = localStorage.getItem('authToken') || localStorage.getItem('accessToken');
+    // 获取当前用户信息
+    getCurrentUser() {
+        try {
+            const userInfo = localStorage.getItem('userInfo');
+            return userInfo ? JSON.parse(userInfo) : null;
+        } catch (e) {
+            console.error('解析用户信息失败:', e);
+            return null;
+        }
     }
 
-    /**
-     * 检查是否已认证
-     */
+    // 检查是否已认证
     isAuthenticated() {
-        this.refreshToken();
-        return !!this.token;
+        return !!this.authToken && !!this.currentUser;
     }
 
-    /**
-     * 通用请求方法
-     */
-    async request(endpoint, options = {}) {
-        this.refreshToken();
+    // 获取当前用户ID
+    getCurrentUserId() {
+        return this.currentUser?.id || this.currentUser?.user_id;
+    }
+
+    // 获取当前用户角色
+    getCurrentUserRole() {
+        return this.currentUser?.role || 'user';
+    }
+
+    // 构建请求头
+    getHeaders() {
+        const headers = {
+            'Content-Type': 'application/json'
+        };
         
-        const url = `${this.baseURL}${endpoint}`;
+        if (this.authToken) {
+            headers['Authorization'] = `Bearer ${this.authToken}`;
+        }
+        
+        return headers;
+    }
+
+    // 通用请求方法
+    async request(endpoint, options = {}) {
+        const url = `${this.baseUrl}${endpoint}`;
         const config = {
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            },
+            headers: this.getHeaders(),
             ...options
         };
 
-        // 添加认证token（如果存在）
-        if (this.token) {
-            config.headers['Authorization'] = `Bearer ${this.token}`;
-        }
-
-        console.log(`🔗 API请求: ${config.method || 'GET'} ${url}`);
-
         try {
-            // 移动端网络优化：调整超时时间
-            const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            const timeoutDuration = isMobile ? 15000 : 30000; // 移动端15秒，桌面端30秒
-            
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
-            
-            config.signal = controller.signal;
-            
-            // 移动端额外的网络检测
-            if (isMobile && !navigator.onLine) {
-                clearTimeout(timeoutId);
-                throw new Error('移动设备离线，请检查网络连接');
-            }
-            
             const response = await fetch(url, config);
-            clearTimeout(timeoutId);
             
             if (!response.ok) {
-                if (response.status === 401) {
-                    // Token过期或无效，清除并重定向到登录
-                    localStorage.removeItem('authToken');
-                    localStorage.removeItem('accessToken');
-                    this.token = null;
-                    
-                    // 重定向到登录页面
-                    window.location.href = '/auth';
-                    return;
-                }
-                
-                let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-                try {
-                    const errorData = await response.json();
-                    if (errorData.message || errorData.detail) {
-                        errorMessage = errorData.message || errorData.detail;
-                    }
-                } catch (parseError) {
-                    console.warn('无法解析错误响应JSON:', parseError);
-                }
-                
-                throw new Error(errorMessage);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
-            const data = await response.json();
-            console.log(`✅ API成功: ${endpoint}`);
-            return data;
-            
+            return await response.json();
         } catch (error) {
-            if (error.name === 'AbortError') {
-                console.error(`⏰ API超时: ${endpoint}`);
-                const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                if (isMobile) {
-                    throw new Error('移动网络请求超时，请检查网络信号');
-                } else {
-                throw new Error('请求超时，请检查网络连接');
-                }
-            } else if (error.name === 'TypeError' || error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
-                console.error(`🌐 网络错误: ${endpoint}`, error);
-                const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                if (isMobile) {
-                    throw new Error('移动网络连接失败，请切换到WiFi或检查网络设置');
-                } else {
-                throw new Error('网络连接失败，请检查网络设置');
-                }
-            } else {
-                console.error(`❌ API失败: ${endpoint}`, error);
-                throw error;
-            }
+            console.error(`API请求失败 ${endpoint}:`, error);
+            throw error;
         }
     }
 
-    /**
-     * GET请求
-     */
-    async get(endpoint, params = {}) {
-        const url = new URL(endpoint, this.baseURL);
-        Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
-        return this.request(url.pathname + url.search);
+    // 获取用户个人统计数据
+    async getUserStats() {
+        const userId = this.getCurrentUserId();
+        if (!userId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/statistics/user-stats`);
     }
 
-    /**
-     * POST请求
-     */
-    async post(endpoint, data = {}) {
-        return this.request(endpoint, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
+    // 获取律师个人统计数据
+    async getLawyerStats() {
+        const userId = this.getCurrentUserId();
+        if (!userId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/statistics/lawyer-stats`);
     }
 
-    /**
-     * PUT请求
-     */
-    async put(endpoint, data = {}) {
-        return this.request(endpoint, {
+    // 获取用户个人案件列表
+    async getUserCases(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        // 根据用户角色获取不同的案件数据
+        const userRole = this.getCurrentUserRole();
+        
+        if (userRole === 'lawyer') {
+            // 律师：获取分配给自己的案件
+            return await this.request(`/cases/?assigned_to=${currentUserId}&page_size=50`);
+        } else {
+            // 用户：获取自己创建的案件
+            return await this.request(`/cases/?client_id=${currentUserId}&page_size=50`);
+        }
+    }
+
+    // 获取律师个人案件列表
+    async getLawyerCases(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/cases/?assigned_to=${currentUserId}&page_size=50`);
+    }
+
+    // 获取用户个人任务列表
+    async getUserTasks(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/tasks/my-tasks/user?limit=50`);
+    }
+
+    // 获取律师个人任务列表
+    async getLawyerTasks(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/tasks/my-tasks/lawyer?limit=50`);
+    }
+
+    // 获取用户个人提现记录
+    async getUserWithdrawalHistory(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/finance/withdrawals/user/${currentUserId}`);
+    }
+
+    // 获取律师个人提现记录
+    async getLawyerWithdrawalHistory(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/finance/withdrawals/lawyer/${currentUserId}`);
+    }
+
+    // 获取用户个人收入统计
+    async getUserEarnings(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/finance/earnings/user/${currentUserId}`);
+    }
+
+    // 获取律师个人收入统计
+    async getLawyerEarnings(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/finance/earnings/lawyer/${currentUserId}`);
+    }
+
+    // 获取用户个人配置
+    async getUserConfig(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/users/${currentUserId}/config`);
+    }
+
+    // 更新用户个人配置
+    async updateUserConfig(config, userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/users/${currentUserId}/config`, {
             method: 'PUT',
-            body: JSON.stringify(data)
+            body: JSON.stringify(config)
         });
     }
 
-    /**
-     * DELETE请求
-     */
-    async delete(endpoint) {
-        return this.request(endpoint, {
+    // 获取用户个人活动记录
+    async getUserActivityLog(userId = null, limit = 20) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/users/${currentUserId}/activity?limit=${limit}`);
+    }
+
+    // 获取律师个人活动记录
+    async getLawyerActivityLog(userId = null, limit = 20) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/lawyers/${currentUserId}/activity?limit=${limit}`);
+    }
+
+    // 获取用户个人文档库
+    async getUserDocuments(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/document-library/user/${currentUserId}`);
+    }
+
+    // 获取律师个人文档库
+    async getLawyerDocuments(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/document-library/lawyer/${currentUserId}`);
+    }
+
+    // 获取用户个人发送记录
+    async getUserSendRecords(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/document-send/records/user/${currentUserId}`);
+    }
+
+    // 获取律师个人发送记录
+    async getLawyerSendRecords(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/document-send/records/lawyer/${currentUserId}`);
+    }
+
+    // 获取仪表盘统计数据（根据用户角色）
+    async getDashboardStats() {
+        const userRole = this.getCurrentUserRole();
+        
+        if (userRole === 'lawyer') {
+            return await this.getLawyerStats();
+        } else if (userRole === 'admin') {
+            return await this.request('/statistics/admin-stats');
+        } else {
+            return await this.getUserStats();
+        }
+    }
+
+    // 获取当前用户信息
+    async getCurrentUserInfo() {
+        return await this.request('/auth/me');
+    }
+
+    // 更新用户信息
+    async updateUserProfile(profileData) {
+        return await this.request('/users/profile', {
+            method: 'PUT',
+            body: JSON.stringify(profileData)
+        });
+    }
+
+    // 获取可抢单任务（律师专用）
+    async getAvailableTasks() {
+        const userRole = this.getCurrentUserRole();
+        if (userRole !== 'lawyer') {
+            throw new Error('只有律师可以获取可抢单任务');
+        }
+
+        return await this.request('/tasks/available');
+    }
+
+    // 抢单（律师专用）
+    async grabTask(taskId) {
+        const userRole = this.getCurrentUserRole();
+        if (userRole !== 'lawyer') {
+            throw new Error('只有律师可以抢单');
+        }
+
+        const userId = this.getCurrentUserId();
+        return await this.request(`/tasks/${taskId}/grab`, {
+            method: 'POST',
+            body: JSON.stringify({ lawyer_id: userId })
+        });
+    }
+
+    // 发布任务（用户专用）
+    async publishTask(taskData) {
+        const userRole = this.getCurrentUserRole();
+        if (userRole !== 'user' && userRole !== 'sales') {
+            throw new Error('只有用户和销售可以发布任务');
+        }
+
+        const userId = this.getCurrentUserId();
+        return await this.request('/tasks/publish', {
+            method: 'POST',
+            body: JSON.stringify({
+                ...taskData,
+                user_id: userId
+            })
+        });
+    }
+
+    // 获取提现统计
+    async getWithdrawalStats() {
+        const userRole = this.getCurrentUserRole();
+        
+        if (userRole === 'lawyer') {
+            return await this.request('/finance/withdrawal-stats/lawyer');
+        } else {
+            return await this.request('/finance/withdrawal-stats/user');
+        }
+    }
+
+    // 申请提现
+    async requestWithdrawal(withdrawalData) {
+        const userId = this.getCurrentUserId();
+        return await this.request('/finance/withdrawals', {
+            method: 'POST',
+            body: JSON.stringify({
+                ...withdrawalData,
+                user_id: userId
+            })
+        });
+    }
+
+    // 获取个人通知
+    async getPersonalNotifications(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/notifications/user/${currentUserId}`);
+    }
+
+    // 标记通知为已读
+    async markNotificationAsRead(notificationId) {
+        return await this.request(`/notifications/${notificationId}/read`, {
+            method: 'PUT'
+        });
+    }
+
+    // 获取个人消息
+    async getPersonalMessages(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/messages/user/${currentUserId}`);
+    }
+
+    // 发送个人消息
+    async sendPersonalMessage(messageData) {
+        const userId = this.getCurrentUserId();
+        return await this.request('/messages', {
+            method: 'POST',
+            body: JSON.stringify({
+                ...messageData,
+                sender_id: userId
+            })
+        });
+    }
+
+    // 获取个人设置
+    async getPersonalSettings(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/users/${currentUserId}/settings`);
+    }
+
+    // 更新个人设置
+    async updatePersonalSettings(settings, userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/users/${currentUserId}/settings`, {
+            method: 'PUT',
+            body: JSON.stringify(settings)
+        });
+    }
+
+    // 获取个人文件
+    async getPersonalFiles(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/files/user/${currentUserId}`);
+    }
+
+    // 上传个人文件
+    async uploadPersonalFile(fileData) {
+        const userId = this.getCurrentUserId();
+        const formData = new FormData();
+        formData.append('file', fileData);
+        formData.append('user_id', userId);
+
+        return await fetch(`${this.baseUrl}/files/upload`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${this.authToken}`
+            },
+            body: formData
+        });
+    }
+
+    // 删除个人文件
+    async deletePersonalFile(fileId) {
+        return await this.request(`/files/${fileId}`, {
             method: 'DELETE'
         });
     }
 
-    /**
-     * PATCH请求
-     */
-    async patch(endpoint, data = {}) {
-        return this.request(endpoint, {
-            method: 'PATCH',
-            body: JSON.stringify(data)
-        });
-    }
-
-    // ========== 认证相关API ==========
-
-    /**
-     * 用户登录
-     */
-    async login(credentials) {
-        return this.post('/auth/login', credentials);
-    }
-
-    /**
-     * 用户注册
-     */
-    async register(userData) {
-        return this.post('/auth/register', userData);
-    }
-
-    /**
-     * 刷新认证token
-     */
-    async refreshAuthToken() {
-        return this.post('/auth/refresh');
-    }
-
-    /**
-     * 用户登出
-     */
-    async logout() {
-        const result = await this.post('/auth/logout');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('accessToken');
-        this.token = null;
-        return result;
-    }
-
-    // ========== 用户相关API ==========
-
-    /**
-     * 获取当前用户信息
-     */
-    async getCurrentUserInfo() {
-        return this.get('/users/profile');
-    }
-
-    /**
-     * 更新用户信息
-     */
-    async updateUserProfile(profileData) {
-        return this.put('/users/profile', profileData);
-    }
-
-    /**
-     * 获取用户统计数据
-     */
-    async getUserStats() {
-        return this.get('/users/stats');
-    }
-
-    /**
-     * 获取仪表盘统计
-     */
-    async getDashboardStats() {
-        return this.get('/statistics/dashboard');
-    }
-
-    // ========== 任务相关API ==========
-
-    /**
-     * 获取可抢单任务列表
-     */
-    async getAvailableTasks(params = {}) {
-        return this.get('/tasks/available', params);
-    }
-
-    /**
-     * 获取我的任务列表
-     */
-    async getMyTasks(userType = 'user') {
-        return this.get(`/tasks/my-tasks/${userType}`);
-    }
-
-    /**
-     * 获取任务列表 (兼容性方法)
-     */
-    async getTasks(params = {}) {
-        // 根据参数决定调用哪个API
-        if (params.type === 'available') {
-            return this.getAvailableTasks(params);
-        } else {
-            return this.getMyTasks(params.userType || 'user');
+    // 获取个人日历事件
+    async getPersonalCalendarEvents(userId = null, startDate = null, endDate = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
         }
+
+        let endpoint = `/calendar/user/${currentUserId}`;
+        if (startDate && endDate) {
+            endpoint += `?start_date=${startDate}&end_date=${endDate}`;
+        }
+
+        return await this.request(endpoint);
     }
 
-    /**
-     * 创建新任务
-     */
-    async createTask(taskData) {
-        return this.post('/tasks', taskData);
-    }
-
-    /**
-     * 抢单
-     */
-    async grabTask(taskId) {
-        return this.post(`/tasks/${taskId}/grab`);
-    }
-
-    /**
-     * 交换联系方式
-     */
-    async exchangeContact(taskId, contactData) {
-        return this.post(`/tasks/${taskId}/exchange-contact`, contactData);
-    }
-
-    /**
-     * 完成任务
-     */
-    async completeTask(taskId, completionData) {
-        return this.post(`/tasks/${taskId}/complete`, completionData);
-    }
-
-    /**
-     * 获取任务详情
-     */
-    async getTaskDetail(taskId) {
-        return this.get(`/tasks/${taskId}`);
-    }
-
-    /**
-     * 批量上传任务
-     */
-    async uploadTasks(formData) {
-        return this.request('/tasks/upload', {
+    // 创建个人日历事件
+    async createPersonalCalendarEvent(eventData) {
+        const userId = this.getCurrentUserId();
+        return await this.request('/calendar/events', {
             method: 'POST',
-            body: formData,
-            headers: {
-                // 移除Content-Type让浏览器自动设置multipart/form-data
-                'Authorization': `Bearer ${this.token}`
-            }
+            body: JSON.stringify({
+                ...eventData,
+                user_id: userId
+            })
         });
     }
 
-    // ========== 案件相关API ==========
-
-    /**
-     * 获取案件列表
-     */
-    async getCases(params = {}) {
-        return this.get('/cases', params);
+    // 更新个人日历事件
+    async updatePersonalCalendarEvent(eventId, eventData) {
+        return await this.request(`/calendar/events/${eventId}`, {
+            method: 'PUT',
+            body: JSON.stringify(eventData)
+        });
     }
 
-    /**
-     * 创建案件
-     */
-    async createCase(caseData) {
-        return this.post('/cases', caseData);
+    // 删除个人日历事件
+    async deletePersonalCalendarEvent(eventId) {
+        return await this.request(`/calendar/events/${eventId}`, {
+            method: 'DELETE'
+        });
     }
 
-    /**
-     * 更新案件
-     */
-    async updateCase(caseId, caseData) {
-        return this.put(`/cases/${caseId}`, caseData);
+    // 获取个人报告
+    async getPersonalReports(userId = null, reportType = 'monthly') {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/reports/user/${currentUserId}?type=${reportType}`);
     }
 
-    // ========== 文件相关API ==========
-
-    /**
-     * 上传文件
-     */
-    async uploadFile(formData) {
-        return this.request('/upload', {
+    // 生成个人报告
+    async generatePersonalReport(reportData) {
+        const userId = this.getCurrentUserId();
+        return await this.request('/reports/generate', {
             method: 'POST',
-            body: formData,
-            headers: {
-                'Authorization': `Bearer ${this.token}`
-            }
+            body: JSON.stringify({
+                ...reportData,
+                user_id: userId
+            })
         });
     }
 
-    // ========== 提现相关API ==========
+    // 获取个人分析数据
+    async getPersonalAnalytics(userId = null, period = '30d') {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
 
-    /**
-     * 获取提现统计
-     */
-    async getWithdrawalStats() {
-        return this.get('/finance/withdrawal/stats');
+        return await this.request(`/analytics/user/${currentUserId}?period=${period}`);
     }
 
-    /**
-     * 申请提现
-     */
-    async requestWithdrawal(withdrawalData) {
-        return this.post('/finance/withdrawal/request', withdrawalData);
+    // 获取个人排行榜数据
+    async getPersonalRankings(userId = null, category = 'earnings') {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/rankings/user/${currentUserId}?category=${category}`);
     }
 
-    /**
-     * 获取提现记录
-     */
-    async getWithdrawalHistory(params = {}) {
-        return this.get('/finance/withdrawal/history', params);
+    // 获取个人成就
+    async getPersonalAchievements(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/achievements/user/${currentUserId}`);
     }
 
-    // ========== 律师相关API ==========
-
-    /**
-     * 律师认证
-     */
-    async verifyLawyer(verificationData) {
-        return this.post('/lawyer/verify', verificationData);
-    }
-
-    /**
-     * 获取律师信息
-     */
-    async getLawyerInfo(lawyerId) {
-        return this.get(`/lawyer/${lawyerId}`);
-    }
-
-    // ========== 管理员相关API ==========
-
-    /**
-     * 获取系统配置
-     */
-    async getSystemConfig() {
-        return this.get('/admin/config');
-    }
-
-    /**
-     * 更新系统配置
-     */
-    async updateSystemConfig(configData) {
-        return this.put('/admin/config', configData);
-    }
-
-    /**
-     * 获取管理员统计
-     */
-    async getAdminStats() {
-        return this.get('/admin/stats');
-    }
-
-    // ========== AI相关API ==========
-
-    /**
-     * AI文书生成
-     */
-    async generateDocument(taskId, documentData) {
-        return this.post(`/ai/generate-document`, {
-            task_id: taskId,
-            ...documentData
-        });
-    }
-
-    /**
-     * AI数据识别
-     */
-    async recognizeData(formData) {
-        return this.request('/ai/recognize', {
+    // 解锁个人成就
+    async unlockPersonalAchievement(achievementId) {
+        const userId = this.getCurrentUserId();
+        return await this.request(`/achievements/${achievementId}/unlock`, {
             method: 'POST',
-            body: formData,
-            headers: {
-                'Authorization': `Bearer ${this.token}`
-            }
+            body: JSON.stringify({ user_id: userId })
         });
+    }
+
+    // 获取个人积分
+    async getPersonalPoints(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/points/user/${currentUserId}`);
+    }
+
+    // 兑换积分
+    async redeemPoints(rewardId, points) {
+        const userId = this.getCurrentUserId();
+        return await this.request('/points/redeem', {
+            method: 'POST',
+            body: JSON.stringify({
+                user_id: userId,
+                reward_id: rewardId,
+                points: points
+            })
+        });
+    }
+
+    // 获取个人优惠券
+    async getPersonalCoupons(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/coupons/user/${currentUserId}`);
+    }
+
+    // 使用个人优惠券
+    async usePersonalCoupon(couponId) {
+        const userId = this.getCurrentUserId();
+        return await this.request(`/coupons/${couponId}/use`, {
+            method: 'POST',
+            body: JSON.stringify({ user_id: userId })
+        });
+    }
+
+    // 获取个人订阅
+    async getPersonalSubscriptions(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/subscriptions/user/${currentUserId}`);
+    }
+
+    // 订阅服务
+    async subscribeToService(serviceId, planId) {
+        const userId = this.getCurrentUserId();
+        return await this.request('/subscriptions', {
+            method: 'POST',
+            body: JSON.stringify({
+                user_id: userId,
+                service_id: serviceId,
+                plan_id: planId
+            })
+        });
+    }
+
+    // 取消订阅
+    async cancelSubscription(subscriptionId) {
+        return await this.request(`/subscriptions/${subscriptionId}/cancel`, {
+            method: 'PUT'
+        });
+    }
+
+    // 获取个人API密钥
+    async getPersonalApiKeys(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/api-keys/user/${currentUserId}`);
+    }
+
+    // 生成个人API密钥
+    async generatePersonalApiKey(keyName) {
+        const userId = this.getCurrentUserId();
+        return await this.request('/api-keys', {
+            method: 'POST',
+            body: JSON.stringify({
+                user_id: userId,
+                name: keyName
+            })
+        });
+    }
+
+    // 删除个人API密钥
+    async deletePersonalApiKey(keyId) {
+        return await this.request(`/api-keys/${keyId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    // 获取个人Webhook
+    async getPersonalWebhooks(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/webhooks/user/${currentUserId}`);
+    }
+
+    // 创建个人Webhook
+    async createPersonalWebhook(webhookData) {
+        const userId = this.getCurrentUserId();
+        return await this.request('/webhooks', {
+            method: 'POST',
+            body: JSON.stringify({
+                ...webhookData,
+                user_id: userId
+            })
+        });
+    }
+
+    // 删除个人Webhook
+    async deletePersonalWebhook(webhookId) {
+        return await this.request(`/webhooks/${webhookId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    // 获取个人日志
+    async getPersonalLogs(userId = null, level = 'info', limit = 100) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/logs/user/${currentUserId}?level=${level}&limit=${limit}`);
+    }
+
+    // 获取个人错误报告
+    async getPersonalErrorReports(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/errors/user/${currentUserId}`);
+    }
+
+    // 提交个人错误报告
+    async submitPersonalErrorReport(errorData) {
+        const userId = this.getCurrentUserId();
+        return await this.request('/errors', {
+            method: 'POST',
+            body: JSON.stringify({
+                ...errorData,
+                user_id: userId
+            })
+        });
+    }
+
+    // 获取个人备份
+    async getPersonalBackups(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/backups/user/${currentUserId}`);
+    }
+
+    // 创建个人备份
+    async createPersonalBackup(backupData) {
+        const userId = this.getCurrentUserId();
+        return await this.request('/backups', {
+            method: 'POST',
+            body: JSON.stringify({
+                ...backupData,
+                user_id: userId
+            })
+        });
+    }
+
+    // 恢复个人备份
+    async restorePersonalBackup(backupId) {
+        const userId = this.getCurrentUserId();
+        return await this.request(`/backups/${backupId}/restore`, {
+            method: 'POST',
+            body: JSON.stringify({ user_id: userId })
+        });
+    }
+
+    // 删除个人备份
+    async deletePersonalBackup(backupId) {
+        return await this.request(`/backups/${backupId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    // 获取个人数据导出
+    async getPersonalDataExport(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/exports/user/${currentUserId}`);
+    }
+
+    // 请求个人数据导出
+    async requestPersonalDataExport(exportData) {
+        const userId = this.getCurrentUserId();
+        return await this.request('/exports', {
+            method: 'POST',
+            body: JSON.stringify({
+                ...exportData,
+                user_id: userId
+            })
+        });
+    }
+
+    // 下载个人数据导出
+    async downloadPersonalDataExport(exportId) {
+        return await this.request(`/exports/${exportId}/download`);
+    }
+
+    // 删除个人数据导出
+    async deletePersonalDataExport(exportId) {
+        return await this.request(`/exports/${exportId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    // 获取个人数据使用情况
+    async getPersonalDataUsage(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/usage/user/${currentUserId}`);
+    }
+
+    // 获取个人数据限制
+    async getPersonalDataLimits(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/limits/user/${currentUserId}`);
+    }
+
+    // 获取个人数据配额
+    async getPersonalDataQuota(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/quota/user/${currentUserId}`);
+    }
+
+    // 获取个人数据统计
+    async getPersonalDataStats(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/stats/user/${currentUserId}`);
+    }
+
+    // 获取个人数据趋势
+    async getPersonalDataTrends(userId = null, period = '30d') {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/trends/user/${currentUserId}?period=${period}`);
+    }
+
+    // 获取个人数据预测
+    async getPersonalDataPredictions(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/predictions/user/${currentUserId}`);
+    }
+
+    // 获取个人数据建议
+    async getPersonalDataRecommendations(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/recommendations/user/${currentUserId}`);
+    }
+
+    // 获取个人数据洞察
+    async getPersonalDataInsights(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/insights/user/${currentUserId}`);
+    }
+
+    // 获取个人数据报告
+    async getPersonalDataReports(userId = null, reportType = 'comprehensive') {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/reports/user/${currentUserId}?type=${reportType}`);
+    }
+
+    // 生成个人数据报告
+    async generatePersonalDataReport(reportData) {
+        const userId = this.getCurrentUserId();
+        return await this.request('/reports/generate', {
+            method: 'POST',
+            body: JSON.stringify({
+                ...reportData,
+                user_id: userId
+            })
+        });
+    }
+
+    // 获取个人数据摘要
+    async getPersonalDataSummary(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/summary/user/${currentUserId}`);
+    }
+
+    // 获取个人数据概览
+    async getPersonalDataOverview(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/overview/user/${currentUserId}`);
+    }
+
+    // 获取个人数据仪表板
+    async getPersonalDataDashboard(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/dashboard/user/${currentUserId}`);
+    }
+
+    // 获取个人数据概览
+    async getPersonalDataOverview(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/overview/user/${currentUserId}`);
+    }
+
+    // 获取个人数据仪表板
+    async getPersonalDataDashboard(userId = null) {
+        const currentUserId = userId || this.getCurrentUserId();
+        if (!currentUserId) {
+            throw new Error('未获取到用户ID');
+        }
+
+        return await this.request(`/dashboard/user/${currentUserId}`);
     }
 }
 
-// 创建全局实例
+// 创建全局API客户端实例
 window.apiClient = new ApiClient();
-
-// 兼容性支持
-window.ApiClient = ApiClient;

@@ -1,11 +1,12 @@
 /**
  * 用户哈希系统
  * 用于安全的用户工作台访问
+ * 统一律师和用户的逻辑，使用10位哈希值
  */
 
 class UserHashSystem {
     constructor() {
-        this.baseURL = 'https://lawsker.com';
+        this.baseURL = 'https://156.236.74.200/api/v1';
         this.hashMapping = new Map();
         this.init();
     }
@@ -21,12 +22,18 @@ class UserHashSystem {
     async loadUserHashMapping() {
         try {
             // 从API获取用户哈希映射
-            const response = await fetch(`${this.baseURL}/api/v1/users/hash-mapping`);
+            const response = await fetch(`${this.baseURL}/users/hash-mapping`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
             if (response.ok) {
                 const mapping = await response.json();
                 this.hashMapping = new Map(Object.entries(mapping));
+                console.log('用户哈希映射已加载:', mapping);
             } else {
-                // 使用默认映射
+                console.warn('无法加载用户哈希映射，使用默认映射');
                 this.setDefaultMapping();
             }
         } catch (error) {
@@ -36,14 +43,14 @@ class UserHashSystem {
     }
     
     /**
-     * 设置默认的用户哈希映射
+     * 设置默认的用户哈希映射（仅用于演示）
      */
     setDefaultMapping() {
         const defaultMapping = {
-            'lawyer1': { role: 'lawyer', id: '001' },
-            'lawyer2': { role: 'lawyer', id: '002' },
-            'user1': { role: 'user', id: '001' },
-            'user2': { role: 'user', id: '002' }
+            'a1b2c3d4e5': { id: '001', username: 'lawyer1', role: 'lawyer' },
+            'f6g7h8i9j0': { id: '002', username: 'lawyer2', role: 'lawyer' },
+            'k1l2m3n4o5': { id: '003', username: 'user1', role: 'user' },
+            'p6q7r8s9t0': { id: '004', username: 'user2', role: 'user' }
         };
         
         this.hashMapping = new Map(Object.entries(defaultMapping));
@@ -57,12 +64,29 @@ class UserHashSystem {
     }
     
     /**
-     * 根据用户ID生成哈希
+     * 为用户生成10位哈希值
      */
-    generateUserHash(userId, role) {
-        // 简单的哈希生成算法
-        const hash = btoa(`${userId}-${role}-${Date.now()}`).replace(/[^a-zA-Z0-9]/g, '');
-        return hash.substring(0, 8);
+    async generateUserHash(userId, username, role) {
+        try {
+            const response = await fetch(`${this.baseURL}/users/generate-hash/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                return result.user_hash;
+            } else {
+                console.error('生成用户哈希失败:', response.statusText);
+                return null;
+            }
+        } catch (error) {
+            console.error('生成用户哈希时出错:', error);
+            return null;
+        }
     }
     
     /**
@@ -81,7 +105,8 @@ class UserHashSystem {
             return null;
         }
         
-        return `${this.baseURL}/${hash}`;
+        // 统一使用 /workspace/{hash} 格式
+        return `${window.location.origin}/workspace/${hash}`;
     }
     
     /**
@@ -90,6 +115,7 @@ class UserHashSystem {
     redirectToUserWorkspace(hash) {
         const url = this.getUserWorkspaceURL(hash);
         if (url) {
+            console.log('重定向到用户工作台:', url);
             window.location.href = url;
         } else {
             console.error('无效的用户哈希:', hash);
@@ -100,15 +126,13 @@ class UserHashSystem {
     /**
      * 处理登录后的重定向
      */
-    handleLoginRedirect(userData) {
-        const { username, role } = userData;
-        
-        // 根据用户名和角色生成或查找哈希
-        let hash = null;
+    async handleLoginRedirect(userData) {
+        const { id, username, role } = userData;
         
         // 查找现有的哈希映射
+        let hash = null;
         for (const [existingHash, userInfo] of this.hashMapping.entries()) {
-            if (userInfo.role === role && userInfo.id === username.replace(/\D/g, '')) {
+            if (userInfo.id === id) {
                 hash = existingHash;
                 break;
             }
@@ -116,12 +140,70 @@ class UserHashSystem {
         
         // 如果没有找到，生成新的哈希
         if (!hash) {
-            hash = this.generateUserHash(username, role);
-            this.hashMapping.set(hash, { role, id: username.replace(/\D/g, '') });
+            console.log('为用户生成新的哈希值:', { id, username, role });
+            hash = await this.generateUserHash(id, username, role);
+            
+            if (hash) {
+                // 更新本地映射
+                this.hashMapping.set(hash, { id, username, role });
+                console.log('新哈希已生成:', hash);
+            } else {
+                console.error('无法生成用户哈希');
+                window.location.href = '/login.html';
+                return;
+            }
         }
         
         // 重定向到用户工作台
         this.redirectToUserWorkspace(hash);
+    }
+    
+    /**
+     * 根据哈希获取用户信息
+     */
+    async getUserByHash(hash) {
+        try {
+            const response = await fetch(`${this.baseURL}/users/hash/${hash}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                return await response.json();
+            } else {
+                console.error('获取用户信息失败:', response.statusText);
+                return null;
+            }
+        } catch (error) {
+            console.error('获取用户信息时出错:', error);
+            return null;
+        }
+    }
+    
+    /**
+     * 解析工作台URL中的哈希
+     */
+    parseWorkspaceUrl(url) {
+        const match = url.match(/\/workspace\/([a-zA-Z0-9]{10})/);
+        if (match) {
+            return match[1];
+        }
+        return null;
+    }
+    
+    /**
+     * 验证工作台访问权限
+     */
+    validateWorkspaceAccess(userData, hash) {
+        const userInfo = this.getUserInfo(hash);
+        if (!userInfo) {
+            return false;
+        }
+        
+        // 检查用户ID是否匹配
+        return userInfo.id === userData.id;
     }
 }
 

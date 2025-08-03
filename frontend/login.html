@@ -666,20 +666,28 @@
                             // 如果有redirect参数，直接跳转到目标页面
                             window.location.href = decodeURIComponent(redirectUrl);
                         } else {
-                            // 根据用户角色跳转到对应工作台
-                            const workspaceMap = {
-                                'admin': '/admin-config-optimized.html',
-                                'lawyer': '/lawyer-workspace.html',
-                                'user': '/user-workspace.html',
-                                'sales': '/user-workspace.html'
-                            };
-                            const targetUrl = workspaceMap[userRole];
-                            if (targetUrl) {
-                                console.log('跳转到:', targetUrl, '用户角色:', userRole);
-                                window.location.href = targetUrl;
+                            // 使用用户哈希系统处理重定向
+                            if (window.userHashSystem) {
+                                console.log('使用用户哈希系统处理重定向');
+                                await window.userHashSystem.handleLoginRedirect(data.user);
                             } else {
-                                console.error('未知用户角色:', userRole);
-                                showMessage('未知用户角色，请联系管理员', 'error');
+                                console.log('用户哈希系统未加载，使用默认重定向');
+                                const userId = data.user.id || data.user.user_id || 'demo';
+                                const workspaceMap = {
+                                    'admin': '/admin-config-optimized.html',
+                                    'lawyer': `/workspace/lawyer/${userId}`,
+                                    'user': `/workspace/user/${userId}`,
+                                    'sales': `/workspace/user/${userId}`,
+                                    'institution': `/workspace/institution/${userId}`
+                                };
+                                const targetUrl = workspaceMap[userRole];
+                                if (targetUrl) {
+                                    console.log('跳转到个人化工作台:', targetUrl, '用户角色:', userRole, '用户ID:', userId);
+                                    window.location.href = targetUrl;
+                                } else {
+                                    console.error('未知用户角色:', userRole);
+                                    showMessage('未知用户角色，请联系管理员', 'error');
+                                }
                             }
                         }
                     }, 1000);

@@ -54,6 +54,9 @@ class User(Base):
     is_verified = Column(Boolean, default=False, nullable=False)
     is_premium = Column(Boolean, default=False, nullable=False)
     
+    # 用户哈希（用于URL）
+    user_hash = Column(String(10), unique=True, nullable=True, index=True)
+    
     # 统计信息
     login_count = Column(Integer, default=0, nullable=False)
     last_login_at = Column(DateTime(timezone=True), nullable=True)

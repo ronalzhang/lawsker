@@ -1915,9 +1915,23 @@
         }
 
         // 加载律师统计数据
-        async function loadLawyerStats() {
+        async function loadLawyerStats(userId) {
             try {
-                const stats = await apiClient.getDashboardStats();
+                console.log('加载律师统计数据，用户ID:', userId);
+                
+                let stats;
+                if (window.isDemoMode) {
+                    // 演示模式使用默认数据
+                    stats = {
+                        active_cases: 15,
+                        monthly_earnings: 12580,
+                        pending_cases: 3,
+                        completion_rate: 89
+                    };
+                } else {
+                    // 真实模式调用API
+                    stats = await apiClient.getDashboardStats();
+                }
                 
                 // 更新律师工作台统计数据
                 const statValue1 = document.querySelector('.stats-grid .stat-card:nth-child(1) .stat-value');
@@ -1930,7 +1944,7 @@
                 if (statValue3) statValue3.textContent = stats.pending_cases || stats.pending_reviews || 0;
                 if (statValue4) statValue4.textContent = (stats.completion_rate || stats.success_rate || 0) + '%';
                 
-                console.log('真实统计数据已加载');
+                console.log('律师统计数据已加载:', stats);
             } catch (error) {
                 console.error('加载律师统计数据失败，使用默认数据:', error);
                 // 如果API调用失败，使用默认数据
@@ -1947,44 +1961,70 @@
         }
 
         // 加载案件列表
-        async function loadCases() {
+        async function loadLawyerCases(userId) {
             try {
-                // 获取当前用户的案件信息
-                const userInfo = await apiClient.getCurrentUserInfo();
-                let casesData;
+                console.log('加载律师案件列表，用户ID:', userId);
                 
-                if (userInfo && userInfo.role === 'lawyer') {
-                    // 律师：获取分配给自己的案件
-                    casesData = await apiClient.getCases({
-                        assigned_to: userInfo.id,
-                        page_size: 50
-                    });
-                } else {
-                    // 其他用户：获取所有案件
-                    casesData = await apiClient.getCases({
-                        page_size: 50
-                    });
-                }
-                
-                // 检查返回的数据格式
                 let cases = [];
-                if (casesData && casesData.items) {
-                    // API返回分页格式
-                    cases = casesData.items;
-                } else if (Array.isArray(casesData)) {
-                    // API直接返回数组
-                    cases = casesData;
+                if (window.isDemoMode) {
+                    // 演示模式使用默认案件数据
+                    cases = [
+                        {
+                            case_number: 'LAW2024001234567890123',
+                            debtor_info: { name: '北京科技有限公司' },
+                            case_type: '债务催收',
+                            status: 'IN_PROGRESS',
+                            created_at: '2024-01-15',
+                            limitation_expires_at: '2024-02-15',
+                            case_amount: 50000
+                        },
+                        {
+                            case_number: 'LAW2024002345678901234',
+                            debtor_info: { name: '张三' },
+                            case_type: '律师函',
+                            status: 'PENDING',
+                            created_at: '2024-01-14',
+                            limitation_expires_at: '2024-01-21',
+                            case_amount: 30
+                        }
+                    ];
+                } else {
+                    // 真实模式调用API
+                    const userInfo = await apiClient.getCurrentUserInfo();
+                    let casesData;
+                    
+                    if (userInfo && userInfo.role === 'lawyer') {
+                        // 律师：获取分配给自己的案件
+                        casesData = await apiClient.getCases({
+                            assigned_to: userInfo.id,
+                            page_size: 50
+                        });
+                    } else {
+                        // 其他用户：获取所有案件
+                        casesData = await apiClient.getCases({
+                            page_size: 50
+                        });
+                    }
+                    
+                    // 检查返回的数据格式
+                    if (casesData && casesData.items) {
+                        // API返回分页格式
+                        cases = casesData.items;
+                    } else if (Array.isArray(casesData)) {
+                        // API直接返回数组
+                        cases = casesData;
+                    }
                 }
                 
-                // 如果获取到案件数据，更新显示
+                // 更新案件列表显示
                 if (cases && cases.length > 0) {
                     updateCasesList(cases);
-                    console.log(`真实案件数据已加载: ${cases.length} 个案件`);
+                    console.log(`律师案件数据已加载: ${cases.length} 个案件`);
                 } else {
                     console.log('没有案件数据，保持现有示例数据');
                 }
             } catch (error) {
-                console.error('加载案件列表失败:', error);
+                console.error('加载律师案件列表失败:', error);
                 // 保持现有的静态案件数据作为fallback
             }
         }
@@ -2087,10 +2127,27 @@
         }
 
         // 加载提现汇总统计数据
-        async function loadWithdrawalStats() {
+        async function loadLawyerWithdrawalStats(userId) {
             try {
-                const stats = await apiClient.getWithdrawalStats();
-                const userStats = await apiClient.getUserStats();
+                console.log('加载律师提现统计数据，用户ID:', userId);
+                
+                let stats, userStats;
+                if (window.isDemoMode) {
+                    // 演示模式使用默认数据
+                    stats = {
+                        total_withdrawn: 25600,
+                        withdrawal_count: 8,
+                        monthly_withdrawn: 8500,
+                        pending_amount: 0
+                    };
+                    userStats = {
+                        total_earnings: 38200
+                    };
+                } else {
+                    // 真实模式调用API
+                    stats = await apiClient.getWithdrawalStats();
+                    userStats = await apiClient.getUserStats();
+                }
                 
                 // 更新提现汇总统计显示
                 const totalWithdrawn = document.getElementById('totalWithdrawn');
@@ -2116,9 +2173,9 @@
                 if (availableBalance) availableBalance.textContent = '¥' + available.toLocaleString();
                 if (frozenAmount) frozenAmount.textContent = '¥' + pending.toLocaleString();
                 
-                console.log('真实提现统计数据已加载');
+                console.log('律师提现统计数据已加载:', stats);
             } catch (error) {
-                console.error('加载提现统计数据失败，使用默认数据:', error);
+                console.error('加载律师提现统计数据失败，使用默认数据:', error);
                 // 如果API调用失败，使用默认数据
                 const totalWithdrawn = document.getElementById('totalWithdrawn');
                 const withdrawalCount = document.getElementById('withdrawalCount');
@@ -5246,6 +5303,30 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
             };
             return methodMap[method] || { type: 'unknown', icon: '❓', name: method };
         }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('律师工作台页面已加载');
+            
+            // 检查是否已经通过权限验证脚本加载了数据
+            if (window.currentUser && window.workspaceInfo) {
+                console.log('用户数据已通过权限验证脚本加载');
+                return;
+            }
+            
+            // 如果没有通过权限验证脚本，使用默认模式
+            console.log('使用默认模式加载数据');
+            loadUserInfo();
+            
+            // 加载统计数据（使用默认用户ID）
+            loadLawyerStats('demo');
+            
+            // 加载案件列表（使用默认用户ID）
+            loadLawyerCases('demo');
+            
+            // 加载提现统计（使用默认用户ID）
+            loadLawyerWithdrawalStats('demo');
+        });
     </script>
 </body>
 </html>

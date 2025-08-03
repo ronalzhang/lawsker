@@ -3,17 +3,22 @@
 """
 
 from datetime import datetime, date
-from typing import Dict, Any
+from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func, and_, update
 
 from app.core.database import get_db
 from app.core.deps import get_current_user
 from app.models.case import Case
 from app.models.finance import Payment
 from app.models.statistics import DataUploadRecord, TaskPublishRecord
+from app.models.user import User
+
+import hashlib
+import secrets
+from uuid import UUID
 
 router = APIRouter()
 
@@ -191,3 +196,95 @@ async def update_user_profile(
         status_code=status.HTTP_501_NOT_IMPLEMENTED,
         detail="用户资料更新功能需要重新实现，请联系管理员"
     ) 
+
+@router.get("/hash-mapping", response_model=Dict[str, Dict[str, str]])
+async def get_hash_mapping(
+    current_user: Dict[str, Any] = Depends(get_current_user)
+) -> Dict[str, Dict[str, str]]:
+    """
+    获取用户哈希映射
+    """
+    try:
+        # 从数据库获取所有用户的哈希映射
+        query = select(User.id, User.username, User.role, User.user_hash)
+        result = await get_db().fetch_all(query)
+        
+        hash_mapping = {}
+        for row in result:
+            if row.user_hash:
+                hash_mapping[row.user_hash] = {
+                    "id": str(row.id),
+                    "username": row.username,
+                    "role": row.role
+                }
+        
+        return hash_mapping
+    except Exception as e:
+        # logger.error(f"获取哈希映射失败: {e}") # Original file does not have logger, so this line is commented out
+        raise HTTPException(status_code=500, detail="获取哈希映射失败")
+
+@router.post("/generate-hash/{user_id}")
+async def generate_user_hash(
+    user_id: UUID,
+    current_user: Dict[str, Any] = Depends(get_current_user)
+) -> Dict[str, str]:
+    """
+    为用户生成10位哈希值
+    """
+    try:
+        # 检查用户是否存在
+        user_query = select(User).where(User.id == user_id)
+        user = await get_db().fetch_one(user_query)
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="用户不存在")
+        
+        # 生成10位哈希值
+        hash_input = f"{user.id}-{user.username}-{user.role}-{secrets.token_hex(8)}"
+        user_hash = hashlib.sha256(hash_input.encode()).hexdigest()[:10]
+        
+        # 检查哈希是否已存在
+        existing_query = select(User).where(User.user_hash == user_hash)
+        existing_user = await get_db().fetch_one(existing_query)
+        
+        # 如果哈希已存在，重新生成
+        while existing_user:
+            hash_input = f"{user.id}-{user.username}-{user.role}-{secrets.token_hex(8)}"
+            user_hash = hashlib.sha256(hash_input.encode()).hexdigest()[:10]
+            existing_query = select(User).where(User.user_hash == user_hash)
+            existing_user = await get_db().fetch_one(existing_query)
+        
+        # 更新用户的哈希值
+        update_query = update(User).where(User.id == user_id).values(user_hash=user_hash)
+        await get_db().execute(update_query)
+        
+        return {"user_hash": user_hash}
+    except Exception as e:
+        # logger.error(f"生成用户哈希失败: {e}") # Original file does not have logger, so this line is commented out
+        raise HTTPException(status_code=500, detail="生成用户哈希失败")
+
+@router.get("/hash/{user_hash}")
+async def get_user_by_hash(
+    user_hash: str,
+    current_user: Dict[str, Any] = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """
+    根据哈希值获取用户信息
+    """
+    try:
+        query = select(User).where(User.user_hash == user_hash)
+        user = await get_db().fetch_one(query)
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="用户不存在")
+        
+        return {
+            "id": str(user.id),
+            "username": user.username,
+            "role": user.role,
+            "email": user.email,
+            "user_hash": user.user_hash
+        }
+    except Exception as e:
+        # logger.error(f"根据哈希获取用户信息失败: {e}") # Original file does not have logger, so this line is commented out
+        raise HTTPException(status_code=500, detail="获取用户信息失败") 

@@ -27,60 +27,126 @@ const routeHandler = (filePath) => {
     };
 };
 
-// 演示页面路由（无需认证）
-app.get('/user', routeHandler('user-workspace.html'));
-app.get('/legal', routeHandler('lawyer-workspace.html'));
-// 注意：机构工作台项目已暂停开发
-app.get('/institution', routeHandler('institution-workspace.html'));
+// 个人化工作台路由系统
+// 格式: /workspace/{role}/{userId}
 
-// 个人工作台路由（需要认证和权限验证）
-app.get('/workspace/lawyer/:userId', routeHandler('lawyer-workspace.html'));
-app.get('/workspace/user/:userId', routeHandler('user-workspace.html'));
-// 注意：机构工作台项目已暂停开发
-app.get('/workspace/institution/:userId', routeHandler('institution-workspace.html'));
-
-// 旧版个人路由（保持兼容性，但建议使用新格式）
-app.get('/user/:userId', routeHandler('user-workspace.html'));
-app.get('/legal/:lawyerId', routeHandler('lawyer-workspace.html'));
-// 注意：机构工作台项目已暂停开发
-app.get('/institution/:institutionId', routeHandler('institution-workspace.html'));
-app.get('/calculator', routeHandler('earnings-calculator.html'));
-app.get('/earnings-calculator', routeHandler('earnings-calculator.html'));
-app.get('/withdraw', routeHandler('withdrawal.html'));
-app.get('/submit', routeHandler('anonymous-task.html'));
-app.get('/auth', routeHandler('login.html'));
-
-// O2O业务流程页面路由
-app.get('/task/publish', routeHandler('task-publish.html'));
-app.get('/task/lawyer-tasks', routeHandler('lawyer-tasks.html'));
-app.get('/task/ai-generator', routeHandler('ai-document-generator.html'));
-app.get('/task/execution', routeHandler('task-execution.html'));
-app.get('/payment/settlement', routeHandler('payment-settlement.html'));
-app.get('/demo/business-flow', routeHandler('business-flow-demo.html'));
-
-// 测试和维护页面路由
-app.get('/test/flow', routeHandler('flow-test.html'));
-
-// 管理后台路由
-app.get('/admin', routeHandler('admin/index.html'));
-app.get('/console', routeHandler('dashboard.html'));
-
-// 兼容性重定向
-app.get('/sales', (req, res) => {
-    res.redirect(301, '/user');
+// 律师个人工作台
+app.get('/workspace/lawyer/:userId', (req, res) => {
+    const userId = req.params.userId;
+    console.log(`访问律师工作台: ${userId}`);
+    
+    // 设置用户信息到页面
+    res.cookie('workspace_user_id', userId);
+    res.cookie('workspace_role', 'lawyer');
+    
+    res.sendFile(path.join(__dirname, 'lawyer-workspace.html'));
 });
 
-// 默认首页
+// 用户个人工作台
+app.get('/workspace/user/:userId', (req, res) => {
+    const userId = req.params.userId;
+    console.log(`访问用户工作台: ${userId}`);
+    
+    // 设置用户信息到页面
+    res.cookie('workspace_user_id', userId);
+    res.cookie('workspace_role', 'user');
+    
+    res.sendFile(path.join(__dirname, 'user-workspace.html'));
+});
+
+// 机构个人工作台
+app.get('/workspace/institution/:userId', (req, res) => {
+    const userId = req.params.userId;
+    console.log(`访问机构工作台: ${userId}`);
+    
+    // 设置用户信息到页面
+    res.cookie('workspace_user_id', userId);
+    res.cookie('workspace_role', 'institution');
+    
+    res.sendFile(path.join(__dirname, 'institution-workspace.html'));
+});
+
+// 个人化工作台路由 - 使用哈希值
+app.get('/workspace/:hash', (req, res) => {
+    const { hash } = req.params;
+    
+    // 验证哈希格式（10位字母数字）
+    if (!/^[a-zA-Z0-9]{10}$/.test(hash)) {
+        return res.status(400).send('无效的哈希格式');
+    }
+    
+    // 设置工作台信息cookie
+    res.cookie('workspace_hash', hash, { 
+        httpOnly: false, 
+        secure: false, 
+        maxAge: 24 * 60 * 60 * 1000 
+    });
+    
+    // 根据用户角色返回相应的工作台页面
+    // 这里先返回通用工作台，具体角色判断在前端进行
+    res.sendFile(path.join(__dirname, 'workspace.html'));
+});
+
+// 兼容性重定向（保持向后兼容）
+app.get('/legal/:hash', (req, res) => {
+    res.redirect(`/workspace/${req.params.hash}`);
+});
+
+app.get('/user/:hash', (req, res) => {
+    res.redirect(`/workspace/${req.params.hash}`);
+});
+
+app.get('/institution/:hash', (req, res) => {
+    res.redirect(`/workspace/${req.params.hash}`);
+});
+
+// 演示页面（保持原有功能）
+app.get('/legal', routeHandler('lawyer-workspace.html'));
+app.get('/user', routeHandler('user-workspace.html'));
+app.get('/institution', routeHandler('institution-workspace.html'));
+
+// 管理员工作台
+app.get('/admin', routeHandler('admin-config-optimized.html'));
+app.get('/admin-config-optimized.html', routeHandler('admin-config-optimized.html'));
+
+// 登录页面
+app.get('/login', routeHandler('login.html'));
+app.get('/login.html', routeHandler('login.html'));
+app.get('/auth', routeHandler('auth.html'));
+app.get('/auth.html', routeHandler('auth.html'));
+
+// 其他静态页面
+app.get('/dashboard', routeHandler('dashboard.html'));
+app.get('/payment-settlement', routeHandler('payment-settlement.html'));
+app.get('/withdrawal', routeHandler('withdrawal.html'));
+app.get('/lawyer-certification', routeHandler('lawyer-certification.html'));
+app.get('/lawyer-tasks', routeHandler('lawyer-tasks.html'));
+app.get('/task-publish', routeHandler('task-publish.html'));
+app.get('/task-execution', routeHandler('task-execution.html'));
+app.get('/earnings-calculator', routeHandler('earnings-calculator.html'));
+app.get('/business-flow-demo', routeHandler('business-flow-demo.html'));
+app.get('/flow-test', routeHandler('flow-test.html'));
+app.get('/send-records', routeHandler('send-records.html'));
+app.get('/monitoring-dashboard', routeHandler('monitoring-dashboard.html'));
+app.get('/ai-document-generator', routeHandler('ai-document-generator.html'));
+app.get('/anonymous-task', routeHandler('anonymous-task.html'));
+
+// 测试页面
+app.get('/test-personalized', routeHandler('test-personalized-workspace.html'));
+app.get('/test-personalized-workspace.html', routeHandler('test-personalized-workspace.html'));
+
+// 首页
 app.get('/', routeHandler('index.html'));
+app.get('/index.html', routeHandler('index.html'));
 
 // 404处理
 app.use((req, res) => {
-    res.status(404).sendFile(path.join(__dirname, 'index.html'));
+    res.status(404).sendFile(path.join(__dirname, '404.html'));
 });
 
 // 错误处理
 app.use((err, req, res, next) => {
-    console.error('Server error:', err);
+    console.error('服务器错误:', err);
     res.status(500).send('Internal Server Error');
 });
 
