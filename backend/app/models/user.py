@@ -65,6 +65,7 @@ class User(Base):
     lawyer_qualifications = relationship("LawyerQualification", back_populates="user", foreign_keys="LawyerQualification.user_id")
     assigned_review_tasks = relationship("DocumentReviewTask", foreign_keys="DocumentReviewTask.lawyer_id", back_populates="lawyer")
     created_review_tasks = relationship("DocumentReviewTask", foreign_keys="DocumentReviewTask.creator_id", back_populates="creator")
+    workload = relationship("LawyerWorkload", back_populates="lawyer", uselist=False)
 
     def __repr__(self):
         return f"<User(id={self.id}, username={self.username}, role={self.role.value})>"
