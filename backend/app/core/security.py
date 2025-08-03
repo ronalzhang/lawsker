@@ -119,7 +119,7 @@ class SecurityManager:
             return payload
         except jwt.ExpiredSignatureError:
             return None
-        except jwt.JWTError:
+        except jwt.PyJWTError:
             return None
     
     def set_auth_cookies(self, response: Response, access_token: str, refresh_token: str):
