@@ -6,7 +6,7 @@
 
 class UserHashSystem {
     constructor() {
-        this.baseURL = 'https://156.236.74.200/api/v1';
+        this.baseURL = 'http://156.236.74.200/api/v1';
         this.hashMapping = new Map();
         this.init();
     }
@@ -105,8 +105,16 @@ class UserHashSystem {
             return null;
         }
         
-        // 统一使用 /workspace/{hash} 格式
-        return `${window.location.origin}/workspace/${hash}`;
+        // 根据用户角色返回不同的工作台URL
+        const role = userInfo.role;
+        if (role === 'lawyer') {
+            return `${window.location.origin}/lawyer-workspace/${hash}`;
+        } else if (['user', 'sales'].includes(role)) {
+            return `${window.location.origin}/user-workspace/${hash}`;
+        } else {
+            // 默认使用通用工作台
+            return `${window.location.origin}/workspace/${hash}`;
+        }
     }
     
     /**

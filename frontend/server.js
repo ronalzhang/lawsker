@@ -82,9 +82,48 @@ app.get('/workspace/:hash', (req, res) => {
         maxAge: 24 * 60 * 60 * 1000 
     });
     
-    // 根据用户角色返回相应的工作台页面
-    // 这里先返回通用工作台，具体角色判断在前端进行
+    // 返回通用工作台页面，具体角色判断在前端进行
     res.sendFile(path.join(__dirname, 'workspace.html'));
+});
+
+// 律师专用工作台路由
+app.get('/lawyer-workspace/:hash', (req, res) => {
+    const { hash } = req.params;
+    
+    // 验证哈希格式（10位字母数字）
+    if (!/^[a-zA-Z0-9]{10}$/.test(hash)) {
+        return res.status(400).send('无效的哈希格式');
+    }
+    
+    // 设置工作台信息cookie
+    res.cookie('workspace_hash', hash, { 
+        httpOnly: false, 
+        secure: false, 
+        maxAge: 24 * 60 * 60 * 1000 
+    });
+    
+    // 返回律师工作台页面
+    res.sendFile(path.join(__dirname, 'lawyer-workspace-universal.html'));
+});
+
+// 用户专用工作台路由
+app.get('/user-workspace/:hash', (req, res) => {
+    const { hash } = req.params;
+    
+    // 验证哈希格式（10位字母数字）
+    if (!/^[a-zA-Z0-9]{10}$/.test(hash)) {
+        return res.status(400).send('无效的哈希格式');
+    }
+    
+    // 设置工作台信息cookie
+    res.cookie('workspace_hash', hash, { 
+        httpOnly: false, 
+        secure: false, 
+        maxAge: 24 * 60 * 60 * 1000 
+    });
+    
+    // 返回用户工作台页面
+    res.sendFile(path.join(__dirname, 'user-workspace-universal.html'));
 });
 
 // 兼容性重定向（保持向后兼容）
