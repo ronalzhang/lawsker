@@ -126,7 +126,7 @@ class AccessLogProcessor:
                         :user_id, :session_id, :ip_address, :user_agent, :referer,
                         :request_path, :request_method, :status_code, :response_time,
                         :device_type, :browser, :os, :country, :region, :city, 
-                        COALESCE(:created_at::timestamp, NOW())
+                        COALESCE(:created_at, NOW())
                     )
                 """)
                 

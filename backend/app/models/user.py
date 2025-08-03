@@ -63,6 +63,8 @@ class User(Base):
     # 关联关系
     tenant = relationship("Tenant", back_populates="users")
     lawyer_qualifications = relationship("LawyerQualification", back_populates="user", foreign_keys="LawyerQualification.user_id")
+    assigned_review_tasks = relationship("DocumentReviewTask", foreign_keys="DocumentReviewTask.lawyer_id", back_populates="lawyer")
+    created_review_tasks = relationship("DocumentReviewTask", foreign_keys="DocumentReviewTask.creator_id", back_populates="creator")
 
     def __repr__(self):
         return f"<User(id={self.id}, username={self.username}, role={self.role.value})>"

@@ -185,8 +185,10 @@ class UserActivityTracker:
             
             # 处理details字段的JSON序列化
             for activity in activities:
-                if activity.get('details'):
+                if activity.get('details') and isinstance(activity['details'], dict):
                     activity['details'] = json.dumps(activity['details'], ensure_ascii=False)
+                elif activity.get('details') is None:
+                    activity['details'] = None
             
             await db.execute(insert_query, activities)
             await db.commit()

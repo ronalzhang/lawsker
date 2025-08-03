@@ -210,7 +210,7 @@ class AccessLoggerMiddleware:
                     :user_id, :session_id, :ip_address, :user_agent, :referer,
                     :request_path, :request_method, :status_code, :response_time,
                     :device_type, :browser, :os, :country, :region, :city, 
-                    COALESCE(:created_at::timestamp, NOW())
+                    COALESCE(:created_at, NOW())
                 )
             """)
             
@@ -221,7 +221,6 @@ class AccessLoggerMiddleware:
         except Exception as e:
             logger.error(f"批量插入访问日志失败: {str(e)}")
             await db.rollback()
-            raise
     
     def _get_client_ip(self, request: Request) -> str:
         """获取客户端真实IP地址"""

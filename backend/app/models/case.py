@@ -79,6 +79,7 @@ class Case(Base):
     tenant = relationship("Tenant", back_populates="cases")
     user = relationship("User")
     tasks = relationship("Task", back_populates="case")
+    review_tasks = relationship("DocumentReviewTask", back_populates="case")
 
     def __repr__(self):
         return f"<Case(id={self.id}, case_number={self.case_number}, status={self.status.value})>"
