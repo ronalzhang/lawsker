@@ -126,7 +126,7 @@ class AccessLoggerMiddleware:
                 "country": country,
                 "region": region,
                 "city": city,
-                "created_at": datetime.now().isoformat()
+                "created_at": datetime.now()
             }
             
             # 尝试使用Redis队列，失败则直接写数据库

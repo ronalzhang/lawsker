@@ -100,6 +100,12 @@ class AccessLogProcessor:
                 if log_data:
                     try:
                         parsed_log = json.loads(log_data)
+                        # 确保created_at字段是datetime对象
+                        if 'created_at' in parsed_log and isinstance(parsed_log['created_at'], str):
+                            try:
+                                parsed_log['created_at'] = datetime.fromisoformat(parsed_log['created_at'].replace('Z', '+00:00'))
+                            except ValueError:
+                                parsed_log['created_at'] = datetime.now()
                         logs.append(parsed_log)
                     except json.JSONDecodeError as e:
                         logger.error(f"解析日志数据失败: {str(e)}")
