@@ -71,6 +71,18 @@ class ApiClient {
         }
     }
 
+    // GET请求便捷方法
+    async get(endpoint, params = {}) {
+        const queryString = new URLSearchParams(params).toString();
+        const fullEndpoint = queryString ? `${endpoint}?${queryString}` : endpoint;
+        return await this.request(fullEndpoint);
+    }
+
+    // 获取案件列表
+    async getCases(params = {}) {
+        return await this.request(`/cases/?${new URLSearchParams(params).toString()}`);
+    }
+
     // 获取用户个人统计数据
     async getUserStats() {
         const userId = this.getCurrentUserId();

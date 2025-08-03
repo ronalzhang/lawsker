@@ -3538,7 +3538,7 @@ ${date}`;
                 }
                 
                 // 使用 apiClient 统一处理API调用（包括演示模式逻辑）
-                const result = await apiClient.get('/tasks/available', {limit: isMobile ? 10 : 20});
+                const result = await apiClient.getAvailableTasks();
                 console.log('API响应:', result);
                 
                 // 处理不同的响应格式
@@ -3780,7 +3780,7 @@ ${date}`;
         async function loadMyTasks() {
             try {
                 // 使用 apiClient 统一处理API调用（包括演示模式逻辑）
-                const result = await apiClient.get('/tasks/my-tasks/lawyer');
+                const result = await apiClient.getLawyerTasks();
                 
                 if (result.success && result.tasks) {
                     updateMyTasksList(result.tasks);
@@ -4744,7 +4744,7 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
         // 加载提现记录
         async function loadWithdrawalHistory() {
             try {
-                const history = await apiClient.getWithdrawalHistory();
+                const history = await apiClient.getLawyerWithdrawalHistory();
                 updateWithdrawalTable(history.items || history || []);
             } catch (error) {
                 console.error('加载提现记录失败:', error);
