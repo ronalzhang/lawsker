@@ -14,6 +14,7 @@ import logging
 
 from app.core.database import AsyncSessionLocal, get_db
 from app.core.config import settings
+from app.core.security import security_manager
 from app.services.auth_service import AuthService
 from app.services.config_service import SystemConfigService
 from app.services.ai_service import AIDocumentService
@@ -86,11 +87,12 @@ async def get_current_user(
     """
     try:
         # 解析JWT令牌
-        payload = jwt.decode(
-            credentials.credentials,
-            settings.JWT_SECRET_KEY,
-            algorithms=[settings.JWT_ALGORITHM]
-        )
+        payload = security_manager.verify_token(credentials.credentials, "access")
+        if not payload:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="无效的令牌"
+            )
         
         # 从token中获取用户信息
         user_id = payload.get("user_id")  # 使用user_id字段而不是sub
