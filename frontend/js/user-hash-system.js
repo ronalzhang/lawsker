@@ -112,8 +112,8 @@ class UserHashSystem {
         } else if (['user', 'sales'].includes(role)) {
             return `${window.location.origin}/user-workspace/${hash}`;
         } else {
-            // 默认使用通用工作台
-            return `${window.location.origin}/workspace/${hash}`;
+            // 对于其他角色，使用用户工作台作为默认
+            return `${window.location.origin}/user-workspace/${hash}`;
         }
     }
     

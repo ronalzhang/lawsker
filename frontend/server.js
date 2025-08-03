@@ -66,25 +66,7 @@ app.get('/workspace/institution/:userId', (req, res) => {
     res.sendFile(path.join(__dirname, 'institution-workspace.html'));
 });
 
-// 个人化工作台路由 - 使用哈希值
-app.get('/workspace/:hash', (req, res) => {
-    const { hash } = req.params;
-    
-    // 验证哈希格式（10位字母数字）
-    if (!/^[a-zA-Z0-9]{10}$/.test(hash)) {
-        return res.status(400).send('无效的哈希格式');
-    }
-    
-    // 设置工作台信息cookie
-    res.cookie('workspace_hash', hash, { 
-        httpOnly: false, 
-        secure: false, 
-        maxAge: 24 * 60 * 60 * 1000 
-    });
-    
-    // 返回通用工作台页面，具体角色判断在前端进行
-    res.sendFile(path.join(__dirname, 'workspace.html'));
-});
+
 
 // 律师专用工作台路由
 app.get('/lawyer-workspace/:hash', (req, res) => {
