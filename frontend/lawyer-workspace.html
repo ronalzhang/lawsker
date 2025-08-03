@@ -4726,7 +4726,7 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
                     document.getElementById('accountName').value = '';
                     
                     // 刷新统计数据和提现记录
-                    await loadWithdrawalStats();
+                    await loadLawyerWithdrawalStats(lawyerId);
                     await loadWithdrawalHistory();
                 } else {
                     showNotification(result.message || '提现申请失败', 'error');
@@ -4866,9 +4866,9 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
             }
             
             await loadUserInfo();
-            await loadLawyerStats();
-            await loadCases();
-            await loadWithdrawalStats();
+            await loadLawyerStats(lawyerId);
+            await loadLawyerCases(lawyerId);
+            await loadLawyerWithdrawalStats(lawyerId);
             
             // 初始化案件标签样式
             // 检查主标签按钮状态

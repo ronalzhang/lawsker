@@ -5,7 +5,7 @@
 
 class ApiClient {
     constructor() {
-        this.baseUrl = 'https://156.236.74.200/api/v1';
+        this.baseUrl = 'http://156.236.74.200/api/v1';
         this.authToken = localStorage.getItem('authToken');
         this.currentUser = this.getCurrentUser();
     }
