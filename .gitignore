@@ -198,3 +198,14 @@ private-keys/
 # Certificates and tokens
 ssl-certs/
 jwt-secrets/ 
+
+# ==============================
+# 🚀 DEPLOYMENT SCRIPTS
+# ==============================
+# Personal deployment scripts with sensitive server info
+deploy.sh
+*-local.sh
+check-server-logs-local.sh
+# Keep templates for team reference
+!deploy.sh.template
+!*.template

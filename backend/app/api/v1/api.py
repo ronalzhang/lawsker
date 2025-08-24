@@ -6,7 +6,7 @@ API路由主文件
 from fastapi import APIRouter, Response
 from app.middlewares.csrf_middleware import get_csrf_token
 
-from app.api.v1.endpoints import auth, users, cases, finance, admin, ai, tasks, admin_analytics, document_library, document_send, websocket, automation
+from app.api.v1.endpoints import auth, users, cases, finance, admin, ai, tasks, admin_analytics, document_library, document_send, websocket, automation, documents
 from app.api.v1 import statistics, file_upload, ai_assignment, lawyer_verification
 
 # 创建API路由器
@@ -29,6 +29,7 @@ api_router.include_router(document_library.router, prefix="/document-library", t
 api_router.include_router(document_send.router, prefix="/document-send", tags=["文书发送"])
 api_router.include_router(websocket.router, prefix="/websocket", tags=["实时通信"])
 api_router.include_router(automation.router, prefix="/automation", tags=["自动化运维"])
+api_router.include_router(documents.router, prefix="/documents", tags=["文档管理"])
 
 # 直接添加CSRF端点
 @api_router.get("/csrf/csrf-token")
