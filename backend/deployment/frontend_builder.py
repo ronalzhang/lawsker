@@ -14,6 +14,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
 
+# 导入相关模块
+from .typescript_fixer import TypeScriptFixer
+from .static_deployment_manager import StaticDeploymentManager, StaticDeployment
+
 
 @dataclass
 class FrontendProject:
@@ -349,6 +353,127 @@ class FrontendBuilder:
                     build_result["logs"].append("构建恢复成功")
             
             results[project.name] = build_result
+        
+        return results
+    
+    def build_and_deploy_project(self, project: FrontendProject, deployment_config: Optional[StaticDeployment] = None) -> Dict[str, any]:
+        """构建并部署单个项目"""
+        self.logger.info(f"构建并部署项目: {project.name}")
+        
+        result = {
+            "project": project.name,
+            "build_success": False,
+            "typescript_fix_success": False,
+            "deployment_success": False,
+            "errors": [],
+            "logs": []
+        }
+        
+        try:
+            project_path = self.base_path / project.path
+            
+            # 步骤1: TypeScript错误修复
+            if self._has_typescript_files(project_path):
+                self.logger.info("检测到TypeScript文件，开始修复...")
+                ts_fixer = TypeScriptFixer(str(project_path))
+                fix_result = ts_fixer.run_full_fix()
+                
+                result["typescript_fix_result"] = fix_result
+                result["typescript_fix_success"] = fix_result.get("success", False)
+                
+                if result["typescript_fix_success"]:
+                    result["logs"].append("TypeScript错误修复成功")
+                else:
+                    result["errors"].append("TypeScript错误修复失败")
+            
+            # 步骤2: 构建项目
+            build_result = self.monitor_build_process(project)
+            result["build_result"] = build_result
+            result["build_success"] = build_result["status"] == "success"
+            
+            if not result["build_success"]:
+                # 尝试恢复构建
+                if self.recover_from_build_failure(project, build_result):
+                    result["build_success"] = True
+                    result["logs"].append("构建恢复成功")
+                else:
+                    result["errors"].append("项目构建失败")
+                    return result
+            
+            # 步骤3: 部署静态文件
+            if deployment_config:
+                deployment_manager = StaticDeploymentManager(str(self.base_path))
+                deploy_result = deployment_manager.deploy_static_files(deployment_config)
+                
+                result["deployment_result"] = {
+                    "success": deploy_result.success,
+                    "message": deploy_result.message,
+                    "files_copied": deploy_result.files_copied,
+                    "nginx_config_generated": deploy_result.nginx_config_generated,
+                    "verification_passed": deploy_result.verification_passed,
+                    "errors": deploy_result.errors
+                }
+                
+                result["deployment_success"] = deploy_result.success
+                
+                if deploy_result.success:
+                    result["logs"].append("静态文件部署成功")
+                else:
+                    result["errors"].extend(deploy_result.errors or [])
+            
+            # 整体成功判断
+            result["overall_success"] = (
+                result["build_success"] and 
+                (not deployment_config or result["deployment_success"])
+            )
+            
+        except Exception as e:
+            result["errors"].append(f"构建部署异常: {str(e)}")
+            self.logger.error(f"构建部署异常: {e}")
+        
+        return result
+    
+    def _has_typescript_files(self, project_path: Path) -> bool:
+        """检查项目是否包含TypeScript文件"""
+        try:
+            # 检查是否有.ts或.vue文件
+            ts_files = list(project_path.glob("**/*.ts"))
+            vue_files = list(project_path.glob("**/*.vue"))
+            
+            # 检查package.json中是否有TypeScript依赖
+            package_json = project_path / "package.json"
+            if package_json.exists():
+                with open(package_json, 'r', encoding='utf-8') as f:
+                    package_data = json.load(f)
+                    deps = {**package_data.get("dependencies", {}), **package_data.get("devDependencies", {})}
+                    has_ts_deps = any(dep in deps for dep in ["typescript", "vue-tsc", "@vue/typescript"])
+                    
+                    return len(ts_files) > 0 or len(vue_files) > 0 or has_ts_deps
+            
+            return len(ts_files) > 0 or len(vue_files) > 0
+            
+        except Exception as e:
+            self.logger.debug(f"检查TypeScript文件失败: {e}")
+            return False
+    
+    def deploy_all_projects(self, deployment_configs: List[StaticDeployment]) -> Dict[str, Dict]:
+        """构建并部署所有项目"""
+        results = {}
+        
+        # 创建项目到部署配置的映射
+        deployment_map = {config.name: config for config in deployment_configs}
+        
+        for project in self.projects:
+            # 查找对应的部署配置
+            deployment_config = None
+            for config in deployment_configs:
+                if config.source_path in project.path or project.name in config.name:
+                    deployment_config = config
+                    break
+            
+            # 构建并部署
+            result = self.build_and_deploy_project(project, deployment_config)
+            results[project.name] = result
         
         return results
     

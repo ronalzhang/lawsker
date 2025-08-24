@@ -1,0 +1,34 @@
+{
+  "domains": ["lawsker.com", "admin.lawsker.com"],
+  "ssl_enabled": true,
+  "monitoring_enabled": true,
+  "parallel_execution": true,
+  "backup_enabled": true,
+  "backup_retention_days": 30,
+  "max_workers": 3,
+  
+  "base_url": "http://localhost:8000",
+  "ssl_base_url": "https://lawsker.com",
+  "database_url": "postgresql://lawsker_user:${DB_PASSWORD}@localhost:5432/lawsker_prod",
+  "redis_url": "redis://localhost:6379/0",
+  "prometheus_url": "http://localhost:9090",
+  "grafana_url": "http://localhost:3000",
+  
+  "performance_thresholds": {
+    "response_time_ms": 1000,
+    "database_query_ms": 100,
+    "memory_usage_percent": 80,
+    "cpu_usage_percent": 80,
+    "disk_usage_percent": 90
+  },
+  
+  "auto_rollback_enabled": true,
+  "health_check_threshold": 3,
+  "error_rate_threshold": 0.1,
+  "performance_degradation_threshold": 2.0,
+  
+  "notification": {
+    "email": "admin@lawsker.com",
+    "webhook_url": "http://localhost:8000/api/v1/alerts/webhook"
+  }
+}

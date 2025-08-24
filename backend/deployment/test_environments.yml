@@ -1,0 +1,103 @@
+# 测试环境配置文件
+# Integration Test Framework Environment Configuration
+
+environments:
+  # 单元测试环境
+  unit:
+    name: "unit"
+    base_url: "http://localhost:8000"
+    database_url: "sqlite:///:memory:"
+    redis_url: "redis://localhost:6379/15"
+    ssl_enabled: false
+    monitoring_enabled: false
+    cleanup_after_test: true
+    timeout: 60
+
+  # 集成测试环境
+  integration:
+    name: "integration"
+    base_url: "http://localhost:8001"
+    database_url: "postgresql://test_user:test_pass@localhost:5432/test_lawsker"
+    redis_url: "redis://localhost:6379/14"
+    ssl_enabled: false
+    monitoring_enabled: true
+    cleanup_after_test: true
+    timeout: 300
+
+  # 预发布环境
+  staging:
+    name: "staging"
+    base_url: "https://staging.lawsker.com"
+    database_url: "postgresql://staging_user:staging_pass@staging-db:5432/staging_lawsker"
+    redis_url: "redis://staging-redis:6379/0"
+    ssl_enabled: true
+    monitoring_enabled: true
+    cleanup_after_test: false
+    timeout: 600
+
+  # 生产环境（只读测试）
+  production:
+    name: "production"
+    base_url: "https://lawsker.com"
+    database_url: "postgresql://readonly_user:readonly_pass@prod-db:5432/lawsker_prod"
+    redis_url: "redis://prod-redis:6379/0"
+    ssl_enabled: true
+    monitoring_enabled: true
+    cleanup_after_test: false
+    timeout: 300
+
+# 性能测试配置
+performance_thresholds:
+  response_time_ms: 1000
+  database_query_ms: 100
+  memory_usage_percent: 80
+  cpu_usage_percent: 80
+  disk_usage_percent: 90
+  throughput_rps: 100
+  error_rate_percent: 1
+
+# 负载测试配置
+load_test_configs:
+  light:
+    concurrent_users: 5
+    duration_seconds: 30
+    ramp_up_seconds: 5
+    request_timeout: 10
+
+  medium:
+    concurrent_users: 20
+    duration_seconds: 120
+    ramp_up_seconds: 20
+    request_timeout: 15
+
+  heavy:
+    concurrent_users: 50
+    duration_seconds: 300
+    ramp_up_seconds: 60
+    request_timeout: 30
+
+# 测试端点配置
+test_endpoints:
+  health_checks:
+    - "/api/v1/health"
+    - "/api/v1/health/database"
+    - "/api/v1/health/redis"
+
+  api_endpoints:
+    - "/api/v1/statistics"
+    - "/api/v1/users/me"
+    - "/api/v1/cases"
+    - "/api/v1/alerts"
+
+  frontend_endpoints:
+    - "/"
+    - "/login.html"
+    - "/dashboard.html"
+    - "/admin/index.html"
+
+# 监控端点配置
+monitoring_endpoints:
+  prometheus: "http://localhost:9090"
+  grafana: "http://localhost:3000"
+  elasticsearch: "http://localhost:9200"
+  kibana: "http://localhost:5601"

@@ -14,7 +14,7 @@ fi
 echo "🚀 开始部署 Lawsker (律客) 系统..."
 
 # 配置信息（从环境变量读取，如果没有则使用默认值）
-SERVER_IP="${DEPLOY_SERVER_IP:-156.236.74.200}"
+SERVER_IP="${DEPLOY_SERVER_IP:-156.232.13.240}"
 SERVER_USER="${DEPLOY_SERVER_USER:-root}"
 SERVER_PASS="${DEPLOY_SERVER_PASS:-Pr971V3j}"
 APP_DIR="${DEPLOY_APP_DIR:-/root/lawsker}"
@@ -115,28 +115,28 @@ sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "pm2 logs $FRONTEND_APP_
 echo "🌐 测试网站访问..."
 sleep 5
 echo "🔧 测试前端服务..."
-if curl -s -o /dev/null -w '%{http_code}' https://$SERVER_IP/ | grep -q '200'; then
+if curl -s -o /dev/null -w '%{http_code}' https://lawsker.com/ | grep -q '200'; then
     echo "✅ 前端服务访问正常"
 else
     echo "⚠️  前端服务可能需要几秒钟才能响应"
 fi
 
 echo "🔧 测试后端API..."
-if curl -s -o /dev/null -w '%{http_code}' https://$SERVER_IP/api/v1/health | grep -q '200'; then
+if curl -s -o /dev/null -w '%{http_code}' https://lawsker.com/api/v1/health | grep -q '200'; then
     echo "✅ 后端API访问正常"
 else
     echo "⚠️  后端API可能需要几秒钟才能响应"
 fi
 
 echo "🔧 测试API文档..."
-if curl -s -o /dev/null -w '%{http_code}' https://$SERVER_IP/docs | grep -q '200'; then
+if curl -s -o /dev/null -w '%{http_code}' https://lawsker.com/docs | grep -q '200'; then
     echo "✅ API文档访问正常"
 else
     echo "⚠️  API文档可能需要几秒钟才能响应"
 fi
 
 echo "🎉 Lawsker (律刻) 系统部署完成！"
-echo "📍 网站地址: https://$SERVER_IP/"
+echo "📍 网站地址: https://lawsker.com/"
 echo "🔧 管理后台: https://$SERVER_IP/admin-pro"
 echo "🔑 管理密码: 123abc74531"
 echo "📚 API文档: https://$SERVER_IP/docs"
