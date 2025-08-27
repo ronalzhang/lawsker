@@ -1,0 +1,1275 @@
+{
+  "penetration_test": {
+    "summary": {
+      "total_tests": 151,
+      "total_findings": 4,
+      "critical_findings": 0,
+      "high_findings": 1,
+      "medium_findings": 3,
+      "low_findings": 0,
+      "security_score": 100,
+      "test_timestamp": "2025-08-26 19:41:01"
+    },
+    "findings": {
+      "critical": [],
+      "high": [
+        {
+          "title": "HTTP Used Instead of HTTPS",
+          "level": "HIGH",
+          "description": "Application is not using HTTPS",
+          "endpoint": "/",
+          "payload": null,
+          "recommendation": "Enable HTTPS with proper SSL/TLS configuration",
+          "cve_reference": "CWE-319"
+        }
+      ],
+      "medium": [
+        {
+          "title": "Missing Rate Limiting",
+          "level": "MEDIUM",
+          "description": "Endpoint /api/v1/auth/login lacks rate limiting protection",
+          "endpoint": "/api/v1/auth/login",
+          "payload": null,
+          "recommendation": "Implement rate limiting to prevent abuse",
+          "cve_reference": "CWE-770"
+        },
+        {
+          "title": "Missing Rate Limiting",
+          "level": "MEDIUM",
+          "description": "Endpoint /api/v1/auth/register lacks rate limiting protection",
+          "endpoint": "/api/v1/auth/register",
+          "payload": null,
+          "recommendation": "Implement rate limiting to prevent abuse",
+          "cve_reference": "CWE-770"
+        },
+        {
+          "title": "Missing Rate Limiting",
+          "level": "MEDIUM",
+          "description": "Endpoint /api/v1/cases/create lacks rate limiting protection",
+          "endpoint": "/api/v1/cases/create",
+          "payload": null,
+          "recommendation": "Implement rate limiting to prevent abuse",
+          "cve_reference": "CWE-770"
+        }
+      ],
+      "low": []
+    },
+    "recommendations": [
+      "HIGH: Fix high-severity vulnerabilities within 24 hours",
+      "Implement rate limiting to prevent abuse",
+      "Enable HTTPS with proper SSL/TLS configuration"
+    ]
+  },
+  "config_validation": {
+    "summary": {
+      "total_checks": 41,
+      "passed_checks": 9,
+      "failed_checks": 32,
+      "total_issues": 32,
+      "critical_issues": 0,
+      "high_issues": 22,
+      "medium_issues": 10,
+      "low_issues": 0,
+      "security_score": 68
+    },
+    "issues": {
+      "critical": [],
+      "high": [
+        {
+          "severity": "HIGH",
+          "component": "Environment (.env.production)",
+          "issue": "Missing required security variable: JWT_SECRET_KEY",
+          "recommendation": "Add JWT_SECRET_KEY with a secure value"
+        },
+        {
+          "severity": "HIGH",
+          "component": "Environment (.env.production)",
+          "issue": "Missing required security variable: DATABASE_PASSWORD",
+          "recommendation": "Add DATABASE_PASSWORD with a secure value"
+        },
+        {
+          "severity": "HIGH",
+          "component": "Environment (.env.server)",
+          "issue": "Missing required security variable: JWT_SECRET_KEY",
+          "recommendation": "Add JWT_SECRET_KEY with a secure value"
+        },
+        {
+          "severity": "HIGH",
+          "component": "Environment (.env.server)",
+          "issue": "Missing required security variable: REDIS_PASSWORD",
+          "recommendation": "Add REDIS_PASSWORD with a secure value"
+        },
+        {
+          "severity": "HIGH",
+          "component": "Environment (.env.server)",
+          "issue": "Missing required security variable: ENCRYPTION_KEY",
+          "recommendation": "Add ENCRYPTION_KEY with a secure value"
+        },
+        {
+          "severity": "HIGH",
+          "component": "Database Config (backend/app/core/database.py)",
+          "issue": "Potential SQL injection vulnerability - not using parameterized queries",
+          "recommendation": "Use parameterized queries for all database operations"
+        },
+        {
+          "severity": "HIGH",
+          "component": "Authentication (backend/app/services/unified_auth_service.py)",
+          "issue": "Weak password hashing algorithm detected",
+          "recommendation": "Use bcrypt, scrypt, or Argon2 for password hashing"
+        },
+        {
+          "severity": "HIGH",
+          "component": "API Endpoint (lawyer_verification.py)",
+          "issue": "Potential SQL injection vulnerability",
+          "recommendation": "Use parameterized queries"
+        },
+        {
+          "severity": "HIGH",
+          "component": "API Endpoint (statistics.py)",
+          "issue": "Potential SQL injection vulnerability",
+          "recommendation": "Use parameterized queries"
+        },
+        {
+          "severity": "HIGH",
+          "component": "API Endpoint (alerts.py)",
+          "issue": "Potential SQL injection vulnerability",
+          "recommendation": "Use parameterized queries"
+        },
+        {
+          "severity": "HIGH",
+          "component": "API Endpoint (enterprise_satisfaction.py)",
+          "issue": "Potential SQL injection vulnerability",
+          "recommendation": "Use parameterized queries"
+        },
+        {
+          "severity": "HIGH",
+          "component": "API Endpoint (auth.py)",
+          "issue": "Potential SQL injection vulnerability",
+          "recommendation": "Use parameterized queries"
+        },
+        {
+          "severity": "HIGH",
+          "component": "API Endpoint (delivery.py)",
+          "issue": "Potential SQL injection vulnerability",
+          "recommendation": "Use parameterized queries"
+        },
+        {
+          "severity": "HIGH",
+          "component": "API Endpoint (document_send.py)",
+          "issue": "Potential SQL injection vulnerability",
+          "recommendation": "Use parameterized queries"
+        },
+        {
+          "severity": "HIGH",
+          "component": "API Endpoint (finance.py)",
+          "issue": "Potential SQL injection vulnerability",
+          "recommendation": "Use parameterized queries"
+        },
+        {
+          "severity": "HIGH",
+          "component": "API Endpoint (tasks.py)",
+          "issue": "Potential SQL injection vulnerability",
+          "recommendation": "Use parameterized queries"
+        },
+        {
+          "severity": "HIGH",
+          "component": "API Endpoint (batch_upload.py)",
+          "issue": "Potential SQL injection vulnerability",
+          "recommendation": "Use parameterized queries"
+        },
+        {
+          "severity": "HIGH",
+          "component": "API Endpoint (document_library_backup.py)",
+          "issue": "Potential SQL injection vulnerability",
+          "recommendation": "Use parameterized queries"
+        },
+        {
+          "severity": "HIGH",
+          "component": "API Endpoint (users.py)",
+          "issue": "Potential SQL injection vulnerability",
+          "recommendation": "Use parameterized queries"
+        },
+        {
+          "severity": "HIGH",
+          "component": "API Endpoint (health.py)",
+          "issue": "Potential SQL injection vulnerability",
+          "recommendation": "Use parameterized queries"
+        },
+        {
+          "severity": "HIGH",
+          "component": "API Endpoint (abuse_analytics.py)",
+          "issue": "Potential SQL injection vulnerability",
+          "recommendation": "Use parameterized queries"
+        },
+        {
+          "severity": "HIGH",
+          "component": "Logging (backend/app/services/security_logger.py)",
+          "issue": "Potential sensitive data logging",
+          "recommendation": "Ensure passwords and sensitive data are not logged"
+        }
+      ],
+      "medium": [
+        {
+          "severity": "MEDIUM",
+          "component": "Authentication (backend/app/services/unified_auth_service.py)",
+          "issue": "Session cookies may not be HttpOnly",
+          "recommendation": "Set HttpOnly flag on session cookies"
+        },
+        {
+          "severity": "MEDIUM",
+          "component": "API Endpoint (conversion_optimization.py)",
+          "issue": "Potential XSS vulnerability - missing output encoding",
+          "recommendation": "Implement proper output encoding/escaping"
+        },
+        {
+          "severity": "MEDIUM",
+          "component": "API Endpoint (auth.py)",
+          "issue": "Missing input validation",
+          "recommendation": "Implement input validation for all API endpoints"
+        },
+        {
+          "severity": "MEDIUM",
+          "component": "API Endpoint (delivery.py)",
+          "issue": "Missing input validation",
+          "recommendation": "Implement input validation for all API endpoints"
+        },
+        {
+          "severity": "MEDIUM",
+          "component": "API Endpoint (delivery.py)",
+          "issue": "Potential XSS vulnerability - missing output encoding",
+          "recommendation": "Implement proper output encoding/escaping"
+        },
+        {
+          "severity": "MEDIUM",
+          "component": "API Endpoint (tasks.py)",
+          "issue": "Missing input validation",
+          "recommendation": "Implement input validation for all API endpoints"
+        },
+        {
+          "severity": "MEDIUM",
+          "component": "API Endpoint (lawyer_promotion.py)",
+          "issue": "Potential XSS vulnerability - missing output encoding",
+          "recommendation": "Implement proper output encoding/escaping"
+        },
+        {
+          "severity": "MEDIUM",
+          "component": "API Endpoint (demo_conversion.py)",
+          "issue": "Missing input validation",
+          "recommendation": "Implement input validation for all API endpoints"
+        },
+        {
+          "severity": "MEDIUM",
+          "component": "API Endpoint (unified_auth.py)",
+          "issue": "Missing input validation",
+          "recommendation": "Implement input validation for all API endpoints"
+        },
+        {
+          "severity": "MEDIUM",
+          "component": "API Endpoint (websocket.py)",
+          "issue": "Missing input validation",
+          "recommendation": "Implement input validation for all API endpoints"
+        }
+      ],
+      "low": []
+    }
+  },
+  "overall_score": 81,
+  "test_timestamp": "2025-08-26 19:41:01",
+  "passed": false,
+  "static_analysis": {
+    "summary": {
+      "total_files_analyzed": 6592,
+      "total_findings": 139,
+      "critical_findings": 8,
+      "high_findings": 131,
+      "medium_findings": 0,
+      "security_score": 57
+    },
+    "findings": [
+      {
+        "file": "backend/security_config_validator.py",
+        "line": 66,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "if 'password=123456' in content.lower() or 'secret=test' in content.lower():"
+      },
+      {
+        "file": "backend/migration_rollback.py",
+        "line": 258,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "password=db_params[\"password\"],"
+      },
+      {
+        "file": "backend/migration_rollback.py",
+        "line": 285,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "password=db_params[\"password\"],"
+      },
+      {
+        "file": "backend/migration_rollback.py",
+        "line": 304,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "password=db_params[\"password\"],"
+      },
+      {
+        "file": "backend/security_hardening.py",
+        "line": 66,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "if 'SECRET_KEY=' in line and ('test' in line.lower() or 'dev' in line.lower() or len(line.split('=')[1].strip()) < 32):"
+      },
+      {
+        "file": "backend/security_hardening.py",
+        "line": 68,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "line = f\"SECRET_KEY={new_secret}\\n\""
+      },
+      {
+        "file": "backend/security_hardening.py",
+        "line": 72,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "elif 'JWT_SECRET_KEY=' in line and ('test' in line.lower() or 'dev' in line.lower() or len(line.split('=')[1].strip()) < 32):"
+      },
+      {
+        "file": "backend/security_hardening.py",
+        "line": 74,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "line = f\"JWT_SECRET_KEY={new_secret}\\n\""
+      },
+      {
+        "file": "backend/security_hardening.py",
+        "line": 78,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "elif 'ENCRYPTION_KEY=' in line and ('test' in line.lower() or 'dev' in line.lower() or len(line.split('=')[1].strip()) < 32):"
+      },
+      {
+        "file": "backend/security_hardening.py",
+        "line": 80,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "line = f\"ENCRYPTION_KEY={new_secret}\\n\""
+      },
+      {
+        "file": "backend/test_security_comprehensive.py",
+        "line": 391,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "'password=\"', \"password='\", 'password=123'"
+      },
+      {
+        "file": "backend/run_security_tests.py",
+        "line": 129,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "if any(pattern in line_lower for pattern in ['password=', 'secret=', 'key=', 'token=']):"
+      },
+      {
+        "file": "backend/run_security_tests.py",
+        "line": 142,
+        "issue": "Potential SQL injection risk",
+        "severity": "HIGH",
+        "content": "if 'execute(' in line and '%' in line and 'format' in line:"
+      },
+      {
+        "file": "backend/run_security_tests.py",
+        "line": 152,
+        "issue": "Dangerous function usage (eval/exec)",
+        "severity": "CRITICAL",
+        "content": "if any(func in line_lower for func in ['eval(', 'exec(']):"
+      },
+      {
+        "file": "backend/run_security_tests.py",
+        "line": 162,
+        "issue": "Shell injection risk",
+        "severity": "HIGH",
+        "content": "if 'subprocess' in line and 'shell=True' in line:"
+      },
+      {
+        "file": "backend/app/core/security.py",
+        "line": 46,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "password=None"
+      },
+      {
+        "file": "backend/app/core/security.py",
+        "line": 129,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=\"access_token\","
+      },
+      {
+        "file": "backend/app/core/security.py",
+        "line": 137,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=\"refresh_token\","
+      },
+      {
+        "file": "backend/app/core/security.py",
+        "line": 146,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=\"access_token\","
+      },
+      {
+        "file": "backend/app/core/security.py",
+        "line": 151,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=\"refresh_token\","
+      },
+      {
+        "file": "backend/app/core/performance_monitor.py",
+        "line": 257,
+        "issue": "Dangerous function usage (eval/exec)",
+        "severity": "CRITICAL",
+        "content": "return eval(cached_data)  # \u6ce8\u610f\uff1a\u751f\u4ea7\u73af\u5883\u5e94\u4f7f\u7528json.loads"
+      },
+      {
+        "file": "backend/app/core/advanced_cache.py",
+        "line": 98,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "oldest_key = min(self.access_times.keys(), key=lambda k: self.access_times[k])"
+      },
+      {
+        "file": "backend/app/core/error_handlers.py",
+        "line": 284,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=lambda x: x[1],"
+      },
+      {
+        "file": "backend/app/core/performance.py",
+        "line": 171,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=lambda k: self.memory_cache[k][\"expires\"])"
+      },
+      {
+        "file": "backend/app/core/performance.py",
+        "line": 412,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "completed_tasks.sort(key=lambda x: x[1][\"completed_at\"])"
+      },
+      {
+        "file": "backend/app/middlewares/csrf_middleware.py",
+        "line": 191,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=self.cookie_name,"
+      },
+      {
+        "file": "backend/app/middlewares/enhanced_security_middleware.py",
+        "line": 314,
+        "issue": "Dangerous function usage (eval/exec)",
+        "severity": "CRITICAL",
+        "content": "\"../\", \"..\\\\\", \"<script\", \"javascript:\", \"eval(\""
+      },
+      {
+        "file": "backend/app/middlewares/enhanced_security_middleware.py",
+        "line": 498,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "events.sort(key=lambda x: x.get(\"timestamp\", \"\"), reverse=True)"
+      },
+      {
+        "file": "backend/app/middlewares/auth_middleware.py",
+        "line": 148,
+        "issue": "Dangerous function usage (eval/exec)",
+        "severity": "CRITICAL",
+        "content": "\"eval(\","
+      },
+      {
+        "file": "backend/app/middlewares/auth_middleware.py",
+        "line": 149,
+        "issue": "Dangerous function usage (eval/exec)",
+        "severity": "CRITICAL",
+        "content": "\"exec(\""
+      },
+      {
+        "file": "backend/app/models/user.py",
+        "line": 36,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/user.py",
+        "line": 91,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/user.py",
+        "line": 111,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/finance.py",
+        "line": 47,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/finance.py",
+        "line": 81,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/finance.py",
+        "line": 110,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/finance.py",
+        "line": 139,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/finance.py",
+        "line": 172,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/lawyer_review.py",
+        "line": 34,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/lawyer_review.py",
+        "line": 92,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/lawyer_review.py",
+        "line": 122,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/tenant.py",
+        "line": 35,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/tenant.py",
+        "line": 73,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/tenant.py",
+        "line": 94,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "return f\"<SystemConfig(id={self.id}, tenant_id={self.tenant_id}, category={self.category}, key={self.key})>\""
+      },
+      {
+        "file": "backend/app/models/feedback.py",
+        "line": 16,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(Integer, primary_key=True, index=True)"
+      },
+      {
+        "file": "backend/app/models/feedback.py",
+        "line": 62,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(Integer, primary_key=True, index=True)"
+      },
+      {
+        "file": "backend/app/models/feedback.py",
+        "line": 96,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(Integer, primary_key=True, index=True)"
+      },
+      {
+        "file": "backend/app/models/feedback.py",
+        "line": 130,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(Integer, primary_key=True, index=True)"
+      },
+      {
+        "file": "backend/app/models/unified_auth.py",
+        "line": 19,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/unified_auth.py",
+        "line": 50,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "user_id = Column(UUID(as_uuid=True), ForeignKey(\"users.id\", ondelete=\"CASCADE\"), primary_key=True)"
+      },
+      {
+        "file": "backend/app/models/unified_auth.py",
+        "line": 67,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/case.py",
+        "line": 38,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/case.py",
+        "line": 92,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/case.py",
+        "line": 128,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/case.py",
+        "line": 164,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/statistics.py",
+        "line": 21,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/statistics.py",
+        "line": 40,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/statistics.py",
+        "line": 59,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/statistics.py",
+        "line": 84,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/statistics.py",
+        "line": 110,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/statistics.py",
+        "line": 132,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/lawyer_letter.py",
+        "line": 62,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/lawyer_letter.py",
+        "line": 131,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/lawyer_letter.py",
+        "line": 171,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/alert.py",
+        "line": 35,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/alert.py",
+        "line": 64,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/alert.py",
+        "line": 87,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/models/alert.py",
+        "line": 108,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)"
+      },
+      {
+        "file": "backend/app/api/v1/api.py",
+        "line": 53,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=\"csrf_token\","
+      },
+      {
+        "file": "backend/app/api/v1/endpoints/auth.py",
+        "line": 235,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "password=user_data.password,"
+      },
+      {
+        "file": "backend/app/api/v1/endpoints/csrf.py",
+        "line": 19,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=\"csrf_token\","
+      },
+      {
+        "file": "backend/app/api/v1/endpoints/admin.py",
+        "line": 186,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=config_item.key,"
+      },
+      {
+        "file": "backend/app/api/v1/endpoints/admin.py",
+        "line": 234,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=key,"
+      },
+      {
+        "file": "backend/app/api/v1/endpoints/admin.py",
+        "line": 302,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "api_key=ai_config.api_key,"
+      },
+      {
+        "file": "backend/app/api/v1/endpoints/admin.py",
+        "line": 335,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=\"commission_rates\","
+      },
+      {
+        "file": "backend/app/api/v1/endpoints/admin.py",
+        "line": 346,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=\"risk_thresholds\","
+      },
+      {
+        "file": "backend/app/api/v1/endpoints/admin.py",
+        "line": 357,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=\"business_rules\","
+      },
+      {
+        "file": "backend/app/api/v1/endpoints/admin.py",
+        "line": 391,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=\"wechat_pay\","
+      },
+      {
+        "file": "backend/app/api/v1/endpoints/admin.py",
+        "line": 401,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=\"alipay\","
+      },
+      {
+        "file": "backend/app/api/v1/endpoints/unified_auth.py",
+        "line": 67,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "password=request.password,"
+      },
+      {
+        "file": "backend/app/api/v1/endpoints/unified_auth.py",
+        "line": 122,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "password=request.password"
+      },
+      {
+        "file": "backend/app/services/ai_service.py",
+        "line": 78,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=provider,"
+      },
+      {
+        "file": "backend/app/services/auth_service.py",
+        "line": 67,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "password=password,"
+      },
+      {
+        "file": "backend/app/services/alert_manager.py",
+        "line": 103,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "smtp_password=settings.SMTP_PASSWORD,"
+      },
+      {
+        "file": "backend/app/services/alert_manager.py",
+        "line": 112,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "api_key=settings.SMS_API_KEY"
+      },
+      {
+        "file": "backend/app/services/demo_conversion_optimization_service.py",
+        "line": 153,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "return max(triggers, key=lambda x:"
+      },
+      {
+        "file": "backend/app/services/file_upload_service.py",
+        "line": 79,
+        "issue": "Dangerous function usage (eval/exec)",
+        "severity": "CRITICAL",
+        "content": "b'eval(',"
+      },
+      {
+        "file": "backend/app/services/file_upload_service.py",
+        "line": 80,
+        "issue": "Dangerous function usage (eval/exec)",
+        "severity": "CRITICAL",
+        "content": "b'exec('"
+      },
+      {
+        "file": "backend/app/services/payment_service.py",
+        "line": 64,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "param_str += f\"&key={api_key}\""
+      },
+      {
+        "file": "backend/app/services/vulnerability_fixer.py",
+        "line": 584,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=name,"
+      },
+      {
+        "file": "backend/app/services/lawyer_membership_conversion_service.py",
+        "line": 349,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "recommendations.sort(key=lambda x: priority_order.get(x['priority'], 0), reverse=True)"
+      },
+      {
+        "file": "backend/app/services/security_logger.py",
+        "line": 274,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "return sorted(events, key=lambda x: x[\"timestamp\"], reverse=True)[:limit]"
+      },
+      {
+        "file": "backend/app/services/security_logger.py",
+        "line": 293,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "return sorted(filtered_events, key=lambda x: x[\"timestamp\"], reverse=True)[:limit]"
+      },
+      {
+        "file": "backend/app/services/security_logger.py",
+        "line": 377,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "stats[\"top_ips\"] = dict(sorted(stats[\"top_ips\"].items(), key=lambda x: x[1], reverse=True)[:10])"
+      },
+      {
+        "file": "backend/app/services/security_logger.py",
+        "line": 378,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "stats[\"top_users\"] = dict(sorted(stats[\"top_users\"].items(), key=lambda x: x[1], reverse=True)[:10])"
+      },
+      {
+        "file": "backend/app/services/database_monitor.py",
+        "line": 412,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "metrics_history.sort(key=lambda x: x[\"timestamp\"])"
+      },
+      {
+        "file": "backend/app/services/database_monitor.py",
+        "line": 434,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "active_alerts.sort(key=lambda x: x[\"timestamp\"], reverse=True)"
+      },
+      {
+        "file": "backend/app/services/delivery_service.py",
+        "line": 336,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "f\"https://api.weixin.qq.com/cgi-bin/message/template/send?access_token={access_token}\","
+      },
+      {
+        "file": "backend/app/services/delivery_service.py",
+        "line": 519,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "sorted_requests = sorted(requests, key=lambda x: x.priority, reverse=True)"
+      },
+      {
+        "file": "backend/app/services/alert_automation.py",
+        "line": 402,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "matching_rules.sort(key=lambda r: r.priority, reverse=True)"
+      },
+      {
+        "file": "backend/app/services/notification_channels.py",
+        "line": 450,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "smtp_password=settings.SMTP_PASSWORD,"
+      },
+      {
+        "file": "backend/app/services/config_service.py",
+        "line": 204,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=key,"
+      },
+      {
+        "file": "backend/app/services/config_service.py",
+        "line": 334,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=config[\"key\"],"
+      },
+      {
+        "file": "backend/app/services/config_service.py",
+        "line": 415,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=config[\"key\"],"
+      },
+      {
+        "file": "backend/app/services/config_service.py",
+        "line": 451,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=config[\"key\"],"
+      },
+      {
+        "file": "backend/app/services/config_service.py",
+        "line": 488,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=config[\"key\"],"
+      },
+      {
+        "file": "backend/app/services/config_service.py",
+        "line": 524,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=provider,"
+      },
+      {
+        "file": "backend/app/services/lawyer_review_service.py",
+        "line": 512,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "lawyer_scores.sort(key=lambda x: x[1])"
+      },
+      {
+        "file": "backend/config/database_config.py",
+        "line": 99,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "password=db_settings.DATABASE_PASSWORD,"
+      },
+      {
+        "file": "backend/config/database_config.py",
+        "line": 110,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "password=db_settings.READ_DB_PASSWORD or db_settings.DATABASE_PASSWORD,"
+      },
+      {
+        "file": "backend/deployment/grafana_dashboard_manager.py",
+        "line": 156,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "password=\"your_password\"  # \u5e94\u8be5\u4ece\u73af\u5883\u53d8\u91cf\u83b7\u53d6"
+      },
+      {
+        "file": "backend/deployment/interactive_troubleshooter.py",
+        "line": 168,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "processes.sort(key=lambda x: x['cpu_percent'] or 0, reverse=True)"
+      },
+      {
+        "file": "backend/deployment/dependency_manager.py",
+        "line": 274,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "latest_backup = max(backup_files, key=lambda x: x.stat().st_mtime)"
+      },
+      {
+        "file": "backend/deployment/application_manager.py",
+        "line": 655,
+        "issue": "Dangerous function usage (eval/exec)",
+        "severity": "CRITICAL",
+        "content": "process = await asyncio.create_subprocess_exec("
+      },
+      {
+        "file": "backend/deployment/fault_diagnosis.py",
+        "line": 399,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "critical_patterns.sort(key=lambda x: x[\"match_count\"], reverse=True)"
+      },
+      {
+        "file": "backend/deployment/fault_diagnosis.py",
+        "line": 781,
+        "issue": "Shell injection risk",
+        "severity": "HIGH",
+        "content": "subprocess.run([\"echo\", \"3\", \">\", \"/proc/sys/vm/drop_caches\"], shell=True)"
+      },
+      {
+        "file": "backend/deployment/database_configurator.py",
+        "line": 107,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "password=self.config.admin_password,"
+      },
+      {
+        "file": "backend/deployment/database_configurator.py",
+        "line": 154,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "password=self.config.admin_password,"
+      },
+      {
+        "file": "backend/deployment/ssl_deployment_manager.py",
+        "line": 146,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "smtp_password=self.config.smtp_password,"
+      },
+      {
+        "file": "backend/deployment/deployment_orchestrator.py",
+        "line": 383,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "key=lambda x: (x.priority, x.name)"
+      },
+      {
+        "file": "backend/deployment/deployment_orchestrator.py",
+        "line": 921,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "latest_snapshot = max(snapshot_dirs, key=lambda x: x.stat().st_mtime)"
+      },
+      {
+        "file": "backend/deployment/config_templates.py",
+        "line": 656,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "SECRET_KEY={{ secret_key }}"
+      },
+      {
+        "file": "backend/deployment/config_templates.py",
+        "line": 674,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "CSRF_SECRET={{ csrf_secret }}"
+      },
+      {
+        "file": "backend/deployment/config_templates.py",
+        "line": 683,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "SMTP_PASSWORD={{ smtp_password }}"
+      },
+      {
+        "file": "backend/deployment/config_templates.py",
+        "line": 688,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "AI_API_KEY={{ ai_api_key }}"
+      },
+      {
+        "file": "backend/deployment/config_templates.py",
+        "line": 693,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "PAYMENT_API_KEY={{ payment_api_key }}"
+      },
+      {
+        "file": "backend/deployment/config_templates.py",
+        "line": 700,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "GRAFANA_ADMIN_PASSWORD={{ grafana_admin_password }}"
+      },
+      {
+        "file": "backend/deployment/migration_manager.py",
+        "line": 612,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "backups.sort(key=lambda x: x.created_at, reverse=True)"
+      },
+      {
+        "file": "backend/alembic/versions/004_add_ai_review_models.py",
+        "line": 23,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "sa.Column('id', postgresql.UUID(as_uuid=True), default=uuid.uuid4, primary_key=True),"
+      },
+      {
+        "file": "backend/alembic/versions/004_add_ai_review_models.py",
+        "line": 70,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "sa.Column('id', postgresql.UUID(as_uuid=True), default=uuid.uuid4, primary_key=True),"
+      },
+      {
+        "file": "backend/alembic/versions/004_add_ai_review_models.py",
+        "line": 92,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "sa.Column('id', postgresql.UUID(as_uuid=True), default=uuid.uuid4, primary_key=True),"
+      },
+      {
+        "file": "backend/alembic/versions/006_add_wechat_payment_support.py",
+        "line": 82,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True,"
+      },
+      {
+        "file": "backend/alembic/versions/006_add_wechat_payment_support.py",
+        "line": 116,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True,"
+      },
+      {
+        "file": "backend/alembic/versions/006_add_wechat_payment_support.py",
+        "line": 149,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True,"
+      },
+      {
+        "file": "backend/alembic/versions/007_add_missing_tables.py",
+        "line": 25,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True,"
+      },
+      {
+        "file": "backend/alembic/versions/007_add_missing_tables.py",
+        "line": 50,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True,"
+      },
+      {
+        "file": "backend/alembic/versions/007_add_missing_tables.py",
+        "line": 75,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True,"
+      },
+      {
+        "file": "backend/alembic/versions/007_add_missing_tables.py",
+        "line": 100,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True,"
+      },
+      {
+        "file": "backend/alembic/versions/007_add_missing_tables.py",
+        "line": 131,
+        "issue": "Potential hardcoded secret",
+        "severity": "HIGH",
+        "content": "sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True,"
+      }
+    ]
+  },
+  "dependency_check": {
+    "summary": {
+      "total_vulnerabilities": 0,
+      "critical_vulnerabilities": 0,
+      "high_vulnerabilities": 0,
+      "security_score": 100
+    },
+    "vulnerabilities": []
+  },
+  "total_critical_issues": 8,
+  "total_high_issues": 154
+}

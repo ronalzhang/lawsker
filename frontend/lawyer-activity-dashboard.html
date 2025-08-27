@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>律师活跃度仪表盘 - Lawsker</title>
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/gamification.css">
+    <script src="js/icon-system.js"></script>
+    <script src="js/gamification.js"></script>
+    <!-- 专业图标系统 -->
+    <script src="/js/professional-icon-library.js"></script>
+    <script src="/js/icon-upgrade-system.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <div data-icon="scale" class="navbar-icon"></div>
+                <span class="navbar-title">Lawsker 律师活跃度</span>
+            </div>
+            <div class="navbar-actions">
+                <button class="btn btn-ghost" onclick="refreshData()">
+                    <div data-icon="arrow-path" class="btn-icon"></div>
+                    刷新数据
+                </button>
+                <div class="user-menu">
+                    <div data-icon="user-circle" class="user-avatar"></div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-6">
+        <!-- 活跃度概览卡片 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- 活跃度等级卡片 -->
+            <div class="card activity-level-card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <div data-icon="fire" class="card-icon"></div>
+                        活跃度等级
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="activity-level-display">
+                        <div class="level-badge" id="activityLevelBadge">
+                            <div data-icon="star" class="level-icon"></div>
+                            <span class="level-text">加载中...</span>
+                        </div>
+                        <div class="level-score">
+                            <span class="score-number" id="totalScore">0</span>
+                            <span class="score-unit">活跃度</span>
+                        </div>
+                        <div class="level-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">活跃天数</span>
+                                <span class="stat-value" id="activeDays">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">平均得分</span>
+                                <span class="stat-value" id="avgScore">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 今日活跃度卡片 -->
+            <div class="card today-activity-card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <div data-icon="calendar-days" class="card-icon"></div>
+                        今日活跃度
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="today-score">
+                        <span class="score-number" id="todayScore">0</span>
+                        <span class="score-unit">分</span>
+                    </div>
+                    <div class="activity-breakdown" id="todayBreakdown">
+                        <!-- 动态生成活动分解 -->
+                    </div>
+                    <div class="activity-count">
+                        <span id="todayActivityCount">0</span> 次活动
+                    </div>
+                </div>
+            </div>
+
+            <!-- 连续活跃天数卡片 -->
+            <div class="card consecutive-days-card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <div data-icon="bolt" class="card-icon"></div>
+                        连续活跃
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="consecutive-display">
+                        <div class="consecutive-number" id="consecutiveDays">0</div>
+                        <div class="consecutive-label">连续天数</div>
+                        <div class="consecutive-streak" id="streakIndicator">
+                            <!-- 连续活跃指示器 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 每日任务和里程碑 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- 每日任务卡片 -->
+            <div class="card daily-tasks-card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <div data-icon="clipboard-document-list" class="card-icon"></div>
+                        每日任务
+                    </h3>
+                    <div class="task-progress-summary">
+                        <span id="completedTasks">0</span>/<span id="totalTasks">0</span> 完成
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="tasks-list" id="dailyTasksList">
+                        <!-- 动态生成任务列表 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 活跃度里程碑卡片 -->
+            <div class="card milestones-card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <div data-icon="trophy" class="card-icon"></div>
+                        活跃度里程碑
+                    </h3>
+                    <div class="milestone-progress-summary">
+                        <span id="achievedMilestones">0</span>/<span id="totalMilestones">0</span> 达成
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="milestones-list" id="milestonesList">
+                        <!-- 动态生成里程碑列表 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 活跃度图表和排行榜 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- 活跃度趋势图表 -->
+            <div class="card activity-chart-card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <div data-icon="chart-bar" class="card-icon"></div>
+                        活跃度趋势
+                    </h3>
+                    <div class="chart-controls">
+                        <select id="chartPeriod" class="form-select" onchange="updateActivityChart()">
+                            <option value="7">最近7天</option>
+                            <option value="30" selected>最近30天</option>
+                            <option value="90">最近90天</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="activityChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 活跃度排行榜 -->
+            <div class="card leaderboard-card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <div data-icon="trophy" class="card-icon"></div>
+                        活跃度排行榜
+                    </h3>
+                    <div class="leaderboard-controls">
+                        <select id="leaderboardPeriod" class="form-select" onchange="updateLeaderboard()">
+                            <option value="today">今日</option>
+                            <option value="week" selected>本周</option>
+                            <option value="month">本月</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="leaderboard-list" id="leaderboardList">
+                        <!-- 动态生成排行榜 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 活跃度洞察和建议 -->
+        <div class="card insights-card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <div data-icon="light-bulb" class="card-icon"></div>
+                    活跃度洞察与建议
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="insights-content">
+                    <div class="insights-section">
+                        <h4 class="insights-subtitle">
+                            <div data-icon="eye" class="insights-icon"></div>
+                            洞察分析
+                        </h4>
+                        <div class="insights-list" id="insightsList">
+                            <!-- 动态生成洞察 -->
+                        </div>
+                    </div>
+                    <div class="recommendations-section">
+                        <h4 class="insights-subtitle">
+                            <div data-icon="arrow-trending-up" class="insights-icon"></div>
+                            改进建议
+                        </h4>
+                        <div class="recommendations-list" id="recommendationsList">
+                            <!-- 动态生成建议 -->
+                        </div>
+                    </div>
+                </div>
+                <div class="improvement-potential">
+                    <div class="potential-label">改进潜力</div>
+                    <div class="potential-bar">
+                        <div class="potential-fill" id="improvementBar" style="width: 0%"></div>
+                    </div>
+                    <div class="potential-text" id="improvementText">0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 活动跟踪浮动按钮 -->
+    <div class="floating-action-button" onclick="showActivityTracker()">
+        <div data-icon="plus" class="fab-icon"></div>
+    </div>
+
+    <!-- 活动跟踪模态框 -->
+    <div class="modal-overlay" id="activityTrackerModal" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">记录活动</h3>
+                <button class="modal-close" onclick="hideActivityTracker()">
+                    <div data-icon="x-mark" class="modal-close-icon"></div>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="activityTrackForm">
+                    <div class="form-group">
+                        <label class="form-label">活动类型</label>
+                        <select id="activityType" class="form-select" required>
+                            <option value="">请选择活动类型</option>
+                            <option value="daily_login">每日登录</option>
+                            <option value="case_response">案件响应</option>
+                            <option value="case_completion">案件完成</option>
+                            <option value="client_interaction">客户互动</option>
+                            <option value="profile_update">资料更新</option>
+                            <option value="ai_tool_usage">AI工具使用</option>
+                            <option value="online_duration">在线时长</option>
+                            <option value="quality_feedback">质量反馈</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">质量得分 (0-100)</label>
+                        <input type="number" id="qualityScore" class="form-input" min="0" max="100" placeholder="可选">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">会话时长 (分钟)</label>
+                        <input type="number" id="sessionDuration" class="form-input" min="0" placeholder="可选">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">备注</label>
+                        <textarea id="activityNote" class="form-textarea" rows="3" placeholder="可选的活动备注"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="hideActivityTracker()">取消</button>
+                <button class="btn btn-primary" onclick="trackActivity()">记录活动</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载状态 -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <div class="loading-text">加载中...</div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let activityData = {};
+        let chartInstance = null;
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+        });
+
+        async function initializePage() {
+            try {
+                showLoading();
+                
+                // 替换图标
+                if (window.IconSystem) {
+                    window.IconSystem.replaceAllIcons();
+                }
+                
+                // 加载数据
+                await Promise.all([
+                    loadActivitySummary(),
+                    loadDailyTasks(),
+                    loadMilestones(),
+                    loadActivityHistory(),
+                    loadLeaderboard(),
+                    loadInsights()
+                ]);
+                
+                hideLoading();
+            } catch (error) {
+                console.error('页面初始化失败:', error);
+                showToast('error', '加载失败', '页面数据加载失败，请刷新重试');
+                hideLoading();
+            }
+        }
+
+        // 加载活跃度汇总
+        async function loadActivitySummary() {
+            try {
+                const response = await fetch('/api/v1/lawyer-activity/summary', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    activityData.summary = data;
+                    updateActivitySummaryUI(data);
+                }
+            } catch (error) {
+                console.error('加载活跃度汇总失败:', error);
+            }
+        }
+
+        // 更新活跃度汇总UI
+        function updateActivitySummaryUI(data) {
+            // 更新活跃度等级
+            const levelBadge = document.getElementById('activityLevelBadge');
+            const levelConfig = getActivityLevelConfig(data.activity_level.level);
+            
+            levelBadge.className = `level-badge level-${data.activity_level.level}`;
+            levelBadge.style.color = levelConfig.color;
+            levelBadge.querySelector('.level-text').textContent = data.activity_level.level_name;
+            
+            // 更新分数和统计
+            document.getElementById('totalScore').textContent = data.activity_level.total_score.toLocaleString();
+            document.getElementById('activeDays').textContent = data.activity_level.active_days;
+            document.getElementById('avgScore').textContent = data.week_activity.avg_score;
+            
+            // 更新今日活跃度
+            document.getElementById('todayScore').textContent = data.today_activity.score;
+            document.getElementById('todayActivityCount').textContent = data.today_activity.activity_count;
+            
+            // 更新活动分解
+            updateTodayBreakdown(data.today_activity.breakdown);
+            
+            // 更新连续活跃天数
+            document.getElementById('consecutiveDays').textContent = data.consecutive_days;
+            updateStreakIndicator(data.consecutive_days);
+        }
+
+        // 更新今日活动分解
+        function updateTodayBreakdown(breakdown) {
+            const container = document.getElementById('todayBreakdown');
+            container.innerHTML = '';
+            
+            const activityNames = {
+                'daily_login': '登录',
+                'case_response': '案件响应',
+                'case_completion': '案件完成',
+                'client_interaction': '客户互动',
+                'profile_update': '资料更新',
+                'ai_tool_usage': 'AI工具',
+                'online_duration': '在线时长',
+                'quality_feedback': '质量反馈'
+            };
+            
+            for (const [type, count] of Object.entries(breakdown)) {
+                const item = document.createElement('div');
+                item.className = 'breakdown-item';
+                item.innerHTML = `
+                    <span class="breakdown-label">${activityNames[type] || type}</span>
+                    <span class="breakdown-count">${count}</span>
+                `;
+                container.appendChild(item);
+            }
+        }
+
+        // 更新连续活跃指示器
+        function updateStreakIndicator(days) {
+            const indicator = document.getElementById('streakIndicator');
+            indicator.innerHTML = '';
+            
+            const maxDots = 30; // 显示最多30天
+            const displayDays = Math.min(days, maxDots);
+            
+            for (let i = 0; i < displayDays; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'streak-dot active';
+                indicator.appendChild(dot);
+            }
+            
+            // 添加未来的点
+            for (let i = displayDays; i < Math.min(maxDots, displayDays + 7); i++) {
+                const dot = document.createElement('div');
+                dot.className = 'streak-dot';
+                indicator.appendChild(dot);
+            }
+        }
+
+        // 加载每日任务
+        async function loadDailyTasks() {
+            try {
+                const response = await fetch('/api/v1/lawyer-activity/tasks', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    activityData.tasks = data;
+                    updateDailyTasksUI(data);
+                }
+            } catch (error) {
+                console.error('加载每日任务失败:', error);
+            }
+        }
+
+        // 更新每日任务UI
+        function updateDailyTasksUI(data) {
+            document.getElementById('completedTasks').textContent = data.summary.completed_tasks;
+            document.getElementById('totalTasks').textContent = data.summary.total_tasks;
+            
+            const tasksList = document.getElementById('dailyTasksList');
+            tasksList.innerHTML = '';
+            
+            data.tasks.forEach(task => {
+                const taskItem = document.createElement('div');
+                taskItem.className = `task-item ${task.is_completed ? 'completed' : ''}`;
+                
+                taskItem.innerHTML = `
+                    <div class="task-info">
+                        <div class="task-title">${task.description}</div>
+                        <div class="task-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${task.progress}%"></div>
+                            </div>
+                            <span class="progress-text">${task.completed_count}/${task.max_per_day}</span>
+                        </div>
+                    </div>
+                    <div class="task-points">
+                        <span class="points-earned">${task.earned_points}</span>
+                        <span class="points-max">/${task.max_points}</span>
+                    </div>
+                    <div class="task-status">
+                        <div data-icon="${task.is_completed ? 'check-circle' : 'clock'}" 
+                             class="status-icon ${task.is_completed ? 'completed' : 'pending'}"></div>
+                    </div>
+                `;
+                
+                tasksList.appendChild(taskItem);
+            });
+            
+            // 替换新添加的图标
+            if (window.IconSystem) {
+                window.IconSystem.replaceAllIcons();
+            }
+        }
+
+        // 加载里程碑
+        async function loadMilestones() {
+            try {
+                const response = await fetch('/api/v1/lawyer-activity/milestones', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    activityData.milestones = data;
+                    updateMilestonesUI(data);
+                }
+            } catch (error) {
+                console.error('加载里程碑失败:', error);
+            }
+        }
+
+        // 更新里程碑UI
+        function updateMilestonesUI(data) {
+            document.getElementById('achievedMilestones').textContent = data.summary.achieved_milestones;
+            document.getElementById('totalMilestones').textContent = data.summary.total_milestones;
+            
+            const milestonesList = document.getElementById('milestonesList');
+            milestonesList.innerHTML = '';
+            
+            data.milestones.forEach(milestone => {
+                const milestoneItem = document.createElement('div');
+                milestoneItem.className = `milestone-item ${milestone.is_achieved ? 'achieved' : ''}`;
+                
+                milestoneItem.innerHTML = `
+                    <div class="milestone-info">
+                        <div class="milestone-title">${milestone.title}</div>
+                        <div class="milestone-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${milestone.progress}%"></div>
+                            </div>
+                            <span class="progress-text">${milestone.current_value}/${milestone.threshold}</span>
+                        </div>
+                    </div>
+                    <div class="milestone-reward">
+                        <span class="reward-points">+${milestone.reward_points}</span>
+                        <span class="reward-label">积分</span>
+                    </div>
+                    <div class="milestone-status">
+                        <div data-icon="${milestone.is_achieved ? 'trophy' : 'clock'}" 
+                             class="status-icon ${milestone.is_achieved ? 'achieved' : 'pending'}"></div>
+                    </div>
+                `;
+                
+                milestonesList.appendChild(milestoneItem);
+            });
+            
+            // 替换新添加的图标
+            if (window.IconSystem) {
+                window.IconSystem.replaceAllIcons();
+            }
+        }
+
+        // 加载活动历史
+        async function loadActivityHistory() {
+            try {
+                const days = document.getElementById('chartPeriod')?.value || 30;
+                const response = await fetch(`/api/v1/lawyer-activity/history?days=${days}`, {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    activityData.history = data;
+                    updateActivityChart(data);
+                }
+            } catch (error) {
+                console.error('加载活动历史失败:', error);
+            }
+        }
+
+        // 更新活跃度图表
+        function updateActivityChart(data) {
+            const canvas = document.getElementById('activityChart');
+            const ctx = canvas.getContext('2d');
+            
+            // 简单的图表实现
+            const dailyData = data.daily_activity.reverse(); // 按时间正序
+            const maxScore = Math.max(...dailyData.map(d => d.total_score), 100);
+            
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制网格线
+            ctx.strokeStyle = '#e5e7eb';
+            ctx.lineWidth = 1;
+            
+            for (let i = 0; i <= 5; i++) {
+                const y = (canvas.height - 40) * i / 5 + 20;
+                ctx.beginPath();
+                ctx.moveTo(40, y);
+                ctx.lineTo(canvas.width - 20, y);
+                ctx.stroke();
+            }
+            
+            // 绘制数据线
+            if (dailyData.length > 0) {
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                
+                dailyData.forEach((day, index) => {
+                    const x = 40 + (canvas.width - 60) * index / (dailyData.length - 1);
+                    const y = canvas.height - 40 - (canvas.height - 60) * day.total_score / maxScore;
+                    
+                    if (index === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                });
+                
+                ctx.stroke();
+                
+                // 绘制数据点
+                ctx.fillStyle = '#3b82f6';
+                dailyData.forEach((day, index) => {
+                    const x = 40 + (canvas.width - 60) * index / (dailyData.length - 1);
+                    const y = canvas.height - 40 - (canvas.height - 60) * day.total_score / maxScore;
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, 3, 0, 2 * Math.PI);
+                    ctx.fill();
+                });
+            }
+            
+            // 绘制Y轴标签
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'right';
+            
+            for (let i = 0; i <= 5; i++) {
+                const value = Math.round(maxScore * (5 - i) / 5);
+                const y = (canvas.height - 40) * i / 5 + 25;
+                ctx.fillText(value.toString(), 35, y);
+            }
+        }
+
+        // 加载排行榜
+        async function loadLeaderboard() {
+            try {
+                const period = document.getElementById('leaderboardPeriod')?.value || 'week';
+                const response = await fetch(`/api/v1/lawyer-activity/leaderboard?period=${period}&limit=10`, {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    activityData.leaderboard = data;
+                    updateLeaderboardUI(data);
+                }
+            } catch (error) {
+                console.error('加载排行榜失败:', error);
+            }
+        }
+
+        // 更新排行榜UI
+        function updateLeaderboardUI(data) {
+            const leaderboardList = document.getElementById('leaderboardList');
+            leaderboardList.innerHTML = '';
+            
+            data.forEach((lawyer, index) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item';
+                
+                const rankClass = index < 3 ? `rank-${index + 1}` : '';
+                const levelConfig = getActivityLevelConfig(lawyer.activity_level);
+                
+                item.innerHTML = `
+                    <div class="rank ${rankClass}">${lawyer.rank}</div>
+                    <div class="lawyer-info">
+                        <div class="lawyer-name">${lawyer.full_name || lawyer.username}</div>
+                        <div class="lawyer-level" style="color: ${levelConfig.color}">
+                            ${lawyer.activity_level_name}
+                        </div>
+                    </div>
+                    <div class="lawyer-stats">
+                        <div class="stat-item">
+                            <span class="stat-value">${lawyer.total_score}</span>
+                            <span class="stat-label">总分</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">${lawyer.active_days}</span>
+                            <span class="stat-label">活跃天数</span>
+                        </div>
+                    </div>
+                `;
+                
+                leaderboardList.appendChild(item);
+            });
+        }
+
+        // 加载洞察
+        async function loadInsights() {
+            try {
+                const response = await fetch('/api/v1/lawyer-activity/insights', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    activityData.insights = data;
+                    updateInsightsUI(data);
+                }
+            } catch (error) {
+                console.error('加载洞察失败:', error);
+            }
+        }
+
+        // 更新洞察UI
+        function updateInsightsUI(data) {
+            // 更新洞察列表
+            const insightsList = document.getElementById('insightsList');
+            insightsList.innerHTML = '';
+            
+            data.insights.forEach(insight => {
+                const item = document.createElement('div');
+                item.className = 'insight-item';
+                item.innerHTML = `
+                    <div data-icon="information-circle" class="insight-icon"></div>
+                    <span class="insight-text">${insight}</span>
+                `;
+                insightsList.appendChild(item);
+            });
+            
+            // 更新建议列表
+            const recommendationsList = document.getElementById('recommendationsList');
+            recommendationsList.innerHTML = '';
+            
+            data.recommendations.forEach(recommendation => {
+                const item = document.createElement('div');
+                item.className = 'recommendation-item';
+                item.innerHTML = `
+                    <div data-icon="arrow-right" class="recommendation-icon"></div>
+                    <span class="recommendation-text">${recommendation}</span>
+                `;
+                recommendationsList.appendChild(item);
+            });
+            
+            // 更新改进潜力
+            document.getElementById('improvementBar').style.width = `${data.improvement_potential}%`;
+            document.getElementById('improvementText').textContent = `${data.improvement_potential}%`;
+            
+            // 替换新添加的图标
+            if (window.IconSystem) {
+                window.IconSystem.replaceAllIcons();
+            }
+        }
+
+        // 获取活跃度等级配置
+        function getActivityLevelConfig(level) {
+            const configs = {
+                'inactive': { color: '#ef4444', name: '不活跃' },
+                'low': { color: '#f97316', name: '低活跃' },
+                'moderate': { color: '#eab308', name: '中等活跃' },
+                'active': { color: '#22c55e', name: '活跃' },
+                'highly_active': { color: '#3b82f6', name: '高度活跃' },
+                'super_active': { color: '#8b5cf6', name: '超级活跃' }
+            };
+            return configs[level] || configs['inactive'];
+        }
+
+        // 显示活动跟踪器
+        function showActivityTracker() {
+            document.getElementById('activityTrackerModal').style.display = 'flex';
+        }
+
+        // 隐藏活动跟踪器
+        function hideActivityTracker() {
+            document.getElementById('activityTrackerModal').style.display = 'none';
+            document.getElementById('activityTrackForm').reset();
+        }
+
+        // 跟踪活动
+        async function trackActivity() {
+            try {
+                const activityType = document.getElementById('activityType').value;
+                const qualityScore = document.getElementById('qualityScore').value;
+                const sessionDuration = document.getElementById('sessionDuration').value;
+                const note = document.getElementById('activityNote').value;
+                
+                if (!activityType) {
+                    showToast('error', '错误', '请选择活动类型');
+                    return;
+                }
+                
+                const requestData = {
+                    activity_type: activityType,
+                    context: {
+                        note: note,
+                        manual_tracking: true
+                    }
+                };
+                
+                if (qualityScore) {
+                    requestData.quality_score = parseInt(qualityScore);
+                }
+                
+                if (sessionDuration) {
+                    requestData.session_duration = parseInt(sessionDuration) * 60; // 转换为秒
+                }
+                
+                const response = await fetch('/api/v1/lawyer-activity/track', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    hideActivityTracker();
+                    showToast('success', '成功', '活动记录成功');
+                    
+                    // 显示积分奖励动画
+                    if (result.data.points_reward && result.data.points_reward.points_earned > 0) {
+                        showPointsAnimation(result.data.points_reward.points_earned);
+                    }
+                    
+                    // 刷新数据
+                    setTimeout(() => {
+                        refreshData();
+                    }, 1000);
+                } else {
+                    const error = await response.json();
+                    showToast('error', '失败', error.detail || '记录活动失败');
+                }
+            } catch (error) {
+                console.error('跟踪活动失败:', error);
+                showToast('error', '错误', '网络错误，请稍后重试');
+            }
+        }
+
+        // 显示积分动画
+        function showPointsAnimation(points) {
+            const animation = document.createElement('div');
+            animation.className = 'points-animation';
+            animation.innerHTML = `
+                <div class="points-value">+${points}</div>
+                <div class="points-label">积分</div>
+            `;
+            
+            document.body.appendChild(animation);
+            
+            setTimeout(() => {
+                animation.remove();
+            }, 3000);
+        }
+
+        // 刷新数据
+        async function refreshData() {
+            await initializePage();
+            showToast('success', '刷新成功', '数据已更新');
+        }
+
+        // 显示加载状态
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        // 隐藏加载状态
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        // 显示提示消息
+        function showToast(type, title, message) {
+            // 简单的提示实现
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <div class="toast-content">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // 更新图表周期
+        function updateActivityChart() {
+            loadActivityHistory();
+        }
+
+        // 更新排行榜周期
+        function updateLeaderboard() {
+            loadLeaderboard();
+        }
+    </script>
+
+    <style>
+        /* 活跃度仪表盘样式 */
+        .activity-level-display {
+            text-align: center;
+        }
+
+        .level-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .level-score {
+            margin-bottom: 1rem;
+        }
+
+        .score-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .score-unit {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            margin-left: 0.25rem;
+        }
+
+        .level-stats {
+            display: flex;
+            justify-content: space-around;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .today-score {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .activity-breakdown {
+            margin-bottom: 1rem;
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.25rem 0;
+            font-size: 0.875rem;
+        }
+
+        .breakdown-label {
+            color: var(--gray-600);
+        }
+
+        .breakdown-count {
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .activity-count {
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--gray-500);
+        }
+
+        .consecutive-display {
+            text-align: center;
+        }
+
+        .consecutive-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            line-height: 1;
+        }
+
+        .consecutive-label {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            margin-bottom: 1rem;
+        }
+
+        .consecutive-streak {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            justify-content: center;
+        }
+
+        .streak-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--gray-200);
+        }
+
+        .streak-dot.active {
+            background-color: var(--primary-color);
+        }
+
+        .task-item, .milestone-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            margin-bottom: 0.5rem;
+        }
+
+        .task-item.completed, .milestone-item.achieved {
+            background-color: var(--green-50);
+            border-color: var(--green-200);
+        }
+
+        .task-info, .milestone-info {
+            flex: 1;
+        }
+
+        .task-title, .milestone-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .task-progress, .milestone-progress {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 6px;
+            background-color: var(--gray-200);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            white-space: nowrap;
+        }
+
+        .task-points, .milestone-reward {
+            text-align: center;
+        }
+
+        .points-earned, .reward-points {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .points-max, .reward-label {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        .status-icon.completed, .status-icon.achieved {
+            color: var(--green-500);
+        }
+
+        .status-icon.pending {
+            color: var(--gray-400);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 200px;
+        }
+
+        .chart-container canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .leaderboard-item:last-child {
+            border-bottom: none;
+        }
+
+        .rank {
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: 700;
+            background-color: var(--gray-100);
+            color: var(--gray-600);
+        }
+
+        .rank.rank-1 {
+            background-color: var(--yellow-100);
+            color: var(--yellow-700);
+        }
+
+        .rank.rank-2 {
+            background-color: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        .rank.rank-3 {
+            background-color: var(--orange-100);
+            color: var(--orange-700);
+        }
+
+        .lawyer-info {
+            flex: 1;
+        }
+
+        .lawyer-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .lawyer-level {
+            font-size: 0.75rem;
+        }
+
+        .lawyer-stats {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .insights-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .insights-subtitle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--gray-900);
+        }
+
+        .insight-item, .recommendation-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            padding: 0.5rem;
+            border-radius: var(--radius-md);
+            background-color: var(--blue-50);
+        }
+
+        .recommendation-item {
+            background-color: var(--green-50);
+        }
+
+        .insight-text, .recommendation-text {
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .improvement-potential {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .potential-label {
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .potential-bar {
+            flex: 1;
+            height: 8px;
+            background-color: var(--gray-200);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .potential-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--green-400), var(--blue-500));
+            transition: width 0.5s ease;
+        }
+
+        .potential-text {
+            font-weight: 600;
+            color: var(--primary-color);
+            white-space: nowrap;
+        }
+
+        .floating-action-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 3.5rem;
+            height: 3.5rem;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.2s ease;
+            z-index: 1000;
+        }
+
+        .floating-action-button:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .fab-icon {
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .points-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, var(--primary-color), var(--purple-500));
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: var(--radius-xl);
+            text-align: center;
+            font-weight: 700;
+            box-shadow: var(--shadow-xl);
+            animation: pointsAnimation 3s ease-out forwards;
+            z-index: 2000;
+        }
+
+        .points-value {
+            font-size: 2rem;
+            line-height: 1;
+        }
+
+        .points-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        @keyframes pointsAnimation {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            20% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            80% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -60%) scale(1);
+            }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius-xl);
+            text-align: center;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .spinner {
+            width: 2rem;
+            height: 2rem;
+            border: 3px solid var(--gray-200);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        .toast {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 1rem;
+            max-width: 20rem;
+            z-index: 2000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .toast-success {
+            border-left: 4px solid var(--green-500);
+        }
+
+        .toast-error {
+            border-left: 4px solid var(--red-500);
+        }
+
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .toast-message {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .insights-content {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .improvement-potential {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</body>
+</html>

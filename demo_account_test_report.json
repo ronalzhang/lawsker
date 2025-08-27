@@ -1,0 +1,17 @@
+{
+  "test_summary": {
+    "total_tests": 1,
+    "passed_tests": 0,
+    "failed_tests": 1,
+    "success_rate": 0.0,
+    "test_date": "2025-08-27T00:40:08.205677"
+  },
+  "test_results": [
+    {
+      "test_name": "数据库连接",
+      "passed": false,
+      "message": "数据库连接失败: 'async_generator' object does not support the asynchronous context manager protocol",
+      "timestamp": "2025-08-27T00:40:08.205653"
+    }
+  ]
+}

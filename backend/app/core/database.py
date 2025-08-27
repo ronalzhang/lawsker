@@ -14,7 +14,7 @@ logger = structlog.get_logger()
 
 # 创建异步数据库引擎
 engine = create_async_engine(
-    settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://"),
+    settings.DATABASE_URL.replace("postgresql://...?command_timeout=30&...?connect_timeout=10&...?sslmode=require&", "postgresql+asyncpg://"),
     echo=settings.DATABASE_ECHO,
     pool_pre_ping=True,
     pool_recycle=300,

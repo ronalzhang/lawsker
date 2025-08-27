@@ -1,0 +1,140 @@
+{
+  "test_configuration": {
+    "target_coverage": 85,
+    "critical_coverage": 90,
+    "test_timeout": 300,
+    "parallel_execution": true,
+    "generate_reports": true
+  },
+  "test_modules": {
+    "unified_auth": {
+      "weight": 0.15,
+      "critical": true,
+      "test_files": [
+        "test_unified_auth.py"
+      ],
+      "coverage_target": 90
+    },
+    "lawyer_points": {
+      "weight": 0.15,
+      "critical": true,
+      "test_files": [
+        "test_lawyer_points_system.py",
+        "test_points_integration.py"
+      ],
+      "coverage_target": 100
+    },
+    "membership": {
+      "weight": 0.12,
+      "critical": true,
+      "test_files": [
+        "test_membership_system.py",
+        "test_membership_simple.py"
+      ],
+      "coverage_target": 85
+    },
+    "credits": {
+      "weight": 0.12,
+      "critical": true,
+      "test_files": [
+        "test_credits_system.py",
+        "test_credits_simple.py"
+      ],
+      "coverage_target": 90
+    },
+    "demo_account": {
+      "weight": 0.08,
+      "critical": false,
+      "test_files": [
+        "test_demo_account_system.py"
+      ],
+      "coverage_target": 80
+    },
+    "enterprise_satisfaction": {
+      "weight": 0.08,
+      "critical": false,
+      "test_files": [
+        "test_enterprise_customer_satisfaction.py",
+        "test_enterprise_service_disclaimers.py"
+      ],
+      "coverage_target": 85
+    },
+    "conversion_optimization": {
+      "weight": 0.08,
+      "critical": false,
+      "test_files": [
+        "test_conversion_optimization.py",
+        "test_conversion_optimization_simple.py",
+        "test_demo_conversion_optimization.py"
+      ],
+      "coverage_target": 80
+    },
+    "batch_abuse": {
+      "weight": 0.06,
+      "critical": false,
+      "test_files": [
+        "test_batch_abuse_monitoring.py"
+      ],
+      "coverage_target": 85
+    },
+    "lawyer_promotion": {
+      "weight": 0.06,
+      "critical": false,
+      "test_files": [
+        "test_lawyer_promotion_system.py",
+        "test_lawyer_promotion_simple.py"
+      ],
+      "coverage_target": 75
+    },
+    "lawyer_membership_conversion": {
+      "weight": 0.05,
+      "critical": false,
+      "test_files": [
+        "test_lawyer_membership_conversion.py"
+      ],
+      "coverage_target": 80
+    },
+    "ui_modernization": {
+      "weight": 0.05,
+      "critical": false,
+      "test_files": [
+        "test_ui_modernization.py"
+      ],
+      "coverage_target": 70
+    }
+  },
+  "coverage_requirements": {
+    "overall_minimum": 85,
+    "critical_modules_minimum": 90,
+    "individual_module_minimum": 70,
+    "integration_test_minimum": 75,
+    "performance_test_minimum": 80
+  },
+  "test_environments": {
+    "development": {
+      "database_url": "postgresql://postgres:password@localhost:5432/lawsker_test",
+      "redis_url": "redis://localhost:6379/1",
+      "debug": true
+    },
+    "ci": {
+      "database_url": "postgresql://postgres:password@db:5432/lawsker_test",
+      "redis_url": "redis://redis:6379/1",
+      "debug": false
+    }
+  },
+  "reporting": {
+    "formats": ["console", "json", "html"],
+    "output_directory": "test_reports",
+    "include_details": true,
+    "generate_badges": true
+  },
+  "quality_gates": {
+    "minimum_coverage": 85,
+    "maximum_failed_tests": 2,
+    "performance_threshold": {
+      "response_time_ms": 1000,
+      "memory_usage_mb": 512,
+      "cpu_usage_percent": 80
+    }
+  }
+}

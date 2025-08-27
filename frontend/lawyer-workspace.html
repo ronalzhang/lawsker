@@ -8,9 +8,17 @@
     <meta name="theme-color" content="#0f1424">
     <title>律师工作台 - Lawsker 律客</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/css/responsive-enhanced.css">
     <link rel="stylesheet" href="/css/lawsker-glass.css?v=4">
     <!-- 核心脚本 -->
+    <script src="/js/responsive-enhanced.js"></script>
     <script src="/js/api-client.js?v=1.7"></script>
+    <script src="/js/icon-system.js"></script>
+    <script src="/js/professional-icon-library.js"></script>
+    <script src="/js/icon-upgrade-system.js"></script>
     <script src="/js/workspace-auth-simple.js"></script>
     <script src="/js/task-grab-handler.js"></script>
     <style>
@@ -1461,8 +1469,8 @@
                         <div class="stat-trend trend-up">↗ +5 本月</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value" id="taskSuccessRate">95%</div>
-                        <div class="stat-label">成功率</div>
+                        <div class="stat-value" id="taskCompletionRate">95%</div>
+                        <div class="stat-label">完成率*</div>
                         <div class="stat-trend trend-up">↗ +2.1%</div>
                     </div>
                     <div class="stat-card">
@@ -1942,7 +1950,18 @@
                 if (statValue1) statValue1.textContent = stats.active_cases || stats.my_cases || 0;
                 if (statValue2) statValue2.textContent = '¥' + (stats.monthly_earnings || stats.this_month_earnings || 0).toLocaleString();
                 if (statValue3) statValue3.textContent = stats.pending_cases || stats.pending_reviews || 0;
-                if (statValue4) statValue4.textContent = (stats.completion_rate || stats.success_rate || 0) + '%';
+                if (statValue4) statValue4.textContent = (stats.completion_rate || stats.success_rate || 0) + '%*';
+                // 添加成功率免责声明
+                if (statValue4 && statValue4.parentElement) {
+                    const disclaimer = statValue4.parentElement.querySelector('.success-rate-disclaimer');
+                    if (!disclaimer) {
+                        const disclaimerEl = document.createElement('div');
+                        disclaimerEl.className = 'success-rate-disclaimer';
+                        disclaimerEl.style.cssText = 'font-size: 10px; color: #888; margin-top: 4px; line-height: 1.2;';
+                        disclaimerEl.textContent = '*仅供参考，不构成承诺';
+                        statValue4.parentElement.appendChild(disclaimerEl);
+                    }
+                }
                 
                 console.log('律师统计数据已加载:', stats);
             } catch (error) {
@@ -2320,7 +2339,7 @@
                                     // 显示不同来源的消息
                                     let message = '✨ 文书生成完成！';
                                     if (result.source === 'library') {
-                                        message += `\n📚 使用库存文书（使用${result.usage_stats.usage_count}次，成功率${result.usage_stats.success_rate}%）`;
+                                        message += `\n📚 使用库存文书（使用${result.usage_stats.usage_count}次，历史完成率${result.usage_stats.success_rate}%*仅供参考）`;
                                     } else {
                                         message += '\n🆕 新生成文书已保存到库';
                                     }
@@ -3493,7 +3512,7 @@ ${date}`;
                                 <li>+ 50 经验值</li>
                                 <li>+ 1 成功案例</li>
                                 <li>+ 5⭐ 好评</li>
-                                <li>成功率: 98.5% (+0.2%)</li>
+                                <li>历史完成率: 98.5%* (+0.2%)</li>
                             </ul>
                         </div>
                     </div>
@@ -4983,7 +5002,7 @@ AI将根据以上信息生成专业的法律文书内容...</textarea>
                                 <strong style="color: var(--text-primary);">📋 任务要求</strong>
                                 <ul style="margin: 8px 0 0 0; padding-left: 20px; color: var(--text-secondary);">
                                     <li>按时完成任务内容</li>
-                                    <li>保证文书质量和法律准确性</li>
+                                    <li>努力确保文书质量和法律准确性</li>
                                     <li>及时与客户沟通进度</li>
                                     <li>遵守平台服务规范</li>
                                 </ul>

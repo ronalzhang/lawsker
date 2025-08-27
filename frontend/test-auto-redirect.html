@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自动重定向测试 - Lawsker</title>
+    <script src="/js/auto-redirect.js"></script>
+    <!-- 专业图标系统 -->
+    <script src="/js/icon-system.js"></script>
+    <script src="/js/professional-icon-library.js"></script>
+    <script src="/js/icon-upgrade-system.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 2rem; }
+        .test-section { margin: 2rem 0; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; }
+        button { padding: 0.5rem 1rem; margin: 0.5rem; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #2563eb; }
+        .result { margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>自动重定向功能测试</h1>
+    
+    <div class="test-section">
+        <h2>测试登录重定向</h2>
+        <button onclick="testLoginRedirect('user')">测试用户登录重定向</button>
+        <button onclick="testLoginRedirect('lawyer')">测试律师登录重定向</button>
+        <button onclick="testLoginRedirect('admin')">测试管理员登录重定向</button>
+        <div id="login-result" class="result" style="display: none;"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试登录状态检查</h2>
+        <button onclick="testLoginStatusCheck()">检查当前登录状态</button>
+        <div id="status-result" class="result" style="display: none;"></div>
+    </div>
+    
+    <script>
+        function testLoginRedirect(accountType) {
+            const mockLoginResult = {
+                access_token: 'mock-token-' + Date.now(),
+                workspace_id: 'ws-' + accountType + '-123456',
+                account_type: accountType,
+                redirect_url: `/${accountType}/ws-${accountType}-123456`,
+                auto_redirect: true,
+                message: `登录成功，正在跳转到${getDisplayName(accountType)}...`
+            };
+            
+            // 模拟登录重定向（不实际跳转）
+            window.AutoRedirectManager.setRedirectDelay(3000);
+            window.AutoRedirectManager.handleLoginRedirect(mockLoginResult);
+            
+            document.getElementById('login-result').style.display = 'block';
+            document.getElementById('login-result').innerHTML = `
+                <h3>模拟${getDisplayName(accountType)}登录重定向</h3>
+                <p>重定向URL: ${mockLoginResult.redirect_url}</p>
+                <p>消息: ${mockLoginResult.message}</p>
+                <p>注意: 实际环境中会在3秒后跳转</p>
+            `;
+        }
+        
+        function testLoginStatusCheck() {
+            window.AutoRedirectManager.checkAndRedirectIfLoggedIn().then(result => {
+                document.getElementById('status-result').style.display = 'block';
+                document.getElementById('status-result').innerHTML = `
+                    <h3>登录状态检查结果</h3>
+                    <p>已登录: ${result ? '是' : '否'}</p>
+                    <p>Token: ${localStorage.getItem('access_token') || '无'}</p>
+                `;
+            });
+        }
+        
+        function getDisplayName(accountType) {
+            const names = { 'user': '用户', 'lawyer': '律师', 'admin': '管理员' };
+            return names[accountType] || accountType;
+        }
+    </script>
+</body>
+</html>

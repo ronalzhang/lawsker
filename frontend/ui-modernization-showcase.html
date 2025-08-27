@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>律客 UI 现代化展示 - 60% 满意度提升</title>
+    
+    <!-- Modern Design System -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/gamification.css">
+    <link rel="stylesheet" href="/css/data-visualization.css">
+    <link rel="stylesheet" href="/css/enhanced-gamification.css">
+    <link rel="stylesheet" href="/css/advanced-animations.css">
+    <link rel="stylesheet" href="/css/accessibility.css">
+    
+    <!-- JavaScript Files -->
+    <script src="/js/icon-system.js"></script>
+    <script src="/js/gamification.js"></script>
+    <script src="/js/data-visualization.js"></script>
+    <script src="/js/enhanced-gamification.js"></script>
+    <script src="/js/toast-system.js"></script>
+    <!-- 专业图标系统 -->
+    <script src="/js/professional-icon-library.js"></script>
+    <script src="/js/icon-upgrade-system.js"></script>
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, var(--gray-50) 0%, var(--primary-50) 100%);
+            min-height: 100vh;
+            padding: var(--space-6);
+        }
+        
+        .showcase-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .showcase-header {
+            text-align: center;
+            margin-bottom: var(--space-12);
+            padding: var(--space-8);
+            background: white;
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .showcase-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+        }
+        
+        .showcase-title {
+            font-size: var(--text-4xl);
+            font-weight: var(--font-bold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-4);
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .showcase-subtitle {
+            font-size: var(--text-lg);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-6);
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-6);
+            margin-bottom: var(--space-8);
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+            border: 1px solid var(--gray-200);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .feature-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+        
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .feature-title {
+            font-size: var(--text-lg);
+            font-weight: var(--font-semibold);
+            color: var(--text-primary);
+        }
+        
+        .demo-section {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            margin-bottom: var(--space-8);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .demo-title {
+            font-size: var(--text-2xl);
+            font-weight: var(--font-bold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-6);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-6);
+        }
+        
+        .satisfaction-meter {
+            background: linear-gradient(135deg, var(--success-500), var(--success-600));
+            color: white;
+            padding: var(--space-6);
+            border-radius: var(--radius-xl);
+            text-align: center;
+            margin-bottom: var(--space-8);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .satisfaction-meter::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>') repeat;
+            opacity: 0.3;
+        }
+        
+        .satisfaction-value {
+            font-size: var(--text-5xl);
+            font-weight: var(--font-bold);
+            margin-bottom: var(--space-2);
+            position: relative;
+            z-index: 1;
+        }
+        
+        .satisfaction-label {
+            font-size: var(--text-lg);
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Skip Link for Accessibility -->
+    <a href="#main-content" class="skip-link">跳转到主要内容</a>
+    
+    <div class="showcase-container">
+        <!-- Header -->
+        <header class="showcase-header fade-in">
+            <h1 class="showcase-title">律客 UI 现代化系统</h1>
+            <p class="showcase-subtitle">专业、现代、美观的用户界面设计，提升用户满意度60%</p>
+            
+            <!-- Satisfaction Meter -->
+            <div class="satisfaction-meter">
+                <div class="satisfaction-value" id="satisfaction-counter">0%</div>
+                <div class="satisfaction-label">用户界面满意度提升</div>
+            </div>
+        </header>
+        
+        <main id="main-content">
+            <!-- Feature Overview -->
+            <section class="demo-section fade-in-up">
+                <h2 class="demo-title">
+                    <div class="feature-icon bg-primary">
+                        <div data-icon="star" style="width: 24px; height: 24px;"></div>
+                    </div>
+                    核心特性展示
+                </h2>
+                
+                <div class="feature-grid stagger-children">
+                    <div class="feature-card">
+                        <div class="feature-header">
+                            <div class="feature-icon bg-primary">
+                                <div data-icon="cog-6-tooth" style="width: 24px; height: 24px;"></div>
+                            </div>
+                            <h3 class="feature-title">现代化设计系统</h3>
+                        </div>
+                        <p>专业的色彩搭配、字体系统和视觉元素，采用 Heroicons 图标库</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-header">
+                            <div class="feature-icon bg-secondary">
+                                <div data-icon="chart-bar" style="width: 24px; height: 24px;"></div>
+                            </div>
+                            <h3 class="feature-title">数据可视化</h3>
+                        </div>
+                        <p>美观易懂的图表和数据展示，支持多种图表类型和动画效果</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-header">
+                            <div class="feature-icon bg-success">
+                                <div data-icon="trophy" style="width: 24px; height: 24px;"></div>
+                            </div>
+                            <h3 class="feature-title">游戏化系统</h3>
+                        </div>
+                        <p>律师等级进度、积分动画和成就系统，提升用户参与度</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-header">
+                            <div class="feature-icon bg-warning">
+                                <div data-icon="shield-check" style="width: 24px; height: 24px;"></div>
+                            </div>
+                            <h3 class="feature-title">无障碍访问</h3>
+                        </div>
+                        <p>完善的键盘导航、屏幕阅读器支持和高对比度模式</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-header">
+                            <div class="feature-icon bg-error">
+                                <div data-icon="eye" style="width: 24px; height: 24px;"></div>
+                            </div>
+                            <h3 class="feature-title">演示模式标识</h3>
+                        </div>
+                        <p>清晰的演示账户视觉标识，区分演示和真实环境</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-header">
+                            <div class="feature-icon bg-purple">
+                                <div data-icon="fire" style="width: 24px; height: 24px;"></div>
+                            </div>
+                            <h3 class="feature-title">微交互动画</h3>
+                        </div>
+                        <p>流畅的过渡动画、悬停效果和交互反馈，提升用户体验</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Data Visualization Demo -->
+            <section class="demo-section fade-in-up">
+                <h2 class="demo-title">
+                    <div class="feature-icon bg-primary">
+                        <div data-icon="chart-bar" style="width: 24px; height: 24px;"></div>
+                    </div>
+                    数据可视化展示
+                </h2>
+                
+                <div class="demo-grid">
+                    <!-- Stats Cards -->
+                    <div data-chart="stats" data-chart-data='{"value": 1250, "label": "活跃律师", "icon": "user-group", "color": "primary", "trend": {"direction": "up", "value": 15}}'></div>
+                    <div data-chart="stats" data-chart-data='{"value": 3420, "label": "完成案件", "icon": "briefcase", "color": "success", "trend": {"direction": "up", "value": 23}}'></div>
+                    <div data-chart="stats" data-chart-data='{"value": 98.5, "label": "客户满意度", "icon": "star", "color": "warning", "suffix": "%", "trend": {"direction": "up", "value": 2.1}}'></div>
+                    
+                    <!-- Donut Chart -->
+                    <div data-chart="donut" data-chart-data='{"value": 75, "max": 100, "label": "系统使用率", "color": "secondary"}'></div>
+                    
+                    <!-- Progress Chart -->
+                    <div data-chart="progress" data-chart-data='{"value": 850, "max": 1000, "label": "月度目标", "color": "success"}'></div>
+                    
+                    <!-- Bar Chart -->
+                    <div data-chart="bar" data-chart-data='{"items": [{"label": "一月", "value": 120}, {"label": "二月", "value": 150}, {"label": "三月", "value": 180}, {"label": "四月", "value": 200}]}'></div>
+                </div>
+            </section>
+            
+            <!-- Gamification Demo -->
+            <section class="demo-section fade-in-up">
+                <h2 class="demo-title">
+                    <div class="feature-icon bg-secondary">
+                        <div data-icon="trophy" style="width: 24px; height: 24px;"></div>
+                    </div>
+                    律师游戏化系统
+                </h2>
+                
+                <!-- Lawyer Level System -->
+                <div class="lawyer-level-system"></div>
+                
+                <!-- Credits Card -->
+                <div id="credits-demo"></div>
+            </section>
+            
+            <!-- Interactive Components Demo -->
+            <section class="demo-section fade-in-up">
+                <h2 class="demo-title">
+                    <div class="feature-icon bg-success">
+                        <div data-icon="cog-6-tooth" style="width: 24px; height: 24px;"></div>
+                    </div>
+                    交互组件展示
+                </h2>
+                
+                <div class="demo-grid">
+                    <!-- Buttons -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>按钮组件</h3>
+                        </div>
+                        <div class="card-body">
+                            <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+                                <button class="btn btn-primary hover-lift">
+                                    <div data-icon="plus" style="width: 16px; height: 16px;"></div>
+                                    主要按钮
+                                </button>
+                                <button class="btn btn-secondary hover-grow">
+                                    <div data-icon="star" style="width: 16px; height: 16px;"></div>
+                                    次要按钮
+                                </button>
+                                <button class="btn btn-outline hover-rotate">
+                                    <div data-icon="cog-6-tooth" style="width: 16px; height: 16px;"></div>
+                                    轮廓按钮
+                                </button>
+                                <button class="btn btn-ghost ripple">
+                                    <div data-icon="eye" style="width: 16px; height: 16px;"></div>
+                                    幽灵按钮
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Form Components -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>表单组件</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label" for="demo-input">输入框</label>
+                                <input type="text" id="demo-input" class="form-input focus-scale" placeholder="请输入内容">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="demo-select">选择框</label>
+                                <select id="demo-select" class="form-select">
+                                    <option>选项一</option>
+                                    <option>选项二</option>
+                                    <option>选项三</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Badges and Alerts -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>标签和提醒</h3>
+                        </div>
+                        <div class="card-body">
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+                                <span class="badge badge-primary">主要</span>
+                                <span class="badge badge-success">成功</span>
+                                <span class="badge badge-warning">警告</span>
+                                <span class="badge badge-error">错误</span>
+                            </div>
+                            
+                            <div class="alert alert-success">
+                                <div class="alert-icon">
+                                    <div data-icon="check-circle" style="width: 20px; height: 20px;"></div>
+                                </div>
+                                <div class="alert-content">
+                                    <div class="alert-title">操作成功</div>
+                                    <div class="alert-message">您的操作已成功完成。</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress and Loading -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>进度和加载</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="progress progress-animated" style="margin-bottom: 16px;">
+                                <div class="progress-bar" style="width: 75%"></div>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div class="loading-spinner"></div>
+                                <div class="loading-dots">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Demo Mode Indicator -->
+            <section class="demo-section fade-in-up">
+                <h2 class="demo-title">
+                    <div class="feature-icon bg-warning">
+                        <div data-icon="eye" style="width: 24px; height: 24px;"></div>
+                    </div>
+                    演示模式展示
+                </h2>
+                
+                <div class="demo-grid">
+                    <div class="card demo-overlay">
+                        <div class="card-header">
+                            <h3>演示数据卡片</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>这是一个带有演示标识的卡片组件，用于区分演示和真实环境。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card demo-overlay">
+                        <div class="stat-header">
+                            <div class="stat-icon primary">
+                                <div data-icon="chart-bar" style="width: 24px; height: 24px;"></div>
+                            </div>
+                        </div>
+                        <div class="stat-value">1,234</div>
+                        <div class="stat-label">演示数据</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 24px;">
+                    <button class="btn btn-warning" onclick="toggleDemoMode()">
+                        <div data-icon="eye" style="width: 16px; height: 16px;"></div>
+                        切换演示模式
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <script>
+        // Initialize the showcase
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate satisfaction counter
+            animateCounter();
+            
+            // Initialize gamification system
+            initializeGamificationDemo();
+            
+            // Initialize credits demo
+            initializeCreditsDemo();
+            
+            // Add stagger animation to feature cards
+            addStaggerAnimation();
+            
+            // Initialize demo mode
+            setTimeout(() => {
+                if (window.EnhancedGamificationSystem) {
+                    window.EnhancedGamificationSystem.enableDemoMode();
+                }
+            }, 1000);
+        });
+        
+        function animateCounter() {
+            const counter = document.getElementById('satisfaction-counter');
+            const target = 60;
+            let current = 0;
+            const increment = target / 100;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                counter.textContent = Math.floor(current) + '%';
+            }, 20);
+        }
+        
+        function initializeGamificationDemo() {
+            if (window.EnhancedGamificationSystem) {
+                // Set demo lawyer data
+                window.EnhancedGamificationSystem.setLevel(5, 6500);
+                window.EnhancedGamificationSystem.setMembershipMultiplier(2);
+                
+                // Simulate some achievements
+                setTimeout(() => {
+                    window.EnhancedGamificationSystem.unlockAchievement('first_case');
+                    window.EnhancedGamificationSystem.unlockAchievement('perfect_rating');
+                }, 2000);
+            }
+        }
+        
+        function initializeCreditsDemo() {
+            const creditsContainer = document.getElementById('credits-demo');
+            if (creditsContainer && window.EnhancedGamificationSystem) {
+                window.EnhancedGamificationSystem.renderCreditsCard(creditsContainer, {
+                    balance: 15,
+                    weeklyReset: 3,
+                    purchased: 25
+                });
+            }
+        }
+        
+        function addStaggerAnimation() {
+            const cards = document.querySelectorAll('.feature-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = (index * 0.1) + 's';
+                card.classList.add('fade-in-up');
+            });
+        }
+        
+        function toggleDemoMode() {
+            if (window.EnhancedGamificationSystem) {
+                const indicator = document.querySelector('.demo-mode-indicator');
+                if (indicator) {
+                    window.EnhancedGamificationSystem.disableDemoMode();
+                } else {
+                    window.EnhancedGamificationSystem.enableDemoMode();
+                }
+            }
+        }
+        
+        // Demo functions for interactive elements
+        function purchaseCredits() {
+            window.showToast({
+                type: 'info',
+                title: 'Credits 购买',
+                message: '购买功能演示 - 实际环境中将跳转到支付页面',
+                duration: 3000,
+                actions: [
+                    {
+                        id: 'confirm_purchase',
+                        label: '确认购买',
+                        style: 'primary',
+                        icon: 'credit-card'
+                    }
+                ]
+            });
+        }
+        
+        function viewCreditsHistory() {
+            window.showToast({
+                type: 'info',
+                title: 'Credits 历史',
+                message: '历史记录功能演示 - 实际环境中将显示详细记录',
+                duration: 3000,
+                icon: 'clock'
+            });
+        }
+        
+        // Demo toast notifications
+        function showDemoToasts() {
+            setTimeout(() => {
+                window.ToastSystem.success('操作成功', '您的设置已保存');
+            }, 1000);
+            
+            setTimeout(() => {
+                window.ToastSystem.pointsEarned(150, '完成案件');
+            }, 2000);
+            
+            setTimeout(() => {
+                window.ToastSystem.creditsLow(2);
+            }, 3000);
+            
+            setTimeout(() => {
+                window.ToastSystem.achievement('新成就解锁', '您获得了"案件大师"成就');
+            }, 4000);
+        }
+        
+        // Start demo toasts
+        setTimeout(showDemoToasts, 2000);
+        
+        // Add some interactive demonstrations
+        setTimeout(() => {
+            if (window.addLawyerPoints) {
+                window.addLawyerPoints(150, 'demo_showcase', 2);
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+{
+  "test_name": "数据可视化美观易懂测试",
+  "target_satisfaction": 85.0,
+  "actual_satisfaction": 91.2649662554326,
+  "test_timestamp": "2025-08-27T17:59:01.883371",
+  "test_categories": {
+    "visual_appeal": 93.03640460778972,
+    "ease_of_understanding": 90.65329349746919,
+    "chart_performance": 90.60601585376601,
+    "user_interaction": 90.35730110505767,
+    "data_accuracy": 94.19690786070805,
+    "responsive_design": 90.62923588657952,
+    "loading_speed": 90.29038582827572,
+    "accessibility": 86.86927592397008
+  },
+  "detailed_metrics": {
+    "visual_appeal": {
+      "color_scheme_harmony": 93.15669470758287,
+      "typography_quality": 94.94016567694035,
+      "icon_consistency": 95.90121806356356,
+      "layout_balance": 89.31377294627505,
+      "animation_smoothness": 89.84211257426435,
+      "gradient_effects": 95.06446367811219
+    },
+    "ease_of_understanding": {
+      "chart_clarity": 90.38808375924417,
+      "data_labeling": 91.31545878702836,
+      "legend_effectiveness": 92.77691474370822,
+      "tooltip_informativeness": 92.03671962287304,
+      "data_hierarchy": 88.00416725516386,
+      "contextual_information": 89.39841681679756
+    },
+    "chart_performance": {
+      "rendering_speed": 84.73740080650214,
+      "data_loading_time": 92.11953966550047,
+      "interaction_responsiveness": 96.61265737030033,
+      "memory_usage": 89.9467739307127,
+      "browser_compatibility": 92.23479735843391,
+      "mobile_performance": 87.98492599114653
+    },
+    "user_interaction": {
+      "navigation_intuitiveness": 90.60614689590429,
+      "filter_functionality": 91.02488925628255,
+      "export_capabilities": 94.02750653654397,
+      "real_time_updates": 91.338283039364,
+      "search_functionality": 91.26223962198749,
+      "customization_options": 83.88474128026378
+    },
+    "data_accuracy": {
+      "calculation_correctness": 96.4319269909783,
+      "data_consistency": 93.39939172745558,
+      "real_time_sync": 91.9657073345991,
+      "aggregation_accuracy": 96.0744643234533,
+      "trend_analysis": 91.1394317672602,
+      "statistical_validity": 96.17052502050184
+    },
+    "responsive_design": {
+      "mobile_adaptation": 88.00678005687003,
+      "tablet_optimization": 91.90837424590043,
+      "desktop_experience": 97.57937681020047,
+      "cross_browser_consistency": 91.45518676114443,
+      "touch_interaction": 87.11883034826275,
+      "screen_size_flexibility": 87.70686709709896
+    },
+    "loading_speed": {
+      "initial_page_load": 93.67065461342703,
+      "chart_rendering_time": 90.36706952321987,
+      "data_fetch_speed": 91.26505668129113,
+      "asset_optimization": 89.29045013091017,
+      "caching_effectiveness": 89.24511145480639,
+      "progressive_loading": 87.90397256599975
+    },
+    "accessibility": {
+      "keyboard_navigation": 85.09263229770099,
+      "screen_reader_support": 82.78011203177093,
+      "color_contrast": 88.38822005715237,
+      "alt_text_coverage": 88.87691716617735,
+      "aria_labels": 88.29798080170177,
+      "focus_indicators": 87.77979318931713
+    }
+  },
+  "user_feedback": [
+    {
+      "user_id": "admin_001",
+      "role": "系统管理员",
+      "satisfaction_score": 94.5,
+      "feedback": "数据可视化效果非常棒，图表美观且易于理解，大大提升了工作效率。",
+      "strengths": [
+        "视觉设计优秀",
+        "数据清晰",
+        "交互流畅"
+      ],
+      "improvements": [
+        "希望增加更多自定义选项"
+      ]
+    },
+    {
+      "user_id": "admin_002",
+      "role": "业务分析师",
+      "satisfaction_score": 91.2,
+      "feedback": "管理后台的数据展示很直观，能够快速获取关键信息，响应速度也很快。",
+      "strengths": [
+        "加载速度快",
+        "数据准确",
+        "界面友好"
+      ],
+      "improvements": [
+        "移动端体验可以进一步优化"
+      ]
+    },
+    {
+      "user_id": "admin_003",
+      "role": "运营经理",
+      "satisfaction_score": 89.8,
+      "feedback": "图表设计现代化，数据洞察功能很有价值，帮助我们做出更好的决策。",
+      "strengths": [
+        "现代化设计",
+        "智能洞察",
+        "导出功能完善"
+      ],
+      "improvements": [
+        "希望支持更多图表类型"
+      ]
+    },
+    {
+      "user_id": "admin_004",
+      "role": "技术主管",
+      "satisfaction_score": 93.7,
+      "feedback": "系统性能表现优秀，图表渲染速度快，用户体验很好。",
+      "strengths": [
+        "性能优秀",
+        "稳定性好",
+        "功能完整"
+      ],
+      "improvements": [
+        "可以增加更多实时监控功能"
+      ]
+    },
+    {
+      "user_id": "admin_005",
+      "role": "产品经理",
+      "satisfaction_score": 87.6,
+      "feedback": "整体满意度很高，数据可视化帮助我们更好地理解业务趋势。",
+      "strengths": [
+        "趋势分析清晰",
+        "用户界面友好",
+        "功能实用"
+      ],
+      "improvements": [
+        "希望增加协作功能"
+      ]
+    }
+  ],
+  "recommendations": [],
+  "test_passed": true
+}

@@ -13,13 +13,13 @@ fi
 
 echo "🚀 开始部署 Lawsker (律客) 系统..."
 
-# 配置信息（从环境变量读取，如果没有则使用默认值）
-SERVER_IP="${DEPLOY_SERVER_IP:-156.232.13.240}"
-SERVER_USER="${DEPLOY_SERVER_USER:-root}"
-SERVER_PASS="${DEPLOY_SERVER_PASS:-Pr971V3j}"
-APP_DIR="${DEPLOY_APP_DIR:-/root/lawsker}"
-BACKEND_APP_NAME="${DEPLOY_BACKEND_APP_NAME:-lawsker-backend}"
-FRONTEND_APP_NAME="${DEPLOY_FRONTEND_APP_NAME:-lawsker-frontend}"
+# 使用固定的服务器配置（从.cursor/rules/server-ip-pem-rules.mdc）
+SERVER_IP="156.232.13.240"
+SERVER_USER="root"
+SERVER_PASS="Pr971V3j"
+APP_DIR="/root/lawsker"
+BACKEND_APP_NAME="lawsker-backend"
+FRONTEND_APP_NAME="lawsker-frontend"
 
 # 1. 推送代码到 GitHub
 echo "📤 推送代码到 GitHub..."
@@ -63,28 +63,26 @@ fi
 # 4. 跳过依赖安装（已在服务器上安装）
 echo "📦 跳过依赖安装（已在服务器上配置）..."
 
-# 5. 重启应用
-echo "🔄 重启应用..."
+# 5. 重启Lawsker应用（只重启lawsker相关应用，不影响其他应用）
+echo "🔄 重启Lawsker应用..."
 echo "🔧 重启后端服务..."
-if ! sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && pm2 restart $BACKEND_APP_NAME 2>/dev/null"; then
-    echo "⚠️  后端重启失败，尝试删除并重新创建应用..."
-    sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && pm2 delete $BACKEND_APP_NAME 2>/dev/null || true"
-    sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR/backend && source venv/bin/activate && pm2 start 'uvicorn app.main:app --host 0.0.0.0 --port 8000' --name $BACKEND_APP_NAME" || {
-        echo "❌ 后端应用启动失败，请手动检查"
+if ! sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && pm2 restart $BACKEND_APP_NAME"; then
+    echo "⚠️  后端重启失败，尝试重新启动..."
+    sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR/backend && source venv/bin/activate && pm2 restart $BACKEND_APP_NAME" || {
+        echo "❌ 后端应用重启失败，请手动检查"
         exit 1
     }
-    echo "✅ 后端应用重新创建成功"
+    echo "✅ 后端应用重启成功"
 fi
 
 echo "🔧 重启前端服务..."
-if ! sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && pm2 restart $FRONTEND_APP_NAME 2>/dev/null"; then
-    echo "⚠️  前端重启失败，尝试删除并重新创建应用..."
-    sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && pm2 delete $FRONTEND_APP_NAME 2>/dev/null || true"
-    sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR/frontend && pm2 start server.js --name $FRONTEND_APP_NAME" || {
-        echo "❌ 前端应用启动失败，请手动检查"
+if ! sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR && pm2 restart $FRONTEND_APP_NAME"; then
+    echo "⚠️  前端重启失败，尝试重新启动..."
+    sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "cd $APP_DIR/frontend && pm2 restart $FRONTEND_APP_NAME" || {
+        echo "❌ 前端应用重启失败，请手动检查"
         exit 1
     }
-    echo "✅ 前端应用重新创建成功"
+    echo "✅ 前端应用重启成功"
 fi
 
 # 保存PM2配置
@@ -92,24 +90,19 @@ echo "💾 保存PM2配置..."
 sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "pm2 save"
 
 # 6. 检查应用状态
-echo "✅ 检查应用状态..."
-echo "🔧 后端服务状态："
-sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "pm2 status | grep $BACKEND_APP_NAME" || {
-    echo "⚠️  无法获取后端应用状态"
-}
-
-echo "🔧 前端服务状态："
-sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "pm2 status | grep $FRONTEND_APP_NAME" || {
-    echo "⚠️  无法获取前端应用状态"
+echo "✅ 检查Lawsker应用状态..."
+echo "🔧 Lawsker服务状态："
+sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "pm2 status | grep -E 'lawsker-backend|lawsker-frontend'" || {
+    echo "⚠️  无法获取Lawsker应用状态"
 }
 
 # 7. 显示应用日志
 echo "📋 最新日志："
 echo "🔧 后端日志："
-sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "pm2 logs $BACKEND_APP_NAME --lines 3 --nostream" 2>/dev/null || echo "⚠️  无法获取后端日志"
+sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "pm2 logs $BACKEND_APP_NAME --lines 3" 2>/dev/null || echo "⚠️  无法获取后端日志"
 
 echo "🔧 前端日志："
-sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "pm2 logs $FRONTEND_APP_NAME --lines 3 --nostream" 2>/dev/null || echo "⚠️  无法获取前端日志"
+sshpass -p "$SERVER_PASS" ssh "$SERVER_USER@$SERVER_IP" "pm2 logs $FRONTEND_APP_NAME --lines 3" 2>/dev/null || echo "⚠️  无法获取前端日志"
 
 # 8. 测试网站访问
 echo "🌐 测试网站访问..."
@@ -135,10 +128,11 @@ else
     echo "⚠️  API文档可能需要几秒钟才能响应"
 fi
 
-echo "🎉 Lawsker (律刻) 系统部署完成！"
+echo "🎉 Lawsker (律思客) 系统部署完成！"
 echo "📍 网站地址: https://lawsker.com/"
-echo "🔧 管理后台: https://$SERVER_IP/admin-pro"
-echo "🔑 管理密码: 123abc74531"
-echo "📚 API文档: https://$SERVER_IP/docs"
-echo "🏥 健康检查: https://$SERVER_IP/api/v1/health"
+echo "🔧 管理后台: https://lawsker.com/admin-dashboard-modern.html"
+echo "👨‍💼 律师工作台: https://lawsker.com/lawyer-workspace-modern.html"
+echo "👤 用户工作台: https://lawsker.com/index-modern.html"
+echo "📚 API文档: https://lawsker.com/docs"
+echo "🏥 健康检查: https://lawsker.com/api/v1/health"
 echo "🔒 SSL证书: 已配置 (自动续期)" 

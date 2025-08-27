@@ -8,10 +8,19 @@
     <meta name="theme-color" content="#0f1424">
     <title>用户工作台 - Lawsker 律客</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/css/responsive-enhanced.css">
     <link rel="stylesheet" href="/css/lawsker-glass.css?v=4">
     <!-- 核心脚本 -->
+    <script src="/js/responsive-enhanced.js"></script>
     <script src="/js/api-client.js?v=1.7"></script>
     <script src="/js/workspace-auth-simple.js"></script>
+    <!-- 专业图标系统 -->
+    <script src="/js/icon-system.js"></script>
+    <script src="/js/professional-icon-library.js"></script>
+    <script src="/js/icon-upgrade-system.js"></script>
     <style>
         /* 确保页面背景正确显示 */
         html, body {
@@ -1935,7 +1944,7 @@
                             recognition_result: {
                                 total_records: Math.floor(Math.random() * 100) + 10,
                                 valid_records: Math.floor(Math.random() * 90) + 5,
-                                success_rate: (80 + Math.random() * 20).toFixed(1) + '%'
+                                completion_rate: (80 + Math.random() * 20).toFixed(1) + '%*'
                             }
                         },
                         uploadMode: uploadMode
@@ -1981,7 +1990,8 @@
                                 <div style="margin-top: 8px; font-size: 12px; color: var(--text-secondary);">
                                     共识别 ${result.result.recognition_result.total_records} 条记录，
                                     有效记录 ${result.result.recognition_result.valid_records} 条，
-                                    成功率 ${result.result.recognition_result.success_rate}
+                                    识别率 ${result.result.recognition_result.success_rate}*
+                                    <div style="font-size: 10px; color: #888; margin-top: 4px;">*技术识别率仅供参考，不构成承诺</div>
                                 </div>
                             ` : ''}
                         </div>
@@ -2016,7 +2026,8 @@
                         </div>
                         <div>
                             <div style="font-size: 20px; font-weight: 600; color: var(--text-primary);">${totalRecords > 0 ? (totalValidRecords/totalRecords*100).toFixed(1) : 0}%</div>
-                            <div style="font-size: 12px; color: var(--text-secondary);">整体成功率</div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">整体识别率*</div>
+                            <div style="font-size: 9px; color: #888;">*仅供参考</div>
                         </div>
                     </div>
                 </div>
@@ -2436,8 +2447,9 @@
                                             <div style="color: var(--text-secondary); font-size: 14px;">处理案件</div>
                                         </div>
                                         <div style="text-align: center; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px;">
-                                            <div style="font-size: 24px; font-weight: 600; color: #2196F3;">${lawyerData.success_rate || 0}%</div>
-                                            <div style="color: var(--text-secondary); font-size: 14px;">成功率</div>
+                                            <div style="font-size: 24px; font-weight: 600; color: #2196F3;">${lawyerData.historical_data || lawyerData.success_rate || 0}%</div>
+                                            <div style="color: var(--text-secondary); font-size: 14px;">历史数据*</div>
+                                            <div style="color: #888; font-size: 10px; margin-top: 2px;">*仅供参考，不构成承诺</div>
                                         </div>
                                     </div>
                                 </div>
@@ -3047,7 +3059,8 @@
                                         <div><strong>执业经验：</strong><span style="color: var(--text-secondary);">${taskData.assigned_lawyer.experience}</span></div>
                                         <div><strong>案件评分：</strong><span style="color: #FFD700;">⭐ ${taskData.assigned_lawyer.rating}</span></div>
                                         <div><strong>处理案件：</strong><span style="color: var(--text-secondary);">${taskData.assigned_lawyer.case_count}件</span></div>
-                                        <div><strong>成功率：</strong><span style="color: #4CAF50;">${taskData.assigned_lawyer.success_rate}%</span></div>
+                                        <div><strong>历史数据：</strong><span style="color: #4CAF50;">${taskData.assigned_lawyer.historical_data || taskData.assigned_lawyer.success_rate || 0}%*</span></div>
+                                        <div style="font-size: 10px; color: #888; margin-top: 2px;">*历史数据仅供参考，不构成承诺</div>
                                     </div>
                                     <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
                                         <strong>专业领域：</strong>
@@ -3384,7 +3397,7 @@
                     specialties: ['债权债务', '合同纠纷', '公司法务'],
                     rating: 4.8,
                     case_count: 156,
-                    success_rate: 92,
+                    historical_data: 92,  // 历史数据，仅供参考
                     recent_cases: [
                         { title: '某科技公司债务追讨案', amount: '50万', result: '成功追回45万' },
                         { title: '合同违约纠纷案', amount: '30万', result: '达成和解协议' },
@@ -3405,7 +3418,7 @@
                     specialties: ['合同审查', '知识产权', '投资并购'],
                     rating: 4.9,
                     case_count: 243,
-                    success_rate: 95,
+                    historical_data: 95,  // 历史数据，仅供参考
                     recent_cases: [
                         { title: '某集团并购重组案', amount: '500万', result: '成功完成并购交易' },
                         { title: '知识产权侵权案', amount: '200万', result: '获得赔偿150万' },
@@ -3458,8 +3471,9 @@
                                         <div style="color: var(--text-secondary); font-size: 14px;">处理案件</div>
                                     </div>
                                     <div style="text-align: center; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 8px;">
-                                        <div style="font-size: 24px; font-weight: 600; color: #2196F3;">${lawyer.success_rate}%</div>
-                                        <div style="color: var(--text-secondary); font-size: 14px;">成功率</div>
+                                        <div style="font-size: 24px; font-weight: 600; color: #2196F3;">${lawyer.historical_data || lawyer.success_rate || 0}%</div>
+                                        <div style="color: var(--text-secondary); font-size: 14px;">历史数据*</div>
+                                        <div style="color: #888; font-size: 10px; margin-top: 2px;">*仅供参考，不构成承诺</div>
                                     </div>
                                 </div>
                             </div>

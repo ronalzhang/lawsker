@@ -1,4 +1,4 @@
-# Lawsker系统优化设计文档
+# Lawsker业务优化系统设计文档
 
 ## 系统架构设计
 
@@ -6,86 +6,584 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Lawsker优化后架构                          │
+│                 Lawsker (律客) 业务优化架构                    │
 ├─────────────────────────────────────────────────────────────┤
-│  前端层 (Frontend Layer)                                     │
+│  前端层 (Frontend Layer) - 现代化UI设计                       │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐│
-│  │   用户端界面      │  │   管理后台       │  │   移动端界面      ││
-│  │  Vue.js 3 +     │  │  Vue.js 3 +     │  │  响应式设计      ││
-│  │  TypeScript     │  │  ECharts +      │  │  PWA支持        ││
-│  │  Element Plus   │  │  WebSocket      │  │                ││
+│  │   统一认证界面    │  │   律师工作台     │  │   用户工作台      ││
+│  │  邮箱验证 +     │  │  积分等级系统 +  │  │  Credits支付 +  ││
+│  │  律师证认证 +   │  │  会员订阅 +     │  │  批量上传 +     ││
+│  │  演示账户       │  │  专业图标       │  │  现代化UI       ││
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘│
 ├─────────────────────────────────────────────────────────────┤
-│  网关层 (Gateway Layer)                                      │
-│  ┌─────────────────────────────────────────────────────────┐ │
-│  │  NGINX + SSL + 负载均衡 + 限流 + CSRF保护                │ │
-│  └─────────────────────────────────────────────────────────┘ │
-├─────────────────────────────────────────────────────────────┤
-│  应用层 (Application Layer)                                  │
+│  业务服务层 (Business Service Layer)                         │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐│
-│  │   业务API服务    │  │   实时推送服务   │  │   数据采集服务   ││
-│  │  FastAPI +      │  │  WebSocket +    │  │  访问日志 +     ││
-│  │  JWT认证 +      │  │  Redis发布订阅   │  │  行为追踪       ││
-│  │  权限控制       │  │                 │  │                ││
+│  │  统一认证服务    │  │  律师积分服务   │  │  Credits支付服务 ││
+│  │  邮箱验证 +     │  │  等级计算 +     │  │  余额管理 +     ││
+│  │  律师证审核 +   │  │  会员倍数 +     │  │  支付处理 +     ││
+│  │  工作台路由     │  │  惩罚机制       │  │  使用控制       ││
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘│
 ├─────────────────────────────────────────────────────────────┤
-│  服务层 (Service Layer)                                      │
+│  核心API层 (Core API Layer) - 基于现有FastAPI扩展             │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐│
-│  │   AI服务        │  │   支付服务       │  │   通知服务       ││
-│  │  OpenAI +       │  │  微信支付 +     │  │  邮件 + 短信 +  ││
-│  │  Deepseek       │  │  支付宝         │  │  WebSocket      ││
+│  │   认证API       │  │   会员API       │  │   支付API       ││
+│  │  /auth/unified  │  │  /membership    │  │  /credits       ││
+│  │  /auth/lawyer   │  │  /points        │  │  /payments      ││
+│  │  /demo          │  │  /levels        │  │  /billing       ││
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘│
 ├─────────────────────────────────────────────────────────────┤
-│  数据层 (Data Layer)                                         │
+│  数据层 (Data Layer) - 基于现有42张表扩展                     │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐│
-│  │   PostgreSQL    │  │   Redis缓存     │  │   文件存储       ││
-│  │  主数据库 +     │  │  会话 + 缓存 +  │  │  MinIO +        ││
-│  │  读写分离       │  │  消息队列       │  │  CDN加速        ││
+│  │   认证相关表     │  │   积分会员表     │  │   Credits表     ││
+│  │  认证申请表 +   │  │  律师等级表 +   │  │  用户Credits +  ││
+│  │  工作台映射 +   │  │  积分记录表 +   │  │  购买记录表 +   ││
+│  │  演示账户表     │  │  会员订阅表     │  │  使用记录表     ││
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘│
-├─────────────────────────────────────────────────────────────┤
-│  监控层 (Monitoring Layer)                                   │
-│  ┌─────────────────────────────────────────────────────────┐ │
-│  │  Prometheus + Grafana + ELK + 告警系统                  │ │
-│  └─────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ## 核心组件设计
 
-### 1. 前端架构设计
+### 1. 统一认证系统设计
 
-#### 1.1 用户端界面重构
+#### 1.1 认证流程架构
 
-**技术栈选择**:
-- Vue.js 3 + Composition API
-- TypeScript (类型安全)
-- Vite (快速构建)
-- Element Plus (UI组件库)
-- Pinia (状态管理)
-- Vue Router 4 (路由管理)
-
-**项目结构**:
+**统一认证流程**:
 ```
-frontend-user/
-├── src/
-│   ├── components/          # 通用组件
-│   │   ├── common/         # 基础组件
-│   │   ├── business/       # 业务组件
-│   │   └── layout/         # 布局组件
-│   ├── views/              # 页面组件
-│   │   ├── auth/          # 认证相关
-│   │   ├── workspace/     # 工作台
-│   │   ├── tasks/         # 任务管理
-│   │   └── profile/       # 个人中心
-│   ├── composables/        # 组合式API
-│   ├── stores/            # 状态管理
-│   ├── router/            # 路由配置
-│   ├── api/               # API接口
-│   ├── utils/             # 工具函数
-│   ├── types/             # TypeScript类型
-│   └── assets/            # 静态资源
-├── public/                # 公共资源
-└── dist/                 # 构建输出
+用户访问 → 选择登录/注册/演示 → 邮箱验证注册 → 身份选择 → 工作台重定向
+    ↓
+律师身份 → 律师证上传 → 管理员审核 → 认证通过 → 自动分配免费会员
+    ↓
+普通用户 → 直接激活 → 分配1个Credit → 用户工作台
+    ↓
+演示账户 → 演示数据加载 → 功能体验 → 注册转化
+```
+
+**技术实现架构**:
+```python
+# 统一认证服务设计
+class UnifiedAuthService:
+    """基于现有auth_service扩展的统一认证"""
+    
+    async def register_with_email_verification(self, email: str, password: str, full_name: str):
+        """邮箱验证注册 - 扩展现有注册功能"""
+        # 1. 复用现有用户创建逻辑
+        user = await self.create_user_extended({
+            'email': email,
+            'password': self.hash_password(password),
+            'full_name': full_name,
+            'email_verified': False,
+            'account_type': 'pending',
+            'workspace_id': await self.generate_secure_workspace_id()
+        })
+        
+        # 2. 发送验证邮件（复用现有邮件服务）
+        await self.email_service.send_verification_email(email, user.id)
+        
+        return {'user_id': user.id, 'verification_required': True}
+    
+    async def set_user_identity_and_redirect(self, user_id: str, identity_type: str):
+        """身份设置和工作台重定向"""
+        if identity_type == 'lawyer':
+            # 律师身份：需要认证
+            await self.update_user_account_type(user_id, 'lawyer_pending')
+            return {'redirect_url': f'/legal/{user.workspace_id}', 'requires_certification': True}
+        else:
+            # 普通用户：直接激活
+            await self.update_user_account_type(user_id, 'user')
+            await self.credits_service.initialize_user_credits(user_id)
+            return {'redirect_url': f'/user/{user.workspace_id}'}
+```
+
+#### 1.2 律师证认证系统
+
+**认证流程设计**:
+```python
+class LawyerCertificationService:
+    """律师证认证服务 - 基于现有文件上传扩展"""
+    
+    async def submit_certification_request(self, user_id: str, cert_data: dict):
+        """提交律师证认证申请"""
+        # 1. 保存律师证文件（复用现有文件上传）
+        cert_file = await self.file_service.save_certificate_file(
+            user_id, cert_data['certificate_file']
+        )
+        
+        # 2. 创建认证申请记录
+        certification = await self.create_certification_record({
+            'user_id': user_id,
+            'certificate_file_path': cert_file['path'],
+            'lawyer_name': cert_data['lawyer_name'],
+            'license_number': cert_data['license_number'],
+            'law_firm': cert_data.get('law_firm'),
+            'practice_areas': cert_data.get('practice_areas', []),
+            'status': 'pending'
+        })
+        
+        # 3. 通知管理员审核（复用现有通知系统）
+        await self.notification_service.notify_admin_for_review(certification.id)
+        
+        return certification
+    
+    async def approve_certification(self, cert_id: str, admin_id: str):
+        """管理员审核通过"""
+        # 1. 更新认证状态
+        await self.update_certification_status(cert_id, 'approved', admin_id)
+        
+        # 2. 激活律师账户
+        certification = await self.get_certification_by_id(cert_id)
+        await self.update_user_account_type(certification.user_id, 'lawyer')
+        
+        # 3. 自动分配免费会员（新功能）
+        await self.membership_service.assign_free_membership(certification.user_id)
+        
+        return {'approved': True, 'lawyer_id': certification.user_id}
+```
+
+### 2. 律师积分和会员系统设计
+
+#### 2.1 传奇游戏式积分系统
+
+**积分计算引擎**:
+```python
+class LawyerPointsEngine:
+    """律师积分计算引擎 - 传奇游戏式指数级积分"""
+    
+    # 基础积分规则
+    BASE_POINTS = {
+        'case_complete_success': 100,
+        'case_complete_excellent': 200,
+        'review_5star': 200,
+        'review_4star': 100,
+        'review_1star': -300,
+        'review_2star': -150,
+        'online_hour': 5,
+        'ai_credit_used': 3,
+        'payment_100yuan': 100,
+        'case_declined': -30,
+        'late_response': -20
+    }
+    
+    async def calculate_points_with_multiplier(self, lawyer_id: str, action: str, context: dict):
+        """计算积分 - 考虑会员倍数"""
+        # 1. 获取基础积分
+        base_points = self.BASE_POINTS.get(action, 0)
+        
+        # 2. 根据上下文调整积分
+        adjusted_points = await self.adjust_points_by_context(base_points, context)
+        
+        # 3. 获取律师会员倍数
+        membership = await self.membership_service.get_lawyer_membership(lawyer_id)
+        multiplier = membership.get('point_multiplier', 1.0)
+        
+        # 4. 应用倍数
+        final_points = int(adjusted_points * multiplier)
+        
+        # 5. 记录积分变动
+        await self.record_point_transaction(lawyer_id, action, final_points, multiplier)
+        
+        # 6. 检查等级升级
+        await self.check_level_upgrade(lawyer_id)
+        
+        return {
+            'points_earned': final_points,
+            'multiplier_applied': multiplier,
+            'membership_type': membership.get('type', 'free')
+        }
+    
+    async def check_level_upgrade(self, lawyer_id: str):
+        """检查律师等级升级"""
+        lawyer_details = await self.get_lawyer_level_details(lawyer_id)
+        current_points = lawyer_details.level_points
+        current_level = lawyer_details.current_level
+        
+        # 获取下一等级要求
+        next_level_requirements = await self.get_level_requirements(current_level + 1)
+        
+        if current_points >= next_level_requirements['level_points']:
+            # 满足升级条件
+            await self.upgrade_lawyer_level(lawyer_id, current_level + 1)
+            
+            # 发送升级通知
+            await self.notification_service.send_level_upgrade_notification(
+                lawyer_id, current_level + 1
+            )
+```
+
+#### 2.2 会员订阅系统
+
+**免费引流模式设计**:
+```python
+class LawyerMembershipService:
+    """律师会员服务 - 免费引流 + 付费升级"""
+    
+    MEMBERSHIP_TIERS = {
+        'free': {
+            'name': '基础律师版（免费）',
+            'monthly_fee': 0,
+            'ai_credits_monthly': 20,
+            'daily_case_limit': 2,
+            'point_multiplier': 1.0,
+            'features': ['基础案件', '基础AI工具', '邮件支持']
+        },
+        'professional': {
+            'name': '专业律师版',
+            'monthly_fee': 899,
+            'ai_credits_monthly': 500,
+            'daily_case_limit': 15,
+            'point_multiplier': 2.0,
+            'features': ['所有案件类型', '高级AI工具', '优先支持', '数据分析']
+        },
+        'enterprise': {
+            'name': '企业律师版',
+            'monthly_fee': 2999,
+            'ai_credits_monthly': 2000,
+            'daily_case_limit': -1,  # 无限制
+            'point_multiplier': 3.0,
+            'features': ['企业客户案件', '全部AI工具', '专属支持', 'API接入']
+        }
+    }
+    
+    async def assign_free_membership(self, lawyer_id: str):
+        """律师认证通过后自动分配免费会员"""
+        membership = await self.create_lawyer_membership({
+            'lawyer_id': lawyer_id,
+            'membership_type': 'free',
+            'start_date': datetime.now().date(),
+            'end_date': datetime.now().date() + timedelta(days=365*10),  # 10年有效期
+            'benefits': self.MEMBERSHIP_TIERS['free'],
+            'auto_renewal': True,
+            'payment_amount': 0
+        })
+        
+        # 初始化律师等级数据
+        await self.initialize_lawyer_level_details(lawyer_id)
+        
+        return membership
+    
+    async def upgrade_membership(self, lawyer_id: str, target_tier: str):
+        """会员升级"""
+        tier_config = self.MEMBERSHIP_TIERS[target_tier]
+        
+        # 创建支付订单
+        payment_order = await self.payment_service.create_membership_order(
+            lawyer_id, tier_config['monthly_fee'], target_tier
+        )
+        
+        # 支付成功后升级会员
+        if payment_order['status'] == 'paid':
+            await self.update_lawyer_membership(lawyer_id, target_tier)
+            
+            # 重新计算积分倍数
+            await self.points_engine.recalculate_points_with_new_multiplier(
+                lawyer_id, tier_config['point_multiplier']
+            )
+        
+        return payment_order
+```
+
+### 3. 用户Credits支付系统设计
+
+#### 3.1 Credits管理服务
+
+**Credits控制机制**:
+```python
+class UserCreditsService:
+    """用户Credits支付控制服务"""
+    
+    async def initialize_user_credits(self, user_id: str):
+        """初始化用户Credits - 每周1个免费"""
+        await self.create_user_credits_record({
+            'user_id': user_id,
+            'credits_weekly': 1,
+            'credits_remaining': 1,
+            'credits_purchased': 0,
+            'last_reset_date': datetime.now().date()
+        })
+    
+    async def weekly_credits_reset(self):
+        """每周重置Credits - 定时任务"""
+        users = await self.get_all_active_users()
+        
+        for user in users:
+            await self.reset_user_credits(user.id, credits=1)
+            
+        logger.info(f"Weekly credits reset completed for {len(users)} users")
+    
+    async def purchase_credits(self, user_id: str, credits_count: int):
+        """购买Credits - 50元/个"""
+        price_per_credit = 50.00
+        total_amount = credits_count * price_per_credit
+        
+        # 创建支付订单（复用现有支付服务）
+        payment_order = await self.payment_service.create_credits_order(
+            user_id, total_amount, credits_count
+        )
+        
+        # 支付成功后增加Credits
+        if payment_order['status'] == 'paid':
+            await self.add_user_credits(user_id, credits_count)
+            
+            # 记录购买记录
+            await self.record_credits_purchase(user_id, credits_count, total_amount)
+        
+        return payment_order
+    
+    async def consume_credits_for_batch_upload(self, user_id: str):
+        """批量上传消耗Credits"""
+        user_credits = await self.get_user_credits(user_id)
+        
+        if user_credits['credits_remaining'] < 1:
+            raise InsufficientCreditsError(
+                "Credits不足，请购买或等待每周重置",
+                current_credits=user_credits['credits_remaining'],
+                required_credits=1
+            )
+        
+        # 扣除1个credit
+        await self.deduct_user_credits(user_id, 1)
+        
+        # 记录使用记录
+        await self.record_credits_usage(user_id, 1, 'batch_upload')
+        
+        return {
+            'credits_consumed': 1,
+            'credits_remaining': user_credits['credits_remaining'] - 1
+        }
+```
+
+### 4. 前端UI现代化设计
+
+#### 4.1 设计系统规范
+
+**现代化UI设计原则**:
+```scss
+// 设计系统变量
+:root {
+  // 专业色彩系统
+  --primary-color: #2563eb;      // 专业蓝
+  --secondary-color: #7c3aed;    // 紫色
+  --success-color: #059669;      // 成功绿
+  --warning-color: #d97706;      // 警告橙
+  --error-color: #dc2626;        // 错误红
+  
+  // 中性色系
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  
+  // 专业字体系统
+  --font-family-sans: 'Inter', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'SF Mono', monospace;
+  
+  // 阴影系统
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+  
+  // 圆角系统
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+}
+```
+
+**专业图标系统**:
+```typescript
+// 图标组件库配置
+import { 
+  UserIcon, 
+  ScaleIcon, 
+  DocumentTextIcon,
+  CreditCardIcon,
+  TrophyIcon,
+  StarIcon,
+  BellIcon,
+  CogIcon,
+  ChartBarIcon,
+  ShieldCheckIcon
+} from '@heroicons/react/24/outline'
+
+// 图标映射系统
+export const IconMap = {
+  // 用户相关
+  'user': UserIcon,
+  'lawyer': ScaleIcon,
+  'profile': UserIcon,
+  
+  // 业务相关
+  'case': DocumentTextIcon,
+  'payment': CreditCardIcon,
+  'credits': CreditCardIcon,
+  'level': TrophyIcon,
+  'rating': StarIcon,
+  
+  // 系统相关
+  'notification': BellIcon,
+  'settings': CogIcon,
+  'analytics': ChartBarIcon,
+  'security': ShieldCheckIcon
+}
+
+// 图标组件
+export const Icon: React.FC<{name: string, className?: string}> = ({ name, className }) => {
+  const IconComponent = IconMap[name] || UserIcon
+  return <IconComponent className={className} />
+}
+```
+
+#### 4.2 游戏化UI组件
+
+**律师等级展示组件**:
+```vue
+<template>
+  <div class="lawyer-level-card">
+    <!-- 等级徽章 -->
+    <div class="level-badge" :class="`level-${currentLevel}`">
+      <Icon name="trophy" class="level-icon" />
+      <span class="level-text">{{ levelName }}</span>
+    </div>
+    
+    <!-- 积分进度条 -->
+    <div class="points-progress">
+      <div class="progress-bar">
+        <div 
+          class="progress-fill" 
+          :style="{ width: `${progressPercentage}%` }"
+        ></div>
+      </div>
+      <div class="progress-text">
+        {{ currentPoints.toLocaleString() }} / {{ nextLevelPoints.toLocaleString() }}
+      </div>
+    </div>
+    
+    <!-- 会员倍数显示 -->
+    <div class="membership-multiplier" v-if="membershipMultiplier > 1">
+      <Icon name="star" class="multiplier-icon" />
+      <span>{{ membershipMultiplier }}x 积分倍数</span>
+    </div>
+    
+    <!-- 升级动画 -->
+    <div class="level-up-animation" v-if="showLevelUpAnimation">
+      <div class="celebration-effect">
+        <Icon name="trophy" class="celebration-icon" />
+        <span class="celebration-text">恭喜升级！</span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.lawyer-level-card {
+  @apply bg-white rounded-xl shadow-lg p-6 border border-gray-200;
+}
+
+.level-badge {
+  @apply flex items-center gap-2 mb-4;
+}
+
+.level-1, .level-2 { @apply text-gray-600; }
+.level-3, .level-4 { @apply text-blue-600; }
+.level-5, .level-6 { @apply text-purple-600; }
+.level-7, .level-8 { @apply text-orange-600; }
+.level-9, .level-10 { @apply text-red-600; }
+
+.progress-bar {
+  @apply w-full bg-gray-200 rounded-full h-3 mb-2;
+}
+
+.progress-fill {
+  @apply bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-500;
+}
+
+.level-up-animation {
+  @apply fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.celebration-effect {
+  @apply bg-white rounded-xl p-8 text-center shadow-2xl;
+  animation: bounceIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+</style>
+```
+
+**Credits余额组件**:
+```vue
+<template>
+  <div class="credits-balance-card">
+    <div class="credits-header">
+      <Icon name="credits" class="credits-icon" />
+      <h3>Credits余额</h3>
+    </div>
+    
+    <div class="credits-amount">
+      <span class="amount-number">{{ creditsRemaining }}</span>
+      <span class="amount-unit">Credits</span>
+    </div>
+    
+    <div class="credits-info">
+      <div class="info-item">
+        <span class="info-label">下次重置</span>
+        <span class="info-value">{{ nextResetDate }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">已购买</span>
+        <span class="info-value">{{ creditsPurchased }}</span>
+      </div>
+    </div>
+    
+    <button 
+      class="purchase-button"
+      @click="showPurchaseModal = true"
+    >
+      <Icon name="payment" class="button-icon" />
+      购买Credits (¥50/个)
+    </button>
+    
+    <!-- 购买模态框 -->
+    <CreditsurchaseModal 
+      v-if="showPurchaseModal"
+      @close="showPurchaseModal = false"
+      @purchase="handlePurchase"
+    />
+  </div>
+</template>
+
+<style scoped>
+.credits-balance-card {
+  @apply bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-6 border border-blue-200;
+}
+
+.credits-amount {
+  @apply text-3xl font-bold text-blue-600 mb-4;
+}
+
+.purchase-button {
+  @apply w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2;
+}
+</style>
 ```
 
 #### 1.2 管理后台架构

@@ -57,6 +57,12 @@ class User(Base):
     # 用户哈希（用于URL）
     user_hash = Column(String(10), unique=True, nullable=True, index=True)
     
+    # 统一认证系统字段
+    workspace_id = Column(String(50), unique=True, nullable=True)
+    account_type = Column(String(20), default='pending', nullable=False)  # pending, user, lawyer, lawyer_pending, admin
+    email_verified = Column(Boolean, default=False, nullable=False)
+    registration_source = Column(String(20), default='web', nullable=False)
+    
     # 统计信息
     login_count = Column(Integer, default=0, nullable=False)
     last_login_at = Column(DateTime(timezone=True), nullable=True)
@@ -66,9 +72,13 @@ class User(Base):
     # 关联关系
     tenant = relationship("Tenant", back_populates="users")
     lawyer_qualifications = relationship("LawyerQualification", back_populates="user", foreign_keys="LawyerQualification.user_id")
-    assigned_review_tasks = relationship("DocumentReviewTask", foreign_keys="DocumentReviewTask.lawyer_id", back_populates="lawyer")
-    created_review_tasks = relationship("DocumentReviewTask", foreign_keys="DocumentReviewTask.creator_id", back_populates="creator")
-    workload = relationship("LawyerWorkload", back_populates="lawyer", uselist=False)
+    # assigned_review_tasks = relationship("DocumentReviewTask", foreign_keys="DocumentReviewTask.lawyer_id", back_populates="lawyer")
+    # created_review_tasks = relationship("DocumentReviewTask", foreign_keys="DocumentReviewTask.creator_id", back_populates="creator")
+    # workload = relationship("LawyerWorkload", back_populates="lawyer", uselist=False)
+    
+    # 统一认证系统关联
+    certification_requests = relationship("LawyerCertificationRequest", foreign_keys="LawyerCertificationRequest.user_id", back_populates="user")
+    workspace_mapping = relationship("WorkspaceMapping", back_populates="user", uselist=False)
 
     def __repr__(self):
         return f"<User(id={self.id}, username={self.username}, role={self.role.value})>"

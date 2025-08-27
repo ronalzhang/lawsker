@@ -127,7 +127,7 @@ class DatabaseManager:
         """创建数据库引擎"""
         
         # 构建连接URL
-        database_url = f"postgresql://{user}:{password}@{host}:{port}/{database}"
+        database_url = f"postgresql://...?command_timeout=30&...?connect_timeout=10&...?sslmode=require&{user}:{password}@{host}:{port}/{database}"
         
         # SSL参数
         connect_args = {

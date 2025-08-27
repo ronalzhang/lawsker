@@ -1,0 +1,158 @@
+{
+  "css_files": {
+    "responsive-enhanced": {
+      "exists": true,
+      "size": 22777,
+      "features": {
+        "移动端优先": true,
+        "触摸目标优化": true,
+        "GPU加速": true,
+        "响应式网格": true,
+        "移动端导航": true,
+        "触摸反馈": true,
+        "模态框优化": true,
+        "表格响应式": true,
+        "无障碍支持": true,
+        "性能优化": true
+      },
+      "score": 100.0
+    },
+    "design-system": {
+      "exists": true,
+      "features": {
+        "颜色系统": true,
+        "字体系统": true,
+        "阴影系统": true,
+        "圆角系统": true,
+        "间距系统": true,
+        "断点系统": true,
+        "暗色模式": true,
+        "响应式字体": true
+      },
+      "score": 100.0
+    }
+  },
+  "js_files": {
+    "responsive-enhanced": {
+      "exists": true,
+      "size": 28234,
+      "features": {
+        "响应式增强器": true,
+        "触摸手势处理": true,
+        "性能监控": true,
+        "视口管理": true,
+        "触摸优化": true,
+        "图片懒加载": true,
+        "移动端导航": true,
+        "模态框增强": true,
+        "表单优化": true,
+        "无障碍增强": true,
+        "断点检测": true,
+        "iOS优化": true
+      },
+      "score": 100.0
+    }
+  },
+  "html_integration": {
+    "index.html": {
+      "exists": true,
+      "features": {
+        "响应式CSS": true,
+        "响应式JS": true,
+        "视口元标签": true,
+        "触摸优化": true,
+        "PWA支持": true,
+        "苹果优化": true,
+        "字体预加载": true
+      },
+      "score": 100.0
+    },
+    "lawyer-workspace.html": {
+      "exists": true,
+      "features": {
+        "响应式CSS": true,
+        "响应式JS": true,
+        "视口元标签": true,
+        "触摸优化": true,
+        "PWA支持": true,
+        "苹果优化": true,
+        "字体预加载": true
+      },
+      "score": 100.0
+    },
+    "user-workspace.html": {
+      "exists": true,
+      "features": {
+        "响应式CSS": true,
+        "响应式JS": true,
+        "视口元标签": true,
+        "触摸优化": true,
+        "PWA支持": true,
+        "苹果优化": true,
+        "字体预加载": true
+      },
+      "score": 100.0
+    },
+    "responsive-showcase.html": {
+      "exists": true,
+      "features": {
+        "响应式CSS": true,
+        "响应式JS": true,
+        "视口元标签": true,
+        "触摸优化": true,
+        "PWA支持": true,
+        "苹果优化": true,
+        "字体预加载": true
+      },
+      "score": 100.0
+    }
+  },
+  "mobile_features": {
+    "features": {
+      "移动端优先断点": true,
+      "触摸目标尺寸": true,
+      "触摸反馈": true,
+      "防止缩放": true,
+      "iOS视口修复": true,
+      "移动端导航菜单": true,
+      "滑动手势支持": true,
+      "移动端模态框": true,
+      "移动端表格": true,
+      "移动端间距": true,
+      "横屏适配": true,
+      "高分辨率优化": true
+    },
+    "score": 100.0
+  },
+  "performance_features": {
+    "features": {
+      "GPU硬件加速": true,
+      "图片懒加载": true,
+      "防抖节流": true,
+      "性能监控": true,
+      "内存管理": true,
+      "网络检测": true,
+      "首屏渲染": true,
+      "滚动优化": true,
+      "事件被动监听": true,
+      "资源预加载": true
+    },
+    "score": 100.0
+  },
+  "accessibility_features": {
+    "features": {
+      "屏幕阅读器支持": true,
+      "焦点可见性": true,
+      "键盘导航": true,
+      "ARIA属性": true,
+      "焦点管理": true,
+      "高对比度支持": true,
+      "减少动画偏好": true,
+      "语义化标签": true,
+      "焦点陷阱": true,
+      "跳过链接": true
+    },
+    "score": 100.0
+  },
+  "overall_score": 100.0
+}

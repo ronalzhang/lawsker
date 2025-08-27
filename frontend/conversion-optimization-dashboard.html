@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>转化率优化仪表盘 - Lawsker</title>
+    
+    <!-- Modern Design System -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/css/components.css">
+    
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 专业图标系统 -->
+    <script src="/js/icon-system.js"></script>
+    <script src="/js/professional-icon-library.js"></script>
+    <script src="/js/icon-upgrade-system.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+            background: #f8fafc;
+            color: #1f2937;
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-header {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard-header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-header p {
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        }
+
+        .metric-card.success::before {
+            background: linear-gradient(90deg, #10b981, #059669);
+        }
+
+        .metric-card.warning::before {
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+        }
+
+        .metric-card.danger::before {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .metric-change {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .metric-change.positive {
+            color: #059669;
+        }
+
+        .metric-change.negative {
+            color: #dc2626;
+        }
+
+        .metric-change.neutral {
+            color: #6b7280;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-container h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+        }
+
+        .recommendations-section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .recommendation-item {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .recommendation-item:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+
+        .recommendation-item.high-priority {
+            border-color: #ef4444;
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+        }
+
+        .recommendation-item.medium-priority {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+        }
+
+        .recommendation-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .recommendation-description {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .recommendation-actions {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recommendation-actions li {
+            color: #374151;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+            padding-left: 1rem;
+            position: relative;
+        }
+
+        .recommendation-actions li::before {
+            content: '•';
+            color: #3b82f6;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .quick-wins {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .quick-win-card {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border: 2px solid #0ea5e9;
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        .quick-win-card::before {
+            content: '⚡';
+            position: absolute;
+            top: -8px;
+            right: 15px;
+            font-size: 1.5rem;
+            background: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .quick-win-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0c4a6e;
+            margin-bottom: 0.5rem;
+        }
+
+        .quick-win-description {
+            color: #0369a1;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .quick-win-impact {
+            background: rgba(14, 165, 233, 0.1);
+            border-radius: 8px;
+            padding: 0.5rem;
+            font-size: 0.8rem;
+            color: #0c4a6e;
+            font-weight: 500;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .status-indicator.on-track {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-indicator.needs-attention {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-indicator.critical {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            color: #6b7280;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 1rem;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-wins {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1>转化率优化仪表盘</h1>
+                    <p>监控用户注册转化率提升40%的目标进度</p>
+                </div>
+                <button class="refresh-btn" onclick="refreshDashboard()">
+                    刷新数据
+                </button>
+            </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="metrics-grid" id="metrics-grid">
+            <div class="loading">加载中...</div>
+        </div>
+
+        <!-- Quick Wins Section -->
+        <div class="recommendations-section">
+            <h3>快速优化建议</h3>
+            <div class="quick-wins" id="quick-wins">
+                <div class="loading">加载中...</div>
+            </div>
+        </div>
+
+        <!-- Conversion Funnel Chart -->
+        <div class="chart-container">
+            <h3>注册转化漏斗</h3>
+            <canvas id="funnelChart" width="400" height="200"></canvas>
+        </div>
+
+        <!-- Conversion Trend Chart -->
+        <div class="chart-container">
+            <h3>转化率趋势</h3>
+            <canvas id="trendChart" width="400" height="200"></canvas>
+        </div>
+
+        <!-- Detailed Recommendations -->
+        <div class="recommendations-section">
+            <h3>详细优化建议</h3>
+            <div id="recommendations">
+                <div class="loading">加载中...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let funnelChart = null;
+        let trendChart = null;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+        });
+
+        async function loadDashboardData() {
+            try {
+                // Load dashboard data
+                const response = await fetch('/api/v1/conversion-optimization/dashboard', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load dashboard data');
+                }
+
+                const data = await response.json();
+                
+                // Update metrics
+                updateMetrics(data);
+                
+                // Update quick wins
+                updateQuickWins(data.quick_wins);
+                
+                // Update recommendations
+                updateRecommendations(data.recommendations);
+                
+                // Update charts
+                updateFunnelChart(data.funnel);
+                updateTrendChart(data.metrics);
+
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showError('加载仪表盘数据失败，请刷新页面重试');
+            }
+        }
+
+        function updateMetrics(data) {
+            const overview = data.overview;
+            const metrics = data.metrics.metrics;
+            
+            const metricsHtml = `
+                <div class="metric-card ${getStatusClass(overview.status)}">
+                    <div class="metric-value">${overview.current_conversion_rate}%</div>
+                    <div class="metric-label">当前转化率</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${overview.target_progress}%"></div>
+                    </div>
+                    <div class="metric-change ${overview.improvement_needed <= 0 ? 'positive' : 'neutral'}">
+                        目标: ${overview.target_conversion_rate}% 
+                        ${overview.improvement_needed > 0 ? `(还需提升 ${overview.improvement_needed}%)` : '(已达成目标!)'}
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-value">${metrics.total_registrations}</div>
+                    <div class="metric-label">本月注册用户</div>
+                    <div class="metric-change positive">
+                        📈 较上月增长
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-value">${metrics.demo_users}</div>
+                    <div class="metric-label">演示用户数量</div>
+                    <div class="metric-change neutral">
+                        转化率: ${metrics.demo_conversion_rate}%
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-value">${Math.round(overview.target_progress)}%</div>
+                    <div class="metric-label">目标完成进度</div>
+                    <div class="status-indicator ${overview.status.replace('_', '-')}">
+                        ${getStatusText(overview.status)}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('metrics-grid').innerHTML = metricsHtml;
+        }
+
+        function updateQuickWins(quickWins) {
+            const quickWinsHtml = quickWins.map(win => `
+                <div class="quick-win-card">
+                    <div class="quick-win-title">${win.title}</div>
+                    <div class="quick-win-description">${win.description}</div>
+                    <div class="quick-win-impact">
+                        <strong>预期影响:</strong> ${win.impact}<br>
+                        <strong>实施难度:</strong> ${win.effort}
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('quick-wins').innerHTML = quickWinsHtml;
+        }
+
+        function updateRecommendations(recommendations) {
+            const recommendationsHtml = recommendations.map(rec => `
+                <div class="recommendation-item ${rec.priority}-priority">
+                    <div class="recommendation-title">${rec.title}</div>
+                    <div class="recommendation-description">${rec.description}</div>
+                    <ul class="recommendation-actions">
+                        ${rec.actions.map(action => `<li>${action}</li>`).join('')}
+                    </ul>
+                </div>
+            `).join('');
+            
+            document.getElementById('recommendations').innerHTML = recommendationsHtml;
+        }
+
+        function updateFunnelChart(funnelData) {
+            const ctx = document.getElementById('funnelChart').getContext('2d');
+            
+            if (funnelChart) {
+                funnelChart.destroy();
+            }
+            
+            const data = funnelData.funnel_data;
+            const labels = Object.keys(data).map(key => key.replace(/_/g, ' '));
+            const values = Object.values(data);
+            
+            funnelChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '用户数量',
+                        data: values,
+                        backgroundColor: [
+                            '#3b82f6',
+                            '#8b5cf6',
+                            '#06b6d4',
+                            '#10b981',
+                            '#f59e0b',
+                            '#ef4444'
+                        ],
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f3f4f6'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTrendChart(metricsData) {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            
+            if (trendChart) {
+                trendChart.destroy();
+            }
+            
+            // Simulate trend data (in real implementation, this would come from API)
+            const trendData = {
+                labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                datasets: [{
+                    label: '转化率 (%)',
+                    data: [8.5, 9.2, 10.1, 11.3, 12.8, metricsData.registration_conversion_rate],
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }, {
+                    label: '目标转化率 (%)',
+                    data: [14, 14, 14, 14, 14, 14],
+                    borderColor: '#ef4444',
+                    backgroundColor: 'transparent',
+                    borderDash: [5, 5],
+                    fill: false
+                }]
+            };
+            
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: trendData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 20,
+                            grid: {
+                                color: '#f3f4f6'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'on_track': return 'success';
+                case 'needs_attention': return 'warning';
+                case 'critical': return 'danger';
+                default: return '';
+            }
+        }
+
+        function getStatusText(status) {
+            switch (status) {
+                case 'on_track': return '✅ 进展良好';
+                case 'needs_attention': return '⚠️ 需要关注';
+                case 'critical': return '🚨 需要紧急处理';
+                default: return '📊 监控中';
+            }
+        }
+
+        function showError(message) {
+            const errorHtml = `
+                <div style="text-align: center; padding: 2rem; color: #dc2626;">
+                    <h3>❌ ${message}</h3>
+                </div>
+            `;
+            document.getElementById('metrics-grid').innerHTML = errorHtml;
+        }
+
+        async function refreshDashboard() {
+            const btn = document.querySelector('.refresh-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '刷新中...';
+            btn.disabled = true;
+            
+            await loadDashboardData();
+            
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+
+        // Auto-refresh every 5 minutes
+        setInterval(refreshDashboard, 5 * 60 * 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业客户满意度仪表盘 - Lawsker</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="css/design-system.css" rel="stylesheet">
+    <link href="css/components.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-semibold text-gray-900">企业客户满意度仪表盘</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-gray-500">
+                        目标满意度: <span class="font-semibold text-blue-600">95%</span>
+                    </div>
+                    <button id="refreshBtn" class="btn-secondary">
+                        <i data-feather="refresh-cw" class="w-4 h-4 mr-2"></i>
+                        刷新数据
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 关键指标卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- 当前满意度 -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i data-feather="smile" class="w-5 h-5 text-blue-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">当前满意度</p>
+                        <p class="text-2xl font-bold text-gray-900" id="currentSatisfactionRate">--</p>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <div class="flex items-center">
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-600 h-2 rounded-full transition-all duration-500" 
+                                 id="satisfactionProgress" style="width: 0%"></div>
+                        </div>
+                        <span class="ml-2 text-xs text-gray-500">95%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 距离目标 -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <i data-feather="target" class="w-5 h-5 text-orange-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">距离目标</p>
+                        <p class="text-2xl font-bold text-gray-900" id="gapToTarget">--</p>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-xs text-gray-500">目标: 95% 满意度</p>
+                </div>
+            </div>
+
+            <!-- 本月反馈数 -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i data-feather="message-circle" class="w-5 h-5 text-green-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">本月反馈数</p>
+                        <p class="text-2xl font-bold text-gray-900" id="monthlyResponses">--</p>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-xs text-gray-500" id="uniqueCustomers">-- 位客户参与</p>
+                </div>
+            </div>
+
+            <!-- 高满意度率 -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i data-feather="star" class="w-5 h-5 text-purple-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">高满意度率</p>
+                        <p class="text-2xl font-bold text-gray-900" id="highSatisfactionRate">--</p>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-xs text-gray-500">4.5分以上评价</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- 服务类型满意度 -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">各服务满意度</h3>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs text-gray-500">数据导向分析</span>
+                        <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    </div>
+                </div>
+                <canvas id="serviceChart" width="400" height="300"></canvas>
+            </div>
+
+            <!-- 满意度趋势 -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">满意度趋势</h3>
+                    <select id="trendPeriod" class="text-sm border border-gray-300 rounded-md px-3 py-1">
+                        <option value="30">最近30天</option>
+                        <option value="90">最近90天</option>
+                        <option value="180">最近6个月</option>
+                    </select>
+                </div>
+                <canvas id="trendChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- 改进建议和警报 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- 改进建议 -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">改进建议</h3>
+                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                        数据驱动优化
+                    </span>
+                </div>
+                <div id="improvementSuggestions" class="space-y-4">
+                    <!-- 改进建议将在这里动态加载 -->
+                </div>
+            </div>
+
+            <!-- 满意度警报 -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900">满意度警报</h3>
+                    <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full" id="activeAlertsCount">
+                        0 个活跃警报
+                    </span>
+                </div>
+                <div id="satisfactionAlerts" class="space-y-3">
+                    <!-- 警报将在这里动态加载 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 客户满意度详情表格 -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">客户满意度详情</h3>
+                    <div class="flex items-center space-x-4">
+                        <select id="serviceFilter" class="text-sm border border-gray-300 rounded-md px-3 py-1">
+                            <option value="">所有服务</option>
+                            <option value="data_analysis">数据分析</option>
+                            <option value="legal_consultation">法律咨询</option>
+                            <option value="document_review">文档审查</option>
+                        </select>
+                        <button id="exportBtn" class="btn-secondary text-sm">
+                            <i data-feather="download" class="w-4 h-4 mr-2"></i>
+                            导出数据
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                客户ID
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                服务类型
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                满意度评分
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                反馈时间
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                状态
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                操作
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="satisfactionTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- 表格数据将在这里动态加载 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 数据说明 -->
+        <div class="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i data-feather="info" class="w-5 h-5 text-blue-600 mt-0.5"></i>
+                </div>
+                <div class="ml-3">
+                    <h4 class="text-sm font-medium text-blue-900">数据说明</h4>
+                    <div class="mt-2 text-sm text-blue-800">
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>满意度数据基于客户主动反馈，仅供参考和内部服务优化使用</li>
+                            <li>目标满意度95%是基于行业标准和平台服务定位设定的内部目标</li>
+                            <li>数据分析用于识别改进机会，不构成服务质量承诺或保证</li>
+                            <li>实际服务体验可能因客户具体需求和案件复杂程度而异</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 改进措施模态框 -->
+    <div id="improvementModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-96 overflow-y-auto">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-900">制定改进措施</h3>
+                        <button id="closeModal" class="text-gray-400 hover:text-gray-600">
+                            <i data-feather="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="px-6 py-4">
+                    <form id="improvementForm">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    客户ID
+                                </label>
+                                <input type="text" id="improvementCustomerId" 
+                                       class="w-full border border-gray-300 rounded-md px-3 py-2" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    改进类型
+                                </label>
+                                <select id="improvementType" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                                    <option value="service_training">服务培训</option>
+                                    <option value="process_optimization">流程优化</option>
+                                    <option value="communication_enhancement">沟通改进</option>
+                                    <option value="quality_assurance">质量保证</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    改进描述
+                                </label>
+                                <textarea id="improvementDescription" rows="3"
+                                          class="w-full border border-gray-300 rounded-md px-3 py-2"
+                                          placeholder="请描述具体的改进措施..."></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    预期影响
+                                </label>
+                                <input type="text" id="expectedImpact" 
+                                       class="w-full border border-gray-300 rounded-md px-3 py-2"
+                                       placeholder="预期提升满意度至...">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+                    <button id="cancelImprovement" class="btn-secondary">取消</button>
+                    <button id="submitImprovement" class="btn-primary">提交改进措施</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api-client.js"></script>
+    <!-- 专业图标系统 -->
+    <script src="/js/icon-system.js"></script>
+    <script src="/js/professional-icon-library.js"></script>
+    <script src="/js/icon-upgrade-system.js"></script>
+    <script>
+        // 企业客户满意度仪表盘管理类
+        class EnterpriseSatisfactionDashboard {
+            constructor() {
+                this.apiClient = new APIClient();
+                this.charts = {};
+                this.currentData = null;
+                this.init();
+            }
+
+            async init() {
+                this.setupEventListeners();
+                await this.loadDashboardData();
+                this.initializeCharts();
+                feather.replace();
+            }
+
+            setupEventListeners() {
+                // 刷新按钮
+                document.getElementById('refreshBtn').addEventListener('click', () => {
+                    this.loadDashboardData();
+                });
+
+                // 趋势周期选择
+                document.getElementById('trendPeriod').addEventListener('change', (e) => {
+                    this.updateTrendChart(parseInt(e.target.value));
+                });
+
+                // 服务筛选
+                document.getElementById('serviceFilter').addEventListener('change', (e) => {
+                    this.filterSatisfactionData(e.target.value);
+                });
+
+                // 导出按钮
+                document.getElementById('exportBtn').addEventListener('click', () => {
+                    this.exportSatisfactionData();
+                });
+
+                // 模态框事件
+                document.getElementById('closeModal').addEventListener('click', () => {
+                    this.hideImprovementModal();
+                });
+
+                document.getElementById('cancelImprovement').addEventListener('click', () => {
+                    this.hideImprovementModal();
+                });
+
+                document.getElementById('submitImprovement').addEventListener('click', () => {
+                    this.submitImprovementPlan();
+                });
+            }
+
+            async loadDashboardData() {
+                try {
+                    this.showLoading();
+                    
+                    // 获取仪表盘数据
+                    const response = await this.apiClient.get('/api/v1/enterprise-satisfaction/satisfaction/dashboard');
+                    
+                    if (response.success) {
+                        this.currentData = response.data;
+                        this.updateDashboardMetrics();
+                        this.updateServiceChart();
+                        this.updateImprovementSuggestions();
+                        await this.loadSatisfactionAlerts();
+                        await this.loadSatisfactionDetails();
+                    }
+                } catch (error) {
+                    console.error('加载仪表盘数据失败:', error);
+                    this.showError('加载数据失败，请稍后重试');
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            updateDashboardMetrics() {
+                const overview = this.currentData.overview;
+                
+                // 更新关键指标
+                document.getElementById('currentSatisfactionRate').textContent = 
+                    `${overview.current_satisfaction_rate.toFixed(1)}%`;
+                
+                document.getElementById('gapToTarget').textContent = 
+                    `${overview.gap_to_target.toFixed(1)}%`;
+                
+                document.getElementById('monthlyResponses').textContent = 
+                    overview.total_responses_this_month;
+                
+                document.getElementById('uniqueCustomers').textContent = 
+                    `${overview.unique_customers} 位客户参与`;
+                
+                document.getElementById('highSatisfactionRate').textContent = 
+                    `${this.currentData.key_metrics.high_satisfaction_rate.toFixed(1)}%`;
+
+                // 更新进度条
+                const progressBar = document.getElementById('satisfactionProgress');
+                progressBar.style.width = `${overview.current_satisfaction_rate}%`;
+                
+                // 根据满意度设置颜色
+                if (overview.current_satisfaction_rate >= 95) {
+                    progressBar.className = 'bg-green-600 h-2 rounded-full transition-all duration-500';
+                } else if (overview.current_satisfaction_rate >= 85) {
+                    progressBar.className = 'bg-blue-600 h-2 rounded-full transition-all duration-500';
+                } else if (overview.current_satisfaction_rate >= 75) {
+                    progressBar.className = 'bg-yellow-600 h-2 rounded-full transition-all duration-500';
+                } else {
+                    progressBar.className = 'bg-red-600 h-2 rounded-full transition-all duration-500';
+                }
+            }
+
+            initializeCharts() {
+                // 初始化服务满意度图表
+                const serviceCtx = document.getElementById('serviceChart').getContext('2d');
+                this.charts.service = new Chart(serviceCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            data: [],
+                            backgroundColor: [
+                                '#3B82F6', // 蓝色
+                                '#10B981', // 绿色
+                                '#F59E0B', // 黄色
+                                '#EF4444'  // 红色
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // 初始化趋势图表
+                const trendCtx = document.getElementById('trendChart').getContext('2d');
+                this.charts.trend = new Chart(trendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: '满意度',
+                            data: [],
+                            borderColor: '#3B82F6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: '目标线',
+                            data: [],
+                            borderColor: '#EF4444',
+                            borderDash: [5, 5],
+                            borderWidth: 2,
+                            fill: false,
+                            pointRadius: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            updateServiceChart() {
+                const serviceData = this.currentData.service_performance;
+                const labels = [];
+                const data = [];
+                
+                Object.keys(serviceData).forEach(serviceType => {
+                    const serviceName = this.getServiceTypeName(serviceType);
+                    const satisfactionRate = serviceData[serviceType].overall_metrics.satisfaction_rate_percent;
+                    
+                    labels.push(serviceName);
+                    data.push(satisfactionRate);
+                });
+                
+                this.charts.service.data.labels = labels;
+                this.charts.service.data.datasets[0].data = data;
+                this.charts.service.update();
+            }
+
+            updateImprovementSuggestions() {
+                const suggestions = this.currentData.improvement_priorities;
+                const container = document.getElementById('improvementSuggestions');
+                
+                if (suggestions.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-8 text-gray-500">
+                            <i data-feather="check-circle" class="w-8 h-8 mx-auto mb-2 text-green-500"></i>
+                            <p>当前满意度表现良好，暂无改进建议</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = suggestions.map(suggestion => `
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center mb-2">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                        ${suggestion.priority === 'high' ? 'bg-red-100 text-red-800' : 
+                                          suggestion.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' : 
+                                          'bg-green-100 text-green-800'}">
+                                        ${suggestion.priority === 'high' ? '高优先级' : 
+                                          suggestion.priority === 'medium' ? '中优先级' : '低优先级'}
+                                    </span>
+                                    <h4 class="ml-2 text-sm font-medium text-gray-900">${suggestion.title}</h4>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-3">${suggestion.description}</p>
+                                <div class="space-y-1">
+                                    ${suggestion.actions.map(action => `
+                                        <div class="flex items-center text-xs text-gray-500">
+                                            <i data-feather="arrow-right" class="w-3 h-3 mr-2"></i>
+                                            ${action}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                feather.replace();
+            }
+
+            async loadSatisfactionAlerts() {
+                try {
+                    const response = await this.apiClient.get('/api/v1/enterprise-satisfaction/satisfaction/alerts?limit=10');
+                    
+                    if (response.success) {
+                        const alerts = response.data.alerts;
+                        const container = document.getElementById('satisfactionAlerts');
+                        const countElement = document.getElementById('activeAlertsCount');
+                        
+                        countElement.textContent = `${response.data.active_alerts} 个活跃警报`;
+                        
+                        if (alerts.length === 0) {
+                            container.innerHTML = `
+                                <div class="text-center py-6 text-gray-500">
+                                    <i data-feather="shield-check" class="w-8 h-8 mx-auto mb-2 text-green-500"></i>
+                                    <p class="text-sm">暂无满意度警报</p>
+                                </div>
+                            `;
+                        } else {
+                            container.innerHTML = alerts.map(alert => `
+                                <div class="flex items-start space-x-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                    <div class="flex-shrink-0">
+                                        <i data-feather="alert-triangle" class="w-5 h-5 text-red-600"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-red-900">
+                                            客户 ${alert.customer_id.substring(0, 8)}...
+                                        </p>
+                                        <p class="text-sm text-red-700">${alert.alert_message}</p>
+                                        <p class="text-xs text-red-600 mt-1">
+                                            ${new Date(alert.created_at).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                    <button class="text-red-600 hover:text-red-800" 
+                                            onclick="dashboard.showImprovementModal('${alert.customer_id}')">
+                                        <i data-feather="settings" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            `).join('');
+                        }
+                        
+                        feather.replace();
+                    }
+                } catch (error) {
+                    console.error('加载满意度警报失败:', error);
+                }
+            }
+
+            async loadSatisfactionDetails() {
+                try {
+                    const response = await this.apiClient.get('/api/v1/enterprise-satisfaction/satisfaction/analytics?date_range=30');
+                    
+                    if (response.success && response.data.service_breakdown) {
+                        const tbody = document.getElementById('satisfactionTableBody');
+                        const services = response.data.service_breakdown;
+                        
+                        let rows = [];
+                        Object.keys(services).forEach(serviceType => {
+                            const service = services[serviceType];
+                            rows.push({
+                                service_type: serviceType,
+                                satisfaction_rate: service.satisfaction_rate,
+                                avg_satisfaction: service.avg_satisfaction,
+                                total_responses: service.total_responses
+                            });
+                        });
+                        
+                        tbody.innerHTML = rows.map(row => `
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    ${this.getServiceTypeName(row.service_type)}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    ${row.service_type}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <span class="text-sm font-medium text-gray-900">${row.avg_satisfaction}/5.0</span>
+                                        <div class="ml-2 w-16 bg-gray-200 rounded-full h-2">
+                                            <div class="bg-blue-600 h-2 rounded-full" 
+                                                 style="width: ${(row.avg_satisfaction / 5) * 100}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    最近30天
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                        ${row.satisfaction_rate >= 95 ? 'bg-green-100 text-green-800' :
+                                          row.satisfaction_rate >= 85 ? 'bg-blue-100 text-blue-800' :
+                                          row.satisfaction_rate >= 75 ? 'bg-yellow-100 text-yellow-800' :
+                                          'bg-red-100 text-red-800'}">
+                                        ${row.satisfaction_rate >= 95 ? '优秀' :
+                                          row.satisfaction_rate >= 85 ? '良好' :
+                                          row.satisfaction_rate >= 75 ? '一般' : '需改进'}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <button class="text-blue-600 hover:text-blue-900" 
+                                            onclick="dashboard.viewServiceDetails('${row.service_type}')">
+                                        查看详情
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                } catch (error) {
+                    console.error('加载满意度详情失败:', error);
+                }
+            }
+
+            showImprovementModal(customerId) {
+                document.getElementById('improvementCustomerId').value = customerId;
+                document.getElementById('improvementModal').classList.remove('hidden');
+            }
+
+            hideImprovementModal() {
+                document.getElementById('improvementModal').classList.add('hidden');
+                document.getElementById('improvementForm').reset();
+            }
+
+            async submitImprovementPlan() {
+                try {
+                    const customerId = document.getElementById('improvementCustomerId').value;
+                    const improvementType = document.getElementById('improvementType').value;
+                    const description = document.getElementById('improvementDescription').value;
+                    const expectedImpact = document.getElementById('expectedImpact').value;
+
+                    if (!description.trim()) {
+                        alert('请填写改进描述');
+                        return;
+                    }
+
+                    const improvementActions = [{
+                        type: improvementType,
+                        description: description,
+                        expected_impact: expectedImpact,
+                        timeline_days: 30
+                    }];
+
+                    const response = await this.apiClient.post(
+                        '/api/v1/enterprise-satisfaction/satisfaction/improve',
+                        {
+                            customer_id: customerId,
+                            improvement_actions: improvementActions
+                        }
+                    );
+
+                    if (response.success) {
+                        alert('改进措施提交成功！');
+                        this.hideImprovementModal();
+                        await this.loadDashboardData();
+                    }
+                } catch (error) {
+                    console.error('提交改进措施失败:', error);
+                    alert('提交失败，请稍后重试');
+                }
+            }
+
+            getServiceTypeName(serviceType) {
+                const names = {
+                    'data_analysis': '数据分析',
+                    'legal_consultation': '法律咨询',
+                    'document_review': '文档审查'
+                };
+                return names[serviceType] || serviceType;
+            }
+
+            showLoading() {
+                // 显示加载状态
+                document.getElementById('refreshBtn').disabled = true;
+                document.getElementById('refreshBtn').innerHTML = '<i data-feather="loader" class="w-4 h-4 mr-2 animate-spin"></i>加载中...';
+            }
+
+            hideLoading() {
+                // 隐藏加载状态
+                document.getElementById('refreshBtn').disabled = false;
+                document.getElementById('refreshBtn').innerHTML = '<i data-feather="refresh-cw" class="w-4 h-4 mr-2"></i>刷新数据';
+                feather.replace();
+            }
+
+            showError(message) {
+                // 显示错误信息
+                console.error(message);
+            }
+
+            exportSatisfactionData() {
+                // 导出满意度数据
+                console.log('导出满意度数据');
+            }
+
+            filterSatisfactionData(serviceType) {
+                // 筛选满意度数据
+                console.log('筛选服务类型:', serviceType);
+            }
+
+            viewServiceDetails(serviceType) {
+                // 查看服务详情
+                console.log('查看服务详情:', serviceType);
+            }
+
+            async updateTrendChart(days) {
+                // 更新趋势图表
+                console.log('更新趋势图表:', days);
+            }
+        }
+
+        // 初始化仪表盘
+        let dashboard;
+        document.addEventListener('DOMContentLoaded', () => {
+            dashboard = new EnterpriseSatisfactionDashboard();
+        });
+    </script>
+</body>
+</html>

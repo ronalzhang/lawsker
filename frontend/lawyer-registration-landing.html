@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>律师免费注册 - Lawsker 律客</title>
+    
+    <!-- Modern Design System -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/css/components.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .hero-section {
+            padding: 4rem 2rem;
+            text-align: center;
+            color: white;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .hero-highlight {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            display: inline-block;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .registration-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 600px;
+        }
+
+        .benefits-section {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            padding: 3rem;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .benefits-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .crown-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .benefits-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .benefit-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .benefit-icon {
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-weight: bold;
+        }
+
+        .benefit-content h4 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .benefit-content p {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        .form-section {
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-subtitle {
+            color: #6b7280;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: #374151;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.875rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 1rem;
+        }
+
+        .register-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
+        }
+
+        .login-link {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .login-link a {
+            color: #10b981;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .trust-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6b7280;
+            font-size: 0.75rem;
+        }
+
+        .trust-icon {
+            width: 16px;
+            height: 16px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.625rem;
+        }
+
+        .message {
+            padding: 0.875rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        .message.success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .message.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        @media (max-width: 768px) {
+            .registration-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .benefits-section {
+                order: 2;
+            }
+            
+            .form-section {
+                order: 1;
+            }
+        }
+    </style>
+    <!-- 专业图标系统 -->
+    <script src="/js/icon-system.js"></script>
+    <script src="/js/professional-icon-library.js"></script>
+    <script src="/js/icon-upgrade-system.js"></script>
+</head>
+<body>
+    <div class="hero-section">
+        <div class="hero-highlight">🎉 限时免费注册</div>
+        <h1 class="hero-title">律师免费注册</h1>
+        <p class="hero-subtitle">加入 Lawsker，享受10年免费会员福利</p>
+    </div>
+
+    <div class="registration-container">
+        <div class="benefits-section">
+            <h2 class="benefits-title">
+                <span class="crown-icon">👑</span>
+                免费会员福利
+            </h2>
+            
+            <ul class="benefits-list">
+                <li class="benefit-item">
+                    <span class="benefit-icon">🤖</span>
+                    <div class="benefit-content">
+                        <h4>每月20个AI Credits</h4>
+                        <p>智能法律文书生成、案例分析、法条检索等AI工具免费使用</p>
+                    </div>
+                </li>
+                
+                <li class="benefit-item">
+                    <span class="benefit-icon">📋</span>
+                    <div class="benefit-content">
+                        <h4>每日2个案件机会</h4>
+                        <p>接受客户委托，开始您的在线法律服务之旅</p>
+                    </div>
+                </li>
+                
+                <li class="benefit-item">
+                    <span class="benefit-icon">🎮</span>
+                    <div class="benefit-content">
+                        <h4>传奇游戏式积分系统</h4>
+                        <p>完成案件获得积分，提升律师等级，解锁更多权益</p>
+                    </div>
+                </li>
+                
+                <li class="benefit-item">
+                    <span class="benefit-icon">⏰</span>
+                    <div class="benefit-content">
+                        <h4>10年免费使用期</h4>
+                        <p>无需担心到期，长期享受平台基础服务</p>
+                    </div>
+                </li>
+                
+                <li class="benefit-item">
+                    <span class="benefit-icon">⚡</span>
+                    <div class="benefit-content">
+                        <h4>升级专业版享2倍积分</h4>
+                        <p>随时可升级专业版，享受更多权益和积分倍数</p>
+                    </div>
+                </li>
+            </ul>
+
+            <div class="stats-section">
+                <div class="stat-item">
+                    <div class="stat-number">10,000+</div>
+                    <div class="stat-label">注册律师</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">50,000+</div>
+                    <div class="stat-label">成功案件</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">98%</div>
+                    <div class="stat-label">满意度</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2 class="form-title">立即免费注册</h2>
+            <p class="form-subtitle">认证通过后自动获得免费会员资格</p>
+
+            <div id="message-container"></div>
+
+            <form id="lawyer-register-form">
+                <div class="form-group">
+                    <label for="full_name">律师姓名</label>
+                    <input type="text" id="full_name" name="full_name" placeholder="请输入您的真实姓名" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">邮箱地址</label>
+                    <input type="email" id="email" name="email" placeholder="用于接收认证通知" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">设置密码</label>
+                    <input type="password" id="password" name="password" placeholder="至少8位字符" required>
+                </div>
+
+                <button type="submit" class="register-btn">
+                    🚀 立即免费注册
+                </button>
+            </form>
+
+            <div class="login-link">
+                已有账户？<a href="/unified-auth.html">立即登录</a>
+            </div>
+
+            <div class="trust-indicators">
+                <div class="trust-item">
+                    <span class="trust-icon">🔒</span>
+                    信息安全保护
+                </div>
+                <div class="trust-item">
+                    <span class="trust-icon">✓</span>
+                    律师证认证
+                </div>
+                <div class="trust-item">
+                    <span class="trust-icon">⚡</span>
+                    快速审核
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 律师注册表单提交
+        document.getElementById('lawyer-register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                email: formData.get('email'),
+                password: formData.get('password'),
+                full_name: formData.get('full_name'),
+                tenant_id: '00000000-0000-0000-0000-000000000001' // 默认租户ID
+            };
+
+            try {
+                // 第一步：注册用户
+                const registerResponse = await fetch('/api/v1/unified-auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const registerResult = await registerResponse.json();
+
+                if (registerResponse.ok) {
+                    // 第二步：设置律师身份
+                    const identityResponse = await fetch('/api/v1/unified-auth/set-identity', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            user_id: registerResult.user_id,
+                            identity_type: 'lawyer'
+                        })
+                    });
+
+                    const identityResult = await identityResponse.json();
+
+                    if (identityResponse.ok) {
+                        showMessage('注册成功！请检查邮箱完成验证，然后上传律师证完成认证即可获得免费会员资格。', 'success');
+                        
+                        // 3秒后跳转到律师认证页面
+                        setTimeout(() => {
+                            window.location.href = identityResult.redirect_url;
+                        }, 3000);
+                    } else {
+                        showMessage(identityResult.detail || '身份设置失败，请重试', 'error');
+                    }
+                } else {
+                    showMessage(registerResult.detail || '注册失败，请重试', 'error');
+                }
+            } catch (error) {
+                showMessage('网络错误，请重试', 'error');
+            }
+        });
+
+        // 显示消息
+        function showMessage(message, type) {
+            const messageContainer = document.getElementById('message-container');
+            messageContainer.innerHTML = `<div class="message ${type}">${message}</div>`;
+            
+            setTimeout(() => {
+                messageContainer.innerHTML = '';
+            }, 8000);
+        }
+
+        // 页面加载动画
+        document.addEventListener('DOMContentLoaded', () => {
+            const benefitItems = document.querySelectorAll('.benefit-item');
+            benefitItems.forEach((item, index) => {
+                item.style.opacity = '0';
+                item.style.transform = 'translateX(-20px)';
+                
+                setTimeout(() => {
+                    item.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateX(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html>

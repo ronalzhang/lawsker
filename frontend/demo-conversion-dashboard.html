@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>演示账户转化分析 - Lawsker</title>
+    
+    <!-- Modern Design System -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/css/components.css">
+    
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 专业图标系统 -->
+    <script src="/js/icon-system.js"></script>
+    <script src="/js/professional-icon-library.js"></script>
+    <script src="/js/icon-upgrade-system.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+            background: #f8fafc;
+            color: #1f2937;
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .dashboard-header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .target-progress {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            border-radius: 6px;
+            transition: width 0.8s ease;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        }
+
+        .metric-card.success::before {
+            background: linear-gradient(90deg, #10b981, #059669);
+        }
+
+        .metric-card.warning::before {
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+        }
+
+        .metric-card.critical::before {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .metric-change {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .metric-change.positive {
+            color: #059669;
+        }
+
+        .metric-change.negative {
+            color: #dc2626;
+        }
+
+        .metric-change.neutral {
+            color: #6b7280;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-container h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+        }
+
+        .optimization-section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .optimization-item {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .optimization-item:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+
+        .optimization-item.critical {
+            border-color: #ef4444;
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+        }
+
+        .optimization-item.high {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+        }
+
+        .optimization-item.medium {
+            border-color: #3b82f6;
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+        }
+
+        .optimization-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .optimization-description {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .optimization-impact {
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 8px;
+            padding: 0.5rem;
+            font-size: 0.8rem;
+            color: #1e40af;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .optimization-actions {
+            list-style: none;
+            padding: 0;
+        }
+
+        .optimization-actions li {
+            color: #374151;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+            padding-left: 1rem;
+            position: relative;
+        }
+
+        .optimization-actions li::before {
+            content: '•';
+            color: #3b82f6;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .ab-test-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .ab-test-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+
+        .ab-test-card:hover {
+            border-color: #8b5cf6;
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.15);
+        }
+
+        .ab-test-card.winner {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+        }
+
+        .ab-test-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .ab-test-description {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .ab-test-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .ab-test-metric {
+            text-align: center;
+        }
+
+        .ab-test-metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .ab-test-metric-label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .status-indicator.excellent {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-indicator.good {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-indicator.needs-improvement {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-indicator.critical {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            color: #6b7280;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 1rem;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .ab-test-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h1>演示账户转化分析</h1>
+                    <p>监控演示账户转化率，目标达到30%</p>
+                </div>
+                <button class="refresh-btn" onclick="refreshDashboard()">
+                    刷新数据
+                </button>
+            </div>
+            
+            <div class="target-progress">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="font-weight: 600;">转化率目标进度</span>
+                    <span id="progress-text" style="font-weight: 700;">0% / 30%</span>
+                </div>
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="metrics-grid" id="metrics-grid">
+            <div class="loading">加载中...</div>
+        </div>
+
+        <!-- Conversion Funnel Chart -->
+        <div class="chart-container">
+            <h3>演示账户转化漏斗</h3>
+            <canvas id="conversionFunnelChart" width="400" height="200"></canvas>
+        </div>
+
+        <!-- Conversion Trend Chart -->
+        <div class="chart-container">
+            <h3>转化率趋势分析</h3>
+            <canvas id="conversionTrendChart" width="400" height="200"></canvas>
+        </div>
+
+        <!-- A/B Test Results -->
+        <div class="optimization-section">
+            <h3>A/B测试结果</h3>
+            <div class="ab-test-section" id="ab-test-results">
+                <div class="loading">加载中...</div>
+            </div>
+        </div>
+
+        <!-- Optimization Recommendations -->
+        <div class="optimization-section">
+            <h3>转化优化建议</h3>
+            <div id="optimization-recommendations">
+                <div class="loading">加载中...</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="optimization-section">
+            <h3>快速优化操作</h3>
+            <div id="quick-actions">
+                <div class="loading">加载中...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let conversionFunnelChart = null;
+        let conversionTrendChart = null;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+        });
+
+        async function loadDashboardData() {
+            try {
+                // Load dashboard data
+                const response = await fetch('/api/v1/demo-conversion/dashboard', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load dashboard data');
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update all dashboard components
+                    updateMetrics(data.data);
+                    updateProgressBar(data.data.overview);
+                    updateOptimizationRecommendations(data.data.recommendations);
+                    updateQuickActions(data.data.quick_actions);
+                    updateABTestResults(data.data.ab_test_variants);
+                    updateConversionFunnelChart(data.data.conversion_funnel);
+                    updateConversionTrendChart(data.data.metrics);
+                } else {
+                    throw new Error(data.message || 'Failed to load data');
+                }
+
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showError('加载仪表盘数据失败，请刷新页面重试');
+            }
+        }
+
+        function updateMetrics(data) {
+            const overview = data.overview;
+            const metrics = data.metrics.metrics;
+            
+            const metricsHtml = `
+                <div class="metric-card ${getStatusClass(overview.status)}">
+                    <div class="metric-value">${overview.current_conversion_rate}%</div>
+                    <div class="metric-label">当前转化率</div>
+                    <div class="metric-change ${overview.gap_to_target <= 0 ? 'positive' : 'neutral'}">
+                        ${overview.target_achieved ? '🎉 已达成目标!' : `距离目标还差 ${overview.gap_to_target}%`}
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-value">${metrics.demo_access_count}</div>
+                    <div class="metric-label">演示访问次数</div>
+                    <div class="metric-change positive">
+                        📈 本月数据
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-value">${metrics.conversion_count}</div>
+                    <div class="metric-label">成功转化数量</div>
+                    <div class="metric-change positive">
+                        💰 转化用户
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-value">${Math.round(overview.target_progress)}%</div>
+                    <div class="metric-label">目标完成进度</div>
+                    <div class="status-indicator ${overview.status.replace('_', '-')}">
+                        ${getStatusText(overview.status)}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('metrics-grid').innerHTML = metricsHtml;
+        }
+
+        function updateProgressBar(overview) {
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+            
+            const progress = Math.min(overview.target_progress, 100);
+            progressFill.style.width = `${progress}%`;
+            progressText.textContent = `${overview.current_conversion_rate}% / ${overview.target_conversion_rate}%`;
+        }
+
+        function updateOptimizationRecommendations(recommendations) {
+            const recommendationsHtml = recommendations.map(rec => `
+                <div class="optimization-item ${rec.priority}">
+                    <div class="optimization-title">${rec.title}</div>
+                    <div class="optimization-description">${rec.description}</div>
+                    <div class="optimization-impact">
+                        <strong>预期影响:</strong> ${rec.expected_impact}
+                    </div>
+                    <ul class="optimization-actions">
+                        ${rec.actions.map(action => `<li>${action}</li>`).join('')}
+                    </ul>
+                    <button class="action-btn" onclick="implementOptimization('${rec.title}')">
+                        立即实施
+                    </button>
+                </div>
+            `).join('');
+            
+            document.getElementById('optimization-recommendations').innerHTML = recommendationsHtml;
+        }
+
+        function updateQuickActions(quickActions) {
+            const quickActionsHtml = quickActions.map(action => `
+                <div class="optimization-item medium">
+                    <div class="optimization-title">${action.title}</div>
+                    <div class="optimization-description">${action.description}</div>
+                    <div class="optimization-impact">
+                        <strong>预期影响:</strong> ${action.impact}
+                    </div>
+                    <button class="action-btn" onclick="executeQuickAction('${action.action}')">
+                        执行操作
+                    </button>
+                </div>
+            `).join('');
+            
+            document.getElementById('quick-actions').innerHTML = quickActionsHtml;
+        }
+
+        function updateABTestResults(variants) {
+            // Simulate A/B test results
+            const testResults = variants.map((variant, index) => {
+                const conversionRate = 15 + Math.random() * 20; // Simulate conversion rates
+                const isWinner = index === 1; // Make second variant the winner
+                
+                return {
+                    ...variant,
+                    conversion_rate: conversionRate.toFixed(1),
+                    sample_size: 150 + Math.floor(Math.random() * 100),
+                    is_winner: isWinner
+                };
+            });
+
+            const abTestHtml = testResults.map(result => `
+                <div class="ab-test-card ${result.is_winner ? 'winner' : ''}">
+                    <div class="ab-test-title">
+                        ${result.name} ${result.is_winner ? '🏆' : ''}
+                    </div>
+                    <div class="ab-test-description">${result.description}</div>
+                    <div class="ab-test-metrics">
+                        <div class="ab-test-metric">
+                            <div class="ab-test-metric-value">${result.conversion_rate}%</div>
+                            <div class="ab-test-metric-label">转化率</div>
+                        </div>
+                        <div class="ab-test-metric">
+                            <div class="ab-test-metric-value">${result.sample_size}</div>
+                            <div class="ab-test-metric-label">样本量</div>
+                        </div>
+                    </div>
+                    ${result.is_winner ? '<div style="color: #059669; font-weight: 600; text-align: center;">🎯 最佳表现</div>' : ''}
+                </div>
+            `).join('');
+            
+            document.getElementById('ab-test-results').innerHTML = abTestHtml;
+        }
+
+        function updateConversionFunnelChart(funnelData) {
+            const ctx = document.getElementById('conversionFunnelChart').getContext('2d');
+            
+            if (conversionFunnelChart) {
+                conversionFunnelChart.destroy();
+            }
+            
+            const labels = ['演示访问', '参与用户', '转化尝试', '成功转化'];
+            const data = [
+                funnelData.demo_access,
+                funnelData.engaged_users,
+                funnelData.conversion_attempts,
+                funnelData.successful_conversions
+            ];
+            
+            conversionFunnelChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '用户数量',
+                        data: data,
+                        backgroundColor: [
+                            '#3b82f6',
+                            '#8b5cf6',
+                            '#f59e0b',
+                            '#10b981'
+                        ],
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f3f4f6'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateConversionTrendChart(metricsData) {
+            const ctx = document.getElementById('conversionTrendChart').getContext('2d');
+            
+            if (conversionTrendChart) {
+                conversionTrendChart.destroy();
+            }
+            
+            // Simulate trend data
+            const trendData = {
+                labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                datasets: [{
+                    label: '转化率 (%)',
+                    data: [12.5, 15.2, 18.1, 21.3, 24.8, metricsData.conversion_rate],
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }, {
+                    label: '目标转化率 (%)',
+                    data: [30, 30, 30, 30, 30, 30],
+                    borderColor: '#ef4444',
+                    backgroundColor: 'transparent',
+                    borderDash: [5, 5],
+                    fill: false
+                }]
+            };
+            
+            conversionTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: trendData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 35,
+                            grid: {
+                                color: '#f3f4f6'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'excellent': return 'success';
+                case 'good': return 'success';
+                case 'needs_improvement': return 'warning';
+                case 'critical': return 'critical';
+                default: return '';
+            }
+        }
+
+        function getStatusText(status) {
+            switch (status) {
+                case 'excellent': return '🎉 表现优秀';
+                case 'good': return '✅ 进展良好';
+                case 'needs_improvement': return '⚠️ 需要改进';
+                case 'critical': return '🚨 需要紧急处理';
+                default: return '📊 监控中';
+            }
+        }
+
+        function showError(message) {
+            const errorHtml = `
+                <div style="text-align: center; padding: 2rem; color: #dc2626;">
+                    <h3>❌ ${message}</h3>
+                </div>
+            `;
+            document.getElementById('metrics-grid').innerHTML = errorHtml;
+        }
+
+        async function refreshDashboard() {
+            const btn = document.querySelector('.refresh-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '刷新中...';
+            btn.disabled = true;
+            
+            await loadDashboardData();
+            
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+
+        function implementOptimization(title) {
+            alert(`正在实施优化: ${title}\n\n这将启动相应的优化流程。`);
+        }
+
+        function executeQuickAction(action) {
+            switch (action) {
+                case 'enable_smart_prompts':
+                    alert('智能转化提示系统已启用！\n\n系统将在关键时刻向演示用户显示个性化转化提示。');
+                    break;
+                case 'enable_exit_intent':
+                    alert('退出意图检测已启用！\n\n系统将检测用户离开意图并显示挽留提示。');
+                    break;
+                case 'add_registration_incentives':
+                    alert('注册激励已添加！\n\n演示用户现在可以看到注册专属优惠信息。');
+                    break;
+                default:
+                    alert(`正在执行操作: ${action}`);
+            }
+        }
+
+        // Auto-refresh every 10 minutes
+        setInterval(refreshDashboard, 10 * 60 * 1000);
+    </script>
+</body>
+</html>

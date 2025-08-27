@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credits管理 - 律客</title>
+    
+    <!-- Modern Design System -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/gamification.css">
+    
+    <!-- JavaScript Files -->
+    <script src="/js/icon-system.js"></script>
+    <script src="/js/gamification.js"></script>
+    <!-- 专业图标系统 -->
+    <script src="/js/professional-icon-library.js"></script>
+    <script src="/js/icon-upgrade-system.js"></script>
+    <style>
+        .credits-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .credits-balance {
+            font-size: 3rem;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .purchase-tier {
+            transition: all 0.3s ease;
+        }
+        
+        .purchase-tier:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .purchase-tier.recommended {
+            border: 2px solid #10b981;
+            position: relative;
+        }
+        
+        .purchase-tier.recommended::before {
+            content: "推荐";
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .usage-chart {
+            height: 200px;
+        }
+        
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            min-width: 300px;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-semibold text-gray-900">Credits管理</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="refreshData()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <a href="/user-workspace.html" class="text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-arrow-left mr-1"></i>返回工作台
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Credits余额卡片 -->
+        <div class="credits-card rounded-xl p-8 text-white mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold mb-2">Credits余额</h2>
+                    <div class="credits-balance" id="creditsBalance">--</div>
+                    <p class="text-blue-100 mt-2">可用于批量上传任务</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-blue-100 mb-2">下次重置</div>
+                    <div class="text-lg font-semibold" id="nextResetDate">--</div>
+                    <div class="text-sm text-blue-200 mt-2">每周一自动重置</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- 左侧：购买Credits -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-6">购买Credits</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4" id="purchaseTiers">
+                        <!-- 购买选项将通过JavaScript动态生成 -->
+                    </div>
+                    
+                    <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                        <div class="flex items-start">
+                            <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                            <div class="text-sm text-blue-700">
+                                <p class="font-medium mb-1">Credits使用说明：</p>
+                                <ul class="list-disc list-inside space-y-1">
+                                    <li>每个用户每周免费获得1个Credit</li>
+                                    <li>批量上传任务消耗1个Credit（无论上传多少文件）</li>
+                                    <li>单一任务发布不消耗Credits</li>
+                                    <li>购买的Credits永不过期</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 使用历史 -->
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900">使用历史</h3>
+                        <button onclick="loadUsageHistory()" class="text-blue-600 hover:text-blue-800 text-sm">
+                            <i class="fas fa-refresh mr-1"></i>刷新
+                        </button>
+                    </div>
+                    
+                    <div id="usageHistory">
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                            <p>加载中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧：统计信息 -->
+            <div class="space-y-6">
+                <!-- Credits统计 -->
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Credits统计</h3>
+                    
+                    <div class="space-y-4" id="creditsStats">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">当前余额</span>
+                            <span class="font-semibold" id="statCurrentBalance">--</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">累计购买</span>
+                            <span class="font-semibold" id="statTotalPurchased">--</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">累计使用</span>
+                            <span class="font-semibold" id="statTotalUsed">--</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">使用效率</span>
+                            <span class="font-semibold" id="statUsageRate">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 快速操作 -->
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">快速操作</h3>
+                    
+                    <div class="space-y-3">
+                        <button onclick="checkBatchUploadCredits()" 
+                                class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-upload mr-2"></i>检查批量上传
+                        </button>
+                        
+                        <button onclick="showPurchaseModal()" 
+                                class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
+                            <i class="fas fa-shopping-cart mr-2"></i>购买Credits
+                        </button>
+                        
+                        <a href="/batch-upload.html" 
+                           class="block w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors text-center">
+                            <i class="fas fa-cloud-upload-alt mr-2"></i>批量上传
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 购买历史 -->
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">购买历史</h3>
+                    
+                    <div id="purchaseHistory">
+                        <div class="text-center py-4 text-gray-500">
+                            <i class="fas fa-spinner fa-spin mb-2"></i>
+                            <p class="text-sm">加载中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 购买确认模态框 -->
+    <div id="purchaseModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold">确认购买</h3>
+                <button onclick="closePurchaseModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div id="purchaseDetails" class="mb-6">
+                <!-- 购买详情将通过JavaScript填充 -->
+            </div>
+            
+            <div class="flex space-x-3">
+                <button onclick="closePurchaseModal()" 
+                        class="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors">
+                    取消
+                </button>
+                <button onclick="confirmPurchase()" 
+                        class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                    <span id="purchaseButtonText">确认购买</span>
+                    <div id="purchaseButtonSpinner" class="loading-spinner mx-auto hidden"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知组件 -->
+    <div id="notification" class="notification hidden"></div>
+
+    <script>
+        // 全局变量
+        let currentCreditsInfo = null;
+        let selectedPurchaseTier = null;
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCreditsData();
+            loadPricingTiers();
+            loadUsageHistory();
+            loadPurchaseHistory();
+        });
+
+        // 加载Credits数据
+        async function loadCreditsData() {
+            try {
+                const response = await fetch('/api/v1/credits/balance', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    currentCreditsInfo = result.data;
+                    updateCreditsDisplay();
+                    updateStatsDisplay();
+                } else {
+                    showNotification('获取Credits信息失败', 'error');
+                }
+            } catch (error) {
+                console.error('加载Credits数据失败:', error);
+                showNotification('网络错误，请稍后重试', 'error');
+            }
+        }
+
+        // 更新Credits显示
+        function updateCreditsDisplay() {
+            if (!currentCreditsInfo) return;
+
+            document.getElementById('creditsBalance').textContent = currentCreditsInfo.credits_remaining;
+            
+            const nextResetDate = new Date(currentCreditsInfo.next_reset_date);
+            document.getElementById('nextResetDate').textContent = 
+                nextResetDate.toLocaleDateString('zh-CN', { 
+                    month: 'short', 
+                    day: 'numeric',
+                    weekday: 'short'
+                });
+        }
+
+        // 更新统计显示
+        function updateStatsDisplay() {
+            if (!currentCreditsInfo) return;
+
+            document.getElementById('statCurrentBalance').textContent = currentCreditsInfo.credits_remaining;
+            document.getElementById('statTotalPurchased').textContent = currentCreditsInfo.credits_purchased;
+            document.getElementById('statTotalUsed').textContent = currentCreditsInfo.total_credits_used;
+            
+            const totalAvailable = currentCreditsInfo.credits_purchased + currentCreditsInfo.total_credits_used;
+            const usageRate = totalAvailable > 0 ? 
+                ((currentCreditsInfo.total_credits_used / totalAvailable) * 100).toFixed(1) + '%' : '0%';
+            document.getElementById('statUsageRate').textContent = usageRate;
+        }
+
+        // 加载价格层级
+        async function loadPricingTiers() {
+            try {
+                const response = await fetch('/api/v1/credits/pricing');
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    renderPurchaseTiers(result.data.pricing_tiers);
+                }
+            } catch (error) {
+                console.error('加载价格信息失败:', error);
+            }
+        }
+
+        // 渲染购买选项
+        function renderPurchaseTiers(tiers) {
+            const container = document.getElementById('purchaseTiers');
+            container.innerHTML = '';
+
+            tiers.forEach((tier, index) => {
+                const isRecommended = index === 2; // 第3个选项为推荐
+                
+                const tierElement = document.createElement('div');
+                tierElement.className = `purchase-tier bg-white border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-300 ${isRecommended ? 'recommended' : ''}`;
+                tierElement.onclick = () => selectPurchaseTier(tier);
+                
+                tierElement.innerHTML = `
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-gray-900">${tier.credits}</div>
+                        <div class="text-sm text-gray-500 mb-2">Credits</div>
+                        <div class="text-lg font-semibold text-blue-600">¥${tier.price}</div>
+                        ${tier.discount > 0 ? `
+                            <div class="text-xs text-green-600 mt-1">
+                                节省 ${(tier.discount * 100).toFixed(0)}%
+                            </div>
+                        ` : ''}
+                        <div class="text-xs text-gray-400 mt-2">
+                            ¥${(tier.price / tier.credits).toFixed(1)}/个
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(tierElement);
+            });
+        }
+
+        // 选择购买层级
+        function selectPurchaseTier(tier) {
+            selectedPurchaseTier = tier;
+            showPurchaseModal();
+        }
+
+        // 显示购买模态框
+        function showPurchaseModal() {
+            if (!selectedPurchaseTier) {
+                // 如果没有选择，默认选择1个Credit
+                selectedPurchaseTier = { credits: 1, price: 50.00 };
+            }
+
+            const modal = document.getElementById('purchaseModal');
+            const details = document.getElementById('purchaseDetails');
+            
+            details.innerHTML = `
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-blue-600 mb-2">${selectedPurchaseTier.credits}</div>
+                    <div class="text-gray-600 mb-4">Credits</div>
+                    <div class="text-2xl font-semibold text-gray-900 mb-2">¥${selectedPurchaseTier.price}</div>
+                    <div class="text-sm text-gray-500">单价: ¥${(selectedPurchaseTier.price / selectedPurchaseTier.credits).toFixed(1)}/个</div>
+                </div>
+                
+                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <div class="text-sm text-gray-600">
+                        <p>• 购买后立即到账</p>
+                        <p>• Credits永不过期</p>
+                        <p>• 支持微信支付</p>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        // 关闭购买模态框
+        function closePurchaseModal() {
+            const modal = document.getElementById('purchaseModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // 购买Credits函数
+        async function purchaseCredits(creditsCount) {
+            try {
+                const response = await fetch('/api/v1/credits/purchase', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        credits_count: creditsCount
+                    })
+                });
+
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error('购买Credits失败:', error);
+                throw error;
+            }
+        }
+
+        // 确认购买
+        async function confirmPurchase() {
+            if (!selectedPurchaseTier) return;
+
+            const button = document.getElementById('purchaseButtonText');
+            const spinner = document.getElementById('purchaseButtonSpinner');
+            
+            button.style.display = 'none';
+            spinner.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/api/v1/credits/purchase', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        credits_count: selectedPurchaseTier.credits
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showNotification('购买订单创建成功，请完成支付', 'success');
+                    closePurchaseModal();
+                    
+                    // 如果有支付订单，可以跳转到支付页面
+                    if (result.data.payment_order) {
+                        // 这里可以集成支付流程
+                        console.log('支付订单:', result.data.payment_order);
+                    }
+                } else {
+                    showNotification(result.message || '购买失败', 'error');
+                }
+            } catch (error) {
+                console.error('购买失败:', error);
+                showNotification('网络错误，请稍后重试', 'error');
+            } finally {
+                button.style.display = 'inline';
+                spinner.classList.add('hidden');
+            }
+        }
+
+        // 检查批量上传Credits
+        async function checkBatchUploadCredits() {
+            try {
+                const response = await fetch('/api/v1/credits/check/batch-upload', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    const data = result.data;
+                    if (data.can_upload) {
+                        showNotification(`可以进行批量上传！当前余额: ${data.credits_remaining} Credits`, 'success');
+                    } else {
+                        showNotification(`Credits不足，需要 ${data.required_credits} 个，当前仅有 ${data.credits_remaining} 个`, 'warning');
+                    }
+                } else {
+                    showNotification('检查失败', 'error');
+                }
+            } catch (error) {
+                console.error('检查失败:', error);
+                showNotification('网络错误', 'error');
+            }
+        }
+
+        // 加载使用历史
+        async function loadUsageHistory() {
+            try {
+                const response = await fetch('/api/v1/credits/usage-history?page=1&size=10', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    renderUsageHistory(result.data.items);
+                } else {
+                    document.getElementById('usageHistory').innerHTML = 
+                        '<div class="text-center py-4 text-gray-500">暂无使用记录</div>';
+                }
+            } catch (error) {
+                console.error('加载使用历史失败:', error);
+                document.getElementById('usageHistory').innerHTML = 
+                    '<div class="text-center py-4 text-red-500">加载失败</div>';
+            }
+        }
+
+        // 渲染使用历史
+        function renderUsageHistory(items) {
+            const container = document.getElementById('usageHistory');
+            
+            if (items.length === 0) {
+                container.innerHTML = '<div class="text-center py-4 text-gray-500">暂无使用记录</div>';
+                return;
+            }
+
+            container.innerHTML = items.map(item => `
+                <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-minus text-red-600 text-sm"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">${item.description}</div>
+                            <div class="text-sm text-gray-500">${new Date(item.created_at).toLocaleString('zh-CN')}</div>
+                        </div>
+                    </div>
+                    <div class="text-red-600 font-semibold">-${item.credits_used}</div>
+                </div>
+            `).join('');
+        }
+
+        // 加载购买历史
+        async function loadPurchaseHistory() {
+            try {
+                const response = await fetch('/api/v1/credits/purchase-history?page=1&size=5', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    renderPurchaseHistory(result.data.items);
+                } else {
+                    document.getElementById('purchaseHistory').innerHTML = 
+                        '<div class="text-center py-4 text-gray-500 text-sm">暂无购买记录</div>';
+                }
+            } catch (error) {
+                console.error('加载购买历史失败:', error);
+                document.getElementById('purchaseHistory').innerHTML = 
+                    '<div class="text-center py-4 text-red-500 text-sm">加载失败</div>';
+            }
+        }
+
+        // 渲染购买历史
+        function renderPurchaseHistory(items) {
+            const container = document.getElementById('purchaseHistory');
+            
+            if (items.length === 0) {
+                container.innerHTML = '<div class="text-center py-4 text-gray-500 text-sm">暂无购买记录</div>';
+                return;
+            }
+
+            container.innerHTML = items.slice(0, 3).map(item => `
+                <div class="flex items-center justify-between py-2 text-sm">
+                    <div>
+                        <div class="font-medium">${item.credits_count} Credits</div>
+                        <div class="text-gray-500 text-xs">${new Date(item.created_at).toLocaleDateString('zh-CN')}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-semibold">¥${item.total_amount}</div>
+                        <div class="text-xs ${item.status === 'paid' ? 'text-green-600' : 'text-yellow-600'}">
+                            ${item.status === 'paid' ? '已完成' : '待支付'}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 刷新数据
+        function refreshData() {
+            loadCreditsData();
+            loadUsageHistory();
+            loadPurchaseHistory();
+            showNotification('数据已刷新', 'success');
+        }
+
+        // 显示通知
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500'
+            };
+
+            notification.innerHTML = `
+                <div class="${colors[type]} text-white px-6 py-4 rounded-lg shadow-lg fade-in">
+                    <div class="flex items-center justify-between">
+                        <span>${message}</span>
+                        <button onclick="hideNotification()" class="ml-4 text-white hover:text-gray-200">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            notification.classList.remove('hidden');
+            
+            // 3秒后自动隐藏
+            setTimeout(hideNotification, 3000);
+        }
+
+        // 隐藏通知
+        function hideNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>增强游戏化系统测试 - 律客</title>
+    
+    <!-- Modern Design System -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/gamification.css">
+    <link rel="stylesheet" href="/css/enhanced-gamification.css">
+    
+    <!-- JavaScript Files -->
+    <script src="/js/icon-system.js"></script>
+    <script src="/js/gamification.js"></script>
+    <script src="/js/enhanced-gamification.js"></script>
+    <!-- 专业图标系统 -->
+    <script src="/js/professional-icon-library.js"></script>
+    <script src="/js/icon-upgrade-system.js"></script>
+    
+    <style>
+        body {
+            background-color: var(--bg-secondary);
+            padding: var(--space-8);
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-header {
+            text-align: center;
+            margin-bottom: var(--space-8);
+        }
+        
+        .test-title {
+            font-size: var(--text-3xl);
+            font-weight: var(--font-bold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-4);
+        }
+        
+        .test-description {
+            font-size: var(--text-lg);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-6);
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-8);
+            margin-bottom: var(--space-8);
+        }
+        
+        .test-section {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+        }
+        
+        .test-section-title {
+            font-size: var(--text-xl);
+            font-weight: var(--font-semibold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-4);
+        }
+        
+        .test-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
+        
+        .test-button {
+            padding: var(--space-3) var(--space-4);
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+        
+        .test-button.primary {
+            background-color: var(--primary-600);
+            color: white;
+        }
+        
+        .test-button.primary:hover {
+            background-color: var(--primary-700);
+        }
+        
+        .test-button.success {
+            background-color: var(--success-600);
+            color: white;
+        }
+        
+        .test-button.success:hover {
+            background-color: var(--success-700);
+        }
+        
+        .test-button.warning {
+            background-color: var(--warning-600);
+            color: white;
+        }
+        
+        .test-button.warning:hover {
+            background-color: var(--warning-700);
+        }
+        
+        .test-button.error {
+            background-color: var(--error-600);
+            color: white;
+        }
+        
+        .test-button.error:hover {
+            background-color: var(--error-700);
+        }
+        
+        .current-stats {
+            background-color: var(--gray-50);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-2) 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+        
+        .stat-label {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+        
+        .stat-value {
+            font-size: var(--text-sm);
+            font-weight: var(--font-semibold);
+            color: var(--text-primary);
+        }
+        
+        .demo-controls {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            margin-bottom: var(--space-8);
+        }
+        
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-4);
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+        
+        .control-label {
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+            color: var(--text-primary);
+        }
+        
+        .control-input {
+            padding: var(--space-2) var(--space-3);
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+        }
+        
+        @media (max-width: 768px) {
+            .test-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <!-- Test Header -->
+        <div class="test-header">
+            <h1 class="test-title">🎮 增强游戏化系统测试</h1>
+            <p class="test-description">
+                测试律师积分变化动画反馈和等级提升庆祝效果
+            </p>
+        </div>
+        
+        <!-- Demo Controls -->
+        <div class="demo-controls">
+            <h2 class="test-section-title">🎛️ 演示控制</h2>
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label class="control-label">自定义积分</label>
+                    <input type="number" id="customPoints" class="control-input" value="200" min="-500" max="1000">
+                </div>
+                <div class="control-group">
+                    <label class="control-label">积分倍数</label>
+                    <select id="multiplier" class="control-input">
+                        <option value="1">1x (免费会员)</option>
+                        <option value="2" selected>2x (专业会员)</option>
+                        <option value="3">3x (企业会员)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">操作类型</label>
+                    <select id="actionType" class="control-input">
+                        <option value="case_complete_success">案件完成</option>
+                        <option value="review_5star">五星好评</option>
+                        <option value="online_hour">在线奖励</option>
+                        <option value="ai_credit_used">AI使用</option>
+                        <option value="payment_100yuan">充值奖励</option>
+                        <option value="case_declined">拒绝案件</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">目标等级</label>
+                    <select id="targetLevel" class="control-input">
+                        <option value="2">2级 - 初级律师</option>
+                        <option value="3">3级 - 中级律师</option>
+                        <option value="4">4级 - 高级律师</option>
+                        <option value="5">5级 - 资深律师</option>
+                        <option value="6">6级 - 专家律师</option>
+                        <option value="7">7级 - 首席律师</option>
+                        <option value="8">8级 - 合伙人律师</option>
+                        <option value="9">9级 - 高级合伙人</option>
+                        <option value="10">10级 - 首席合伙人</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Grid -->
+        <div class="test-grid">
+            <!-- Points Animation Tests -->
+            <div class="test-section">
+                <h2 class="test-section-title">✨ 积分动画测试</h2>
+                
+                <div class="current-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">当前等级</span>
+                        <span class="stat-value" id="currentLevel">3级 - 中级律师</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">当前积分</span>
+                        <span class="stat-value" id="currentPoints">3,250</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">会员倍数</span>
+                        <span class="stat-value" id="currentMultiplier">2x</span>
+                    </div>
+                </div>
+                
+                <div class="test-buttons">
+                    <button class="test-button success" onclick="testPointsAnimation(200, 'case_complete_success')">
+                        <div data-icon="check-circle" style="width: 16px; height: 16px;"></div>
+                        完成案件 (+200)
+                    </button>
+                    
+                    <button class="test-button success" onclick="testPointsAnimation(200, 'review_5star')">
+                        <div data-icon="star" style="width: 16px; height: 16px;"></div>
+                        五星好评 (+200)
+                    </button>
+                    
+                    <button class="test-button primary" onclick="testPointsAnimation(20, 'online_hour')">
+                        <div data-icon="clock" style="width: 16px; height: 16px;"></div>
+                        在线奖励 (+20)
+                    </button>
+                    
+                    <button class="test-button warning" onclick="testPointsAnimation(100, 'payment_100yuan')">
+                        <div data-icon="currency-dollar" style="width: 16px; height: 16px;"></div>
+                        充值奖励 (+100)
+                    </button>
+                    
+                    <button class="test-button error" onclick="testPointsAnimation(-150, 'case_declined')">
+                        <div data-icon="x-circle" style="width: 16px; height: 16px;"></div>
+                        拒绝案件 (-150)
+                    </button>
+                    
+                    <button class="test-button primary" onclick="testCustomPoints()">
+                        <div data-icon="cog-6-tooth" style="width: 16px; height: 16px;"></div>
+                        自定义积分
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Level Up Tests -->
+            <div class="test-section">
+                <h2 class="test-section-title">🎉 升级庆祝测试</h2>
+                
+                <div class="test-buttons">
+                    <button class="test-button success" onclick="testLevelUp(2)">
+                        <div data-icon="trophy" style="width: 16px; height: 16px;"></div>
+                        升级到2级
+                    </button>
+                    
+                    <button class="test-button success" onclick="testLevelUp(3)">
+                        <div data-icon="trophy" style="width: 16px; height: 16px;"></div>
+                        升级到3级
+                    </button>
+                    
+                    <button class="test-button success" onclick="testLevelUp(5)">
+                        <div data-icon="trophy" style="width: 16px; height: 16px;"></div>
+                        升级到5级
+                    </button>
+                    
+                    <button class="test-button success" onclick="testLevelUp(7)">
+                        <div data-icon="trophy" style="width: 16px; height: 16px;"></div>
+                        升级到7级
+                    </button>
+                    
+                    <button class="test-button success" onclick="testLevelUp(10)">
+                        <div data-icon="trophy" style="width: 16px; height: 16px;"></div>
+                        升级到10级
+                    </button>
+                    
+                    <button class="test-button warning" onclick="testCustomLevelUp()">
+                        <div data-icon="star" style="width: 16px; height: 16px;"></div>
+                        自定义升级
+                    </button>
+                </div>
+                
+                <div style="margin-top: var(--space-4);">
+                    <h3 style="font-size: var(--text-lg); font-weight: var(--font-semibold); margin-bottom: var(--space-3);">
+                        特效测试
+                    </h3>
+                    <div class="test-buttons">
+                        <button class="test-button primary" onclick="testScreenShake()">
+                            <div data-icon="bolt" style="width: 16px; height: 16px;"></div>
+                            屏幕震动
+                        </button>
+                        
+                        <button class="test-button warning" onclick="testScreenFlash()">
+                            <div data-icon="sun" style="width: 16px; height: 16px;"></div>
+                            屏幕闪光
+                        </button>
+                        
+                        <button class="test-button success" onclick="testCelebrationSound()">
+                            <div data-icon="speaker-wave" style="width: 16px; height: 16px;"></div>
+                            庆祝音效
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gamification Display -->
+        <div class="test-grid">
+            <!-- Lawyer Level Card -->
+            <div class="lawyer-level-card">
+                <div class="level-badge level-3">
+                    <div data-icon="trophy" class="level-icon"></div>
+                    <span class="level-text">中级律师 (3级)</span>
+                </div>
+                
+                <div class="points-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 65%;"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span class="progress-current">3,250</span>
+                        <span>/ 5,000</span>
+                    </div>
+                </div>
+                
+                <div class="membership-multiplier">
+                    <div data-icon="star" class="multiplier-icon"></div>
+                    <span>2x 积分倍数</span>
+                </div>
+            </div>
+            
+            <!-- Enhanced Gamification System -->
+            <div class="lawyer-level-system">
+                <!-- This will be populated by the enhanced gamification system -->
+            </div>
+        </div>
+        
+        <!-- Reset Controls -->
+        <div class="demo-controls">
+            <h2 class="test-section-title">🔄 重置控制</h2>
+            <div class="test-buttons">
+                <button class="test-button primary" onclick="resetToLevel(1, 0)">
+                    <div data-icon="arrow-path" style="width: 16px; height: 16px;"></div>
+                    重置到1级
+                </button>
+                
+                <button class="test-button primary" onclick="resetToLevel(3, 3250)">
+                    <div data-icon="arrow-path" style="width: 16px; height: 16px;"></div>
+                    重置到3级
+                </button>
+                
+                <button class="test-button primary" onclick="resetToLevel(5, 10000)">
+                    <div data-icon="arrow-path" style="width: 16px; height: 16px;"></div>
+                    重置到5级
+                </button>
+                
+                <button class="test-button warning" onclick="setMembershipMultiplier()">
+                    <div data-icon="star" style="width: 16px; height: 16px;"></div>
+                    设置会员倍数
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+    
+    <script>
+        // Test functions
+        function testPointsAnimation(points, action) {
+            const multiplier = parseInt(document.getElementById('multiplier').value);
+            
+            if (window.gamificationSystem) {
+                window.gamificationSystem.addPoints(points, action, multiplier);
+            }
+            
+            updateCurrentStats();
+        }
+        
+        function testCustomPoints() {
+            const points = parseInt(document.getElementById('customPoints').value);
+            const action = document.getElementById('actionType').value;
+            const multiplier = parseInt(document.getElementById('multiplier').value);
+            
+            testPointsAnimation(points, action);
+        }
+        
+        function testLevelUp(level) {
+            const levelNames = {
+                1: '见习律师',
+                2: '初级律师',
+                3: '中级律师',
+                4: '高级律师',
+                5: '资深律师',
+                6: '专家律师',
+                7: '首席律师',
+                8: '合伙人律师',
+                9: '高级合伙人',
+                10: '首席合伙人'
+            };
+            
+            if (window.gamificationSystem) {
+                window.gamificationSystem.showLevelUpAnimation({
+                    newLevel: level,
+                    levelName: levelNames[level]
+                });
+            }
+        }
+        
+        function testCustomLevelUp() {
+            const level = parseInt(document.getElementById('targetLevel').value);
+            testLevelUp(level);
+        }
+        
+        function testScreenShake() {
+            if (window.gamificationSystem) {
+                window.gamificationSystem.addScreenShakeEffect();
+            }
+        }
+        
+        function testScreenFlash() {
+            if (window.gamificationSystem) {
+                window.gamificationSystem.addScreenFlashEffect();
+            }
+        }
+        
+        function testCelebrationSound() {
+            if (window.gamificationSystem) {
+                window.gamificationSystem.playLevelUpCelebrationSound();
+            }
+        }
+        
+        function resetToLevel(level, points) {
+            if (window.gamificationSystem) {
+                window.gamificationSystem.setLevel(level, points);
+            }
+            updateCurrentStats();
+        }
+        
+        function setMembershipMultiplier() {
+            const multiplier = parseInt(document.getElementById('multiplier').value);
+            if (window.gamificationSystem) {
+                window.gamificationSystem.setMembershipMultiplier(multiplier);
+            }
+            updateCurrentStats();
+        }
+        
+        function updateCurrentStats() {
+            if (window.gamificationSystem) {
+                const level = window.gamificationSystem.getCurrentLevel();
+                const points = window.gamificationSystem.getCurrentPoints();
+                const multiplier = window.gamificationSystem.membershipMultiplier;
+                
+                const levelNames = {
+                    1: '见习律师',
+                    2: '初级律师',
+                    3: '中级律师',
+                    4: '高级律师',
+                    5: '资深律师',
+                    6: '专家律师',
+                    7: '首席律师',
+                    8: '合伙人律师',
+                    9: '高级合伙人',
+                    10: '首席合伙人'
+                };
+                
+                document.getElementById('currentLevel').textContent = `${level}级 - ${levelNames[level]}`;
+                document.getElementById('currentPoints').textContent = points.toLocaleString();
+                document.getElementById('currentMultiplier').textContent = `${multiplier}x`;
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize enhanced gamification system
+            if (window.EnhancedGamificationSystem) {
+                // Set initial state
+                window.EnhancedGamificationSystem.setLevel(3, 3250);
+                window.EnhancedGamificationSystem.setMembershipMultiplier(2);
+                
+                // Render the enhanced system
+                const container = document.querySelector('.lawyer-level-system');
+                if (container) {
+                    window.EnhancedGamificationSystem.renderLevelSystem(container);
+                }
+            }
+            
+            updateCurrentStats();
+            
+            // Add some demo points after a delay
+            setTimeout(() => {
+                if (window.gamificationSystem) {
+                    window.gamificationSystem.addPoints(50, 'online_hour', 2);
+                }
+            }, 3000);
+        });
+        
+        // Global function for sharing (called from celebration modal)
+        window.shareAchievement = function(level, levelName) {
+            if (window.gamificationSystem) {
+                window.gamificationSystem.shareAchievement(level, levelName);
+            }
+        };
+        
+        // Global function for copying to clipboard
+        window.copyToClipboard = function(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                if (window.gamificationSystem) {
+                    window.gamificationSystem.showToast('success', '复制成功', '内容已复制到剪贴板');
+                }
+            });
+        };
+    </script>
+</body>
+</html>

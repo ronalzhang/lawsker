@@ -4,6 +4,7 @@ Lawsker 数据模型包
 """
 
 from app.models.user import User, Role, LawyerQualification
+from app.models.unified_auth import LawyerCertificationRequest, WorkspaceMapping, DemoAccount
 from app.models.tenant import Tenant, SystemConfig
 from app.models.case import Case, Client, Task, Claim
 from app.models.finance import Payment, Wallet, Transaction, WithdrawalRequest, BillingRecord
@@ -13,6 +14,11 @@ __all__ = [
     "User",
     "Role", 
     "LawyerQualification",
+    
+    # 统一认证模型
+    "LawyerCertificationRequest",
+    "WorkspaceMapping",
+    "DemoAccount",
     
     # 租户相关模型
     "Tenant",

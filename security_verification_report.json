@@ -1,0 +1,61 @@
+{
+  "timestamp": "2025-08-26 19:41:00",
+  "tests": {
+    "file_existence": {
+      "status": "PASSED",
+      "message": "All required security files exist"
+    },
+    "hardening": {
+      "status": "FAILED",
+      "message": "Security hardening failed: 2025-08-26 19:41:00,754 - INFO - Starting comprehensive security hardening...\n2025-08-26 19:41:00,754 - INFO - Hardening environment variables...\n2025-08-26 19:41:00,757 - INFO - Created backup: security_backups/.env.production.backup\n2025-08-26 19:41:00,757 - INFO - Generated new SECRET_KEY for .env.production\n2025-08-26 19:41:00,757 - INFO - Generated new SECRET_KEY for .env.production\n2025-08-26 19:41:00,757 - INFO - Generated new SECRET_KEY for .env.production\n2025-08-26 19:41:00,758 - INFO - Generated new SECRET_KEY for .env.production\n2025-08-26 19:41:00,758 - INFO - Generated new SECRET_KEY for .env.production\n2025-08-26 19:41:00,758 - INFO - Generated new SECRET_KEY for .env.production\n2025-08-26 19:41:00,758 - INFO - Added SECURE_COOKIES to .env.production\n2025-08-26 19:41:00,758 - INFO - Added CSRF_PROTECTION to .env.production\n2025-08-26 19:41:00,758 - INFO - Added RATE_LIMITING to .env.production\n2025-08-26 19:41:00,758 - INFO - Added SECURITY_HEADERS to .env.production\n2025-08-26 19:41:00,758 - INFO - Added LOG_SECURITY_EVENTS to .env.production\n2025-08-26 19:41:00,764 - INFO - Created backup: security_backups/.env.server.backup\n2025-08-26 19:41:00,764 - INFO - Generated new SECRET_KEY for .env.server\n2025-08-26 19:41:00,764 - INFO - Added CSRF_PROTECTION to .env.server\n2025-08-26 19:41:00,764 - INFO - Added RATE_LIMITING to .env.server\n2025-08-26 19:41:00,764 - INFO - Added SECURITY_HEADERS to .env.server\n2025-08-26 19:41:00,764 - INFO - Added LOG_SECURITY_EVENTS to .env.server\n2025-08-26 19:41:00,767 - INFO - Hardening NGINX configuration...\n2025-08-26 19:41:00,768 - INFO - Created backup: security_backups/nginx.conf.backup\n2025-08-26 19:41:00,768 - INFO - Added Content-Security-Policy header to nginx/nginx.conf\n2025-08-26 19:41:00,768 - INFO - Added Referrer-Policy header to nginx/nginx.conf\n2025-08-26 19:41:00,771 - INFO - Created backup: security_backups/lawsker.conf.backup\n2025-08-26 19:41:00,771 - INFO - Added Content-Security-Policy header to nginx/lawsker.conf\n2025-08-26 19:41:00,771 - INFO - Added Referrer-Policy header to nginx/lawsker.conf\n2025-08-26 19:41:00,771 - INFO - Hardening database configuration...\n2025-08-26 19:41:00,772 - INFO - Created backup: security_backups/database.py.backup\n2025-08-26 19:41:00,773 - INFO - Added database security setting: sslmode=require\n2025-08-26 19:41:00,773 - INFO - Added database security setting: connect_timeout=10\n2025-08-26 19:41:00,773 - INFO - Added database security setting: command_timeout=30\n2025-08-26 19:41:00,773 - WARNING - Potential SQL injection risk in backend/app/core/database.py - manual review required\n2025-08-26 19:41:00,775 - INFO - Created backup: security_backups/database_config.py.backup\n2025-08-26 19:41:00,775 - INFO - Added database security setting: sslmode=require\n2025-08-26 19:41:00,775 - INFO - Added database security setting: connect_timeout=10\n2025-08-26 19:41:00,775 - INFO - Added database security setting: command_timeout=30\n2025-08-26 19:41:00,777 - INFO - Hardening file permissions...\n2025-08-26 19:41:00,777 - INFO - Set restrictive permissions on .env.production\n2025-08-26 19:41:00,777 - INFO - Set restrictive permissions on .env.server\n2025-08-26 19:41:00,778 - INFO - Set restrictive permissions on backend/jwt_private_key.pem\n2025-08-26 19:41:00,780 - INFO - Set restrictive permissions on jwt_private_key.pem\n2025-08-26 19:41:00,780 - INFO - Creating enhanced security middleware...\n2025-08-26 19:41:00,780 - INFO - Creating security configuration...\n2025-08-26 19:41:00,780 - INFO - Updating requirements with security packages...\n2025-08-26 19:41:00,783 - INFO - Created backup: security_backups/requirements.txt.backup\n2025-08-26 19:41:00,783 - INFO - Added security packages to backend/requirements.txt\n2025-08-26 19:41:00,786 - INFO - Created backup: security_backups/requirements-prod.txt.backup\n2025-08-26 19:41:00,786 - INFO - Added security packages to backend/requirements-prod.txt\n2025-08-26 19:41:00,786 - INFO - Security hardening completed\nTraceback (most recent call last):\n  File \"/Users/godfather/Downloads/program/lawsker/backend/security_hardening.py\", line 627, in <module>\n    main()\n  File \"/Users/godfather/Downloads/program/lawsker/backend/security_hardening.py\", line 606, in main\n    report = hardening.generate_report()\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/godfather/Downloads/program/lawsker/backend/security_hardening.py\", line 586, in generate_report\n    'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),\n                 ^^^^\nNameError: name 'time' is not defined\n"
+    },
+    "config_validation": {
+      "status": "FAILED",
+      "score": 68,
+      "critical_issues": 0,
+      "high_issues": 22
+    },
+    "penetration_test": {
+      "status": "FAILED",
+      "score": 100,
+      "critical_findings": 0,
+      "high_findings": 1
+    },
+    "comprehensive": {
+      "status": "FAILED",
+      "score": 81,
+      "critical_issues": 8,
+      "high_issues": 154
+    },
+    "unit_tests": {
+      "status": "FAILED",
+      "message": "Some unit security tests failed"
+    },
+    "requirements": {
+      "status": "FAILED",
+      "met": [
+        "Workspace ID Security",
+        "Points Audit Logging"
+      ],
+      "failed": [
+        "Demo Data Isolation",
+        "Lawyer Certificate Encryption",
+        "Payment PCI DSS Compliance"
+      ],
+      "score": 40.0
+    }
+  },
+  "overall_status": "FAILED",
+  "security_score": 14.285714285714285,
+  "critical_issues": 8,
+  "high_issues": 177,
+  "recommendations": [
+    "CRITICAL: Address all critical security vulnerabilities immediately before deployment",
+    "HIGH: Fix all high-risk security issues within 24 hours",
+    "Update security configuration - ensure all security settings are properly configured",
+    "Fix penetration testing vulnerabilities - implement proper input validation and security controls",
+    "Address comprehensive security test failures - review static analysis and dependency security",
+    "Implement missing security requirements from the specification",
+    "Improve overall security score by addressing remaining security issues"
+  ]
+}

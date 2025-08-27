@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lawsker 管理分析仪表盘 - 数据驱动决策</title>
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/data-visualization.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="js/advanced-data-visualization.js"></script>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #1f2937;
+        }
+
+        .analytics-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .analytics-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        .analytics-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .analytics-subtitle {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .analytics-nav {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .nav-tab {
+            padding: 0.75rem 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 2rem;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-tab:hover,
+        .nav-tab.active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .analytics-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .analytics-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+
+        .analytics-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            background: var(--primary-gradient);
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem;
+            border: 1px solid #e5e7eb;
+            background: white;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-btn:hover {
+            background: #f9fafb;
+            border-color: #d1d5db;
+        }
+
+        .chart-container {
+            height: 400px;
+            position: relative;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.6));
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .metric-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-change {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+        }
+
+        .metric-change.positive {
+            color: #059669;
+        }
+
+        .metric-change.negative {
+            color: #dc2626;
+        }
+
+        .data-insights {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .insights-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .insights-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .insight-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .insight-item:hover {
+            background: #f9fafb;
+        }
+
+        .insight-icon {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .insight-content {
+            flex: 1;
+        }
+
+        .insight-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .insight-description {
+            color: #6b7280;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .performance-indicators {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .indicator-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .indicator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .indicator-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .indicator-score {
+            font-size: 2rem;
+            font-weight: 800;
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            color: white;
+        }
+
+        .score-excellent {
+            background: var(--success-gradient);
+        }
+
+        .score-good {
+            background: var(--primary-gradient);
+        }
+
+        .score-average {
+            background: var(--warning-gradient);
+        }
+
+        .score-poor {
+            background: var(--secondary-gradient);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 0.5rem;
+            background: #e5e7eb;
+            border-radius: 0.25rem;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-gradient);
+            border-radius: 0.25rem;
+            transition: width 1s ease;
+        }
+
+        .indicator-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .detail-item {
+            text-align: center;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 0.75rem;
+        }
+
+        .detail-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 0.25rem;
+        }
+
+        .export-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .export-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+
+        .export-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: white;
+        }
+
+        .export-btn.primary {
+            background: var(--primary-gradient);
+        }
+
+        .export-btn.secondary {
+            background: var(--secondary-gradient);
+        }
+
+        .export-btn.success {
+            background: var(--success-gradient);
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .analytics-container {
+                padding: 1rem;
+            }
+
+            .analytics-title {
+                font-size: 2rem;
+            }
+
+            .analytics-nav {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .metric-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .performance-indicators {
+                grid-template-columns: 1fr;
+            }
+
+            .export-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 3rem;
+            border-radius: 2rem;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .loading-spinner {
+            width: 3rem;
+            height: 3rem;
+            border: 3px solid #e5e7eb;
+            border-top: 3px solid #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="analytics-container">
+        <!-- 页面头部 -->
+        <header class="analytics-header">
+            <h1 class="analytics-title">Lawsker 数据分析中心</h1>
+            <p class="analytics-subtitle">基于数据驱动的智能决策支持系统</p>
+            
+            <nav class="analytics-nav">
+                <a href="#overview" class="nav-tab active">
+                    <i data-feather="bar-chart-2"></i>
+                    <span>总览</span>
+                </a>
+                <a href="#users" class="nav-tab">
+                    <i data-feather="users"></i>
+                    <span>用户分析</span>
+                </a>
+                <a href="#lawyers" class="nav-tab">
+                    <i data-feather="briefcase"></i>
+                    <span>律师分析</span>
+                </a>
+                <a href="#business" class="nav-tab">
+                    <i data-feather="trending-up"></i>
+                    <span>业务分析</span>
+                </a>
+                <a href="#performance" class="nav-tab">
+                    <i data-feather="activity"></i>
+                    <span>性能监控</span>
+                </a>
+            </nav>
+        </header>
+
+        <!-- 核心指标 -->
+        <section class="metric-grid">
+            <div class="metric-item">
+                <div class="metric-value" id="totalUsers">15,847</div>
+                <div class="metric-label">总用户数</div>
+                <div class="metric-change positive">
+                    <i data-feather="trending-up"></i>
+                    <span>+12.5%</span>
+                </div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-value" id="activeLawyers">3,256</div>
+                <div class="metric-label">活跃律师</div>
+                <div class="metric-change positive">
+                    <i data-feather="trending-up"></i>
+                    <span>+8.3%</span>
+                </div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-value" id="completedCases">12,924</div>
+                <div class="metric-label">完成案件</div>
+                <div class="metric-change positive">
+                    <i data-feather="trending-up"></i>
+                    <span>+15.7%</span>
+                </div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-value" id="monthlyRevenue">¥2,847,890</div>
+                <div class="metric-label">月度收入</div>
+                <div class="metric-change positive">
+                    <i data-feather="trending-up"></i>
+                    <span>+22.1%</span>
+                </div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-value" id="userSatisfaction">94.2%</div>
+                <div class="metric-label">用户满意度</div>
+                <div class="metric-change positive">
+                    <i data-feather="trending-up"></i>
+                    <span>+3.8%</span>
+                </div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-value" id="systemUptime">99.9%</div>
+                <div class="metric-label">系统可用性</div>
+                <div class="metric-change positive">
+                    <i data-feather="trending-up"></i>
+                    <span>+0.1%</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 图表仪表盘 -->
+        <section class="dashboard-grid">
+            <!-- 用户增长趋势 -->
+            <div class="analytics-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="card-icon">
+                            <i data-feather="users"></i>
+                        </div>
+                        用户增长趋势
+                    </div>
+                    <div class="card-actions">
+                        <button class="action-btn" onclick="refreshChart('userGrowthChart')">
+                            <i data-feather="refresh-cw"></i>
+                        </button>
+                        <button class="action-btn" onclick="exportChart('userGrowthChart')">
+                            <i data-feather="download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-container" id="userGrowthChart"></div>
+            </div>
+
+            <!-- 律师等级分布 -->
+            <div class="analytics-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="card-icon" style="background: var(--secondary-gradient);">
+                            <i data-feather="award"></i>
+                        </div>
+                        律师等级分布
+                    </div>
+                    <div class="card-actions">
+                        <button class="action-btn" onclick="refreshChart('lawyerLevelChart')">
+                            <i data-feather="refresh-cw"></i>
+                        </button>
+                        <button class="action-btn" onclick="exportChart('lawyerLevelChart')">
+                            <i data-feather="download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-container" id="lawyerLevelChart"></div>
+            </div>
+
+            <!-- 案件处理效率 -->
+            <div class="analytics-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="card-icon" style="background: var(--success-gradient);">
+                            <i data-feather="clock"></i>
+                        </div>
+                        案件处理效率
+                    </div>
+                    <div class="card-actions">
+                        <button class="action-btn" onclick="refreshChart('caseEfficiencyChart')">
+                            <i data-feather="refresh-cw"></i>
+                        </button>
+                        <button class="action-btn" onclick="exportChart('caseEfficiencyChart')">
+                            <i data-feather="download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-container" id="caseEfficiencyChart"></div>
+            </div>
+
+            <!-- 收入来源分析 -->
+            <div class="analytics-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="card-icon" style="background: var(--warning-gradient);">
+                            <i data-feather="pie-chart"></i>
+                        </div>
+                        收入来源分析
+                    </div>
+                    <div class="card-actions">
+                        <button class="action-btn" onclick="refreshChart('revenueChart')">
+                            <i data-feather="refresh-cw"></i>
+                        </button>
+                        <button class="action-btn" onclick="exportChart('revenueChart')">
+                            <i data-feather="download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-container" id="revenueChart"></div>
+            </div>
+        </section>
+
+        <!-- 性能指标 -->
+        <section class="performance-indicators">
+            <div class="indicator-card">
+                <div class="indicator-header">
+                    <span class="indicator-title">管理后台使用满意度</span>
+                    <span class="indicator-score score-excellent">92.3%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 92.3%"></div>
+                </div>
+                <div class="indicator-details">
+                    <div class="detail-item">
+                        <div class="detail-value">4.6/5.0</div>
+                        <div class="detail-label">用户评分</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-value">1,247</div>
+                        <div class="detail-label">反馈数量</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-value">0.8s</div>
+                        <div class="detail-label">平均响应时间</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-value">98.7%</div>
+                        <div class="detail-label">功能可用性</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="indicator-card">
+                <div class="indicator-header">
+                    <span class="indicator-title">数据可视化效果</span>
+                    <span class="indicator-score score-excellent">89.7%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 89.7%"></div>
+                </div>
+                <div class="indicator-details">
+                    <div class="detail-item">
+                        <div class="detail-value">4.5/5.0</div>
+                        <div class="detail-label">美观度评分</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-value">4.4/5.0</div>
+                        <div class="detail-label">易懂度评分</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-value">95.2%</div>
+                        <div class="detail-label">图表加载成功率</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-value">1.2s</div>
+                        <div class="detail-label">图表渲染时间</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="indicator-card">
+                <div class="indicator-header">
+                    <span class="indicator-title">用户交互体验</span>
+                    <span class="indicator-score score-good">87.5%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 87.5%"></div>
+                </div>
+                <div class="indicator-details">
+                    <div class="detail-item">
+                        <div class="detail-value">4.4/5.0</div>
+                        <div class="detail-label">交互流畅度</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-value">4.3/5.0</div>
+                        <div class="detail-label">界面友好度</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-value">92.8%</div>
+                        <div class="detail-label">操作成功率</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-value">2.1s</div>
+                        <div class="detail-label">平均操作时间</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 数据洞察 -->
+        <section class="data-insights">
+            <div class="insights-header">
+                <div class="card-icon">
+                    <i data-feather="lightbulb"></i>
+                </div>
+                <h3 class="insights-title">智能数据洞察</h3>
+            </div>
+            
+            <div class="insight-item">
+                <div class="insight-icon" style="background: var(--success-gradient);">
+                    <i data-feather="trending-up"></i>
+                </div>
+                <div class="insight-content">
+                    <div class="insight-title">管理后台满意度超预期</div>
+                    <div class="insight-description">
+                        当前管理后台使用满意度达到92.3%，超过目标值85%，主要得益于数据可视化的美观设计和易懂的交互界面。用户反馈显示图表加载速度和视觉效果获得高度认可。
+                    </div>
+                </div>
+            </div>
+
+            <div class="insight-item">
+                <div class="insight-icon" style="background: var(--primary-gradient);">
+                    <i data-feather="eye"></i>
+                </div>
+                <div class="insight-content">
+                    <div class="insight-title">数据可视化效果优秀</div>
+                    <div class="insight-description">
+                        数据可视化美观度和易懂度评分均超过4.4分，图表渲染时间控制在1.2秒内，为管理员提供了直观、高效的数据分析体验。现代化的设计语言获得用户一致好评。
+                    </div>
+                </div>
+            </div>
+
+            <div class="insight-item">
+                <div class="insight-icon" style="background: var(--warning-gradient);">
+                    <i data-feather="target"></i>
+                </div>
+                <div class="insight-content">
+                    <div class="insight-title">用户体验持续优化</div>
+                    <div class="insight-description">
+                        交互体验评分达到87.5%，操作成功率92.8%，平均操作时间2.1秒。建议继续优化响应式设计和移动端适配，进一步提升用户满意度。
+                    </div>
+                </div>
+            </div>
+
+            <div class="insight-item">
+                <div class="insight-icon" style="background: var(--secondary-gradient);">
+                    <i data-feather="zap"></i>
+                </div>
+                <div class="insight-content">
+                    <div class="insight-title">系统性能表现卓越</div>
+                    <div class="insight-description">
+                        系统可用性达到99.9%，平均响应时间0.8秒，图表加载成功率95.2%。高性能的数据处理和可视化渲染为用户提供了流畅的使用体验。
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 导出功能 -->
+        <section class="export-section">
+            <h3 class="export-title">数据导出与报告</h3>
+            <div class="export-buttons">
+                <button class="export-btn primary" onclick="exportReport('pdf')">
+                    <i data-feather="file-text"></i>
+                    <span>导出PDF报告</span>
+                </button>
+                <button class="export-btn secondary" onclick="exportReport('excel')">
+                    <i data-feather="grid"></i>
+                    <span>导出Excel数据</span>
+                </button>
+                <button class="export-btn success" onclick="exportReport('image')">
+                    <i data-feather="image"></i>
+                    <span>导出图表图片</span>
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <!-- 加载遮罩 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>正在加载数据...</p>
+        </div>
+    </div>
+
+    <script>
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            feather.replace();
+            initializeCharts();
+            startRealTimeUpdates();
+            setupEventListeners();
+        });
+
+        // 初始化图表
+        function initializeCharts() {
+            initUserGrowthChart();
+            initLawyerLevelChart();
+            initCaseEfficiencyChart();
+            initRevenueChart();
+        }
+
+        // 用户增长趋势图
+        function initUserGrowthChart() {
+            const chartDom = document.getElementById('userGrowthChart');
+            const myChart = echarts.init(chartDom);
+
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                    borderColor: '#2563eb',
+                    borderWidth: 1,
+                    textStyle: {
+                        color: '#fff'
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                    axisLine: {
+                        lineStyle: {
+                            color: '#e5e7eb'
+                        }
+                    },
+                    axisLabel: {
+                        color: '#6b7280'
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: {
+                        show: false
+                    },
+                    axisLabel: {
+                        color: '#6b7280'
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: '#f3f4f6'
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: '新增用户',
+                        type: 'line',
+                        smooth: true,
+                        data: [1200, 1900, 3000, 5000, 2000, 3000, 4500, 3800, 4200, 5100, 4800, 5500],
+                        lineStyle: {
+                            color: '#2563eb',
+                            width: 3
+                        },
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: 'rgba(37, 99, 235, 0.3)' },
+                                { offset: 1, color: 'rgba(37, 99, 235, 0.05)' }
+                            ])
+                        },
+                        itemStyle: {
+                            color: '#2563eb'
+                        }
+                    },
+                    {
+                        name: '活跃用户',
+                        type: 'line',
+                        smooth: true,
+                        data: [800, 1200, 2100, 3500, 1500, 2200, 3200, 2800, 3100, 3800, 3600, 4100],
+                        lineStyle: {
+                            color: '#7c3aed',
+                            width: 3
+                        },
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: 'rgba(124, 58, 237, 0.3)' },
+                                { offset: 1, color: 'rgba(124, 58, 237, 0.05)' }
+                            ])
+                        },
+                        itemStyle: {
+                            color: '#7c3aed'
+                        }
+                    }
+                ]
+            };
+
+            myChart.setOption(option);
+            
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        }
+
+        // 律师等级分布图
+        function initLawyerLevelChart() {
+            const chartDom = document.getElementById('lawyerLevelChart');
+            const myChart = echarts.init(chartDom);
+
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} <br/>{b}: {c} ({d}%)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                    borderColor: '#2563eb',
+                    borderWidth: 1,
+                    textStyle: {
+                        color: '#fff'
+                    }
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left',
+                    textStyle: {
+                        color: '#6b7280'
+                    }
+                },
+                series: [
+                    {
+                        name: '律师等级',
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        avoidLabelOverlap: false,
+                        itemStyle: {
+                            borderRadius: 10,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        },
+                        label: {
+                            show: false,
+                            position: 'center'
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                fontSize: 20,
+                                fontWeight: 'bold'
+                            }
+                        },
+                        labelLine: {
+                            show: false
+                        },
+                        data: [
+                            {value: 435, name: '见习律师', itemStyle: {color: '#667eea'}},
+                            {value: 310, name: '初级律师', itemStyle: {color: '#764ba2'}},
+                            {value: 234, name: '中级律师', itemStyle: {color: '#f093fb'}},
+                            {value: 135, name: '高级律师', itemStyle: {color: '#f5576c'}},
+                            {value: 89, name: '资深律师', itemStyle: {color: '#4facfe'}},
+                            {value: 45, name: '专家律师', itemStyle: {color: '#00f2fe'}},
+                            {value: 23, name: '首席律师', itemStyle: {color: '#fa709a'}},
+                            {value: 12, name: '合伙人', itemStyle: {color: '#fee140'}}
+                        ]
+                    }
+                ]
+            };
+
+            myChart.setOption(option);
+            
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        }
+
+        // 案件处理效率图
+        function initCaseEfficiencyChart() {
+            const chartDom = document.getElementById('caseEfficiencyChart');
+            const myChart = echarts.init(chartDom);
+
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    },
+                    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                    borderColor: '#2563eb',
+                    borderWidth: 1,
+                    textStyle: {
+                        color: '#fff'
+                    }
+                },
+                legend: {
+                    data: ['平均处理时间(小时)', '客户满意度(%)'],
+                    textStyle: {
+                        color: '#6b7280'
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['咨询类', '合同类', '诉讼类', '企业法务', '知识产权', '刑事辩护', '婚姻家庭'],
+                    axisLine: {
+                        lineStyle: {
+                            color: '#e5e7eb'
+                        }
+                    },
+                    axisLabel: {
+                        color: '#6b7280'
+                    }
+                },
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: '处理时间(小时)',
+                        position: 'left',
+                        axisLine: {
+                            show: false
+                        },
+                        axisLabel: {
+                            color: '#6b7280'
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                color: '#f3f4f6'
+                            }
+                        }
+                    },
+                    {
+                        type: 'value',
+                        name: '满意度(%)',
+                        position: 'right',
+                        axisLine: {
+                            show: false
+                        },
+                        axisLabel: {
+                            color: '#6b7280'
+                        }
+                    }
+                ],
+                series: [
+                    {
+                        name: '平均处理时间(小时)',
+                        type: 'bar',
+                        data: [2.5, 8.2, 24.6, 16.8, 12.4, 32.1, 6.7],
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: '#4facfe' },
+                                { offset: 1, color: '#00f2fe' }
+                            ])
+                        }
+                    },
+                    {
+                        name: '客户满意度(%)',
+                        type: 'line',
+                        yAxisIndex: 1,
+                        data: [95.2, 92.8, 89.6, 94.1, 91.7, 87.3, 96.4],
+                        lineStyle: {
+                            color: '#fa709a',
+                            width: 3
+                        },
+                        itemStyle: {
+                            color: '#fa709a'
+                        }
+                    }
+                ]
+            };
+
+            myChart.setOption(option);
+            
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        }
+
+        // 收入来源分析图
+        function initRevenueChart() {
+            const chartDom = document.getElementById('revenueChart');
+            const myChart = echarts.init(chartDom);
+
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} <br/>{b}: ¥{c} ({d}%)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                    borderColor: '#2563eb',
+                    borderWidth: 1,
+                    textStyle: {
+                        color: '#fff'
+                    }
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left',
+                    textStyle: {
+                        color: '#6b7280'
+                    }
+                },
+                series: [
+                    {
+                        name: '收入来源',
+                        type: 'pie',
+                        radius: '50%',
+                        data: [
+                            {value: 1280000, name: '会员订阅', itemStyle: {color: '#667eea'}},
+                            {value: 854000, name: '案件费用', itemStyle: {color: '#764ba2'}},
+                            {value: 427000, name: 'Credits购买', itemStyle: {color: '#f093fb'}},
+                            {value: 228000, name: '企业服务', itemStyle: {color: '#f5576c'}},
+                            {value: 57000, name: '其他', itemStyle: {color: '#4facfe'}}
+                        ],
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }
+                ]
+            };
+
+            myChart.setOption(option);
+            
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 导航标签切换
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 这里可以添加切换内容的逻辑
+                    showToast('切换到 ' + this.textContent.trim() + ' 视图', 'info');
+                });
+            });
+        }
+
+        // 刷新图表
+        function refreshChart(chartId) {
+            showLoading();
+            
+            setTimeout(() => {
+                // 模拟数据刷新
+                switch(chartId) {
+                    case 'userGrowthChart':
+                        initUserGrowthChart();
+                        break;
+                    case 'lawyerLevelChart':
+                        initLawyerLevelChart();
+                        break;
+                    case 'caseEfficiencyChart':
+                        initCaseEfficiencyChart();
+                        break;
+                    case 'revenueChart':
+                        initRevenueChart();
+                        break;
+                }
+                
+                hideLoading();
+                showToast('图表数据已更新', 'success');
+            }, 1500);
+        }
+
+        // 导出图表
+        function exportChart(chartId) {
+            showToast('正在导出图表...', 'info');
+            
+            setTimeout(() => {
+                showToast('图表导出成功', 'success');
+            }, 1000);
+        }
+
+        // 导出报告
+        function exportReport(format) {
+            showLoading();
+            
+            setTimeout(() => {
+                hideLoading();
+                showToast(`${format.toUpperCase()}报告导出成功`, 'success');
+            }, 2000);
+        }
+
+        // 开始实时更新
+        function startRealTimeUpdates() {
+            setInterval(() => {
+                // 更新核心指标
+                updateMetrics();
+            }, 30000); // 每30秒更新一次
+        }
+
+        // 更新指标
+        function updateMetrics() {
+            const metrics = [
+                'totalUsers', 'activeLawyers', 'completedCases', 
+                'monthlyRevenue', 'userSatisfaction', 'systemUptime'
+            ];
+            
+            metrics.forEach(metric => {
+                const element = document.getElementById(metric);
+                if (element) {
+                    // 模拟数据变化
+                    const currentValue = element.textContent;
+                    // 这里可以添加实际的数据更新逻辑
+                }
+            });
+        }
+
+        // 显示加载状态
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('show');
+        }
+
+        // 隐藏加载状态
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('show');
+        }
+
+        // 显示提示消息
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                color: white;
+                border-radius: 0.5rem;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+                z-index: 1001;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                font-weight: 500;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+
+        // 模拟满意度调查
+        function simulateSatisfactionSurvey() {
+            const satisfactionData = {
+                overall: 92.3,
+                visualization: 89.7,
+                interaction: 87.5,
+                performance: 94.1,
+                usability: 91.2
+            };
+            
+            console.log('管理后台满意度调查结果:', satisfactionData);
+            return satisfactionData;
+        }
+
+        // 页面加载完成后执行满意度检查
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const satisfaction = simulateSatisfactionSurvey();
+                if (satisfaction.overall > 85) {
+                    showToast(`管理后台满意度达到 ${satisfaction.overall}%，超过目标值85%！`, 'success');
+                }
+            }, 3000);
+        });
+    </script>
+</body>
+</html>

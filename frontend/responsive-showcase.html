@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lawsker 响应式设计展示 - 移动端体验优化</title>
+    
+    <!-- 预连接优化 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- 字体加载 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- 核心样式 -->
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/responsive-enhanced.css">
+    <link rel="stylesheet" href="css/components.css">
+    
+    <!-- PWA支持 -->
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    
+    <style>
+        /* 展示页面特定样式 */
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-600), var(--secondary-600));
+            color: white;
+            padding: 60px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin: 40px 0;
+        }
+        
+        .feature-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-2xl);
+            padding: 24px;
+            text-align: center;
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .feature-card:hover::before {
+            left: 100%;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary-500), var(--secondary-500));
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .demo-section {
+            margin: 60px 0;
+        }
+        
+        .demo-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--gray-200);
+            margin-bottom: 24px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .demo-tab {
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            font-weight: var(--font-medium);
+            cursor: pointer;
+            white-space: nowrap;
+            border-bottom: 2px solid transparent;
+            transition: all var(--transition-fast);
+        }
+        
+        .demo-tab.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+        
+        .demo-content {
+            display: none;
+        }
+        
+        .demo-content.active {
+            display: block;
+        }
+        
+        .component-showcase {
+            display: grid;
+            gap: 24px;
+        }
+        
+        .showcase-item {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+        }
+        
+        .showcase-title {
+            font-size: var(--text-lg);
+            font-weight: var(--font-semibold);
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .form-demo {
+            max-width: 400px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: var(--font-medium);
+            color: var(--text-primary);
+        }
+        
+        .performance-metrics {
+            background: var(--gray-900);
+            color: white;
+            border-radius: var(--radius-xl);
+            padding: 20px;
+            font-family: var(--font-family-mono);
+            font-size: var(--text-sm);
+        }
+        
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .metric-value {
+            color: var(--success-400);
+        }
+        
+        .responsive-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-primary);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-xl);
+            padding: 12px 16px;
+            font-size: var(--text-sm);
+            box-shadow: var(--shadow-lg);
+            z-index: var(--z-tooltip);
+        }
+        
+        .touch-demo {
+            background: var(--primary-50);
+            border: 2px dashed var(--primary-300);
+            border-radius: var(--radius-xl);
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            user-select: none;
+        }
+        
+        .touch-demo.touching {
+            background: var(--primary-100);
+            border-color: var(--primary-500);
+            transform: scale(0.98);
+        }
+        
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 40px 0;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .demo-tabs {
+                border-bottom: none;
+                background: var(--gray-100);
+                border-radius: var(--radius-xl);
+                padding: 4px;
+            }
+            
+            .demo-tab {
+                flex: 1;
+                border-radius: var(--radius-lg);
+                border-bottom: none;
+            }
+            
+            .demo-tab.active {
+                background: var(--bg-primary);
+                box-shadow: var(--shadow-sm);
+            }
+            
+            .responsive-info {
+                position: static;
+                margin: 20px 0;
+            }
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        /* 滚动指示器 */
+        .scroll-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-500), var(--secondary-500));
+            z-index: var(--z-tooltip);
+            transition: width 0.1s ease;
+        }
+        
+        /* 返回顶部按钮 */
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 48px;
+            height: 48px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-normal);
+            z-index: var(--z-tooltip);
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .back-to-top:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+    </style>
+</head>
+<body>
+    <!-- 滚动指示器 -->
+    <div class="scroll-indicator"></div>
+    
+    <!-- 响应式信息显示 -->
+    <div class="responsive-info">
+        <div id="breakpoint-info">
+            <strong>当前断点:</strong> <span id="current-breakpoint">-</span><br>
+            <strong>设备类型:</strong> <span id="device-type">-</span><br>
+            <strong>视口尺寸:</strong> <span id="viewport-size">-</span>
+        </div>
+    </div>
+    
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="flex items-center justify-between w-full">
+                <a href="#" class="navbar-brand">Lawsker 响应式展示</a>
+                
+                <!-- 桌面端导航 -->
+                <ul class="navbar-nav d-mobile-none">
+                    <li><a href="#features">特性</a></li>
+                    <li><a href="#demo">演示</a></li>
+                    <li><a href="#performance">性能</a></li>
+                </ul>
+                
+                <!-- 移动端菜单按钮 -->
+                <button class="mobile-menu-toggle d-mobile-flex" aria-label="打开菜单">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 移动端菜单 -->
+        <div class="mobile-menu">
+            <ul class="navbar-nav">
+                <li><a href="#features">特性展示</a></li>
+                <li><a href="#demo">组件演示</a></li>
+                <li><a href="#performance">性能监控</a></li>
+                <li><a href="#touch">触摸交互</a></li>
+            </ul>
+        </div>
+        
+        <!-- 移动端菜单遮罩 -->
+        <div class="mobile-menu-overlay"></div>
+    </nav>
+    
+    <!-- 主要内容 -->
+    <main>
+        <!-- 英雄区域 -->
+        <section class="hero-section">
+            <div class="container">
+                <div class="hero-content animate-fade-in-up">
+                    <h1 class="text-4xl font-bold mb-6">完美的移动端体验</h1>
+                    <p class="text-xl mb-8 opacity-90">
+                        Lawsker 响应式设计系统，为移动端用户提供 4.5+ 分的卓越体验
+                    </p>
+                    <div class="button-group justify-center">
+                        <button class="btn btn-primary btn-lg" data-modal-target="demo-modal">
+                            🚀 体验演示
+                        </button>
+                        <button class="btn btn-ghost btn-lg">
+                            📱 查看特性
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 特性展示 -->
+        <section id="features" class="container" style="margin: 60px auto;">
+            <h2 class="text-3xl font-bold text-center mb-12">核心特性</h2>
+            
+            <div class="feature-grid">
+                <div class="feature-card animate-fade-in-up">
+                    <div class="feature-icon">📱</div>
+                    <h3 class="text-xl font-semibold mb-3">移动端优先</h3>
+                    <p class="text-secondary">
+                        采用移动端优先的设计理念，确保在小屏幕设备上的完美体验
+                    </p>
+                </div>
+                
+                <div class="feature-card animate-fade-in-up">
+                    <div class="feature-icon">👆</div>
+                    <h3 class="text-xl font-semibold mb-3">触摸优化</h3>
+                    <p class="text-secondary">
+                        44px+ 触摸目标，触摸反馈，手势支持，为触摸设备量身定制
+                    </p>
+                </div>
+                
+                <div class="feature-card animate-fade-in-up">
+                    <div class="feature-icon">⚡</div>
+                    <h3 class="text-xl font-semibold mb-3">性能优化</h3>
+                    <p class="text-secondary">
+                        GPU加速，懒加载，防抖节流，确保流畅的用户交互体验
+                    </p>
+                </div>
+                
+                <div class="feature-card animate-fade-in-up">
+                    <div class="feature-icon">🎨</div>
+                    <h3 class="text-xl font-semibold mb-3">现代设计</h3>
+                    <p class="text-secondary">
+                        专业的设计系统，一致的视觉语言，美观的动画效果
+                    </p>
+                </div>
+                
+                <div class="feature-card animate-fade-in-up">
+                    <div class="feature-icon">♿</div>
+                    <h3 class="text-xl font-semibold mb-3">无障碍访问</h3>
+                    <p class="text-secondary">
+                        完整的键盘导航，屏幕阅读器支持，符合WCAG标准
+                    </p>
+                </div>
+                
+                <div class="feature-card animate-fade-in-up">
+                    <div class="feature-icon">🔧</div>
+                    <h3 class="text-xl font-semibold mb-3">智能适配</h3>
+                    <p class="text-secondary">
+                        自动检测设备类型，动态调整布局和交互方式
+                    </p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 组件演示 -->
+        <section id="demo" class="demo-section">
+            <div class="container">
+                <h2 class="text-3xl font-bold text-center mb-12">组件演示</h2>
+                
+                <!-- 选项卡 -->
+                <div class="demo-tabs">
+                    <button class="demo-tab active" data-tab="buttons">按钮组件</button>
+                    <button class="demo-tab" data-tab="forms">表单组件</button>
+                    <button class="demo-tab" data-tab="cards">卡片组件</button>
+                    <button class="demo-tab" data-tab="navigation">导航组件</button>
+                </div>
+                
+                <!-- 按钮演示 -->
+                <div class="demo-content active" id="buttons">
+                    <div class="component-showcase">
+                        <div class="showcase-item">
+                            <h3 class="showcase-title">按钮样式</h3>
+                            <div class="button-group">
+                                <button class="btn btn-primary">主要按钮</button>
+                                <button class="btn btn-secondary">次要按钮</button>
+                                <button class="btn btn-ghost">幽灵按钮</button>
+                            </div>
+                        </div>
+                        
+                        <div class="showcase-item">
+                            <h3 class="showcase-title">按钮尺寸</h3>
+                            <div class="button-group">
+                                <button class="btn btn-primary btn-sm">小按钮</button>
+                                <button class="btn btn-primary">默认按钮</button>
+                                <button class="btn btn-primary btn-lg">大按钮</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 表单演示 -->
+                <div class="demo-content" id="forms">
+                    <div class="component-showcase">
+                        <div class="showcase-item">
+                            <h3 class="showcase-title">表单元素</h3>
+                            <div class="form-demo">
+                                <div class="form-group">
+                                    <label class="form-label" for="demo-input">文本输入</label>
+                                    <input type="text" id="demo-input" class="form-input" placeholder="请输入内容">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="demo-select">下拉选择</label>
+                                    <select id="demo-select" class="form-input form-select">
+                                        <option>选项一</option>
+                                        <option>选项二</option>
+                                        <option>选项三</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="demo-textarea">文本域</label>
+                                    <textarea id="demo-textarea" class="form-input form-textarea" placeholder="请输入详细内容"></textarea>
+                                </div>
+                                
+                                <button class="btn btn-primary w-full">提交表单</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 卡片演示 -->
+                <div class="demo-content" id="cards">
+                    <div class="component-showcase">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="text-lg font-semibold">基础卡片</h4>
+                                </div>
+                                <div class="card-body">
+                                    <p>这是一个基础的卡片组件，包含头部、主体和底部区域。</p>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn btn-primary btn-sm">操作按钮</button>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="text-lg font-semibold mb-3">简单卡片</h4>
+                                    <p>这是一个只有主体内容的简单卡片。</p>
+                                    <div class="mt-4">
+                                        <button class="btn btn-ghost btn-sm">了解更多</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 导航演示 -->
+                <div class="demo-content" id="navigation">
+                    <div class="component-showcase">
+                        <div class="showcase-item">
+                            <h3 class="showcase-title">面包屑导航</h3>
+                            <nav aria-label="面包屑">
+                                <ol class="flex items-center gap-2 text-sm">
+                                    <li><a href="#" class="text-primary">首页</a></li>
+                                    <li class="text-muted">/</li>
+                                    <li><a href="#" class="text-primary">产品</a></li>
+                                    <li class="text-muted">/</li>
+                                    <li class="text-secondary">当前页面</li>
+                                </ol>
+                            </nav>
+                        </div>
+                        
+                        <div class="showcase-item">
+                            <h3 class="showcase-title">分页导航</h3>
+                            <nav aria-label="分页导航">
+                                <div class="flex items-center justify-center gap-2">
+                                    <button class="btn btn-ghost btn-sm">上一页</button>
+                                    <button class="btn btn-primary btn-sm">1</button>
+                                    <button class="btn btn-ghost btn-sm">2</button>
+                                    <button class="btn btn-ghost btn-sm">3</button>
+                                    <button class="btn btn-ghost btn-sm">下一页</button>
+                                </div>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 触摸交互演示 -->
+        <section id="touch" class="container" style="margin: 60px auto;">
+            <h2 class="text-3xl font-bold text-center mb-12">触摸交互演示</h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="showcase-item">
+                    <h3 class="showcase-title">触摸反馈</h3>
+                    <div class="touch-demo touch-feedback" data-swipe-down="refresh">
+                        <p class="font-medium mb-2">点击或触摸这里</p>
+                        <p class="text-sm text-secondary">体验触摸反馈效果</p>
+                        <p class="text-xs text-muted mt-2">移动端：下滑刷新页面</p>
+                    </div>
+                </div>
+                
+                <div class="showcase-item">
+                    <h3 class="showcase-title">手势支持</h3>
+                    <div class="touch-demo" data-swipe-left="close" data-swipe-right="back">
+                        <p class="font-medium mb-2">手势操作区域</p>
+                        <p class="text-sm text-secondary">左滑关闭 | 右滑返回</p>
+                        <p class="text-xs text-muted mt-2">仅在触摸设备上有效</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 性能监控 -->
+        <section id="performance" class="container" style="margin: 60px auto;">
+            <h2 class="text-3xl font-bold text-center mb-12">性能监控</h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="showcase-item">
+                    <h3 class="showcase-title">实时性能指标</h3>
+                    <div class="performance-metrics">
+                        <div class="metric-item">
+                            <span>页面加载时间:</span>
+                            <span class="metric-value" id="load-time">计算中...</span>
+                        </div>
+                        <div class="metric-item">
+                            <span>首次内容绘制:</span>
+                            <span class="metric-value" id="fcp-time">计算中...</span>
+                        </div>
+                        <div class="metric-item">
+                            <span>当前内存使用:</span>
+                            <span class="metric-value" id="memory-usage">计算中...</span>
+                        </div>
+                        <div class="metric-item">
+                            <span>网络连接:</span>
+                            <span class="metric-value" id="connection-type">检测中...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="showcase-item">
+                    <h3 class="showcase-title">设备信息</h3>
+                    <div class="performance-metrics">
+                        <div class="metric-item">
+                            <span>用户代理:</span>
+                            <span class="metric-value" id="user-agent">-</span>
+                        </div>
+                        <div class="metric-item">
+                            <span>屏幕分辨率:</span>
+                            <span class="metric-value" id="screen-resolution">-</span>
+                        </div>
+                        <div class="metric-item">
+                            <span>设备像素比:</span>
+                            <span class="metric-value" id="device-pixel-ratio">-</span>
+                        </div>
+                        <div class="metric-item">
+                            <span>触摸支持:</span>
+                            <span class="metric-value" id="touch-support">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- 模态框演示 -->
+    <div class="modal" id="demo-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">响应式演示</h3>
+                <button class="modal-close" aria-label="关闭">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-4">这是一个完全响应式的模态框组件。</p>
+                <p class="mb-4">在移动端，它会从底部滑入；在桌面端，它会居中显示。</p>
+                <div class="form-group">
+                    <label class="form-label">测试输入</label>
+                    <input type="text" class="form-input" placeholder="在这里输入内容">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost modal-close">取消</button>
+                <button class="btn btn-primary">确认</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 返回顶部按钮 -->
+    <button class="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" aria-label="返回顶部">
+        ↑
+    </button>
+    
+    <!-- JavaScript -->
+    <script src="js/responsive-enhanced.js"></script>
+    <!-- 专业图标系统 -->
+    <script src="/js/icon-system.js"></script>
+    <script src="/js/professional-icon-library.js"></script>
+    <script src="/js/icon-upgrade-system.js"></script>
+    
+    <script>
+        // 选项卡功能
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.demo-tab');
+            const contents = document.querySelectorAll('.demo-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const targetId = tab.dataset.tab;
+                    
+                    // 更新选项卡状态
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // 更新内容显示
+                    contents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === targetId) {
+                            content.classList.add('active');
+                        }
+                    });
+                });
+            });
+            
+            // 更新响应式信息
+            const updateResponsiveInfo = () => {
+                if (window.responsiveEnhancer) {
+                    document.getElementById('current-breakpoint').textContent = 
+                        window.responsiveEnhancer.getCurrentBreakpointName();
+                    
+                    const deviceType = window.responsiveEnhancer.isMobileDevice() ? '移动端' :
+                                     window.responsiveEnhancer.isTabletDevice() ? '平板端' : '桌面端';
+                    document.getElementById('device-type').textContent = deviceType;
+                }
+                
+                document.getElementById('viewport-size').textContent = 
+                    `${window.innerWidth} × ${window.innerHeight}`;
+            };
+            
+            // 更新性能信息
+            const updatePerformanceInfo = () => {
+                // 用户代理
+                document.getElementById('user-agent').textContent = 
+                    navigator.userAgent.split(' ')[0] + '...';
+                
+                // 屏幕分辨率
+                document.getElementById('screen-resolution').textContent = 
+                    `${screen.width} × ${screen.height}`;
+                
+                // 设备像素比
+                document.getElementById('device-pixel-ratio').textContent = 
+                    window.devicePixelRatio || 1;
+                
+                // 触摸支持
+                document.getElementById('touch-support').textContent = 
+                    'ontouchstart' in window ? '是' : '否';
+                
+                // 网络连接
+                if (navigator.connection) {
+                    document.getElementById('connection-type').textContent = 
+                        navigator.connection.effectiveType || '未知';
+                } else {
+                    document.getElementById('connection-type').textContent = '不支持';
+                }
+                
+                // 内存使用（如果支持）
+                if (performance.memory) {
+                    const memoryMB = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
+                    document.getElementById('memory-usage').textContent = memoryMB + ' MB';
+                } else {
+                    document.getElementById('memory-usage').textContent = '不支持';
+                }
+            };
+            
+            // 页面加载性能
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    const navigation = performance.getEntriesByType('navigation')[0];
+                    if (navigation) {
+                        const loadTime = Math.round(navigation.loadEventEnd - navigation.loadEventStart);
+                        document.getElementById('load-time').textContent = loadTime + ' ms';
+                    }
+                }, 100);
+            });
+            
+            // 首次内容绘制
+            const observer = new PerformanceObserver((list) => {
+                for (const entry of list.getEntries()) {
+                    if (entry.name === 'first-contentful-paint') {
+                        document.getElementById('fcp-time').textContent = 
+                            Math.round(entry.startTime) + ' ms';
+                    }
+                }
+            });
+            
+            try {
+                observer.observe({ entryTypes: ['paint'] });
+            } catch (e) {
+                document.getElementById('fcp-time').textContent = '不支持';
+            }
+            
+            // 初始化信息显示
+            updateResponsiveInfo();
+            updatePerformanceInfo();
+            
+            // 监听窗口变化
+            window.addEventListener('resize', updateResponsiveInfo);
+            window.addEventListener('breakpointChange', updateResponsiveInfo);
+            
+            // 滚动动画
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const animationObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-fade-in-up');
+                    }
+                });
+            }, observerOptions);
+            
+            document.querySelectorAll('.feature-card').forEach(card => {
+                animationObserver.observe(card);
+            });
+        });
+        
+        // 演示触摸反馈
+        document.addEventListener('touchstart', (e) => {
+            if (e.target.closest('.touch-demo')) {
+                console.log('👆 Touch detected on demo area');
+            }
+        }, { passive: true });
+        
+        // 演示手势处理
+        document.addEventListener('swipe', (e) => {
+            const { action, target } = e.detail;
+            console.log('👋 Swipe gesture:', action, target);
+            
+            // 显示提示
+            const toast = document.createElement('div');
+            toast.textContent = `手势操作: ${action}`;
+            toast.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: var(--gray-900);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                z-index: 10000;
+                font-size: 14px;
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

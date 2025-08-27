@@ -1,0 +1,213 @@
+{
+  "summary": {
+    "total_checks": 41,
+    "passed_checks": 9,
+    "failed_checks": 32,
+    "total_issues": 32,
+    "critical_issues": 0,
+    "high_issues": 22,
+    "medium_issues": 10,
+    "low_issues": 0,
+    "security_score": 68
+  },
+  "issues": {
+    "critical": [],
+    "high": [
+      {
+        "severity": "HIGH",
+        "component": "Environment (.env.production)",
+        "issue": "Missing required security variable: JWT_SECRET_KEY",
+        "recommendation": "Add JWT_SECRET_KEY with a secure value"
+      },
+      {
+        "severity": "HIGH",
+        "component": "Environment (.env.production)",
+        "issue": "Missing required security variable: DATABASE_PASSWORD",
+        "recommendation": "Add DATABASE_PASSWORD with a secure value"
+      },
+      {
+        "severity": "HIGH",
+        "component": "Environment (.env.server)",
+        "issue": "Missing required security variable: JWT_SECRET_KEY",
+        "recommendation": "Add JWT_SECRET_KEY with a secure value"
+      },
+      {
+        "severity": "HIGH",
+        "component": "Environment (.env.server)",
+        "issue": "Missing required security variable: REDIS_PASSWORD",
+        "recommendation": "Add REDIS_PASSWORD with a secure value"
+      },
+      {
+        "severity": "HIGH",
+        "component": "Environment (.env.server)",
+        "issue": "Missing required security variable: ENCRYPTION_KEY",
+        "recommendation": "Add ENCRYPTION_KEY with a secure value"
+      },
+      {
+        "severity": "HIGH",
+        "component": "Database Config (backend/app/core/database.py)",
+        "issue": "Potential SQL injection vulnerability - not using parameterized queries",
+        "recommendation": "Use parameterized queries for all database operations"
+      },
+      {
+        "severity": "HIGH",
+        "component": "Authentication (backend/app/services/unified_auth_service.py)",
+        "issue": "Weak password hashing algorithm detected",
+        "recommendation": "Use bcrypt, scrypt, or Argon2 for password hashing"
+      },
+      {
+        "severity": "HIGH",
+        "component": "API Endpoint (lawyer_verification.py)",
+        "issue": "Potential SQL injection vulnerability",
+        "recommendation": "Use parameterized queries"
+      },
+      {
+        "severity": "HIGH",
+        "component": "API Endpoint (statistics.py)",
+        "issue": "Potential SQL injection vulnerability",
+        "recommendation": "Use parameterized queries"
+      },
+      {
+        "severity": "HIGH",
+        "component": "API Endpoint (alerts.py)",
+        "issue": "Potential SQL injection vulnerability",
+        "recommendation": "Use parameterized queries"
+      },
+      {
+        "severity": "HIGH",
+        "component": "API Endpoint (enterprise_satisfaction.py)",
+        "issue": "Potential SQL injection vulnerability",
+        "recommendation": "Use parameterized queries"
+      },
+      {
+        "severity": "HIGH",
+        "component": "API Endpoint (auth.py)",
+        "issue": "Potential SQL injection vulnerability",
+        "recommendation": "Use parameterized queries"
+      },
+      {
+        "severity": "HIGH",
+        "component": "API Endpoint (delivery.py)",
+        "issue": "Potential SQL injection vulnerability",
+        "recommendation": "Use parameterized queries"
+      },
+      {
+        "severity": "HIGH",
+        "component": "API Endpoint (document_send.py)",
+        "issue": "Potential SQL injection vulnerability",
+        "recommendation": "Use parameterized queries"
+      },
+      {
+        "severity": "HIGH",
+        "component": "API Endpoint (finance.py)",
+        "issue": "Potential SQL injection vulnerability",
+        "recommendation": "Use parameterized queries"
+      },
+      {
+        "severity": "HIGH",
+        "component": "API Endpoint (tasks.py)",
+        "issue": "Potential SQL injection vulnerability",
+        "recommendation": "Use parameterized queries"
+      },
+      {
+        "severity": "HIGH",
+        "component": "API Endpoint (batch_upload.py)",
+        "issue": "Potential SQL injection vulnerability",
+        "recommendation": "Use parameterized queries"
+      },
+      {
+        "severity": "HIGH",
+        "component": "API Endpoint (document_library_backup.py)",
+        "issue": "Potential SQL injection vulnerability",
+        "recommendation": "Use parameterized queries"
+      },
+      {
+        "severity": "HIGH",
+        "component": "API Endpoint (users.py)",
+        "issue": "Potential SQL injection vulnerability",
+        "recommendation": "Use parameterized queries"
+      },
+      {
+        "severity": "HIGH",
+        "component": "API Endpoint (health.py)",
+        "issue": "Potential SQL injection vulnerability",
+        "recommendation": "Use parameterized queries"
+      },
+      {
+        "severity": "HIGH",
+        "component": "API Endpoint (abuse_analytics.py)",
+        "issue": "Potential SQL injection vulnerability",
+        "recommendation": "Use parameterized queries"
+      },
+      {
+        "severity": "HIGH",
+        "component": "Logging (backend/app/services/security_logger.py)",
+        "issue": "Potential sensitive data logging",
+        "recommendation": "Ensure passwords and sensitive data are not logged"
+      }
+    ],
+    "medium": [
+      {
+        "severity": "MEDIUM",
+        "component": "Authentication (backend/app/services/unified_auth_service.py)",
+        "issue": "Session cookies may not be HttpOnly",
+        "recommendation": "Set HttpOnly flag on session cookies"
+      },
+      {
+        "severity": "MEDIUM",
+        "component": "API Endpoint (conversion_optimization.py)",
+        "issue": "Potential XSS vulnerability - missing output encoding",
+        "recommendation": "Implement proper output encoding/escaping"
+      },
+      {
+        "severity": "MEDIUM",
+        "component": "API Endpoint (auth.py)",
+        "issue": "Missing input validation",
+        "recommendation": "Implement input validation for all API endpoints"
+      },
+      {
+        "severity": "MEDIUM",
+        "component": "API Endpoint (delivery.py)",
+        "issue": "Missing input validation",
+        "recommendation": "Implement input validation for all API endpoints"
+      },
+      {
+        "severity": "MEDIUM",
+        "component": "API Endpoint (delivery.py)",
+        "issue": "Potential XSS vulnerability - missing output encoding",
+        "recommendation": "Implement proper output encoding/escaping"
+      },
+      {
+        "severity": "MEDIUM",
+        "component": "API Endpoint (tasks.py)",
+        "issue": "Missing input validation",
+        "recommendation": "Implement input validation for all API endpoints"
+      },
+      {
+        "severity": "MEDIUM",
+        "component": "API Endpoint (lawyer_promotion.py)",
+        "issue": "Potential XSS vulnerability - missing output encoding",
+        "recommendation": "Implement proper output encoding/escaping"
+      },
+      {
+        "severity": "MEDIUM",
+        "component": "API Endpoint (demo_conversion.py)",
+        "issue": "Missing input validation",
+        "recommendation": "Implement input validation for all API endpoints"
+      },
+      {
+        "severity": "MEDIUM",
+        "component": "API Endpoint (unified_auth.py)",
+        "issue": "Missing input validation",
+        "recommendation": "Implement input validation for all API endpoints"
+      },
+      {
+        "severity": "MEDIUM",
+        "component": "API Endpoint (websocket.py)",
+        "issue": "Missing input validation",
+        "recommendation": "Implement input validation for all API endpoints"
+      }
+    ],
+    "low": []
+  }
+}

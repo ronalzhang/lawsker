@@ -267,7 +267,7 @@ docker-compose -f docker-compose.prod.yml exec nginx nginx -s reload
 
 #### 业务指标
 - 用户注册转化率
-- 支付成功率 > 95%
+- 支付处理成功率 > 95% (技术指标，非业务承诺)
 - 案件处理时效
 
 ### 告警规则配置

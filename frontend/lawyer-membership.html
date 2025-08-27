@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>律师会员系统 - 律客</title>
+    
+    <!-- Modern Design System -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/gamification.css">
+    
+    <!-- JavaScript Files -->
+    <script src="/js/icon-system.js"></script>
+    <script src="/js/gamification.js"></script>
+    <!-- 专业图标系统 -->
+    <script src="/js/professional-icon-library.js"></script>
+    <script src="/js/icon-upgrade-system.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .level-badge {
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+        }
+        .points-progress {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-gray-800">律师会员系统</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="refreshBtn" class="text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <div class="text-sm text-gray-600">
+                        <span id="currentTime"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- 会员状态卡片 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- 当前会员信息 -->
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">我的会员</h2>
+                    <div id="membershipBadge" class="px-4 py-2 rounded-full text-white font-medium">
+                        加载中...
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-blue-600" id="aiCredits">--</div>
+                        <div class="text-sm text-gray-600">AI Credits</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-600" id="caseLimit">--</div>
+                        <div class="text-sm text-gray-600">每日案件限制</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-purple-600" id="pointMultiplier">--</div>
+                        <div class="text-sm text-gray-600">积分倍数</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-orange-600" id="monthlyFee">--</div>
+                        <div class="text-sm text-gray-600">月费 (¥)</div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="font-semibold text-gray-800 mb-2">会员权益</h3>
+                    <div id="membershipFeatures" class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <!-- 权益列表将通过JavaScript填充 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 律师等级信息 -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="text-center mb-6">
+                    <div class="level-badge text-white px-4 py-2 rounded-full inline-block mb-4">
+                        <i class="fas fa-trophy mr-2"></i>
+                        <span id="levelName">加载中...</span>
+                    </div>
+                    <div class="text-3xl font-bold text-gray-800" id="currentLevel">--</div>
+                    <div class="text-sm text-gray-600">当前等级</div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="flex justify-between text-sm text-gray-600 mb-2">
+                        <span>升级进度</span>
+                        <span id="progressPercentage">--%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div id="progressBar" class="points-progress h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span id="currentPoints">0</span>
+                        <span id="nextLevelPoints">--</span>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <div class="text-sm text-gray-600 mb-1">还需积分</div>
+                    <div class="text-xl font-bold text-blue-600" id="pointsNeeded">--</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 会员套餐对比 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">会员套餐对比</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="membershipTiers">
+                <!-- 套餐卡片将通过JavaScript填充 -->
+            </div>
+        </div>
+
+        <!-- 积分记录 -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">积分记录</h2>
+                <button id="viewAllTransactions" class="text-blue-600 hover:text-blue-800 text-sm">
+                    查看全部 <i class="fas fa-arrow-right ml-1"></i>
+                </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">时间</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">行为</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">积分变化</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">描述</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsList" class="bg-white divide-y divide-gray-200">
+                        <!-- 积分记录将通过JavaScript填充 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 升级会员模态框 -->
+    <div id="upgradeModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">升级会员</h3>
+                    <button id="closeUpgradeModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div id="upgradeContent">
+                    <!-- 升级内容将通过JavaScript填充 -->
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button id="cancelUpgrade" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        取消
+                    </button>
+                    <button id="confirmUpgrade" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        确认升级
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let currentMembership = null;
+        let pointsSummary = null;
+        let membershipTiers = null;
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+            loadMembershipData();
+            
+            // 绑定事件
+            document.getElementById('refreshBtn').addEventListener('click', loadMembershipData);
+            document.getElementById('closeUpgradeModal').addEventListener('click', closeUpgradeModal);
+            document.getElementById('cancelUpgrade').addEventListener('click', closeUpgradeModal);
+        });
+
+        // 更新当前时间
+        function updateCurrentTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleString('zh-CN');
+        }
+
+        // 加载会员数据
+        async function loadMembershipData() {
+            try {
+                // 并行加载数据
+                const [membershipResponse, pointsResponse, tiersResponse] = await Promise.all([
+                    fetch('/api/v1/lawyer-membership/membership'),
+                    fetch('/api/v1/lawyer-membership/points/summary'),
+                    fetch('/api/v1/lawyer-membership/membership/tiers')
+                ]);
+
+                if (membershipResponse.ok) {
+                    currentMembership = await membershipResponse.json();
+                    updateMembershipDisplay();
+                }
+
+                if (pointsResponse.ok) {
+                    pointsSummary = await pointsResponse.json();
+                    updatePointsDisplay();
+                    loadRecentTransactions();
+                }
+
+                if (tiersResponse.ok) {
+                    const tiersData = await tiersResponse.json();
+                    membershipTiers = tiersData.tiers;
+                    updateTiersDisplay(tiersData);
+                }
+
+            } catch (error) {
+                console.error('加载会员数据失败:', error);
+                showNotification('加载数据失败，请刷新页面重试', 'error');
+            }
+        }
+
+        // 更新会员信息显示
+        function updateMembershipDisplay() {
+            if (!currentMembership) return;
+
+            const badge = document.getElementById('membershipBadge');
+            const tierInfo = currentMembership.tier_info;
+            
+            // 设置会员徽章
+            badge.textContent = tierInfo.name;
+            badge.className = `px-4 py-2 rounded-full text-white font-medium ${getMembershipBadgeClass(currentMembership.membership_type)}`;
+
+            // 更新统计数据
+            document.getElementById('aiCredits').textContent = currentMembership.ai_credits_remaining;
+            document.getElementById('caseLimit').textContent = currentMembership.daily_case_limit === -1 ? '无限制' : currentMembership.daily_case_limit;
+            document.getElementById('pointMultiplier').textContent = currentMembership.point_multiplier + 'x';
+            document.getElementById('monthlyFee').textContent = tierInfo.monthly_fee;
+
+            // 更新权益列表
+            const featuresContainer = document.getElementById('membershipFeatures');
+            featuresContainer.innerHTML = '';
+            tierInfo.features.forEach(feature => {
+                const featureElement = document.createElement('div');
+                featureElement.className = 'flex items-center text-sm text-gray-600';
+                featureElement.innerHTML = `<i class="fas fa-check text-green-500 mr-2"></i>${feature}`;
+                featuresContainer.appendChild(featureElement);
+            });
+        }
+
+        // 更新积分信息显示
+        function updatePointsDisplay() {
+            if (!pointsSummary) return;
+
+            document.getElementById('levelName').textContent = pointsSummary.level_name;
+            document.getElementById('currentLevel').textContent = pointsSummary.current_level;
+            document.getElementById('progressPercentage').textContent = pointsSummary.progress_percentage + '%';
+            document.getElementById('currentPoints').textContent = pointsSummary.current_points.toLocaleString();
+            document.getElementById('nextLevelPoints').textContent = pointsSummary.next_level ? 
+                (pointsSummary.current_points + pointsSummary.points_needed).toLocaleString() : '已满级';
+            document.getElementById('pointsNeeded').textContent = pointsSummary.points_needed.toLocaleString();
+
+            // 更新进度条
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = pointsSummary.progress_percentage + '%';
+        }
+
+        // 更新套餐显示
+        function updateTiersDisplay(tiersData) {
+            const container = document.getElementById('membershipTiers');
+            container.innerHTML = '';
+
+            Object.entries(membershipTiers).forEach(([tierType, tierInfo]) => {
+                const isCurrentTier = currentMembership && currentMembership.membership_type === tierType;
+                const canUpgrade = currentMembership && currentMembership.membership_type !== tierType && tierType !== 'free';
+
+                const tierCard = document.createElement('div');
+                tierCard.className = `card-hover border-2 rounded-xl p-6 ${isCurrentTier ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'}`;
+                
+                tierCard.innerHTML = `
+                    <div class="text-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">${tierInfo.name}</h3>
+                        <div class="text-3xl font-bold text-blue-600 mt-2">
+                            ${tierInfo.monthly_fee === 0 ? '免费' : '¥' + tierInfo.monthly_fee}
+                            ${tierInfo.monthly_fee > 0 ? '<span class="text-sm text-gray-500">/月</span>' : ''}
+                        </div>
+                        <p class="text-sm text-gray-600 mt-2">${tierInfo.description}</p>
+                    </div>
+                    
+                    <div class="space-y-3 mb-6">
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">AI Credits</span>
+                            <span class="font-medium">${tierInfo.ai_credits_monthly}/月</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">每日案件</span>
+                            <span class="font-medium">${tierInfo.daily_case_limit === -1 ? '无限制' : tierInfo.daily_case_limit + '个'}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">积分倍数</span>
+                            <span class="font-medium">${tierInfo.point_multiplier}x</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        ${tierInfo.features.map(feature => 
+                            `<div class="flex items-center text-sm text-gray-600 mb-1">
+                                <i class="fas fa-check text-green-500 mr-2"></i>${feature}
+                            </div>`
+                        ).join('')}
+                    </div>
+                    
+                    ${isCurrentTier ? 
+                        '<button class="w-full py-2 bg-blue-600 text-white rounded-lg font-medium">当前套餐</button>' :
+                        canUpgrade ? 
+                            `<button onclick="showUpgradeModal('${tierType}')" class="w-full py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium">升级到此套餐</button>` :
+                            '<button class="w-full py-2 bg-gray-300 text-gray-500 rounded-lg font-medium cursor-not-allowed">不可选择</button>'
+                    }
+                `;
+                
+                container.appendChild(tierCard);
+            });
+        }
+
+        // 加载最近积分记录
+        async function loadRecentTransactions() {
+            try {
+                const response = await fetch('/api/v1/lawyer-membership/points/transactions?size=10');
+                if (response.ok) {
+                    const data = await response.json();
+                    updateTransactionsDisplay(data.data.transactions);
+                }
+            } catch (error) {
+                console.error('加载积分记录失败:', error);
+            }
+        }
+
+        // 更新积分记录显示
+        function updateTransactionsDisplay(transactions) {
+            const tbody = document.getElementById('transactionsList');
+            tbody.innerHTML = '';
+
+            if (transactions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">暂无积分记录</td></tr>';
+                return;
+            }
+
+            transactions.forEach(transaction => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                
+                const pointsChange = transaction.points_change;
+                const pointsClass = pointsChange > 0 ? 'text-green-600' : 'text-red-600';
+                const pointsPrefix = pointsChange > 0 ? '+' : '';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${new Date(transaction.created_at).toLocaleString('zh-CN')}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${getActionDisplayName(transaction.type)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium ${pointsClass}">
+                        ${pointsPrefix}${pointsChange}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600">
+                        ${transaction.description}
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // 显示升级模态框
+        function showUpgradeModal(tierType) {
+            const modal = document.getElementById('upgradeModal');
+            const content = document.getElementById('upgradeContent');
+            const tierInfo = membershipTiers[tierType];
+            
+            content.innerHTML = `
+                <div class="text-center mb-4">
+                    <h4 class="text-lg font-semibold text-gray-800">升级到 ${tierInfo.name}</h4>
+                    <div class="text-2xl font-bold text-blue-600 mt-2">¥${tierInfo.monthly_fee}/月</div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                    <h5 class="font-medium text-gray-800 mb-2">升级后您将获得：</h5>
+                    <ul class="space-y-1">
+                        <li class="text-sm text-gray-600">• AI Credits: ${tierInfo.ai_credits_monthly}/月</li>
+                        <li class="text-sm text-gray-600">• 每日案件: ${tierInfo.daily_case_limit === -1 ? '无限制' : tierInfo.daily_case_limit + '个'}</li>
+                        <li class="text-sm text-gray-600">• 积分倍数: ${tierInfo.point_multiplier}x</li>
+                        ${tierInfo.features.map(feature => `<li class="text-sm text-gray-600">• ${feature}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div class="text-sm text-gray-500">
+                    点击确认升级后，将跳转到支付页面完成付款。
+                </div>
+            `;
+            
+            // 设置确认按钮事件
+            document.getElementById('confirmUpgrade').onclick = () => upgradeMembership(tierType);
+            
+            modal.classList.remove('hidden');
+        }
+
+        // 关闭升级模态框
+        function closeUpgradeModal() {
+            document.getElementById('upgradeModal').classList.add('hidden');
+        }
+
+        // 升级会员
+        async function upgradeMembership(tierType) {
+            try {
+                const response = await fetch('/api/v1/lawyer-membership/membership/upgrade', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        target_tier: tierType
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    closeUpgradeModal();
+                    showNotification('升级请求已创建，请完成支付', 'success');
+                    
+                    // 这里应该跳转到支付页面
+                    console.log('支付订单:', result.data.payment_order);
+                } else {
+                    const error = await response.json();
+                    showNotification(error.detail || '升级失败', 'error');
+                }
+            } catch (error) {
+                console.error('升级会员失败:', error);
+                showNotification('升级失败，请重试', 'error');
+            }
+        }
+
+        // 辅助函数
+        function getMembershipBadgeClass(membershipType) {
+            const classes = {
+                'free': 'bg-gray-500',
+                'professional': 'bg-blue-600',
+                'enterprise': 'bg-purple-600'
+            };
+            return classes[membershipType] || 'bg-gray-500';
+        }
+
+        function getActionDisplayName(actionType) {
+            const names = {
+                'case_complete_success': '完成案件',
+                'case_complete_excellent': '优秀完成',
+                'review_5star': '5星好评',
+                'review_4star': '4星好评',
+                'review_3star': '3星好评',
+                'review_2star': '2星差评',
+                'review_1star': '1星差评',
+                'online_hour': '在线工作',
+                'ai_credit_used': '使用AI工具',
+                'payment_100yuan': '付费充值',
+                'case_declined': '拒绝案件',
+                'late_response': '响应延迟'
+            };
+            return names[actionType] || actionType;
+        }
+
+        function showNotification(message, type = 'info') {
+            // 简单的通知实现
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white z-50 ${
+                type === 'success' ? 'bg-green-500' : 
+                type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

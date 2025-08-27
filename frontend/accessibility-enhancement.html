@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lawsker 无障碍访问增强版管理后台</title>
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/data-visualization.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        /* 无障碍访问增强样式 */
+        :root {
+            --focus-color: #2563eb;
+            --focus-width: 3px;
+            --high-contrast-bg: #000000;
+            --high-contrast-text: #ffffff;
+            --high-contrast-accent: #ffff00;
+        }
+
+        /* 高对比度模式 */
+        .high-contrast {
+            --primary-color: #ffff00;
+            --secondary-color: #00ffff;
+            --success-color: #00ff00;
+            --warning-color: #ff8800;
+            --error-color: #ff0000;
+            --gray-50: #ffffff;
+            --gray-100: #ffffff;
+            --gray-200: #ffffff;
+            --gray-300: #cccccc;
+            --gray-400: #999999;
+            --gray-500: #666666;
+            --gray-600: #333333;
+            --gray-700: #000000;
+            --gray-800: #000000;
+            --gray-900: #000000;
+            background: var(--high-contrast-bg) !important;
+            color: var(--high-contrast-text) !important;
+        }
+
+        .high-contrast * {
+            background-color: inherit !important;
+            color: inherit !important;
+            border-color: var(--high-contrast-accent) !important;
+        }
+
+        .high-contrast .analytics-card,
+        .high-contrast .metric-item,
+        .high-contrast .chart-card {
+            background: #000000 !important;
+            border: 2px solid #ffff00 !important;
+            color: #ffffff !important;
+        }
+
+        /* 焦点指示器增强 */
+        *:focus {
+            outline: var(--focus-width) solid var(--focus-color);
+            outline-offset: 2px;
+            box-shadow: 0 0 0 var(--focus-width) rgba(37, 99, 235, 0.3);
+        }
+
+        .focus-visible {
+            outline: var(--focus-width) solid var(--focus-color);
+            outline-offset: 2px;
+        }
+
+        /* 跳转链接 */
+        .skip-links {
+            position: absolute;
+            top: -40px;
+            left: 6px;
+            background: var(--focus-color);
+            color: white;
+            padding: 8px;
+            text-decoration: none;
+            border-radius: 4px;
+            z-index: 1000;
+            transition: top 0.3s;
+        }
+
+        .skip-links:focus {
+            top: 6px;
+        }
+
+        /* 屏幕阅读器专用文本 */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* 键盘导航增强 */
+        .keyboard-nav-active .nav-tab:focus,
+        .keyboard-nav-active .action-btn:focus,
+        .keyboard-nav-active .export-btn:focus {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        /* 动画减少选项 */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* 大字体支持 */
+        .large-text {
+            font-size: 1.25em;
+        }
+
+        .large-text .metric-value {
+            font-size: 3rem;
+        }
+
+        .large-text .chart-title {
+            font-size: 1.5rem;
+        }
+
+        /* 颜色盲友好 */
+        .colorblind-friendly .chart-container {
+            filter: none;
+        }
+
+        /* 语音控制支持 */
+        [data-voice-command] {
+            position: relative;
+        }
+
+        [data-voice-command]::after {
+            content: attr(data-voice-command);
+            position: absolute;
+            top: -20px;
+            left: 0;
+            font-size: 0.75rem;
+            color: #666;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .voice-commands-visible [data-voice-command]::after {
+            opacity: 1;
+        }
+
+        /* 无障碍工具栏 */
+        .accessibility-toolbar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 1rem;
+            border-radius: 0 0 0 1rem;
+            z-index: 1001;
+            display: flex;
+            gap: 0.5rem;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .accessibility-toolbar.show {
+            transform: translateY(0);
+        }
+
+        .accessibility-btn {
+            padding: 0.5rem;
+            background: transparent;
+            border: 1px solid white;
+            color: white;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .accessibility-btn:hover,
+        .accessibility-btn:focus {
+            background: white;
+            color: black;
+        }
+
+        .accessibility-btn.active {
+            background: #ffff00;
+            color: black;
+            border-color: #ffff00;
+        }
+
+        /* 实时字幕区域 */
+        .live-captions {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 2rem;
+            max-width: 80%;
+            text-align: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .live-captions.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 键盘快捷键提示 */
+        .keyboard-shortcuts {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1002;
+            max-width: 500px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .keyboard-shortcuts.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .shortcut-key {
+            background: #f3f4f6;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        /* 语音反馈状态 */
+        .voice-feedback-active {
+            border: 2px dashed #00ff00;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* 触摸友好的按钮 */
+        @media (pointer: coarse) {
+            .action-btn,
+            .export-btn,
+            .nav-tab {
+                min-height: 44px;
+                min-width: 44px;
+                padding: 0.75rem 1.5rem;
+            }
+        }
+
+        /* 错误和成功状态的无障碍增强 */
+        .error-state {
+            border-left: 4px solid #dc2626;
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        .success-state {
+            border-left: 4px solid #059669;
+            background: #f0fdf4;
+            color: #065f46;
+        }
+
+        .warning-state {
+            border-left: 4px solid #d97706;
+            background: #fffbeb;
+            color: #92400e;
+        }
+
+        /* 数据表格无障碍增强 */
+        .accessible-table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .accessible-table th {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+
+        .accessible-table th[aria-sort] {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .accessible-table th[aria-sort="ascending"]::after {
+            content: " ↑";
+        }
+
+        .accessible-table th[aria-sort="descending"]::after {
+            content: " ↓";
+        }
+
+        .accessible-table tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        .accessible-table tr:hover,
+        .accessible-table tr:focus-within {
+            background: #e5e7eb;
+            outline: 2px solid var(--focus-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- 跳转链接 -->
+    <a href="#main-content" class="skip-links">跳转到主要内容</a>
+    <a href="#navigation" class="skip-links">跳转到导航</a>
+
+    <!-- 无障碍工具栏 -->
+    <div class="accessibility-toolbar" id="accessibilityToolbar">
+        <button class="accessibility-btn" onclick="toggleHighContrast()" 
+                aria-label="切换高对比度模式" title="切换高对比度模式">
+            <span aria-hidden="true">🎨</span>
+        </button>
+        <button class="accessibility-btn" onclick="toggleLargeText()" 
+                aria-label="切换大字体模式" title="切换大字体模式">
+            <span aria-hidden="true">🔍</span>
+        </button>
+        <button class="accessibility-btn" onclick="toggleKeyboardShortcuts()" 
+                aria-label="显示键盘快捷键" title="显示键盘快捷键">
+            <span aria-hidden="true">⌨️</span>
+        </button>
+        <button class="accessibility-btn" onclick="toggleVoiceCommands()" 
+                aria-label="启用语音命令" title="启用语音命令">
+            <span aria-hidden="true">🎤</span>
+        </button>
+        <button class="accessibility-btn" onclick="toggleReducedMotion()" 
+                aria-label="减少动画效果" title="减少动画效果">
+            <span aria-hidden="true">⏸️</span>
+        </button>
+    </div>
+
+    <!-- 实时字幕 -->
+    <div class="live-captions" id="liveCaptions" role="status" aria-live="polite">
+        <span id="captionText"></span>
+    </div>
+
+    <!-- 键盘快捷键帮助 -->
+    <div class="keyboard-shortcuts" id="keyboardShortcuts" role="dialog" aria-labelledby="shortcuts-title">
+        <h3 id="shortcuts-title">键盘快捷键</h3>
+        <div class="shortcut-item">
+            <span>显示/隐藏无障碍工具栏</span>
+            <kbd class="shortcut-key">Alt + A</kbd>
+        </div>
+        <div class="shortcut-item">
+            <span>切换高对比度模式</span>
+            <kbd class="shortcut-key">Alt + C</kbd>
+        </div>
+        <div class="shortcut-item">
+            <span>切换大字体模式</span>
+            <kbd class="shortcut-key">Alt + L</kbd>
+        </div>
+        <div class="shortcut-item">
+            <span>刷新数据</span>
+            <kbd class="shortcut-key">Alt + R</kbd>
+        </div>
+        <div class="shortcut-item">
+            <span>导出数据</span>
+            <kbd class="shortcut-key">Alt + E</kbd>
+        </div>
+        <div class="shortcut-item">
+            <span>搜索</span>
+            <kbd class="shortcut-key">Alt + S</kbd>
+        </div>
+        <div class="shortcut-item">
+            <span>关闭此对话框</span>
+            <kbd class="shortcut-key">Escape</kbd>
+        </div>
+        <button onclick="toggleKeyboardShortcuts()" style="margin-top: 1rem; padding: 0.5rem 1rem; border: 1px solid #ccc; background: white; border-radius: 0.25rem;">关闭</button>
+    </div>
+
+    <div class="analytics-container" id="mainContainer">
+        <!-- 页面头部 -->
+        <header class="analytics-header">
+            <h1 class="analytics-title">
+                <span class="sr-only">Lawsker 数据分析中心 - </span>
+                无障碍增强版管理后台
+            </h1>
+            <p class="analytics-subtitle">基于数据驱动的智能决策支持系统，支持完整的无障碍访问</p>
+            
+            <nav id="navigation" class="analytics-nav" role="navigation" aria-label="主导航">
+                <a href="#overview" class="nav-tab active" 
+                   data-voice-command="总览" 
+                   aria-current="page"
+                   role="tab"
+                   aria-selected="true">
+                    <i data-feather="bar-chart-2" aria-hidden="true"></i>
+                    <span>总览</span>
+                </a>
+                <a href="#users" class="nav-tab" 
+                   data-voice-command="用户分析"
+                   role="tab"
+                   aria-selected="false">
+                    <i data-feather="users" aria-hidden="true"></i>
+                    <span>用户分析</span>
+                </a>
+                <a href="#lawyers" class="nav-tab" 
+                   data-voice-command="律师分析"
+                   role="tab"
+                   aria-selected="false">
+                    <i data-feather="briefcase" aria-hidden="true"></i>
+                    <span>律师分析</span>
+                </a>
+                <a href="#business" class="nav-tab" 
+                   data-voice-command="业务分析"
+                   role="tab"
+                   aria-selected="false">
+                    <i data-feather="trending-up" aria-hidden="true"></i>
+                    <span>业务分析</span>
+                </a>
+            </nav>
+        </header>
+
+        <!-- 核心指标 -->
+        <section class="metric-grid" role="region" aria-labelledby="metrics-title">
+            <h2 id="metrics-title" class="sr-only">核心业务指标</h2>
+            
+            <div class="metric-item" role="img" aria-labelledby="total-users-label" aria-describedby="total-users-desc">
+                <div class="metric-value" id="totalUsers" aria-live="polite">15,847</div>
+                <div class="metric-label" id="total-users-label">总用户数</div>
+                <div class="metric-change positive" id="total-users-desc">
+                    <i data-feather="trending-up" aria-hidden="true"></i>
+                    <span>较上月增长12.5%</span>
+                </div>
+            </div>
+
+            <div class="metric-item" role="img" aria-labelledby="active-lawyers-label" aria-describedby="active-lawyers-desc">
+                <div class="metric-value" id="activeLawyers" aria-live="polite">3,256</div>
+                <div class="metric-label" id="active-lawyers-label">活跃律师</div>
+                <div class="metric-change positive" id="active-lawyers-desc">
+                    <i data-feather="trending-up" aria-hidden="true"></i>
+                    <span>较上月增长8.3%</span>
+                </div>
+            </div>
+
+            <div class="metric-item" role="img" aria-labelledby="completed-cases-label" aria-describedby="completed-cases-desc">
+                <div class="metric-value" id="completedCases" aria-live="polite">12,924</div>
+                <div class="metric-label" id="completed-cases-label">完成案件</div>
+                <div class="metric-change positive" id="completed-cases-desc">
+                    <i data-feather="trending-up" aria-hidden="true"></i>
+                    <span>较上月增长15.7%</span>
+                </div>
+            </div>
+
+            <div class="metric-item" role="img" aria-labelledby="monthly-revenue-label" aria-describedby="monthly-revenue-desc">
+                <div class="metric-value" id="monthlyRevenue" aria-live="polite">¥2,847,890</div>
+                <div class="metric-label" id="monthly-revenue-label">月度收入</div>
+                <div class="metric-change positive" id="monthly-revenue-desc">
+                    <i data-feather="trending-up" aria-hidden="true"></i>
+                    <span>较上月增长22.1%</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 图表仪表盘 -->
+        <main id="main-content" class="dashboard-grid" role="main">
+            <!-- 用户增长趋势 -->
+            <section class="analytics-card" role="region" aria-labelledby="user-growth-title">
+                <div class="card-header">
+                    <h3 class="card-title" id="user-growth-title">
+                        <div class="card-icon" aria-hidden="true">
+                            <i data-feather="users"></i>
+                        </div>
+                        用户增长趋势
+                    </h3>
+                    <div class="card-actions">
+                        <button class="action-btn" 
+                                onclick="refreshChart('userGrowthChart')" 
+                                aria-label="刷新用户增长趋势图表"
+                                data-voice-command="刷新用户图表">
+                            <i data-feather="refresh-cw" aria-hidden="true"></i>
+                            <span class="sr-only">刷新</span>
+                        </button>
+                        <button class="action-btn" 
+                                onclick="exportChart('userGrowthChart')" 
+                                aria-label="导出用户增长趋势图表"
+                                data-voice-command="导出用户图表">
+                            <i data-feather="download" aria-hidden="true"></i>
+                            <span class="sr-only">导出</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-container" 
+                     id="userGrowthChart" 
+                     role="img" 
+                     aria-label="用户增长趋势图表，显示过去12个月的新增用户和活跃用户数据"
+                     tabindex="0">
+                </div>
+            </section>
+
+            <!-- 律师等级分布 -->
+            <section class="analytics-card" role="region" aria-labelledby="lawyer-level-title">
+                <div class="card-header">
+                    <h3 class="card-title" id="lawyer-level-title">
+                        <div class="card-icon" aria-hidden="true" style="background: var(--secondary-gradient);">
+                            <i data-feather="award"></i>
+                        </div>
+                        律师等级分布
+                    </h3>
+                    <div class="card-actions">
+                        <button class="action-btn" 
+                                onclick="refreshChart('lawyerLevelChart')" 
+                                aria-label="刷新律师等级分布图表"
+                                data-voice-command="刷新律师图表">
+                            <i data-feather="refresh-cw" aria-hidden="true"></i>
+                            <span class="sr-only">刷新</span>
+                        </button>
+                        <button class="action-btn" 
+                                onclick="exportChart('lawyerLevelChart')" 
+                                aria-label="导出律师等级分布图表"
+                                data-voice-command="导出律师图表">
+                            <i data-feather="download" aria-hidden="true"></i>
+                            <span class="sr-only">导出</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-container" 
+                     id="lawyerLevelChart" 
+                     role="img" 
+                     aria-label="律师等级分布饼图，显示从见习律师到合伙人各等级的人数分布"
+                     tabindex="0">
+                </div>
+            </section>
+        </main>
+
+        <!-- 数据表格 -->
+        <section class="data-table-card" role="region" aria-labelledby="user-activity-title">
+            <div class="table-header">
+                <h3 class="chart-title" id="user-activity-title">最新用户活动</h3>
+                <div class="search-box" role="search">
+                    <label for="userSearch" class="sr-only">搜索用户</label>
+                    <i data-feather="search" aria-hidden="true"></i>
+                    <input type="text" 
+                           placeholder="搜索用户..." 
+                           id="userSearch"
+                           aria-describedby="search-help">
+                    <div id="search-help" class="sr-only">输入用户名、ID或类型进行搜索</div>
+                </div>
+            </div>
+            <div style="overflow-x: auto;" role="region" aria-label="用户活动数据表格" tabindex="0">
+                <table class="data-table accessible-table" role="table" aria-labelledby="user-activity-title">
+                    <thead>
+                        <tr role="row">
+                            <th role="columnheader" aria-sort="none" tabindex="0">用户ID</th>
+                            <th role="columnheader" aria-sort="none" tabindex="0">用户名</th>
+                            <th role="columnheader" aria-sort="none" tabindex="0">用户类型</th>
+                            <th role="columnheader" aria-sort="none" tabindex="0">注册时间</th>
+                            <th role="columnheader" aria-sort="none" tabindex="0">最后活动</th>
+                            <th role="columnheader" aria-sort="none" tabindex="0">状态</th>
+                            <th role="columnheader">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody" role="rowgroup">
+                        <!-- 动态生成的用户数据 -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // 无障碍访问功能
+        let isHighContrast = false;
+        let isLargeText = false;
+        let isKeyboardNavActive = false;
+        let isVoiceCommandsActive = false;
+        let isReducedMotion = false;
+
+        // 初始化无障碍功能
+        document.addEventListener('DOMContentLoaded', function() {
+            feather.replace();
+            initializeAccessibility();
+            initializeCharts();
+            loadUserTable();
+            setupKeyboardNavigation();
+            setupVoiceCommands();
+            setupScreenReader();
+        });
+
+        function initializeAccessibility() {
+            // 检测用户偏好
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                isReducedMotion = true;
+                document.body.classList.add('reduced-motion');
+            }
+
+            if (window.matchMedia('(prefers-contrast: high)').matches) {
+                toggleHighContrast();
+            }
+
+            // 显示无障碍工具栏
+            setTimeout(() => {
+                document.getElementById('accessibilityToolbar').classList.add('show');
+            }, 1000);
+
+            // 键盘快捷键
+            document.addEventListener('keydown', handleKeyboardShortcuts);
+
+            // 焦点管理
+            document.addEventListener('focusin', handleFocusIn);
+            document.addEventListener('focusout', handleFocusOut);
+        }
+
+        function handleKeyboardShortcuts(e) {
+            if (e.altKey) {
+                switch(e.key) {
+                    case 'a':
+                    case 'A':
+                        e.preventDefault();
+                        toggleAccessibilityToolbar();
+                        break;
+                    case 'c':
+                    case 'C':
+                        e.preventDefault();
+                        toggleHighContrast();
+                        break;
+                    case 'l':
+                    case 'L':
+                        e.preventDefault();
+                        toggleLargeText();
+                        break;
+                    case 'r':
+                    case 'R':
+                        e.preventDefault();
+                        refreshAllCharts();
+                        break;
+                    case 'e':
+                    case 'E':
+                        e.preventDefault();
+                        exportAllData();
+                        break;
+                    case 's':
+                    case 'S':
+                        e.preventDefault();
+                        document.getElementById('userSearch').focus();
+                        break;
+                }
+            }
+
+            if (e.key === 'Escape') {
+                closeAllDialogs();
+            }
+        }
+
+        function handleFocusIn(e) {
+            if (e.target.matches('button, a, input, select, textarea, [tabindex]')) {
+                e.target.classList.add('focus-visible');
+                announceToScreenReader(`焦点在 ${getFocusDescription(e.target)}`);
+            }
+        }
+
+        function handleFocusOut(e) {
+            e.target.classList.remove('focus-visible');
+        }
+
+        function getFocusDescription(element) {
+            return element.getAttribute('aria-label') || 
+                   element.getAttribute('title') || 
+                   element.textContent.trim() || 
+                   element.tagName;
+        }
+
+        function toggleAccessibilityToolbar() {
+            const toolbar = document.getElementById('accessibilityToolbar');
+            toolbar.classList.toggle('show');
+        }
+
+        function toggleHighContrast() {
+            isHighContrast = !isHighContrast;
+            document.body.classList.toggle('high-contrast', isHighContrast);
+            
+            const btn = event?.target?.closest('.accessibility-btn');
+            if (btn) {
+                btn.classList.toggle('active', isHighContrast);
+            }
+
+            announceToScreenReader(isHighContrast ? '已启用高对比度模式' : '已关闭高对比度模式');
+            showLiveCaptions(isHighContrast ? '高对比度模式已启用' : '高对比度模式已关闭');
+        }
+
+        function toggleLargeText() {
+            isLargeText = !isLargeText;
+            document.body.classList.toggle('large-text', isLargeText);
+            
+            const btn = event?.target?.closest('.accessibility-btn');
+            if (btn) {
+                btn.classList.toggle('active', isLargeText);
+            }
+
+            announceToScreenReader(isLargeText ? '已启用大字体模式' : '已关闭大字体模式');
+            showLiveCaptions(isLargeText ? '大字体模式已启用' : '大字体模式已关闭');
+        }
+
+        function toggleKeyboardShortcuts() {
+            const dialog = document.getElementById('keyboardShortcuts');
+            dialog.classList.toggle('show');
+            
+            if (dialog.classList.contains('show')) {
+                dialog.focus();
+                announceToScreenReader('键盘快捷键帮助已打开');
+            } else {
+                announceToScreenReader('键盘快捷键帮助已关闭');
+            }
+        }
+
+        function toggleVoiceCommands() {
+            isVoiceCommandsActive = !isVoiceCommandsActive;
+            document.body.classList.toggle('voice-commands-visible', isVoiceCommandsActive);
+            
+            const btn = event?.target?.closest('.accessibility-btn');
+            if (btn) {
+                btn.classList.toggle('active', isVoiceCommandsActive);
+            }
+
+            if (isVoiceCommandsActive) {
+                startVoiceRecognition();
+                announceToScreenReader('语音命令已启用');
+                showLiveCaptions('语音命令已启用，请说出命令');
+            } else {
+                stopVoiceRecognition();
+                announceToScreenReader('语音命令已关闭');
+                showLiveCaptions('语音命令已关闭');
+            }
+        }
+
+        function toggleReducedMotion() {
+            isReducedMotion = !isReducedMotion;
+            document.body.classList.toggle('reduced-motion', isReducedMotion);
+            
+            const btn = event?.target?.closest('.accessibility-btn');
+            if (btn) {
+                btn.classList.toggle('active', isReducedMotion);
+            }
+
+            announceToScreenReader(isReducedMotion ? '已减少动画效果' : '已恢复动画效果');
+            showLiveCaptions(isReducedMotion ? '动画效果已减少' : '动画效果已恢复');
+        }
+
+        function announceToScreenReader(message) {
+            const announcement = document.createElement('div');
+            announcement.setAttribute('aria-live', 'polite');
+            announcement.setAttribute('aria-atomic', 'true');
+            announcement.className = 'sr-only';
+            announcement.textContent = message;
+            
+            document.body.appendChild(announcement);
+            
+            setTimeout(() => {
+                document.body.removeChild(announcement);
+            }, 1000);
+        }
+
+        function showLiveCaptions(message) {
+            const captions = document.getElementById('liveCaptions');
+            const captionText = document.getElementById('captionText');
+            
+            captionText.textContent = message;
+            captions.classList.add('show');
+            
+            setTimeout(() => {
+                captions.classList.remove('show');
+            }, 3000);
+        }
+
+        function setupKeyboardNavigation() {
+            // Tab键导航增强
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    document.body.classList.add('keyboard-nav-active');
+                }
+            });
+
+            document.addEventListener('mousedown', function() {
+                document.body.classList.remove('keyboard-nav-active');
+            });
+
+            // 方向键导航
+            document.addEventListener('keydown', function(e) {
+                if (e.target.matches('.nav-tab')) {
+                    const tabs = Array.from(document.querySelectorAll('.nav-tab'));
+                    const currentIndex = tabs.indexOf(e.target);
+                    
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        const nextIndex = (currentIndex + 1) % tabs.length;
+                        tabs[nextIndex].focus();
+                    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        const prevIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+                        tabs[prevIndex].focus();
+                    }
+                }
+            });
+        }
+
+        function setupVoiceCommands() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                window.recognition = new SpeechRecognition();
+                
+                window.recognition.continuous = true;
+                window.recognition.interimResults = true;
+                window.recognition.lang = 'zh-CN';
+                
+                window.recognition.onresult = function(event) {
+                    const command = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+                    handleVoiceCommand(command);
+                };
+                
+                window.recognition.onerror = function(event) {
+                    console.error('语音识别错误:', event.error);
+                    showLiveCaptions('语音识别出错，请重试');
+                };
+            }
+        }
+
+        function startVoiceRecognition() {
+            if (window.recognition) {
+                window.recognition.start();
+                document.body.classList.add('voice-feedback-active');
+            }
+        }
+
+        function stopVoiceRecognition() {
+            if (window.recognition) {
+                window.recognition.stop();
+                document.body.classList.remove('voice-feedback-active');
+            }
+        }
+
+        function handleVoiceCommand(command) {
+            showLiveCaptions(`识别到命令: ${command}`);
+            
+            if (command.includes('总览') || command.includes('概览')) {
+                document.querySelector('[data-voice-command="总览"]').click();
+            } else if (command.includes('用户分析') || command.includes('用户')) {
+                document.querySelector('[data-voice-command="用户分析"]').click();
+            } else if (command.includes('律师分析') || command.includes('律师')) {
+                document.querySelector('[data-voice-command="律师分析"]').click();
+            } else if (command.includes('业务分析') || command.includes('业务')) {
+                document.querySelector('[data-voice-command="业务分析"]').click();
+            } else if (command.includes('刷新')) {
+                refreshAllCharts();
+            } else if (command.includes('导出')) {
+                exportAllData();
+            } else if (command.includes('搜索')) {
+                document.getElementById('userSearch').focus();
+            } else {
+                showLiveCaptions('未识别的命令，请重试');
+            }
+        }
+
+        function setupScreenReader() {
+            // 为图表添加详细描述
+            setTimeout(() => {
+                const charts = document.querySelectorAll('.chart-container');
+                charts.forEach(chart => {
+                    chart.addEventListener('focus', function() {
+                        const description = this.getAttribute('aria-label');
+                        announceToScreenReader(description);
+                    });
+                });
+            }, 2000);
+        }
+
+        function closeAllDialogs() {
+            document.getElementById('keyboardShortcuts').classList.remove('show');
+            document.getElementById('liveCaptions').classList.remove('show');
+        }
+
+        function refreshAllCharts() {
+            announceToScreenReader('正在刷新所有图表');
+            showLiveCaptions('正在刷新数据...');
+            
+            // 模拟刷新
+            setTimeout(() => {
+                announceToScreenReader('所有图表已刷新完成');
+                showLiveCaptions('数据刷新完成');
+            }, 2000);
+        }
+
+        function exportAllData() {
+            announceToScreenReader('正在导出所有数据');
+            showLiveCaptions('正在导出数据...');
+            
+            // 模拟导出
+            setTimeout(() => {
+                announceToScreenReader('数据导出完成');
+                showLiveCaptions('数据导出完成');
+            }, 1500);
+        }
+
+        // 图表初始化（简化版）
+        function initializeCharts() {
+            // 这里可以添加图表初始化代码
+            console.log('图表初始化完成');
+        }
+
+        function loadUserTable() {
+            const tableBody = document.getElementById('userTableBody');
+            const users = [
+                {id: 'U001', name: '张三', type: '普通用户', registerTime: '2024-01-15', lastActive: '2024-01-20', status: 'active'},
+                {id: 'L001', name: '李律师', type: '律师用户', registerTime: '2024-01-10', lastActive: '2024-01-20', status: 'active'},
+                {id: 'U002', name: '王五', type: '普通用户', registerTime: '2024-01-18', lastActive: '2024-01-19', status: 'pending'}
+            ];
+
+            tableBody.innerHTML = users.map((user, index) => `
+                <tr role="row" tabindex="0" aria-rowindex="${index + 2}">
+                    <td role="gridcell">${user.id}</td>
+                    <td role="gridcell">${user.name}</td>
+                    <td role="gridcell">${user.type}</td>
+                    <td role="gridcell">${user.registerTime}</td>
+                    <td role="gridcell">${user.lastActive}</td>
+                    <td role="gridcell">
+                        <span class="status-badge status-${user.status}" role="status">
+                            ${user.status === 'active' ? '活跃' : user.status === 'pending' ? '待审核' : '非活跃'}
+                        </span>
+                    </td>
+                    <td role="gridcell">
+                        <button onclick="viewUser('${user.id}')" 
+                                aria-label="查看用户 ${user.name} 的详细信息"
+                                style="padding: 0.25rem 0.5rem; border: 1px solid #d1d5db; background: white; border-radius: 0.25rem; cursor: pointer;">
+                            查看
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function viewUser(userId) {
+            announceToScreenReader(`正在查看用户 ${userId} 的详细信息`);
+            showLiveCaptions(`查看用户 ${userId}`);
+        }
+
+        // 搜索功能增强
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('userSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase();
+                    const rows = document.querySelectorAll('#userTableBody tr');
+                    let visibleCount = 0;
+                    
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        const isVisible = text.includes(searchTerm);
+                        row.style.display = isVisible ? '' : 'none';
+                        if (isVisible) visibleCount++;
+                    });
+                    
+                    announceToScreenReader(`搜索结果：找到 ${visibleCount} 条匹配记录`);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>律客 - 统一认证系统</title>
+    
+    <!-- Modern Design System -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/css/components.css">
+    
+    <!-- JavaScript Files -->
+    <script src="/js/icon-system.js"></script>
+    <script src="/js/auto-redirect.js"></script>
+    <!-- 专业图标系统 -->
+    <script src="/js/professional-icon-library.js"></script>
+    <script src="/js/icon-upgrade-system.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-header h1 {
+            color: #1f2937;
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-header p {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .lawyer-benefits {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            color: white;
+            display: none;
+        }
+
+        .lawyer-benefits.show {
+            display: block;
+        }
+
+        .lawyer-benefits h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .lawyer-benefits ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .lawyer-benefits li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .lawyer-benefits .check-icon {
+            width: 16px;
+            height: 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .identity-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .identity-option {
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .identity-option:hover {
+            border-color: #3b82f6;
+            background: #f8fafc;
+        }
+
+        .identity-option.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .identity-option .icon {
+            width: 32px;
+            height: 32px;
+            margin: 0 auto 0.5rem;
+            background: #f3f4f6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .identity-option.selected .icon {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .identity-option h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .identity-option p {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: #374151;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+
+        .btn-secondary {
+            background-color: #f3f4f6;
+            color: #374151;
+            margin-top: 0.5rem;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e5e7eb;
+        }
+
+        .identity-selection {
+            display: none;
+            text-align: center;
+        }
+
+        .identity-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .identity-btn {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .identity-btn:hover {
+            border-color: #3b82f6;
+            background-color: #f8fafc;
+        }
+
+        .identity-btn.selected {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+
+        .demo-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+        }
+
+        .demo-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .demo-btn {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            color: #6b7280;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .demo-btn:hover {
+            border-color: #9ca3af;
+            color: #374151;
+        }
+
+        .message {
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .message.success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .message.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 重定向消息容器 -->
+    <div id="redirect-message-container"></div>
+    
+    <div class="auth-container">
+        <!-- 注册表单 -->
+        <div id="registration-form">
+            <div class="auth-header">
+                <h1>欢迎加入 Lawsker</h1>
+                <p>创建您的账户，开始使用专业法律服务</p>
+            </div>
+
+            <div id="message-container"></div>
+
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="full_name">姓名</label>
+                    <input type="text" id="full_name" name="full_name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">邮箱地址</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary">注册账户</button>
+            </form>
+
+            <button type="button" class="btn btn-secondary" onclick="showLoginForm()">
+                已有账户？立即登录
+            </button>
+        </div>
+
+        <!-- 身份选择 -->
+        <div id="identity-selection" class="identity-selection">
+            <div class="auth-header">
+                <h1>选择您的身份</h1>
+                <p>请选择最符合您需求的身份类型</p>
+            </div>
+
+            <!-- 律师免费会员福利展示 -->
+            <div class="lawyer-benefits" id="lawyer-benefits">
+                <h3>
+                    <span class="check-icon">✓</span>
+                    律师免费会员福利
+                </h3>
+                <ul>
+                    <li>
+                        <span class="check-icon">✓</span>
+                        每月20个AI Credits，智能辅助办案
+                    </li>
+                    <li>
+                        <span class="check-icon">✓</span>
+                        每日2个案件接单机会
+                    </li>
+                    <li>
+                        <span class="check-icon">✓</span>
+                        传奇游戏式积分系统，提升律师等级
+                    </li>
+                    <li>
+                        <span class="check-icon">✓</span>
+                        10年免费使用期，无需担心到期
+                    </li>
+                    <li>
+                        <span class="check-icon">✓</span>
+                        认证通过即可升级专业版（2倍积分）
+                    </li>
+                </ul>
+            </div>
+
+            <div class="identity-buttons">
+                <div class="identity-btn" data-type="user">
+                    <h3>普通用户</h3>
+                    <p>发布法律需求，寻找专业律师</p>
+                </div>
+                <div class="identity-btn" data-type="lawyer">
+                    <h3>律师用户 🎁</h3>
+                    <p>提供专业法律服务，享受免费会员福利</p>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-primary" id="confirm-identity" disabled>
+                确认身份
+            </button>
+        </div>
+
+        <!-- 登录表单 -->
+        <div id="login-form" class="hidden">
+            <div class="auth-header">
+                <h1>登录 Lawsker</h1>
+                <p>欢迎回来，请登录您的账户</p>
+            </div>
+
+            <div id="login-message-container"></div>
+
+            <form id="login-form-element">
+                <div class="form-group">
+                    <label for="login_email">邮箱地址</label>
+                    <input type="email" id="login_email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="login_password">密码</label>
+                    <input type="password" id="login_password" name="password" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary">登录</button>
+            </form>
+
+            <button type="button" class="btn btn-secondary" onclick="showRegistrationForm()">
+                没有账户？立即注册
+            </button>
+        </div>
+
+        <!-- 演示账户 -->
+        <div class="demo-section">
+            <p style="color: #6b7280; font-size: 0.875rem;">或者体验演示账户</p>
+            <div class="demo-buttons">
+                <button class="demo-btn" onclick="enterDemo('user')">
+                    用户演示
+                </button>
+                <button class="demo-btn" onclick="enterDemo('lawyer')">
+                    律师演示
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUserId = null;
+        let selectedIdentity = null;
+
+        // 注册表单提交
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                email: formData.get('email'),
+                password: formData.get('password'),
+                full_name: formData.get('full_name'),
+                tenant_id: '00000000-0000-0000-0000-000000000001' // 默认租户ID
+            };
+
+            try {
+                const response = await fetch('/api/v1/unified-auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    currentUserId = result.user_id;
+                    showMessage('注册成功！请检查邮箱完成验证，然后选择您的身份类型。', 'success');
+                    
+                    // 模拟邮箱验证（实际应该通过邮件链接）
+                    setTimeout(() => {
+                        showIdentitySelection();
+                    }, 2000);
+                } else {
+                    showMessage(result.detail || '注册失败，请重试', 'error');
+                }
+            } catch (error) {
+                showMessage('网络错误，请重试', 'error');
+            }
+        });
+
+        // 登录表单提交
+        document.getElementById('login-form-element').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                username_or_email: formData.get('email'),
+                password: formData.get('password')
+            };
+
+            try {
+                const response = await fetch('/api/v1/unified-auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // 使用自动重定向管理器处理登录成功
+                    if (result.auto_redirect && result.redirect_url) {
+                        await window.AutoRedirectManager.handleLoginRedirect(result);
+                    } else {
+                        // 手动处理重定向（兼容旧版本）
+                        localStorage.setItem('access_token', result.access_token);
+                        if (result.redirect_url) {
+                            window.location.href = result.redirect_url;
+                        } else {
+                            showMessage('登录成功！', 'success', 'login');
+                        }
+                    }
+                } else {
+                    showMessage(result.detail || '登录失败，请检查邮箱和密码', 'error', 'login');
+                }
+            } catch (error) {
+                showMessage('网络错误，请重试', 'error', 'login');
+            }
+        });
+
+        // 身份选择
+        document.querySelectorAll('.identity-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.identity-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedIdentity = btn.dataset.type;
+                document.getElementById('confirm-identity').disabled = false;
+                
+                // 显示律师福利
+                const lawyerBenefits = document.getElementById('lawyer-benefits');
+                if (selectedIdentity === 'lawyer') {
+                    lawyerBenefits.classList.add('show');
+                } else {
+                    lawyerBenefits.classList.remove('show');
+                }
+            });
+        });
+
+        // 确认身份
+        document.getElementById('confirm-identity').addEventListener('click', async () => {
+            if (!currentUserId || !selectedIdentity) return;
+
+            try {
+                const response = await fetch('/api/v1/unified-auth/set-identity', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: currentUserId,
+                        identity_type: selectedIdentity
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    if (result.requires_certification) {
+                        alert('身份设置成功！请上传律师证完成认证。');
+                        window.location.href = result.redirect_url;
+                    } else {
+                        alert('账户激活成功！');
+                        window.location.href = result.redirect_url;
+                    }
+                } else {
+                    showMessage(result.detail || '身份设置失败', 'error');
+                }
+            } catch (error) {
+                showMessage('网络错误，请重试', 'error');
+            }
+        });
+
+        // 演示账户
+        async function enterDemo(demoType) {
+            try {
+                const response = await fetch(`/api/v1/unified-auth/demo/${demoType}`);
+                const result = await response.json();
+
+                if (response.ok) {
+                    // 重定向到演示工作台
+                    const demoUrl = demoType === 'lawyer' 
+                        ? `/lawyer/${result.workspace_id}?demo=true`
+                        : `/user/${result.workspace_id}?demo=true`;
+                    
+                    window.location.href = demoUrl;
+                } else {
+                    showMessage('演示账户加载失败', 'error');
+                }
+            } catch (error) {
+                showMessage('网络错误，请重试', 'error');
+            }
+        }
+
+        // 显示消息
+        function showMessage(message, type, container = 'message') {
+            const containerId = container === 'login' ? 'login-message-container' : 'message-container';
+            const messageContainer = document.getElementById(containerId);
+            messageContainer.innerHTML = `<div class="message ${type}">${message}</div>`;
+            
+            setTimeout(() => {
+                messageContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        // 显示身份选择
+        function showIdentitySelection() {
+            document.getElementById('registration-form').style.display = 'none';
+            document.getElementById('identity-selection').style.display = 'block';
+        }
+
+        // 显示登录表单
+        function showLoginForm() {
+            document.getElementById('registration-form').style.display = 'none';
+            document.getElementById('login-form').classList.remove('hidden');
+        }
+
+        // 显示注册表单
+        function showRegistrationForm() {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('registration-form').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

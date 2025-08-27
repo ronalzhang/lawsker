@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>律客 - 统一认证系统</title>
+    
+    <!-- Modern Design System -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/css/components.css">
+    
+    <!-- JavaScript Files -->
+    <script src="/js/icon-system.js"></script>
+    <!-- 专业图标系统 -->
+    <script src="/js/professional-icon-library.js"></script>
+    <script src="/js/icon-upgrade-system.js"></script>
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, var(--primary-600) 0%, var(--secondary-600) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-4);
+        }
+        
+        .auth-container {
+            background: var(--bg-primary);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-2xl);
+            padding: var(--space-8);
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+        }
+        
+        .auth-header {
+            text-align: center;
+            margin-bottom: var(--space-8);
+        }
+        
+        .auth-logo {
+            width: var(--space-16);
+            height: var(--space-16);
+            margin: 0 auto var(--space-4);
+            color: var(--color-primary);
+        }
+        
+        .auth-title {
+            color: var(--text-primary);
+            font-size: var(--text-2xl);
+            font-weight: var(--font-bold);
+            margin-bottom: var(--space-2);
+        }
+        
+        .auth-subtitle {
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+        }
+        
+        .auth-tabs {
+            display: flex;
+            background-color: var(--gray-100);
+            border-radius: var(--radius-lg);
+            padding: var(--space-1);
+            margin-bottom: var(--space-8);
+        }
+        
+        .auth-tab {
+            flex: 1;
+            padding: var(--space-3) var(--space-4);
+            text-align: center;
+            background: none;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        
+        .auth-tab.active {
+            background-color: var(--bg-primary);
+            color: var(--color-primary);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .auth-form {
+            display: none;
+        }
+        
+        .auth-form.active {
+            display: block;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-4);
+        }
+        
+        .password-input-wrapper {
+            position: relative;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: var(--space-3);
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            padding: var(--space-1);
+            border-radius: var(--radius-sm);
+            transition: var(--transition-fast);
+        }
+        
+        .password-toggle:hover {
+            color: var(--text-secondary);
+            background-color: var(--gray-100);
+        }
+        
+        .password-toggle svg {
+            width: var(--space-5);
+            height: var(--space-5);
+        }
+        
+        .auth-actions {
+            margin-top: var(--space-6);
+        }
+        
+        .auth-link {
+            display: block;
+            text-align: center;
+            margin-top: var(--space-4);
+            color: var(--color-primary);
+            text-decoration: none;
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+            transition: var(--transition-fast);
+        }
+        
+        .auth-link:hover {
+            color: var(--primary-700);
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: var(--space-6) 0;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background-color: var(--gray-200);
+        }
+        
+        .divider span {
+            padding: 0 var(--space-4);
+            color: var(--text-tertiary);
+            font-size: var(--text-sm);
+        }
+        
+        .demo-section {
+            background-color: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            text-align: center;
+        }
+        
+        .demo-icon {
+            width: var(--space-12);
+            height: var(--space-12);
+            margin: 0 auto var(--space-4);
+            color: var(--color-secondary);
+        }
+        
+        .demo-title {
+            font-size: var(--text-lg);
+            font-weight: var(--font-semibold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-2);
+        }
+        
+        .demo-description {
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+            margin-bottom: var(--space-4);
+            line-height: var(--leading-relaxed);
+        }
+        
+        .identity-selection {
+            display: none;
+            margin-top: var(--space-6);
+        }
+        
+        .identity-selection.show {
+            display: block;
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        .identity-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-4);
+            margin-top: var(--space-4);
+        }
+        
+        .identity-option {
+            padding: var(--space-4);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            background-color: var(--bg-primary);
+        }
+        
+        .identity-option:hover {
+            border-color: var(--primary-300);
+            background-color: var(--primary-50);
+        }
+        
+        .identity-option.selected {
+            border-color: var(--color-primary);
+            background-color: var(--primary-50);
+        }
+        
+        .identity-icon {
+            width: var(--space-8);
+            height: var(--space-8);
+            margin: 0 auto var(--space-2);
+            color: var(--color-primary);
+        }
+        
+        .identity-title {
+            font-size: var(--text-base);
+            font-weight: var(--font-medium);
+            color: var(--text-primary);
+            margin-bottom: var(--space-1);
+        }
+        
+        .identity-description {
+            font-size: var(--text-xs);
+            color: var(--text-secondary);
+        }
+        
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-2xl);
+        }
+        
+        .loading-overlay.show {
+            display: flex;
+        }
+        
+        .loading-spinner {
+            width: var(--space-8);
+            height: var(--space-8);
+            border: 2px solid var(--gray-200);
+            border-top: 2px solid var(--color-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 640px) {
+            .auth-container {
+                padding: var(--space-6);
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .identity-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner"></div>
+        </div>
+        
+        <!-- Header -->
+        <div class="auth-header">
+            <div data-icon="scale" class="auth-logo"></div>
+            <h1 class="auth-title">欢迎来到律客</h1>
+            <p class="auth-subtitle">专业法律服务，触手可及</p>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="auth-tabs">
+            <button class="auth-tab active" data-tab="login">登录</button>
+            <button class="auth-tab" data-tab="register">注册</button>
+        </div>
+        
+        <!-- Login Form -->
+        <form class="auth-form active" id="loginForm">
+            <div class="form-group">
+                <label class="form-label">邮箱地址</label>
+                <input type="email" class="form-input" name="email" required placeholder="请输入您的邮箱">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">密码</label>
+                <div class="password-input-wrapper">
+                    <input type="password" class="form-input" name="password" required placeholder="请输入密码">
+                    <button type="button" class="password-toggle" data-toggle="password">
+                        <div data-icon="eye"></div>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="auth-actions">
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <div data-icon="arrow-right" style="width: 16px; height: 16px;"></div>
+                    登录
+                </button>
+            </div>
+            
+            <a href="#" class="auth-link">忘记密码？</a>
+        </form>
+        
+        <!-- Register Form -->
+        <form class="auth-form" id="registerForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">姓名</label>
+                    <input type="text" class="form-input" name="full_name" required placeholder="请输入姓名">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">手机号</label>
+                    <input type="tel" class="form-input" name="phone" placeholder="请输入手机号">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">邮箱地址</label>
+                <input type="email" class="form-input" name="email" required placeholder="请输入邮箱地址">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">密码</label>
+                <div class="password-input-wrapper">
+                    <input type="password" class="form-input" name="password" required placeholder="请设置密码（至少8位）" minlength="8">
+                    <button type="button" class="password-toggle" data-toggle="password">
+                        <div data-icon="eye"></div>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">确认密码</label>
+                <div class="password-input-wrapper">
+                    <input type="password" class="form-input" name="confirm_password" required placeholder="请再次输入密码">
+                    <button type="button" class="password-toggle" data-toggle="password">
+                        <div data-icon="eye"></div>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="auth-actions">
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <div data-icon="user-plus" style="width: 16px; height: 16px;"></div>
+                    注册账户
+                </button>
+            </div>
+            
+            <!-- Identity Selection -->
+            <div class="identity-selection" id="identitySelection">
+                <h3 style="text-align: center; margin-bottom: var(--space-4); color: var(--text-primary); font-size: var(--text-lg); font-weight: var(--font-semibold);">
+                    请选择您的身份
+                </h3>
+                <div class="identity-options">
+                    <div class="identity-option" data-identity="user">
+                        <div data-icon="user" class="identity-icon"></div>
+                        <div class="identity-title">普通用户</div>
+                        <div class="identity-description">寻求法律服务</div>
+                    </div>
+                    <div class="identity-option" data-identity="lawyer">
+                        <div data-icon="scale" class="identity-icon"></div>
+                        <div class="identity-title">律师用户</div>
+                        <div class="identity-description">提供法律服务</div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" id="confirmIdentity" style="width: 100%; margin-top: var(--space-4);" disabled>
+                    确认身份
+                </button>
+            </div>
+        </form>
+        
+        <!-- Divider -->
+        <div class="divider">
+            <span>或者</span>
+        </div>
+        
+        <!-- Demo Section -->
+        <div class="demo-section">
+            <div data-icon="play" class="demo-icon"></div>
+            <h3 class="demo-title">免费体验演示</h3>
+            <p class="demo-description">
+                无需注册，立即体验律客平台的完整功能，
+                了解我们如何为您提供专业的法律服务
+            </p>
+            <a href="/demo-account.html" class="btn btn-secondary">
+                <div data-icon="eye" style="width: 16px; height: 16px;"></div>
+                开始体验
+            </a>
+        </div>
+    </div>
+    
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+    
+    <script>
+        class UnifiedAuth {
+            constructor() {
+                this.currentTab = 'login';
+                this.selectedIdentity = null;
+                this.init();
+            }
+            
+            init() {
+                this.bindEvents();
+                this.initPasswordToggles();
+            }
+            
+            bindEvents() {
+                // Tab switching
+                document.querySelectorAll('.auth-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        this.switchTab(e.target.dataset.tab);
+                    });
+                });
+                
+                // Form submissions
+                document.getElementById('loginForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleLogin(e.target);
+                });
+                
+                document.getElementById('registerForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleRegister(e.target);
+                });
+                
+                // Identity selection
+                document.querySelectorAll('.identity-option').forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        this.selectIdentity(e.currentTarget.dataset.identity);
+                    });
+                });
+                
+                document.getElementById('confirmIdentity').addEventListener('click', () => {
+                    this.confirmIdentity();
+                });
+            }
+            
+            initPasswordToggles() {
+                document.querySelectorAll('.password-toggle').forEach(toggle => {
+                    toggle.addEventListener('click', (e) => {
+                        const input = e.target.closest('.password-input-wrapper').querySelector('input');
+                        const icon = e.target.closest('.password-toggle').querySelector('[data-icon]');
+                        
+                        if (input.type === 'password') {
+                            input.type = 'text';
+                            if (window.IconSystem) {
+                                window.IconSystem.replaceWithIcon(icon, 'eye-slash', {
+                                    size: '20',
+                                    className: icon.className
+                                });
+                            }
+                        } else {
+                            input.type = 'password';
+                            if (window.IconSystem) {
+                                window.IconSystem.replaceWithIcon(icon, 'eye', {
+                                    size: '20',
+                                    className: icon.className
+                                });
+                            }
+                        }
+                    });
+                });
+            }
+            
+            switchTab(tab) {
+                // Update tab buttons
+                document.querySelectorAll('.auth-tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+                
+                // Update forms
+                document.querySelectorAll('.auth-form').forEach(form => {
+                    form.classList.remove('active');
+                });
+                document.getElementById(`${tab}Form`).classList.add('active');
+                
+                this.currentTab = tab;
+            }
+            
+            async handleLogin(form) {
+                const formData = new FormData(form);
+                const data = {
+                    email: formData.get('email'),
+                    password: formData.get('password')
+                };
+                
+                this.showLoading(true);
+                
+                try {
+                    const response = await fetch('/api/v1/unified-auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        this.showToast('success', '登录成功', '正在跳转到工作台...');
+                        
+                        // Redirect based on user type
+                        setTimeout(() => {
+                            window.location.href = result.redirect_url;
+                        }, 1500);
+                    } else {
+                        this.showToast('error', '登录失败', result.detail || '请检查邮箱和密码');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    this.showToast('error', '登录失败', '网络错误，请稍后重试');
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+            
+            async handleRegister(form) {
+                const formData = new FormData(form);
+                
+                // Validate password confirmation
+                const password = formData.get('password');
+                const confirmPassword = formData.get('confirm_password');
+                
+                if (password !== confirmPassword) {
+                    this.showToast('error', '注册失败', '两次输入的密码不一致');
+                    return;
+                }
+                
+                const data = {
+                    email: formData.get('email'),
+                    password: password,
+                    full_name: formData.get('full_name'),
+                    phone: formData.get('phone')
+                };
+                
+                this.showLoading(true);
+                
+                try {
+                    const response = await fetch('/api/v1/unified-auth/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        if (result.verification_required) {
+                            this.showToast('success', '注册成功', '请检查邮箱并点击验证链接');
+                            // Show identity selection
+                            document.getElementById('identitySelection').classList.add('show');
+                        } else {
+                            this.showToast('success', '注册成功', '正在跳转...');
+                            setTimeout(() => {
+                                window.location.href = result.redirect_url;
+                            }, 1500);
+                        }
+                    } else {
+                        this.showToast('error', '注册失败', result.detail || '请检查输入信息');
+                    }
+                } catch (error) {
+                    console.error('Register error:', error);
+                    this.showToast('error', '注册失败', '网络错误，请稍后重试');
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+            
+            selectIdentity(identity) {
+                // Remove previous selection
+                document.querySelectorAll('.identity-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                
+                // Add selection to clicked option
+                document.querySelector(`[data-identity="${identity}"]`).classList.add('selected');
+                
+                this.selectedIdentity = identity;
+                document.getElementById('confirmIdentity').disabled = false;
+            }
+            
+            async confirmIdentity() {
+                if (!this.selectedIdentity) return;
+                
+                this.showLoading(true);
+                
+                try {
+                    const response = await fetch('/api/v1/unified-auth/set-identity', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            identity_type: this.selectedIdentity
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        this.showToast('success', '身份设置成功', '正在跳转到工作台...');
+                        
+                        setTimeout(() => {
+                            window.location.href = result.redirect_url;
+                        }, 1500);
+                    } else {
+                        this.showToast('error', '设置失败', result.detail || '请稍后重试');
+                    }
+                } catch (error) {
+                    console.error('Identity confirmation error:', error);
+                    this.showToast('error', '设置失败', '网络错误，请稍后重试');
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+            
+            showLoading(show) {
+                const overlay = document.getElementById('loadingOverlay');
+                if (show) {
+                    overlay.classList.add('show');
+                } else {
+                    overlay.classList.remove('show');
+                }
+            }
+            
+            showToast(type, title, message) {
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
+                toast.innerHTML = `
+                    <div data-icon="${type === 'success' ? 'check-circle' : 'x-circle'}" class="toast-icon"></div>
+                    <div class="toast-content">
+                        <div class="toast-title">${title}</div>
+                        <div class="toast-message">${message}</div>
+                    </div>
+                    <button class="toast-close" data-icon="x-mark"></button>
+                `;
+                
+                // Add to container
+                let container = document.querySelector('.toast-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.className = 'toast-container';
+                    document.body.appendChild(container);
+                }
+                
+                container.appendChild(toast);
+                
+                // Replace icons
+                if (window.IconSystem) {
+                    const icons = toast.querySelectorAll('[data-icon]');
+                    icons.forEach(icon => {
+                        const iconName = icon.getAttribute('data-icon');
+                        window.IconSystem.replaceWithIcon(icon, iconName, {
+                            size: '20',
+                            className: icon.className
+                        });
+                    });
+                }
+                
+                // Auto-remove
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 5000);
+                
+                // Close button
+                toast.querySelector('.toast-close').addEventListener('click', () => {
+                    toast.remove();
+                });
+            }
+        }
+        
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            new UnifiedAuth();
+        });
+    </script>
+</body>
+</html>

@@ -14,6 +14,16 @@ from app.core.config import settings
 from app.core.database import engine, create_tables
 from app.api.v1.api import api_router
 from app.middlewares.access_logger import AccessLoggerMiddleware
+from app.middlewares.performance_middleware import (
+    PerformanceMiddleware, 
+    ConcurrencyLimitMiddleware,
+    ResponseCompressionMiddleware,
+    CacheControlMiddleware
+)
+from app.core.performance_monitor import performance_optimizer
+from app.core.database_performance import initialize_database_performance
+from app.core.advanced_cache import initialize_cache_system
+from app.core.cache import get_redis_client
 
 
 # 配置结构化日志
@@ -43,6 +53,28 @@ async def lifespan(app: FastAPI):
     await create_tables()
     logger.info("✅ 数据库表创建完成")
     
+    # 初始化性能优化系统
+    try:
+        await performance_optimizer.initialize()
+        logger.info("✅ 性能优化系统启动完成")
+    except Exception as e:
+        logger.error(f"❌ 性能优化系统启动失败: {e}")
+    
+    # 初始化数据库性能优化
+    try:
+        await initialize_database_performance()
+        logger.info("✅ 数据库性能优化初始化完成")
+    except Exception as e:
+        logger.error(f"❌ 数据库性能优化初始化失败: {e}")
+    
+    # 初始化缓存系统
+    try:
+        redis_client = await get_redis_client()
+        await initialize_cache_system(redis_client)
+        logger.info("✅ 缓存系统初始化完成")
+    except Exception as e:
+        logger.error(f"❌ 缓存系统初始化失败: {e}")
+    
     # 启动访问日志处理器
     from app.services.access_log_processor import start_access_log_processor
     await start_access_log_processor()
@@ -67,6 +99,14 @@ async def lifespan(app: FastAPI):
     
     # 关闭时执行
     logger.info("👋 Lawsker Backend 关闭中...")
+    
+    # 关闭性能优化系统
+    try:
+        await performance_optimizer.shutdown()
+        logger.info("✅ 性能优化系统已关闭")
+    except Exception as e:
+        logger.error(f"❌ 性能优化系统关闭失败: {e}")
+    
     from app.services.access_log_processor import stop_access_log_processor
     from app.services.user_activity_processor import stop_user_activity_processor
     from app.services.websocket_manager import stop_websocket_manager
@@ -96,6 +136,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 性能监控中间件（按顺序添加）
+app.add_middleware(CacheControlMiddleware)
+app.add_middleware(ResponseCompressionMiddleware)
+app.add_middleware(ConcurrencyLimitMiddleware, max_concurrent_requests=1000)
+app.add_middleware(PerformanceMiddleware)
 
 # 访问日志中间件
 app.add_middleware(AccessLoggerMiddleware)
@@ -129,6 +175,60 @@ async def health_check():
         "service": "Lawsker Backend",
         "version": "1.0.0"
     }
+
+# 数据库健康检查端点
+@app.get("/health/db")
+async def database_health_check():
+    """数据库健康检查端点"""
+    try:
+        from app.core.database import get_db
+        async with get_db() as db:
+            from sqlalchemy import text
+            result = await db.execute(text("SELECT 1"))
+            return {
+                "status": "healthy",
+                "database": "connected",
+                "version": "1.0.0"
+            }
+    except Exception as e:
+        logger.error(f"数据库健康检查失败: {e}")
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "unhealthy",
+                "database": "disconnected",
+                "error": str(e)
+            }
+        )
+
+# 性能指标端点
+@app.get("/metrics/performance")
+async def performance_metrics():
+    """性能指标端点"""
+    try:
+        from app.core.advanced_cache import get_cache_manager
+        cache_manager = await get_cache_manager()
+        cache_stats = cache_manager.multi_cache.get_stats()
+        
+        import psutil
+        system_stats = {
+            "cpu_percent": psutil.cpu_percent(),
+            "memory_percent": psutil.virtual_memory().percent,
+            "disk_percent": psutil.disk_usage('/').percent if psutil.disk_usage('/') else 0
+        }
+        
+        return {
+            "status": "ok",
+            "cache_stats": cache_stats,
+            "system_stats": system_stats,
+            "timestamp": structlog.processors.TimeStamper(fmt="iso")
+        }
+    except Exception as e:
+        logger.error(f"性能指标获取失败: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to get performance metrics"}
+        )
 
 
 # 根路径

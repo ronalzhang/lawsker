@@ -576,6 +576,10 @@
     <!-- 引入必要的JavaScript文件 -->
     <script src="/js/api-client.js"></script>
     <script src="/js/task-grab-handler.js"></script>
+    <!-- 专业图标系统 -->
+    <script src="/js/icon-system.js"></script>
+    <script src="/js/professional-icon-library.js"></script>
+    <script src="/js/icon-upgrade-system.js"></script>
 
     <script>
         let currentTasks = [];
@@ -626,7 +630,7 @@
                         role: 'lawyer',
                         specialties: '债务纠纷,合同法,民事诉讼',
                         experience: 8,
-                        success_rate: 96
+                        historical_data: 96  // 历史数据，仅供参考
                     };
                     return;
                 }
@@ -646,7 +650,7 @@
                         role: 'lawyer',
                         specialties: '债务纠纷,合同法,民事诉讼',
                         experience: 8,
-                        success_rate: 96
+                        historical_data: 96  // 历史数据，仅供参考
                     };
                     return;
                 }
@@ -661,7 +665,7 @@
                         role: 'lawyer',
                         specialties: '债务纠纷,合同法,民事诉讼',
                         experience: 8,
-                        success_rate: 96
+                        historical_data: 96  // 历史数据，仅供参考
                     };
                 }
             } catch (error) {
@@ -673,7 +677,7 @@
                     role: 'lawyer',
                     specialties: '债务纠纷,合同法,民事诉讼',
                     experience: 8,
-                    success_rate: 96
+                    historical_data: 96  // 历史数据，仅供参考
                 };
             }
         }
@@ -1187,7 +1191,7 @@
                                 <h5 style="margin: 0 0 10px 0; color: #f59e0b; font-size: 14px;">📋 任务要求</h5>
                                 <ul style="margin: 0; padding-left: 20px; color: #666; font-size: 13px;">
                                     <li>按时完成任务内容</li>
-                                    <li>保证文书质量和法律准确性</li>
+                                    <li>努力确保文书质量和法律准确性</li>
                                     <li>及时与客户沟通进度</li>
                                     <li>遵守平台服务规范</li>
                                 </ul>

@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lawsker 专业图标系统展示</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
+    
+    <!-- 设计系统样式 -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/css/components.css">
+    
+    <!-- 图标系统 -->
+    <script src="/js/icon-system.js"></script>
+    <script src="/js/professional-icon-library.js"></script>
+    <script src="/js/icon-upgrade-system.js"></script>
+    
+    <style>
+        body {
+            font-family: var(--font-family-sans);
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+        
+        .subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            border: 1px solid var(--gray-200);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-600);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-500);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .size-selector {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .size-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+        
+        .size-btn:hover {
+            background: var(--gray-50);
+        }
+        
+        .size-btn.active {
+            background: var(--primary-600);
+            color: white;
+            border-color: var(--primary-600);
+        }
+        
+        .category-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .category-tab {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .category-tab:hover {
+            background: var(--gray-50);
+        }
+        
+        .category-tab.active {
+            background: var(--primary-600);
+            color: white;
+            border-color: var(--primary-600);
+        }
+        
+        .icon-section {
+            margin-bottom: 3rem;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+        
+        .icon-card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .icon-card:hover {
+            border-color: var(--primary-500);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        
+        .icon-display {
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 48px;
+        }
+        
+        .icon-name {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            word-break: break-all;
+        }
+        
+        .copy-notification {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gray-900);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .copy-notification.show {
+            opacity: 1;
+        }
+        
+        .demo-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 3rem;
+        }
+        
+        .demo-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .demo-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .demo-item {
+            padding: 1rem;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            background: var(--gray-50);
+        }
+        
+        .demo-item h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .demo-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .demo-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+        
+        .demo-btn:hover {
+            background: var(--primary-50);
+            border-color: var(--primary-300);
+        }
+        
+        .usage-code {
+            background: var(--gray-900);
+            color: var(--gray-100);
+            padding: 1rem;
+            border-radius: 6px;
+            font-family: var(--font-family-mono);
+            font-size: 0.875rem;
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                min-width: auto;
+            }
+            
+            .icon-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 页面头部 -->
+        <div class="header">
+            <h1 class="title">Lawsker 专业图标系统</h1>
+            <p class="subtitle">基于 Heroicons 的专业图标库，为法律服务平台提供一致、美观的视觉体验</p>
+            
+            <!-- 统计信息 -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-icons">0</div>
+                    <div class="stat-label">总图标数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="extended-icons">0</div>
+                    <div class="stat-label">扩展图标</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="categories-count">0</div>
+                    <div class="stat-label">图标分类</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="upgraded-count">0</div>
+                    <div class="stat-label">已升级图标</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 控制面板 -->
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" class="search-input" placeholder="搜索图标名称..." id="icon-search">
+            </div>
+            <div class="size-selector">
+                <button class="size-btn" data-size="16">16px</button>
+                <button class="size-btn active" data-size="24">24px</button>
+                <button class="size-btn" data-size="32">32px</button>
+                <button class="size-btn" data-size="48">48px</button>
+            </div>
+        </div>
+        
+        <!-- 分类标签 -->
+        <div class="category-tabs" id="category-tabs">
+            <button class="category-tab active" data-category="all">全部图标</button>
+        </div>
+        
+        <!-- 图标展示区域 -->
+        <div id="icon-sections"></div>
+        
+        <!-- 使用演示 -->
+        <div class="demo-section">
+            <h3 class="demo-title">使用演示</h3>
+            <div class="demo-content">
+                <div class="demo-item">
+                    <h4>基础按钮</h4>
+                    <div class="demo-buttons">
+                        <button class="demo-btn">
+                            <span data-icon="user"></span>
+                            用户中心
+                        </button>
+                        <button class="demo-btn">
+                            <span data-icon="scale"></span>
+                            法律服务
+                        </button>
+                        <button class="demo-btn">
+                            <span data-icon="credit-card"></span>
+                            支付管理
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="demo-item">
+                    <h4>导航菜单</h4>
+                    <div class="demo-buttons">
+                        <button class="demo-btn">
+                            <span data-icon="home"></span>
+                            首页
+                        </button>
+                        <button class="demo-btn">
+                            <span data-icon="chart-bar"></span>
+                            数据分析
+                        </button>
+                        <button class="demo-btn">
+                            <span data-icon="cog-6-tooth"></span>
+                            设置
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="demo-item">
+                    <h4>状态指示</h4>
+                    <div class="demo-buttons">
+                        <button class="demo-btn">
+                            <span data-icon="check-circle" class="icon-success"></span>
+                            成功
+                        </button>
+                        <button class="demo-btn">
+                            <span data-icon="exclamation-triangle" class="icon-warning"></span>
+                            警告
+                        </button>
+                        <button class="demo-btn">
+                            <span data-icon="x-circle" class="icon-error"></span>
+                            错误
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="demo-item">
+                    <h4>游戏化元素</h4>
+                    <div class="demo-buttons">
+                        <button class="demo-btn">
+                            <span data-icon="trophy" class="icon-warning"></span>
+                            成就
+                        </button>
+                        <button class="demo-btn">
+                            <span data-icon="star-solid" class="icon-warning"></span>
+                            评级
+                        </button>
+                        <button class="demo-btn">
+                            <span data-icon="fire" class="icon-error"></span>
+                            热门
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="usage-code">
+// 基本使用方法
+const icon = window.IconSystem.getIcon('user', {
+  size: '24',
+  className: 'professional-icon'
+});
+
+// 创建图标元素
+const iconElement = window.IconSystem.createElement('scale', {
+  size: '32',
+  className: 'legal-icon'
+});
+
+// 替换元素内容为图标
+window.IconSystem.replaceWithIcon(element, 'trophy');
+
+// 搜索图标
+const results = window.ProfessionalIconLibrary.searchIcons('legal');
+
+// 按分类获取图标
+const legalIcons = window.ProfessionalIconLibrary.getIconsByCategory('legal');
+            </div>
+        </div>
+        
+        <!-- 页脚 -->
+        <div class="footer">
+            <p>© 2024 Lawsker (律客) - 专业图标系统 | 基于 Heroicons 构建</p>
+        </div>
+    </div>
+
+    <script>
+        class IconShowcase {
+            constructor() {
+                this.currentSize = '24';
+                this.currentCategory = 'all';
+                this.searchQuery = '';
+                this.init();
+            }
+            
+            init() {
+                // 等待图标系统加载完成
+                setTimeout(() => {
+                    this.updateStats();
+                    this.renderCategories();
+                    this.renderIcons();
+                    this.bindEvents();
+                }, 100);
+            }
+            
+            updateStats() {
+                if (window.ProfessionalIconLibrary) {
+                    const stats = window.ProfessionalIconLibrary.getStats();
+                    document.getElementById('total-icons').textContent = stats.totalIcons;
+                    document.getElementById('extended-icons').textContent = stats.extendedIcons;
+                    document.getElementById('categories-count').textContent = stats.categories;
+                }
+                
+                if (window.IconUpgradeSystem) {
+                    const upgradeStats = window.IconUpgradeSystem.getUpgradeStats();
+                    document.getElementById('upgraded-count').textContent = upgradeStats.totalUpgraded;
+                }
+            }
+            
+            renderCategories() {
+                if (!window.ProfessionalIconLibrary) return;
+                
+                const tabsContainer = document.getElementById('category-tabs');
+                const categories = window.ProfessionalIconLibrary.getAllCategories();
+                
+                // 清除现有分类（保留"全部"）
+                const allTab = tabsContainer.querySelector('[data-category="all"]');
+                tabsContainer.innerHTML = '';
+                tabsContainer.appendChild(allTab);
+                
+                // 添加分类标签
+                categories.forEach(category => {
+                    const tab = document.createElement('button');
+                    tab.className = 'category-tab';
+                    tab.dataset.category = category;
+                    tab.textContent = this.getCategoryDisplayName(category);
+                    tabsContainer.appendChild(tab);
+                });
+            }
+            
+            getCategoryDisplayName(category) {
+                const displayNames = {
+                    legal: '法律',
+                    business: '商务',
+                    analytics: '分析',
+                    status: '状态',
+                    security: '安全',
+                    search: '搜索',
+                    edit: '编辑',
+                    network: '网络',
+                    media: '媒体',
+                    location: '位置',
+                    user: '用户',
+                    finance: '金融',
+                    achievement: '成就',
+                    navigation: '导航',
+                    actions: '操作',
+                    communication: '通讯',
+                    feedback: '反馈',
+                    upload: '上传',
+                    time: '时间',
+                    visibility: '可见性'
+                };
+                return displayNames[category] || category;
+            }
+            
+            renderIcons() {
+                const sectionsContainer = document.getElementById('icon-sections');
+                sectionsContainer.innerHTML = '';
+                
+                if (this.currentCategory === 'all') {
+                    if (this.searchQuery) {
+                        // 搜索模式
+                        const results = window.ProfessionalIconLibrary.searchIcons(this.searchQuery);
+                        this.renderIconSection('搜索结果', results.map(r => r.name), sectionsContainer);
+                    } else {
+                        // 显示所有分类
+                        const categories = window.ProfessionalIconLibrary.getAllCategories();
+                        categories.forEach(category => {
+                            const icons = window.ProfessionalIconLibrary.getIconsByCategory(category);
+                            if (icons.length > 0) {
+                                this.renderIconSection(
+                                    this.getCategoryDisplayName(category), 
+                                    icons.map(icon => icon.name), 
+                                    sectionsContainer
+                                );
+                            }
+                        });
+                    }
+                } else {
+                    // 显示特定分类
+                    const icons = window.ProfessionalIconLibrary.getIconsByCategory(this.currentCategory);
+                    this.renderIconSection(
+                        this.getCategoryDisplayName(this.currentCategory), 
+                        icons.map(icon => icon.name), 
+                        sectionsContainer
+                    );
+                }
+            }
+            
+            renderIconSection(title, iconNames, container) {
+                if (iconNames.length === 0) return;
+                
+                const section = document.createElement('div');
+                section.className = 'icon-section';
+                
+                const sectionTitle = document.createElement('h3');
+                sectionTitle.className = 'section-title';
+                sectionTitle.innerHTML = `
+                    <span data-icon="star"></span>
+                    ${title} (${iconNames.length})
+                `;
+                
+                const iconGrid = document.createElement('div');
+                iconGrid.className = 'icon-grid';
+                
+                iconNames.forEach(iconName => {
+                    const iconCard = this.createIconCard(iconName);
+                    iconGrid.appendChild(iconCard);
+                });
+                
+                section.appendChild(sectionTitle);
+                section.appendChild(iconGrid);
+                container.appendChild(section);
+                
+                // 升级图标
+                window.IconUpgradeSystem.upgradeElement(section);
+            }
+            
+            createIconCard(iconName) {
+                const card = document.createElement('div');
+                card.className = 'icon-card';
+                card.dataset.iconName = iconName;
+                
+                card.innerHTML = `
+                    <div class="icon-display">
+                        ${window.IconSystem.getIcon(iconName, {
+                            size: this.currentSize,
+                            className: 'professional-icon'
+                        })}
+                    </div>
+                    <div class="icon-name">${iconName}</div>
+                    <div class="copy-notification">已复制!</div>
+                `;
+                
+                // 点击复制图标代码
+                card.addEventListener('click', () => {
+                    this.copyIconCode(iconName, card);
+                });
+                
+                return card;
+            }
+            
+            copyIconCode(iconName, cardElement) {
+                const code = `window.IconSystem.getIcon('${iconName}')`;
+                
+                // 复制到剪贴板
+                navigator.clipboard.writeText(code).then(() => {
+                    // 显示复制通知
+                    const notification = cardElement.querySelector('.copy-notification');
+                    notification.classList.add('show');
+                    setTimeout(() => {
+                        notification.classList.remove('show');
+                    }, 1500);
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                });
+            }
+            
+            bindEvents() {
+                // 搜索事件
+                const searchInput = document.getElementById('icon-search');
+                searchInput.addEventListener('input', (e) => {
+                    this.searchQuery = e.target.value.toLowerCase();
+                    this.renderIcons();
+                });
+                
+                // 尺寸选择事件
+                document.querySelectorAll('.size-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.currentSize = btn.dataset.size;
+                        this.renderIcons();
+                    });
+                });
+                
+                // 分类选择事件
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('category-tab')) {
+                        document.querySelectorAll('.category-tab').forEach(tab => tab.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.currentCategory = e.target.dataset.category;
+                        this.searchQuery = '';
+                        document.getElementById('icon-search').value = '';
+                        this.renderIcons();
+                    }
+                });
+            }
+        }
+        
+        // 初始化展示页面
+        document.addEventListener('DOMContentLoaded', () => {
+            new IconShowcase();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lawsker 管理后台 - 数据可视化仪表盘</title>
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/data-visualization.css">
+    <link rel="stylesheet" href="css/components.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #7c3aed;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --error-color: #dc2626;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--gray-800);
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--gray-200);
+            padding: 2rem 0;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-header {
+            padding: 0 2rem 2rem;
+            border-bottom: 1px solid var(--gray-200);
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 1rem;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            color: var(--gray-600);
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: var(--primary-color);
+            color: white;
+            transform: translateX(4px);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .dashboard-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
+        }
+
+        .header-subtitle {
+            color: var(--gray-600);
+            font-size: 1.1rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .refresh-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .refresh-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-title {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .stat-change.positive {
+            color: var(--success-color);
+        }
+
+        .stat-change.negative {
+            color: var(--error-color);
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .chart-filters {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--gray-300);
+            background: white;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .chart-container {
+            height: 400px;
+            position: relative;
+        }
+
+        .data-table-card {
+            grid-column: 1 / -1;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: 0.5rem;
+            background: white;
+        }
+
+        .search-box input {
+            border: none;
+            outline: none;
+            flex: 1;
+            font-size: 0.9rem;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .data-table th {
+            background: var(--gray-50);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--gray-700);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .data-table tr:hover {
+            background: var(--gray-50);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 2rem;
+            height: 2rem;
+            border: 2px solid var(--gray-200);
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .tooltip {
+            position: absolute;
+            background: var(--gray-800);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i data-feather="scale"></i>
+                    <span>Lawsker 管理后台</span>
+                </div>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active">
+                            <i data-feather="bar-chart-2"></i>
+                            <span>数据概览</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i data-feather="users"></i>
+                            <span>用户管理</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i data-feather="briefcase"></i>
+                            <span>律师管理</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i data-feather="file-text"></i>
+                            <span>案件管理</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i data-feather="credit-card"></i>
+                            <span>支付管理</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i data-feather="trending-up"></i>
+                            <span>业务分析</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <i data-feather="settings"></i>
+                            <span>系统设置</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 页面头部 -->
+            <header class="dashboard-header">
+                <div class="header-content">
+                    <div>
+                        <h1 class="header-title">数据可视化仪表盘</h1>
+                        <p class="header-subtitle">实时监控平台运营数据，助力业务决策</p>
+                    </div>
+                    <div class="header-actions">
+                        <div class="loading-spinner" id="loadingSpinner"></div>
+                        <button class="refresh-btn" onclick="refreshDashboard()">
+                            <i data-feather="refresh-cw"></i>
+                            <span>刷新数据</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 统计卡片 -->
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">总用户数</span>
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                            <i data-feather="users"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="totalUsers">12,847</div>
+                    <div class="stat-change positive">
+                        <i data-feather="trending-up"></i>
+                        <span>+12.5% 本月</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">活跃律师</span>
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                            <i data-feather="briefcase"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="activeLawyers">2,156</div>
+                    <div class="stat-change positive">
+                        <i data-feather="trending-up"></i>
+                        <span>+8.3% 本月</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">本月案件</span>
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                            <i data-feather="file-text"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="monthlyCases">8,924</div>
+                    <div class="stat-change positive">
+                        <i data-feather="trending-up"></i>
+                        <span>+15.7% 本月</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">收入总额</span>
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a, #fee140);">
+                            <i data-feather="dollar-sign"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" id="totalRevenue">¥1,247,890</div>
+                    <div class="stat-change positive">
+                        <i data-feather="trending-up"></i>
+                        <span>+22.1% 本月</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 图表区域 -->
+            <section class="charts-grid">
+                <!-- 用户增长趋势图 -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">用户增长趋势</h3>
+                        <div class="chart-filters">
+                            <button class="filter-btn active" onclick="setTimeRange('7d')">7天</button>
+                            <button class="filter-btn" onclick="setTimeRange('30d')">30天</button>
+                            <button class="filter-btn" onclick="setTimeRange('90d')">90天</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="userGrowthChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 律师等级分布 -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">律师等级分布</h3>
+                    </div>
+                    <div class="chart-container">
+                        <div id="lawyerLevelChart"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 案件状态分析 -->
+            <section class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">案件状态分析</h3>
+                        <div class="chart-filters">
+                            <button class="filter-btn active" onclick="setCaseFilter('all')">全部</button>
+                            <button class="filter-btn" onclick="setCaseFilter('pending')">待处理</button>
+                            <button class="filter-btn" onclick="setCaseFilter('completed')">已完成</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <div id="caseStatusChart"></div>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">收入来源分析</h3>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="revenueSourceChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 数据表格 -->
+            <section class="data-table-card">
+                <div class="table-header">
+                    <h3 class="chart-title">最新用户活动</h3>
+                    <div class="search-box">
+                        <i data-feather="search"></i>
+                        <input type="text" placeholder="搜索用户..." id="userSearch">
+                    </div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>用户ID</th>
+                                <th>用户名</th>
+                                <th>用户类型</th>
+                                <th>注册时间</th>
+                                <th>最后活动</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                            <!-- 动态生成的用户数据 -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 工具提示 -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <script src="js/data-visualization.js"></script>
+    <script>
+        // 初始化Feather图标
+        feather.replace();
+
+        // 页面加载完成后初始化仪表盘
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+        });
+
+        // 初始化仪表盘
+        function initializeDashboard() {
+            initUserGrowthChart();
+            initLawyerLevelChart();
+            initCaseStatusChart();
+            initRevenueSourceChart();
+            loadUserTable();
+            startRealTimeUpdates();
+        }
+
+        // 用户增长趋势图
+        function initUserGrowthChart() {
+            const ctx = document.getElementById('userGrowthChart').getContext('2d');
+            
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(37, 99, 235, 0.3)');
+            gradient.addColorStop(1, 'rgba(37, 99, 235, 0.05)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月'],
+                    datasets: [{
+                        label: '新增用户',
+                        data: [1200, 1900, 3000, 5000, 2000, 3000, 4500],
+                        borderColor: '#2563eb',
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#2563eb',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            borderColor: '#2563eb',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#6b7280'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: '#f3f4f6'
+                            },
+                            ticks: {
+                                color: '#6b7280'
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+
+        // 律师等级分布图
+        function initLawyerLevelChart() {
+            const chartDom = document.getElementById('lawyerLevelChart');
+            const myChart = echarts.init(chartDom);
+
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} <br/>{b}: {c} ({d}%)'
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left',
+                    textStyle: {
+                        color: '#6b7280'
+                    }
+                },
+                series: [
+                    {
+                        name: '律师等级',
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        avoidLabelOverlap: false,
+                        itemStyle: {
+                            borderRadius: 10,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        },
+                        label: {
+                            show: false,
+                            position: 'center'
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                fontSize: 20,
+                                fontWeight: 'bold'
+                            }
+                        },
+                        labelLine: {
+                            show: false
+                        },
+                        data: [
+                            {value: 335, name: '见习律师', itemStyle: {color: '#667eea'}},
+                            {value: 310, name: '初级律师', itemStyle: {color: '#764ba2'}},
+                            {value: 234, name: '中级律师', itemStyle: {color: '#f093fb'}},
+                            {value: 135, name: '高级律师', itemStyle: {color: '#f5576c'}},
+                            {value: 89, name: '资深律师', itemStyle: {color: '#4facfe'}},
+                            {value: 45, name: '专家律师', itemStyle: {color: '#00f2fe'}},
+                            {value: 23, name: '首席律师', itemStyle: {color: '#fa709a'}},
+                            {value: 12, name: '合伙人', itemStyle: {color: '#fee140'}}
+                        ]
+                    }
+                ]
+            };
+
+            myChart.setOption(option);
+            
+            // 响应式处理
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        }
+
+        // 案件状态分析图
+        function initCaseStatusChart() {
+            const chartDom = document.getElementById('caseStatusChart');
+            const myChart = echarts.init(chartDom);
+
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                legend: {
+                    data: ['待分配', '进行中', '已完成', '已取消'],
+                    textStyle: {
+                        color: '#6b7280'
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                    axisLine: {
+                        lineStyle: {
+                            color: '#e5e7eb'
+                        }
+                    },
+                    axisTick: {
+                        show: false
+                    },
+                    axisLabel: {
+                        color: '#6b7280'
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: {
+                        show: false
+                    },
+                    axisTick: {
+                        show: false
+                    },
+                    axisLabel: {
+                        color: '#6b7280'
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: '#f3f4f6'
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: '待分配',
+                        type: 'bar',
+                        stack: '总量',
+                        data: [120, 132, 101, 134, 90, 230, 210],
+                        itemStyle: {
+                            color: '#fbbf24'
+                        }
+                    },
+                    {
+                        name: '进行中',
+                        type: 'bar',
+                        stack: '总量',
+                        data: [220, 182, 191, 234, 290, 330, 310],
+                        itemStyle: {
+                            color: '#3b82f6'
+                        }
+                    },
+                    {
+                        name: '已完成',
+                        type: 'bar',
+                        stack: '总量',
+                        data: [150, 232, 201, 154, 190, 330, 410],
+                        itemStyle: {
+                            color: '#10b981'
+                        }
+                    },
+                    {
+                        name: '已取消',
+                        type: 'bar',
+                        stack: '总量',
+                        data: [30, 42, 31, 44, 40, 50, 60],
+                        itemStyle: {
+                            color: '#ef4444'
+                        }
+                    }
+                ]
+            };
+
+            myChart.setOption(option);
+            
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+        }
+
+        // 收入来源分析图
+        function initRevenueSourceChart() {
+            const ctx = document.getElementById('revenueSourceChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['会员订阅', '案件费用', 'Credits购买', '企业服务', '其他'],
+                    datasets: [{
+                        data: [45, 30, 15, 8, 2],
+                        backgroundColor: [
+                            '#667eea',
+                            '#764ba2',
+                            '#f093fb',
+                            '#f5576c',
+                            '#4facfe'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                                color: '#6b7280'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            borderColor: '#2563eb',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + '%';
+                                }
+                            }
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+        }
+
+        // 加载用户表格数据
+        function loadUserTable() {
+            const tableBody = document.getElementById('userTableBody');
+            const users = [
+                {id: 'U001', name: '张三', type: '普通用户', registerTime: '2024-01-15', lastActive: '2024-01-20', status: 'active'},
+                {id: 'L001', name: '李律师', type: '律师用户', registerTime: '2024-01-10', lastActive: '2024-01-20', status: 'active'},
+                {id: 'U002', name: '王五', type: '普通用户', registerTime: '2024-01-18', lastActive: '2024-01-19', status: 'pending'},
+                {id: 'L002', name: '赵律师', type: '律师用户', registerTime: '2024-01-12', lastActive: '2024-01-18', status: 'active'},
+                {id: 'U003', name: '刘六', type: '普通用户', registerTime: '2024-01-16', lastActive: '2024-01-17', status: 'inactive'}
+            ];
+
+            tableBody.innerHTML = users.map(user => `
+                <tr>
+                    <td>${user.id}</td>
+                    <td>${user.name}</td>
+                    <td>${user.type}</td>
+                    <td>${user.registerTime}</td>
+                    <td>${user.lastActive}</td>
+                    <td>
+                        <span class="status-badge status-${user.status}">
+                            ${user.status === 'active' ? '活跃' : user.status === 'pending' ? '待审核' : '非活跃'}
+                        </span>
+                    </td>
+                    <td>
+                        <button onclick="viewUser('${user.id}')" style="padding: 0.25rem 0.5rem; border: 1px solid #d1d5db; background: white; border-radius: 0.25rem; cursor: pointer;">查看</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 刷新仪表盘
+        function refreshDashboard() {
+            const spinner = document.getElementById('loadingSpinner');
+            spinner.style.display = 'block';
+            
+            // 模拟数据刷新
+            setTimeout(() => {
+                // 更新统计数据
+                document.getElementById('totalUsers').textContent = (Math.random() * 1000 + 12000).toFixed(0);
+                document.getElementById('activeLawyers').textContent = (Math.random() * 200 + 2000).toFixed(0);
+                document.getElementById('monthlyCases').textContent = (Math.random() * 1000 + 8000).toFixed(0);
+                document.getElementById('totalRevenue').textContent = '¥' + (Math.random() * 200000 + 1200000).toFixed(0);
+                
+                spinner.style.display = 'none';
+                
+                // 显示成功提示
+                showToast('数据已更新', 'success');
+            }, 1500);
+        }
+
+        // 设置时间范围
+        function setTimeRange(range) {
+            document.querySelectorAll('.chart-filters .filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 这里可以根据时间范围重新加载图表数据
+            showToast(`已切换到${range === '7d' ? '7天' : range === '30d' ? '30天' : '90天'}视图`, 'info');
+        }
+
+        // 设置案件过滤器
+        function setCaseFilter(filter) {
+            document.querySelectorAll('.chart-filters .filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            showToast(`已切换到${filter === 'all' ? '全部' : filter === 'pending' ? '待处理' : '已完成'}案件视图`, 'info');
+        }
+
+        // 查看用户详情
+        function viewUser(userId) {
+            showToast(`查看用户 ${userId} 的详细信息`, 'info');
+        }
+
+        // 开始实时更新
+        function startRealTimeUpdates() {
+            setInterval(() => {
+                // 模拟实时数据更新
+                const elements = ['totalUsers', 'activeLawyers', 'monthlyCases'];
+                const randomElement = elements[Math.floor(Math.random() * elements.length)];
+                const currentValue = parseInt(document.getElementById(randomElement).textContent.replace(/[^\d]/g, ''));
+                const newValue = currentValue + Math.floor(Math.random() * 10) - 5;
+                document.getElementById(randomElement).textContent = newValue.toLocaleString();
+            }, 30000); // 每30秒更新一次
+        }
+
+        // 显示提示消息
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                color: white;
+                border-radius: 0.5rem;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+
+        // 搜索功能
+        document.getElementById('userSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#userTableBody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>

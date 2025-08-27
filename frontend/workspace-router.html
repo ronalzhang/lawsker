@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工作台路由 - Lawsker</title>
+    
+    <!-- Modern Design System -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/css/components.css">
+    
+    <!-- JavaScript Files -->
+    <script src="/js/auto-redirect.js"></script>
+    <!-- 专业图标系统 -->
+    <script src="/js/icon-system.js"></script>
+    <script src="/js/professional-icon-library.js"></script>
+    <script src="/js/icon-upgrade-system.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .router-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .router-header {
+            margin-bottom: 2rem;
+        }
+
+        .router-header h1 {
+            color: #1f2937;
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .router-header p {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #e5e7eb;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .workspace-options {
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .workspace-option {
+            padding: 1.5rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .workspace-option:hover {
+            border-color: #3b82f6;
+            background: #f8fafc;
+            transform: translateY(-2px);
+        }
+
+        .workspace-option .icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 1rem;
+            background: #f3f4f6;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+        }
+
+        .workspace-option:hover .icon {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .workspace-option h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .workspace-option p {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #fca5a5;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .retry-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: background-color 0.2s;
+        }
+
+        .retry-button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="router-container">
+        <div class="router-header">
+            <h1>正在跳转到工作台</h1>
+            <p>请稍候，我们正在为您准备专属工作台...</p>
+        </div>
+
+        <!-- 加载状态 -->
+        <div id="loading-state">
+            <div class="loading-spinner"></div>
+            <p id="loading-message">正在验证身份...</p>
+        </div>
+
+        <!-- 工作台选项（当自动重定向失败时显示） -->
+        <div id="workspace-options" class="workspace-options">
+            <a href="#" class="workspace-option" data-type="user">
+                <div class="icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                </div>
+                <h3>用户工作台</h3>
+                <p>发布法律需求，寻找专业律师</p>
+            </a>
+
+            <a href="#" class="workspace-option" data-type="lawyer">
+                <div class="icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+                    </svg>
+                </div>
+                <h3>律师工作台</h3>
+                <p>提供专业法律服务，管理案件</p>
+            </a>
+
+            <a href="#" class="workspace-option" data-type="admin">
+                <div class="icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </div>
+                <h3>管理后台</h3>
+                <p>系统管理，数据分析</p>
+            </a>
+        </div>
+
+        <!-- 错误消息 -->
+        <div id="error-message" class="error-message">
+            <p>自动跳转失败，请选择您的工作台类型</p>
+            <button class="retry-button" onclick="retryAutoRedirect()">重试自动跳转</button>
+        </div>
+    </div>
+
+    <script>
+        let redirectAttempts = 0;
+        const maxRedirectAttempts = 3;
+
+        // 页面加载完成后开始自动重定向流程
+        document.addEventListener('DOMContentLoaded', async () => {
+            await performAutoRedirect();
+        });
+
+        /**
+         * 执行自动重定向
+         */
+        async function performAutoRedirect() {
+            redirectAttempts++;
+            
+            try {
+                updateLoadingMessage('正在验证身份...');
+                
+                // 检查登录状态并获取重定向信息
+                const success = await window.AutoRedirectManager.checkAndRedirectIfLoggedIn();
+                
+                if (!success) {
+                    // 自动重定向失败，显示手动选项
+                    setTimeout(() => {
+                        showManualOptions();
+                    }, 2000);
+                }
+                
+            } catch (error) {
+                console.error('自动重定向失败:', error);
+                
+                if (redirectAttempts < maxRedirectAttempts) {
+                    // 重试
+                    updateLoadingMessage('重试中...');
+                    setTimeout(() => {
+                        performAutoRedirect();
+                    }, 1500);
+                } else {
+                    // 达到最大重试次数，显示手动选项
+                    showManualOptions();
+                }
+            }
+        }
+
+        /**
+         * 更新加载消息
+         */
+        function updateLoadingMessage(message) {
+            const loadingMessage = document.getElementById('loading-message');
+            if (loadingMessage) {
+                loadingMessage.textContent = message;
+            }
+        }
+
+        /**
+         * 显示手动选项
+         */
+        function showManualOptions() {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('workspace-options').style.display = 'grid';
+            document.getElementById('error-message').style.display = 'block';
+            
+            // 更新页面标题和描述
+            document.querySelector('.router-header h1').textContent = '选择您的工作台';
+            document.querySelector('.router-header p').textContent = '请选择您要访问的工作台类型';
+            
+            // 绑定工作台选项点击事件
+            bindWorkspaceOptions();
+        }
+
+        /**
+         * 绑定工作台选项点击事件
+         */
+        function bindWorkspaceOptions() {
+            const options = document.querySelectorAll('.workspace-option');
+            
+            options.forEach(option => {
+                option.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    const workspaceType = option.dataset.type;
+                    redirectToWorkspace(workspaceType);
+                });
+            });
+        }
+
+        /**
+         * 重定向到指定工作台
+         */
+        async function redirectToWorkspace(workspaceType) {
+            try {
+                updateLoadingMessage(`正在跳转到${getWorkspaceDisplayName(workspaceType)}...`);
+                
+                // 显示加载状态
+                document.getElementById('workspace-options').style.display = 'none';
+                document.getElementById('error-message').style.display = 'none';
+                document.getElementById('loading-state').style.display = 'block';
+                
+                // 获取用户信息
+                const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
+                
+                if (userInfo.workspace_id) {
+                    // 使用存储的workspace_id
+                    const redirectUrl = `/${workspaceType}/${userInfo.workspace_id}`;
+                    
+                    setTimeout(() => {
+                        window.location.href = redirectUrl;
+                    }, 1000);
+                } else {
+                    // 没有workspace_id，重定向到登录页面
+                    setTimeout(() => {
+                        window.location.href = '/unified-auth.html?error=no_workspace';
+                    }, 1000);
+                }
+                
+            } catch (error) {
+                console.error('手动重定向失败:', error);
+                showManualOptions();
+            }
+        }
+
+        /**
+         * 获取工作台显示名称
+         */
+        function getWorkspaceDisplayName(workspaceType) {
+            const names = {
+                'user': '用户工作台',
+                'lawyer': '律师工作台',
+                'admin': '管理后台'
+            };
+            return names[workspaceType] || '工作台';
+        }
+
+        /**
+         * 重试自动重定向
+         */
+        function retryAutoRedirect() {
+            // 重置重试次数
+            redirectAttempts = 0;
+            
+            // 隐藏错误消息和手动选项
+            document.getElementById('workspace-options').style.display = 'none';
+            document.getElementById('error-message').style.display = 'none';
+            document.getElementById('loading-state').style.display = 'block';
+            
+            // 重置页面标题和描述
+            document.querySelector('.router-header h1').textContent = '正在跳转到工作台';
+            document.querySelector('.router-header p').textContent = '请稍候，我们正在为您准备专属工作台...';
+            
+            // 重新执行自动重定向
+            performAutoRedirect();
+        }
+
+        // 处理URL参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const errorParam = urlParams.get('error');
+
+        if (errorParam === 'no_workspace') {
+            // 显示特定错误消息
+            setTimeout(() => {
+                document.getElementById('error-message').innerHTML = `
+                    <p>未找到您的工作台信息，请重新登录</p>
+                    <button class="retry-button" onclick="window.location.href='/unified-auth.html'">重新登录</button>
+                `;
+                showManualOptions();
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

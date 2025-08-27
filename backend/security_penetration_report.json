@@ -1,0 +1,61 @@
+{
+  "summary": {
+    "total_tests": 151,
+    "total_findings": 4,
+    "critical_findings": 0,
+    "high_findings": 1,
+    "medium_findings": 3,
+    "low_findings": 0,
+    "security_score": 100,
+    "test_timestamp": "2025-08-26 20:27:07"
+  },
+  "findings": {
+    "critical": [],
+    "high": [
+      {
+        "title": "HTTP Used Instead of HTTPS",
+        "level": "HIGH",
+        "description": "Application is not using HTTPS",
+        "endpoint": "/",
+        "payload": null,
+        "recommendation": "Enable HTTPS with proper SSL/TLS configuration",
+        "cve_reference": "CWE-319"
+      }
+    ],
+    "medium": [
+      {
+        "title": "Missing Rate Limiting",
+        "level": "MEDIUM",
+        "description": "Endpoint /api/v1/auth/login lacks rate limiting protection",
+        "endpoint": "/api/v1/auth/login",
+        "payload": null,
+        "recommendation": "Implement rate limiting to prevent abuse",
+        "cve_reference": "CWE-770"
+      },
+      {
+        "title": "Missing Rate Limiting",
+        "level": "MEDIUM",
+        "description": "Endpoint /api/v1/auth/register lacks rate limiting protection",
+        "endpoint": "/api/v1/auth/register",
+        "payload": null,
+        "recommendation": "Implement rate limiting to prevent abuse",
+        "cve_reference": "CWE-770"
+      },
+      {
+        "title": "Missing Rate Limiting",
+        "level": "MEDIUM",
+        "description": "Endpoint /api/v1/cases/create lacks rate limiting protection",
+        "endpoint": "/api/v1/cases/create",
+        "payload": null,
+        "recommendation": "Implement rate limiting to prevent abuse",
+        "cve_reference": "CWE-770"
+      }
+    ],
+    "low": []
+  },
+  "recommendations": [
+    "HIGH: Fix high-severity vulnerabilities within 24 hours",
+    "Implement rate limiting to prevent abuse",
+    "Enable HTTPS with proper SSL/TLS configuration"
+  ]
+}

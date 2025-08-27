@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>律师工作台 - 律客</title>
+    
+    <!-- Modern Design System -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/gamification.css">
+    <link rel="stylesheet" href="/css/enhanced-gamification.css">
+    
+    <!-- JavaScript Files -->
+    <script src="/js/icon-system.js"></script>
+    <script src="/js/gamification.js"></script>
+    <script src="/js/enhanced-gamification.js"></script>
+    <!-- 专业图标系统 -->
+    <script src="/js/professional-icon-library.js"></script>
+    <script src="/js/icon-upgrade-system.js"></script>
+    
+    <style>
+        body {
+            background-color: var(--bg-secondary);
+        }
+        
+        .workspace-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            background-color: var(--bg-primary);
+            border-right: 1px solid var(--gray-200);
+            padding: var(--space-6);
+            position: fixed;
+            width: 280px;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            padding: var(--space-6);
+        }
+        
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            margin-bottom: var(--space-8);
+            padding-bottom: var(--space-4);
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .sidebar-logo {
+            width: var(--space-8);
+            height: var(--space-8);
+            color: var(--color-primary);
+        }
+        
+        .sidebar-title {
+            font-size: var(--text-lg);
+            font-weight: var(--font-bold);
+            color: var(--text-primary);
+        }
+        
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar-nav-item {
+            margin-bottom: var(--space-2);
+        }
+        
+        .sidebar-nav-link {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-4);
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: var(--radius-lg);
+            transition: var(--transition-fast);
+            font-weight: var(--font-medium);
+        }
+        
+        .sidebar-nav-link:hover,
+        .sidebar-nav-link.active {
+            background-color: var(--primary-50);
+            color: var(--color-primary);
+        }
+        
+        .sidebar-nav-icon {
+            width: var(--space-5);
+            height: var(--space-5);
+        }
+        
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-8);
+        }
+        
+        .page-title {
+            font-size: var(--text-3xl);
+            font-weight: var(--font-bold);
+            color: var(--text-primary);
+        }
+        
+        .page-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+        }
+        
+        .user-menu {
+            position: relative;
+        }
+        
+        .user-menu-trigger {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-2) var(--space-3);
+            background: none;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        
+        .user-menu-trigger:hover {
+            border-color: var(--primary-300);
+            background-color: var(--primary-50);
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-6);
+            margin-bottom: var(--space-8);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-6);
+            margin-bottom: var(--space-8);
+        }
+        
+        .stat-card {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            text-align: center;
+            transition: var(--transition-fast);
+        }
+        
+        .stat-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-300);
+        }
+        
+        .stat-icon {
+            width: var(--space-12);
+            height: var(--space-12);
+            margin: 0 auto var(--space-4);
+            color: var(--color-primary);
+        }
+        
+        .stat-value {
+            font-size: var(--text-3xl);
+            font-weight: var(--font-bold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-2);
+        }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+            font-weight: var(--font-medium);
+        }
+        
+        .recent-activity {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+        }
+        
+        .activity-header {
+            padding: var(--space-6);
+            border-bottom: 1px solid var(--gray-200);
+            background-color: var(--bg-secondary);
+        }
+        
+        .activity-title {
+            font-size: var(--text-lg);
+            font-weight: var(--font-semibold);
+            color: var(--text-primary);
+            margin: 0;
+        }
+        
+        .activity-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            padding: var(--space-4) var(--space-6);
+            border-bottom: 1px solid var(--gray-100);
+            transition: var(--transition-fast);
+        }
+        
+        .activity-item:hover {
+            background-color: var(--bg-secondary);
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: var(--space-8);
+            height: var(--space-8);
+            color: var(--text-tertiary);
+            flex-shrink: 0;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-text {
+            font-size: var(--text-sm);
+            color: var(--text-primary);
+            margin-bottom: var(--space-1);
+        }
+        
+        .activity-time {
+            font-size: var(--text-xs);
+            color: var(--text-tertiary);
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-6);
+        }
+        
+        .quick-action-card {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            text-align: center;
+            transition: var(--transition-fast);
+            cursor: pointer;
+        }
+        
+        .quick-action-card:hover {
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-300);
+            transform: translateY(-2px);
+        }
+        
+        .quick-action-icon {
+            width: var(--space-12);
+            height: var(--space-12);
+            margin: 0 auto var(--space-4);
+            color: var(--color-primary);
+        }
+        
+        .quick-action-title {
+            font-size: var(--text-lg);
+            font-weight: var(--font-semibold);
+            color: var(--text-primary);
+            margin-bottom: var(--space-2);
+        }
+        
+        .quick-action-description {
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+            line-height: var(--leading-relaxed);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .workspace-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .main-content {
+                padding: var(--space-4);
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-4);
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="workspace-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div data-icon="scale" class="sidebar-logo"></div>
+                <h2 class="sidebar-title">律师工作台</h2>
+            </div>
+            
+            <nav>
+                <ul class="sidebar-nav">
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link active">
+                            <div data-icon="home" class="sidebar-nav-icon"></div>
+                            工作台首页
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link">
+                            <div data-icon="briefcase" class="sidebar-nav-icon"></div>
+                            我的案件
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link">
+                            <div data-icon="document-text" class="sidebar-nav-icon"></div>
+                            文档管理
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link">
+                            <div data-icon="users" class="sidebar-nav-icon"></div>
+                            客户管理
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link">
+                            <div data-icon="chart-bar" class="sidebar-nav-icon"></div>
+                            数据统计
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link">
+                            <div data-icon="banknotes" class="sidebar-nav-icon"></div>
+                            收入管理
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="/lawyer-membership.html" class="sidebar-nav-link">
+                            <div data-icon="star" class="sidebar-nav-icon"></div>
+                            会员中心
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link">
+                            <div data-icon="cog-6-tooth" class="sidebar-nav-icon"></div>
+                            设置
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <header class="page-header">
+                <h1 class="page-title">工作台</h1>
+                <div class="page-actions">
+                    <button class="btn btn-outline">
+                        <div data-icon="bell" style="width: 16px; height: 16px;"></div>
+                        通知
+                    </button>
+                    <div class="user-menu">
+                        <button class="user-menu-trigger">
+                            <div class="avatar avatar-sm">
+                                <div data-icon="user" style="width: 16px; height: 16px;"></div>
+                            </div>
+                            <span>张律师</span>
+                            <div data-icon="chevron-down" style="width: 16px; height: 16px;"></div>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Lawyer Level Card -->
+                <div class="lawyer-level-card">
+                    <div class="level-badge level-3">
+                        <div data-icon="trophy" class="level-icon"></div>
+                        <span class="level-text">中级律师 (3级)</span>
+                    </div>
+                    
+                    <div class="points-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 65%;"></div>
+                        </div>
+                        <div class="progress-text">
+                            <span class="progress-current">3,250</span>
+                            <span>/ 5,000</span>
+                        </div>
+                    </div>
+                    
+                    <div class="membership-multiplier">
+                        <div data-icon="star" class="multiplier-icon"></div>
+                        <span>2x 积分倍数</span>
+                    </div>
+                </div>
+                
+                <!-- Points History -->
+                <div class="points-history">
+                    <div class="points-history-header">
+                        <h3 class="points-history-title">最近积分变动</h3>
+                    </div>
+                    <div class="points-history-list">
+                        <div class="points-history-item">
+                            <div class="points-action">
+                                <div data-icon="check-circle" class="points-action-icon"></div>
+                                <div>
+                                    <div class="points-action-text">完成案件审核</div>
+                                    <div class="points-action-time">2小时前</div>
+                                </div>
+                            </div>
+                            <div class="points-change">
+                                <div class="points-value points-positive">+400</div>
+                                <div class="points-multiplier">2x倍数</div>
+                            </div>
+                        </div>
+                        
+                        <div class="points-history-item">
+                            <div class="points-action">
+                                <div data-icon="star" class="points-action-icon"></div>
+                                <div>
+                                    <div class="points-action-text">获得5星好评</div>
+                                    <div class="points-action-time">1天前</div>
+                                </div>
+                            </div>
+                            <div class="points-change">
+                                <div class="points-value points-positive">+400</div>
+                                <div class="points-multiplier">2x倍数</div>
+                            </div>
+                        </div>
+                        
+                        <div class="points-history-item">
+                            <div class="points-action">
+                                <div data-icon="clock" class="points-action-icon"></div>
+                                <div>
+                                    <div class="points-action-text">在线工作4小时</div>
+                                    <div class="points-action-time">1天前</div>
+                                </div>
+                            </div>
+                            <div class="points-change">
+                                <div class="points-value points-positive">+40</div>
+                                <div class="points-multiplier">2x倍数</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div data-icon="briefcase" class="stat-icon"></div>
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">进行中案件</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div data-icon="check-circle" class="stat-icon"></div>
+                    <div class="stat-value">48</div>
+                    <div class="stat-label">已完成案件</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div data-icon="star" class="stat-icon"></div>
+                    <div class="stat-value">4.8</div>
+                    <div class="stat-label">平均评分</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div data-icon="currency-dollar" class="stat-icon"></div>
+                    <div class="stat-value">¥28,500</div>
+                    <div class="stat-label">本月收入</div>
+                </div>
+            </div>
+            
+            <!-- Recent Activity -->
+            <div class="recent-activity">
+                <div class="activity-header">
+                    <h3 class="activity-title">最近活动</h3>
+                </div>
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <div data-icon="document-text" class="activity-icon"></div>
+                        <div class="activity-content">
+                            <div class="activity-text">新案件分配：债务纠纷咨询</div>
+                            <div class="activity-time">30分钟前</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div data-icon="chat-bubble-left" class="activity-icon"></div>
+                        <div class="activity-content">
+                            <div class="activity-text">客户张先生发送了新消息</div>
+                            <div class="activity-time">1小时前</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div data-icon="check-circle" class="activity-icon"></div>
+                        <div class="activity-content">
+                            <div class="activity-text">完成案件：合同审查</div>
+                            <div class="activity-time">2小时前</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div data-icon="star" class="activity-icon"></div>
+                        <div class="activity-content">
+                            <div class="activity-text">收到客户5星好评</div>
+                            <div class="activity-time">3小时前</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div style="margin-top: var(--space-8);">
+                <h2 style="font-size: var(--text-xl); font-weight: var(--font-semibold); color: var(--text-primary); margin-bottom: var(--space-6);">
+                    快速操作
+                </h2>
+                <div class="quick-actions">
+                    <div class="quick-action-card">
+                        <div data-icon="plus" class="quick-action-icon"></div>
+                        <h3 class="quick-action-title">创建新案件</h3>
+                        <p class="quick-action-description">
+                            快速创建新的法律案件，开始为客户提供专业服务
+                        </p>
+                    </div>
+                    
+                    <div class="quick-action-card">
+                        <div data-icon="document-arrow-up" class="quick-action-icon"></div>
+                        <h3 class="quick-action-title">上传文档</h3>
+                        <p class="quick-action-description">
+                            上传案件相关文档，建立完整的案件档案
+                        </p>
+                    </div>
+                    
+                    <div class="quick-action-card">
+                        <div data-icon="calendar-days" class="quick-action-icon"></div>
+                        <h3 class="quick-action-title">预约咨询</h3>
+                        <p class="quick-action-description">
+                            管理客户预约，安排法律咨询时间
+                        </p>
+                    </div>
+                    
+                    <div class="quick-action-card">
+                        <div data-icon="chart-bar" class="quick-action-icon"></div>
+                        <h3 class="quick-action-title">查看报告</h3>
+                        <p class="quick-action-description">
+                            查看详细的业务报告和数据分析
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+    
+    <script>
+        // Initialize workspace
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize enhanced gamification system
+            if (window.EnhancedGamificationSystem) {
+                // Set initial state
+                window.EnhancedGamificationSystem.setLevel(3, 3250);
+                window.EnhancedGamificationSystem.setMembershipMultiplier(2);
+            }
+            
+            // Simulate some points updates for demonstration with enhanced animations
+            setTimeout(() => {
+                if (window.gamificationSystem) {
+                    window.gamificationSystem.addPoints(200, 'case_complete_success', 2);
+                }
+            }, 2000);
+            
+            // Simulate a level up after 5 seconds for demonstration
+            setTimeout(() => {
+                if (window.gamificationSystem && Math.random() > 0.7) {
+                    window.gamificationSystem.showLevelUpAnimation({
+                        newLevel: 4,
+                        levelName: '高级律师'
+                    });
+                }
+            }, 5000);
+            
+            // Add click handlers for quick actions
+            document.querySelectorAll('.quick-action-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const title = this.querySelector('.quick-action-title').textContent;
+                    
+                    // Create a simple toast notification
+                    const toast = document.createElement('div');
+                    toast.className = 'toast toast-info';
+                    toast.innerHTML = `
+                        <div data-icon="information-circle" class="toast-icon"></div>
+                        <div class="toast-content">
+                            <div class="toast-title">功能开发中</div>
+                            <div class="toast-message">${title}功能正在开发中，敬请期待！</div>
+                        </div>
+                        <button class="toast-close" data-icon="x-mark"></button>
+                    `;
+                    
+                    let container = document.querySelector('.toast-container');
+                    if (!container) {
+                        container = document.createElement('div');
+                        container.className = 'toast-container';
+                        document.body.appendChild(container);
+                    }
+                    
+                    container.appendChild(toast);
+                    
+                    // Replace icons
+                    if (window.IconSystem) {
+                        const icons = toast.querySelectorAll('[data-icon]');
+                        icons.forEach(icon => {
+                            const iconName = icon.getAttribute('data-icon');
+                            window.IconSystem.replaceWithIcon(icon, iconName, {
+                                size: '20',
+                                className: icon.className
+                            });
+                        });
+                    }
+                    
+                    // Auto-remove
+                    setTimeout(() => {
+                        if (toast.parentNode) {
+                            toast.remove();
+                        }
+                    }, 3000);
+                    
+                    // Close button
+                    toast.querySelector('.toast-close').addEventListener('click', () => {
+                        toast.remove();
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
